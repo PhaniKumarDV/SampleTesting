@@ -1,0 +1,17 @@
+--- a/drivers/net/wireless/ath/ath10k/htt_rx.c
++++ b/drivers/net/wireless/ath/ath10k/htt_rx.c
+@@ -2657,6 +2657,14 @@ int ath10k_htt_txrx_compl_task(struct ath10k *ar, int budget)
+ 		}
+ 	}
+ 
++	/* Quota exceeds budget due to dequeuing AMSDUs from the last list, which
++	 * is empty after processing. It will trigger kernel napi_poll() warning
++	 * WARN_ON_ONCE(work > weight). But both delaying and dropping parts of
++	 * the AMSDUs are not good options. This change makes kernel happy.
++	 */
++	if (quota > budget)
++		quota = budget;
++
+ 	/* From NAPI documentation:
+ 	 *  The napi poll() function may also process TX completions, in which
+ 	 *  case if it processes the entire TX ring then it should count that

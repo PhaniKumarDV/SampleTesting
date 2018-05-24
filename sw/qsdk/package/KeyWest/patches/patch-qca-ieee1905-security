@@ -1,0 +1,16 @@
+diff -urN ieee1905-security-org/qca-wsplc-luci/files/luci-wsplc/luasrc/controller/wsplc.lua ieee1905-security-mod/qca-wsplc-luci/files/luci-wsplc/luasrc/controller/wsplc.lua
+--- ieee1905-security-org/qca-wsplc-luci/files/luci-wsplc/luasrc/controller/wsplc.lua	2018-05-11 09:29:38.373898000 +0530
++++ ieee1905-security-mod/qca-wsplc-luci/files/luci-wsplc/luasrc/controller/wsplc.lua	2018-05-22 14:17:21.565878046 +0530
+@@ -15,9 +15,9 @@
+ 		return
+ 	end
+ 
+-	local page
++	--local page
+ 
+-	page = entry({"admin", "network", "wsplc"}, cbi("wsplc/wsplc"), _("HyFi Security"))
+-	page.dependent = true
++	--page = entry({"admin", "network", "wsplc"}, cbi("wsplc/wsplc"), _("HyFi Security"))
++	--page.dependent = true
+ 
+ end

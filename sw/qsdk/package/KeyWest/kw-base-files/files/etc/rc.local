@@ -1,0 +1,7 @@
+# Put your custom commands here that should be executed once
+# the system init finished. By default this file does nothing.
+
+echo 1 > /sys/devices/soc.0/gpio_led.6/leds/lan1/brightness
+echo "System Initialization Done"
+
+exit 0

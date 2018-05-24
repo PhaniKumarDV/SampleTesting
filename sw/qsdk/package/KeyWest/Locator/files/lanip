@@ -1,0 +1,106 @@
+#!/bin/sh /etc/rc.common
+
+#Shpin add
+
+START=80
+#STOP=10
+
+. /lib/functions.sh # angus #
+config_load network
+
+change_state () {
+	[ -n "$ifc" ] || return
+	uci_revert_state "$1" "$2" "$3" "$4"
+	uci_set_state "$1" "$2" "$3" "$4"
+}
+
+uci_get() {
+	[ -n "$ifc" ] || return
+	uci -P /dev/null get "$1" 2>/dev/null
+}
+
+start() {
+	#hardcode for ifc with 'lan'
+	ifc="lan"
+	
+	config_get opmode sys opmode
+	config_get lanif  $ifc ifname
+	config_get proto  $ifc proto
+if [ "$(custom_ipv6_enabled)" == "1" ]; then
+	config_get accept_ra $ifc accept_ra
+fi
+	config_get WANGeneralAccount  wan WANGeneralAccount
+
+	local lanip=$(uci_get "network.$ifc.ipaddr")
+	local lanmask=$(uci_get "network.$ifc.netmask")
+if [ "$(custom_ipv6_enabled)" == "1" ]; then
+	local lanip6=$(uci_get "network.$ifc.ip6addr")
+	local langw6=$(uci_get "network.$ifc.ip6gw")
+fi
+	
+	change_state network "$ifc" ipaddr "$lanip"	
+	change_state network "$ifc" netmask "$lanmask"	
+if [ "$(custom_ipv6_enabled)" == "1" ]; then
+	change_state network "$ifc" ip6addr "$lanip6"
+	change_state network "$ifc" ip6gw "$langw6"
+fi
+	
+	case "$opmode" in
+	apr*|cr*)
+		ifconfig $lanif up $lanip netmask $lanmask
+		arping -c 3 -U -I $lanif -s $lanip $lanip & > /dev/null
+	;;
+	*)
+if [ "$(custom_ipv6_enabled)" == "1" ]; then
+		# TODO: Take IPv6-ed locator into account
+		
+		[ "$accept_ra" -eq 0 ] && {
+			killall -17 rdisc6
+			/etc/init.d/dhcp6c stop
+			killall -9 rdisc6
+		}
+fi
+		killall -17 udhcpc
+		sleep 2
+		killall -9 udhcpc
+
+		dhcpc="$proto"
+		#lanif="br-lan"
+		if [ "x$dhcpc" != "xdhcp" ] ; then
+			ifconfig $lanif up $lanip netmask $lanmask
+			arping -c 3 -U -I $lanif -s $lanip $lanip & > /dev/null
+if [ "$(custom_ipv6_enabled)" == "1" ]; then
+			[ "$accept_ra" -eq 1 -a -n "$lanip6" ] && {
+				/sbin/route -A inet6 del default gw $langw6
+				ifconfig $lanif del $lanip6
+			}
+fi
+		else
+if [ "$(custom_ipv6ct_disabled)" == "1" ]; then
+			if [ "$WANGeneralAccount" = "" ] ; then
+			    /sbin/udhcpc -i $lanif -R &
+			else
+			    /sbin/udhcpc -i $lanif -R -H $WANGeneralAccount &
+			fi
+if [ "$(custom_ipv6_enabled)" == "1" ]; then
+			[ "$accept_ra" -eq 0 -a -n "$lanip6" ] && {
+				ifconfig $lanif add $lanip6
+				/sbin/route -A inet6 add default gw $langw6 dev $lanif
+			}
+fi ## custom_ipv6_enabled ##
+fi # custom_ipv6ct_disabled #
+		fi
+	;;
+	esac
+
+	config_get iface_main  lan ifname
+	#[ "$config" = "lan" ] && {
+		route add -host 255.255.255.255 dev "$iface_main"
+		echo locator iface==== "$iface_main"  ====
+	#}
+
+}
+
+stop() {
+    echo arping do nothing
+}

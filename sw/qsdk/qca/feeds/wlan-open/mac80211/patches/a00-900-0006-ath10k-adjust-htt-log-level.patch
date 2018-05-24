@@ -1,0 +1,13 @@
+diff --git a/drivers/net/wireless/ath/ath10k/htt_rx.c b/drivers/net/wireless/ath/ath10k/htt_rx.c
+index 16b4dcf..8475218 100644
+--- a/drivers/net/wireless/ath/ath10k/htt_rx.c
++++ b/drivers/net/wireless/ath/ath10k/htt_rx.c
+@@ -1500,7 +1500,7 @@ static bool ath10k_htt_rx_amsdu_allowed(struct ath10k *ar,
+ 	 */
+ 
+ 	if (!rx_status->freq) {
+-		ath10k_warn(ar, "no channel configured; ignoring frame(s)!\n");
++		ath10k_dbg(ar, ATH10K_DBG_HTT, "no channel configured; ignoring frame(s)!\n");
+ 		return false;
+ 	}
+ 

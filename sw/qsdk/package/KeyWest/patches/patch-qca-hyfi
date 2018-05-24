@@ -1,0 +1,16 @@
+diff -urN hyfi-org/qca-hyfi-luci/files/luci-hyfi/luasrc/controller/hyfi.lua hyfi-mod/qca-hyfi-luci/files/luci-hyfi/luasrc/controller/hyfi.lua
+--- hyfi-org/qca-hyfi-luci/files/luci-hyfi/luasrc/controller/hyfi.lua	2018-05-11 09:29:37.052869000 +0530
++++ hyfi-mod/qca-hyfi-luci/files/luci-hyfi/luasrc/controller/hyfi.lua	2018-05-22 14:15:09.587962242 +0530
+@@ -15,9 +15,9 @@
+ 		return
+ 	end
+ 
+-	local page
++	--local page
+ 
+-	page = entry({"admin", "network", "hyfi"}, cbi("hyfi/hyfi"), _("HyFi Network"))
+-	page.dependent = true
++	--page = entry({"admin", "network", "hyfi"}, cbi("hyfi/hyfi"), _("HyFi Network"))
++	--page.dependent = true
+ 
+ end

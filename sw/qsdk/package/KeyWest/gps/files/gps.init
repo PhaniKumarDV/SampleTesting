@@ -1,0 +1,39 @@
+#!/bin/sh /etc/rc.common
+# Temperature loging init script
+
+GPS_BIN="/bin/gps"
+
+START=90
+
+USE_PROCD=1
+
+service_triggers() {
+    procd_add_reload_trigger "system"
+}
+
+
+start_service() {        
+    local status="$(uci_get system.gps.status)"
+    local int="$(uci_get system.gps.interval)"
+    
+    uci_set system gps satelites '0'
+    uci_set system gps latitude '0'
+    uci_set system gps longitude '0'
+    uci_set system gps altitude '0'
+    uci_set system gps time '0'
+    uci_commit system
+
+    if [ "${status}" == "1" ] ; then
+        echo "Starting GPS"
+
+        procd_open_instance
+        procd_set_param respawn
+        procd_set_param command "$GPS_BIN" $int
+
+        procd_close_instance
+    fi
+}                 
+
+stop() {
+	killall gps
+} 

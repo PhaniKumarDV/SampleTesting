@@ -1,0 +1,36 @@
+Index: hostapd-2016-10-02/hostapd/hostapd_cli.c
+===================================================================
+--- hostapd-2016-10-02.orig/hostapd/hostapd_cli.c	2017-04-24 13:48:07.574737207 +0530
++++ hostapd-2016-10-02/hostapd/hostapd_cli.c	2017-04-24 13:51:34.729195110 +0530
+@@ -398,7 +398,6 @@
+ #endif /* CONFIG_IEEE80211W */
+ 
+ 
+-#ifdef CONFIG_WPS
+ static int hostapd_cli_cmd_wps_pin(struct wpa_ctrl *ctrl, int argc,
+ 				   char *argv[])
+ {
+@@ -624,7 +623,6 @@
+ 			 ssid_hex, argv[1]);
+ 	return wpa_ctrl_command(ctrl, buf);
+ }
+-#endif /* CONFIG_WPS */
+ 
+ 
+ static int hostapd_cli_cmd_disassoc_imminent(struct wpa_ctrl *ctrl, int argc,
+@@ -1295,7 +1293,6 @@
+ 	{ "sa_query", hostapd_cli_cmd_sa_query, NULL,
+ 	  "<addr> = send SA Query to a station" },
+ #endif /* CONFIG_IEEE80211W */
+-#ifdef CONFIG_WPS
+ 	{ "wps_pin", hostapd_cli_cmd_wps_pin, NULL,
+ 	  "<uuid> <pin> [timeout] [addr] = add WPS Enrollee PIN" },
+ 	{ "wps_check_pin", hostapd_cli_cmd_wps_check_pin, NULL,
+@@ -1320,7 +1317,6 @@
+ 	  "<SSID> <auth> <encr> <key> = configure AP" },
+ 	{ "wps_get_status", hostapd_cli_cmd_wps_get_status, NULL,
+ 	  "= show current WPS status" },
+-#endif /* CONFIG_WPS */
+ 	{ "disassoc_imminent", hostapd_cli_cmd_disassoc_imminent, NULL, NULL },
+ 	{ "ess_disassoc", hostapd_cli_cmd_ess_disassoc, NULL, NULL },
+ 	{ "bss_tm_req", hostapd_cli_cmd_bss_tm_req, NULL, NULL },

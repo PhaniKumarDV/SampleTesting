@@ -1,0 +1,18 @@
+#!/bin/sh /etc/rc.common
+
+START=99
+
+start() {
+    local mode="$(uci_get wireless.@wifi-iface[1].mode)"
+    local wds="$(uci_get wireless.@wifi-iface[1].wds)"
+
+    if [ "$wds" == "1" ]; then # for now we support only WDS mode
+        if [ "$mode" == "ap" ]; then
+            ifconfig br-lan:1 10.0.0.1 netmask 255.255.255.0 up
+        elif [ "$mode" == "sta" ]; then
+            ifconfig br-lan:1 10.0.0.2 netmask 255.255.255.0 up
+        fi
+    else # Invalid case, set to AP IP
+        ifconfig br-lan:1 10.0.0.1 netmask 255.255.255.0 up
+    fi
+}

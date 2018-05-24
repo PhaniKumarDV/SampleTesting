@@ -1,0 +1,69 @@
+#######################################################################
+##
+## Embedded Target Makefile (ISD)
+##
+#######################################################################
+CONFIG_MAKE = ../../configs/config.make
+ifeq ($(wildcard $(CONFIG_MAKE)),$(CONFIG_MAKE))
+include $(CONFIG_MAKE)
+endif
+
+CONFIG_MAKE_DIR=$(shell pwd)/$(CONFIG_MAKE)
+
+.PHONY:	all init clean build distclean install rebuild
+
+DEPLIBS= sysutil ap_cfg
+
+CFLAGS=$(EXTRA_CFLAGS)
+CFLAGS+="-O2"
+ifeq ($(CONFIG_USE_APPS_LZMA_PACKAGE),y)
+CFLAGS += -DHAS_USE_APPS_LZMA_PACKAGE=1
+endif
+
+all: clean build copy2tftpboot
+
+init: 
+
+clean:
+	$(MAKE) -f Makefile clean
+
+
+build-deplibs:
+ifneq ($(DEPLIBS),)
+	for d in $(DEPLIBS); do \
+		($(MAKE) -C ../$$d CONFIG_MAKE_DIR=$(CONFIG_MAKE_DIR) -f Makefile.ISD ); \
+	done;
+endif
+
+clean-deplibs:
+ifneq ($(DEPLIBS),)
+	for d in $(DEPLIBS); do \
+		($(MAKE) -C ../$$d CONFIG_MAKE_DIR=$(CONFIG_MAKE_DIR) -f Makefile.ISD clean); \
+	done;
+endif
+
+build:	
+	$(MAKE) -f Makefile $(MAKE_FLAGS) CROSS=$(CROSS) \
+	EXTRA_CFLAGS="$(CFLAGS)" \
+	EXTRA_LDFLAGS="$(EXTRA_LDFLAGS)" \
+	SYSUTIL_SHARED_LIB_USE_RT="$(SYSUTIL_SHARED_LIB_USE_RT)" \
+	USE_APPS_SHARED_LIB="$(USE_APPS_SHARED_LIB)" all
+
+distclean:
+	$(MAKE)  -f Makefile distclean
+
+install:
+ifneq ($(PREFIX_DIR),)
+	$(MAKE) -f Makefile install PREFIX=$(TARGET_DIR); 
+else
+	$(MAKE) -f Makefile install PREFIX=$(TARGET_APP_DIR) ;
+endif
+
+rebuild: clean clean-deplibs build-deplibs all
+
+copy2tftpboot:
+	rm -rf /tftproot/cli; \
+	$(STRIP) cli; \
+	install -m 755 cli /tftpboot; \
+	ls -al /tftpboot/cli
+	

@@ -1,0 +1,335 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+ABOLT_ATH_ADVCAP	_global_share.h	/^    ABOLT_ATH_ADVCAP  = ($/;"	e	enum:__anon15
+ABOLT_BURST	_global_share.h	/^    ABOLT_BURST       = 0x10,      \/* Bursting *\/$/;"	e	enum:__anon15
+ABOLT_COMPRESSION	_global_share.h	/^    ABOLT_COMPRESSION = 0x04,      \/* Compression *\/$/;"	e	enum:__anon15
+ABOLT_FAST_FRAME	_global_share.h	/^    ABOLT_FAST_FRAME  = 0x08,      \/* Fast Frames *\/$/;"	e	enum:__anon15
+ABOLT_FRIENDLY_TURBO	_global_share.h	/^    ABOLT_FRIENDLY_TURBO = 0x80,  \/* Friendly turbo that switches out based on adjacent non-turbo traffic *\/$/;"	e	enum:__anon15
+ABOLT_OPTION	_global_share.h	/^} ABOLT_OPTION;$/;"	t	typeref:enum:__anon15
+ABOLT_SUPERG	_global_share.h	221;"	d
+ABOLT_TURBO_G	_global_share.h	/^    ABOLT_TURBO_G     = 0x01,      \/* Legacy Turbo G *\/$/;"	e	enum:__anon15
+ABOLT_TURBO_PRIME	_global_share.h	/^    ABOLT_TURBO_PRIME = 0x02,      \/* Turbo Prime *\/$/;"	e	enum:__anon15
+ABOLT_WME_ELE	_global_share.h	/^    ABOLT_WME_ELE     = 0x20,      \/* WME based cwmin\/max\/burst tuning *\/$/;"	e	enum:__anon15
+ABOLT_XR	_global_share.h	/^    ABOLT_XR          = 0x40,      \/* XR *\/$/;"	e	enum:__anon15
+AES	_global_share.h	/^	AES,$/;"	e	enum:__anon12
+AUTH_AUTO	_global_share.h	/^	AUTH_AUTO  \/\/scout add$/;"	e	enum:__anon8
+AUTH_MODE	_global_share.h	/^}AUTH_MODE;$/;"	t	typeref:enum:__anon8
+AUTH_OPEN_SYSTEM	_global_share.h	/^	AUTH_OPEN_SYSTEM = 0,$/;"	e	enum:__anon8
+AUTH_SHARED_KEY	_global_share.h	/^	AUTH_SHARED_KEY,$/;"	e	enum:__anon8
+AUTH_WPA	_global_share.h	/^	AUTH_WPA,$/;"	e	enum:__anon8
+AUTH_WPAPSK	_global_share.h	/^	AUTH_WPAPSK,$/;"	e	enum:__anon8
+AUTO	_global_share.h	/^	AUTO$/;"	e	enum:__anon12
+BROADCAST_ADDR	discover.h	25;"	d
+BROADCAST_ADDR	locator.h	5;"	d
+CC	Makefile	/^CC?=gcc$/;"	m
+CFG_LIB_H	cfg_lib.h	2;"	d
+CFG_OP_MODE_ADHOC	_global_share.h	/^	CFG_OP_MODE_ADHOC$/;"	e	enum:__anon10
+CFG_OP_MODE_AP	_global_share.h	/^	CFG_OP_MODE_AP = 0,$/;"	e	enum:__anon10
+CFG_OP_MODE_CR	_global_share.h	/^	CFG_OP_MODE_CR,$/;"	e	enum:__anon10
+CFG_OP_MODE_MPT	_global_share.h	/^	CFG_OP_MODE_MPT,$/;"	e	enum:__anon10
+CFG_OP_MODE_PPT	_global_share.h	/^	CFG_OP_MODE_PPT,$/;"	e	enum:__anon10
+CFG_OP_MODE_REPEATER	_global_share.h	/^	CFG_OP_MODE_REPEATER,$/;"	e	enum:__anon10
+CFG_OP_MODE_STA	_global_share.h	/^	CFG_OP_MODE_STA,$/;"	e	enum:__anon10
+CFG_OP_MODE_WDS_AP	_global_share.h	/^	CFG_OP_MODE_WDS_AP,$/;"	e	enum:__anon10
+CFG_OP_MODE_WDS_BRIDGE	_global_share.h	/^	CFG_OP_MODE_WDS_BRIDGE,$/;"	e	enum:__anon10
+CFG_OP_MODE_WDS_STA	_global_share.h	/^	CFG_OP_MODE_WDS_STA,$/;"	e	enum:__anon10
+CFLAGS	Makefile	/^CFLAGS=$/;"	m
+CLIENT_AD_HOC	_global_share.h	/^	CLIENT_AD_HOC$/;"	e	enum:__anon11
+DDRET	discover.h	/^}DDRET;$/;"	t	typeref:enum:_DDRET
+DEVICE_INFO	discover.h	/^}DEVICE_INFO;$/;"	t	typeref:struct:_DEVICE_INFO
+DEVICE_INFO	locator.h	/^}DEVICE_INFO;$/;"	t	typeref:struct:_DEVICE_INFO
+DEVICE_LIST	locator.h	/^}DEVICE_LIST, *PDEVICE_LIST;$/;"	t	typeref:struct:_DEVICE_LIST
+DEVICE_LIST_PATH	discover.c	21;"	d	file:
+DEVICE_LIST_PATH	locator.h	75;"	d
+DISABLED	_global_share.h	/^	DISABLED = 0,$/;"	e	enum:__anon5
+DWORD	discover.h	/^typedef unsigned long		DWORD;$/;"	t
+DisCapsulate	locator.c	/^int DisCapsulate(unsigned char *pszBuf, DEVICE_INFO *pInfo)$/;"	f
+ENCRYPTION_AES_CCM	_global_share.h	/^    ENCRYPTION_AES_CCM,$/;"	e	enum:__anon14
+ENCRYPTION_AES_OCB	_global_share.h	/^    ENCRYPTION_AES_OCB,$/;"	e	enum:__anon14
+ENCRYPTION_AUTO	_global_share.h	/^    ENCRYPTION_AUTO,$/;"	e	enum:__anon14
+ENCRYPTION_CKIP	_global_share.h	/^    ENCRYPTION_CKIP, \/\/ No MMH used$/;"	e	enum:__anon14
+ENCRYPTION_CKIP_MMH	_global_share.h	/^    ENCRYPTION_CKIP_MMH$/;"	e	enum:__anon14
+ENCRYPTION_DISABLED	_global_share.h	/^    ENCRYPTION_DISABLED,$/;"	e	enum:__anon14
+ENCRYPTION_MODE	_global_share.h	/^}ENCRYPTION_MODE;$/;"	t	typeref:enum:__anon12
+ENCRYPTION_TKIP	_global_share.h	/^    ENCRYPTION_TKIP, \/\/ implies Michael$/;"	e	enum:__anon14
+ENCRYPTION_WEP	_global_share.h	/^    ENCRYPTION_WEP,$/;"	e	enum:__anon14
+EXTRA_CFLAGS	Makefile	/^EXTRA_CFLAGS=$/;"	m
+FILES_DISCOVER	Makefile	/^FILES_DISCOVER= \\$/;"	m
+FILES_LOCATOR	Makefile	/^FILES_LOCATOR= \\$/;"	m
+FREE	cfg_lib.c	11;"	d	file:
+FREE	locator.c	30;"	d	file:
+GET	cfg_lib.c	12;"	d	file:
+GETVALUE	cfg_lib.c	13;"	d	file:
+INCLUDES	Makefile	/^INCLUDES=$/;"	m
+INFRASTRUCTURE	_global_share.h	/^	INFRASTRUCTURE = 0,$/;"	e	enum:__anon11
+INVALID_SOCKET	discover.h	17;"	d
+IsLocatorPacket	locator.c	/^int IsLocatorPacket(unsigned char *pszBuf)$/;"	f
+KEY_TYPE	_global_share.h	/^}KEY_TYPE;$/;"	t	typeref:enum:__anon13
+LANIF	sys_tools.c	24;"	d	file:
+LDAP_CLIENT	discover.h	/^} __attribute__((packed)) LDAP_CLIENT;$/;"	t	typeref:struct:ldap_client
+LDAP_CLIENT	locator.h	/^} __attribute__((packed)) LDAP_CLIENT;$/;"	t	typeref:struct:ldap_client
+LDAP_REPLY_PACKET	discover.h	/^} __attribute__((packed)) LDAP_REPLY_PACKET;$/;"	t	typeref:struct:__anon3
+LDAP_REPLY_PACKET	locator.h	/^} __attribute__((packed)) LDAP_REPLY_PACKET;$/;"	t	typeref:struct:__anon19
+LDAP_REPLY_PACKET_HEADER	discover.h	/^} __attribute__((packed)) LDAP_REPLY_PACKET_HEADER;$/;"	t	typeref:struct:__anon2
+LDAP_REPLY_PACKET_HEADER	locator.h	/^} __attribute__((packed)) LDAP_REPLY_PACKET_HEADER;$/;"	t	typeref:struct:__anon18
+LDAP_REQUEST_PACKET_HEADER	discover.h	/^} __attribute__((packed)) LDAP_REQUEST_PACKET_HEADER;$/;"	t	typeref:struct:__anon1
+LDAP_REQUEST_PACKET_HEADER	locator.h	/^} __attribute__((packed)) LDAP_REQUEST_PACKET_HEADER;$/;"	t	typeref:struct:__anon17
+LDAP_SERVER	discover.h	/^}__attribute__((packed)) LDAP_SERVER;$/;"	t	typeref:struct:ldap_server
+LDAP_SERVER	locator.h	/^}__attribute__((packed)) LDAP_SERVER;$/;"	t	typeref:struct:ldap_server
+LDAP_TYPE_UCP	_global_share.h	12;"	d
+LDAP_TYPE_UCP	discover.h	28;"	d
+LDP_UDAP_PORT	_global_share.h	10;"	d
+LDP_UDAP_PORT	discover.h	24;"	d
+LIBS	Makefile	/^LIBS=$/;"	m
+LOCATOR_PID_FILENAME	locator.c	31;"	d	file:
+LOG_CRIT	locator.c	36;"	d	file:
+LOG_CRIT	locator.h	11;"	d
+LOG_DEBUG	locator.c	33;"	d	file:
+LOG_DEBUG	locator.h	8;"	d
+LOG_LOG	locator.c	34;"	d	file:
+LOG_LOG	locator.h	9;"	d
+LOG_WARN	locator.c	35;"	d	file:
+LOG_WARN	locator.h	10;"	d
+MAX_BUFSIZE	discover.h	23;"	d
+MAX_DEVICE_COUNT	locator.h	76;"	d
+MODE_SELECT_108G	_global_share.h	206;"	d
+MODE_SELECT_11A	_global_share.h	202;"	d
+MODE_SELECT_11AN	_global_share.h	208;"	d
+MODE_SELECT_11B	_global_share.h	204;"	d
+MODE_SELECT_11BGN	_global_share.h	207;"	d
+MODE_SELECT_11G	_global_share.h	205;"	d
+MODE_SELECT_2GHZ	_global_share.h	219;"	d
+MODE_SELECT_ALL	_global_share.h	220;"	d
+MODE_SELECT_TURBO	_global_share.h	203;"	d
+OFF	_global_share.h	/^	OFF = 0,$/;"	e	enum:__anon9
+ON	_global_share.h	/^	ON$/;"	e	enum:__anon9
+ONOFF_MODE	_global_share.h	/^}ONOFF_MODE;$/;"	t	typeref:enum:__anon9
+OP_MODE_AP	locator.h	/^	OP_MODE_AP,$/;"	e	enum:__anon16
+OP_MODE_APROUTER	locator.h	/^	OP_MODE_APROUTER,$/;"	e	enum:__anon16
+OP_MODE_APWDS	locator.h	/^	OP_MODE_APWDS,$/;"	e	enum:__anon16
+OP_MODE_REPEATER	locator.h	/^	OP_MODE_REPEATER,$/;"	e	enum:__anon16
+OP_MODE_SIFYOB	locator.h	/^	OP_MODE_SIFYOB,$/;"	e	enum:__anon16
+OP_MODE_SIFYOS	locator.h	/^	OP_MODE_SIFYOS,$/;"	e	enum:__anon16
+OP_MODE_STA	locator.h	/^	OP_MODE_STA,$/;"	e	enum:__anon16
+OP_MODE_STAROUTER	locator.h	/^	OP_MODE_STAROUTER,$/;"	e	enum:__anon16
+OP_MODE_STAWDS	locator.h	/^	OP_MODE_STAWDS,$/;"	e	enum:__anon16
+OP_MODE_WBR	locator.h	/^	OP_MODE_WBR,$/;"	e	enum:__anon16
+PAGE_IP_CFG	_global_share.h	/^	PAGE_IP_CFG,$/;"	e	enum:__anon4
+PAGE_LOGIN	_global_share.h	/^	PAGE_LOGIN = 0,$/;"	e	enum:__anon4
+PAGE_NAME	_global_share.h	/^}PAGE_NAME;$/;"	t	typeref:enum:__anon4
+PAGE_SEC	_global_share.h	/^	PAGE_SEC,$/;"	e	enum:__anon4
+PAGE_SEC_REPEATER	_global_share.h	/^	PAGE_SEC_REPEATER,$/;"	e	enum:__anon4
+PAGE_SEC_WEP	_global_share.h	/^	PAGE_SEC_WEP,$/;"	e	enum:__anon4
+PAGE_SEC_WPA	_global_share.h	/^	PAGE_SEC_WPA$/;"	e	enum:__anon4
+PAGE_SEC_WPA_PSK	_global_share.h	/^	PAGE_SEC_WPA_PSK,$/;"	e	enum:__anon4
+PAGE_SYS	_global_share.h	/^	PAGE_SYS,$/;"	e	enum:__anon4
+PAGE_SYS_AP	_global_share.h	/^	PAGE_SYS_AP,$/;"	e	enum:__anon4
+PAGE_SYS_CLIENT	_global_share.h	/^	PAGE_SYS_CLIENT,$/;"	e	enum:__anon4
+PAGE_SYS_CLIENT_ADHOC	_global_share.h	/^	PAGE_SYS_CLIENT_ADHOC,$/;"	e	enum:__anon4
+PAGE_SYS_CLIENT_INF	_global_share.h	/^	PAGE_SYS_CLIENT_INF,$/;"	e	enum:__anon4
+PAGE_SYS_DECNAME	_global_share.h	/^	PAGE_SYS_DECNAME,$/;"	e	enum:__anon4
+PAGE_SYS_REPEATER	_global_share.h	/^	PAGE_SYS_REPEATER,$/;"	e	enum:__anon4
+PDEVICE_LIST	locator.h	/^}DEVICE_LIST, *PDEVICE_LIST;$/;"	t	typeref:struct:_DEVICE_LIST
+PREFIX	Makefile	/^PREFIX?=\/usr$/;"	m
+RADIO_CLIENT_MODE	_global_share.h	/^}RADIO_CLIENT_MODE;$/;"	t	typeref:enum:__anon11
+REAL_OP_MODE	_global_share.h	/^}REAL_OP_MODE;$/;"	t	typeref:enum:__anon10
+RET_ERR_PARAM	discover.h	/^	RET_ERR_PARAM,$/;"	e	enum:_DDRET
+RET_ERR_SOCKET	discover.h	/^	RET_ERR_SOCKET,$/;"	e	enum:_DDRET
+RET_ERR_SYSTEM	discover.h	/^	RET_ERR_SYSTEM = -5,$/;"	e	enum:_DDRET
+RET_SUCCESS	discover.h	/^	RET_SUCCESS = 0$/;"	e	enum:_DDRET
+SECUTRITY_MODE	_global_share.h	/^}SECUTRITY_MODE;$/;"	t	typeref:enum:__anon5
+SELECT_TIMEOUT	discover.h	26;"	d
+SEL_ADHOC	_global_share.h	/^	SEL_ADHOC, \/\/AdHoc$/;"	e	enum:__anon7
+SEL_AP_MODE	_global_share.h	/^	SEL_AP_MODE = 0, \/\/AP$/;"	e	enum:__anon7
+SEL_CR	_global_share.h	/^	SEL_CR, \/\/Client Router$/;"	e	enum:__anon7
+SEL_INF	_global_share.h	/^	SEL_INF, \/\/Client Bridge$/;"	e	enum:__anon7
+SEL_REPEATER	_global_share.h	/^	SEL_REPEATER$/;"	e	enum:__anon7
+SEL_WDS_AP	_global_share.h	/^	SEL_WDS_AP, \/\/ WDS AP$/;"	e	enum:__anon7
+SEL_WDS_BRIDGE	_global_share.h	/^	SEL_WDS_BRIDGE, \/\/ WDS BRIDGE$/;"	e	enum:__anon7
+SEL_WDS_STA	_global_share.h	/^	SEL_WDS_STA, \/\/WDS STATION$/;"	e	enum:__anon7
+SINGLE_OP_MODE	_global_share.h	/^}SINGLE_OP_MODE;$/;"	t	typeref:enum:__anon7
+SOCKET_ERROR	discover.h	18;"	d
+SRV_OPT_DISCOVER	discover.h	21;"	d
+SRV_OPT_DISCOVER	locator.h	6;"	d
+SYS_TOOLS_H	sys_tools.h	2;"	d
+SendRequest	discover.c	/^DDRET SendRequest(int iSock)$/;"	f
+Session_Close	discover.c	/^void Session_Close(int *iSock)$/;"	f
+Session_Create	discover.c	/^int Session_Create()$/;"	f
+TKIP	_global_share.h	/^	TKIP = 0,$/;"	e	enum:__anon12
+TYPE_ASCII	_global_share.h	/^	TYPE_ASCII,$/;"	e	enum:__anon13
+TYPE_HEX	_global_share.h	/^	TYPE_HEX = 0,$/;"	e	enum:__anon13
+TYPE_WPA	_global_share.h	/^	TYPE_WPA$/;"	e	enum:__anon13
+TYPE_WPAPSK	_global_share.h	/^	TYPE_WPAPSK,$/;"	e	enum:__anon13
+UAP_CLASS_UCP	_global_share.h	18;"	d
+UAP_CLASS_UCP	discover.h	29;"	d
+UAP_FLAG_REQUEST	_global_share.h	17;"	d
+UCP_CODE_AUTH_NAME	_global_share.h	34;"	d
+UCP_CODE_AUTH_PASSWORD	_global_share.h	42;"	d
+UCP_CODE_CHANNEL	_global_share.h	47;"	d
+UCP_CODE_DEVICE_NAME	_global_share.h	35;"	d
+UCP_CODE_DEVICE_NAME	discover.h	34;"	d
+UCP_CODE_DEVICE_TYPE	_global_share.h	36;"	d
+UCP_CODE_DEVICE_TYPE	discover.h	35;"	d
+UCP_CODE_ENCRYPTION	_global_share.h	51;"	d
+UCP_CODE_END	_global_share.h	75;"	d
+UCP_CODE_GATEWAY_ADDR	_global_share.h	40;"	d
+UCP_CODE_IP_ADDR	_global_share.h	38;"	d
+UCP_CODE_OPMODE	_global_share.h	44;"	d
+UCP_CODE_RADIUS_SERVER	_global_share.h	54;"	d
+UCP_CODE_SECURITY	_global_share.h	49;"	d
+UCP_CODE_SECURITY_KEY	_global_share.h	53;"	d
+UCP_CODE_SEC_METHOD	_global_share.h	50;"	d
+UCP_CODE_SOFTWARE_VER	_global_share.h	41;"	d
+UCP_CODE_SOFTWARE_VER	discover.h	36;"	d
+UCP_CODE_SSID	_global_share.h	46;"	d
+UCP_CODE_SUBNET_MASK	_global_share.h	39;"	d
+UCP_CODE_SUPER_G	_global_share.h	63;"	d
+UCP_CODE_SYSTEM_NAME	_global_share.h	43;"	d
+UCP_CODE_USE_DHCP	_global_share.h	37;"	d
+UCP_CODE_WEP_INDEX	_global_share.h	52;"	d
+UCP_CODE_WIRELESS_MODE	_global_share.h	45;"	d
+UCP_CODE_WLAN_MACADDR	_global_share.h	64;"	d
+UCP_METHOD_AUTH	_global_share.h	24;"	d
+UCP_METHOD_DISCOVER	_global_share.h	20;"	d
+UCP_METHOD_DISCOVER	discover.h	31;"	d
+UCP_METHOD_GET_INFO	_global_share.h	29;"	d
+UCP_METHOD_GET_IP	_global_share.h	21;"	d
+UCP_METHOD_GET_IP	discover.h	32;"	d
+UCP_METHOD_GET_WIZARD	_global_share.h	27;"	d
+UCP_METHOD_GET_WLAN	_global_share.h	25;"	d
+UCP_METHOD_RESET	_global_share.h	23;"	d
+UCP_METHOD_SET_IP	_global_share.h	22;"	d
+UCP_METHOD_SET_WIZARD	_global_share.h	28;"	d
+UCP_METHOD_SET_WLAN	_global_share.h	26;"	d
+UDAP_DISCOVER_INTERVAL	_global_share.h	15;"	d
+UDAP_DISCOVER_NUM	_global_share.h	16;"	d
+VERSION	sys_tools.c	25;"	d	file:
+VERSION_SIFY	sys_tools.c	27;"	d	file:
+VERSION_UI	sys_tools.c	26;"	d	file:
+WEP128	_global_share.h	/^	WEP128,$/;"	e	enum:__anon5
+WEP152	_global_share.h	/^	WEP152,$/;"	e	enum:__anon5
+WEP64	_global_share.h	/^	WEP64,$/;"	e	enum:__anon5
+WEP_ASCII	_global_share.h	32;"	d
+WEP_HEX	_global_share.h	31;"	d
+WIRELESS_MODE	_global_share.h	/^}WIRELESS_MODE;$/;"	t	typeref:enum:__anon6
+WLAN_ENCRYPTION_ALG	_global_share.h	/^} WLAN_ENCRYPTION_ALG;$/;"	t	typeref:enum:__anon14
+WPA	_global_share.h	/^	WPA,$/;"	e	enum:__anon5
+WPA2	_global_share.h	/^	WPA2,$/;"	e	enum:__anon5
+WPA2_PSK	_global_share.h	/^	WPA2_PSK,$/;"	e	enum:__anon5
+WPA_MIXED	_global_share.h	/^	WPA_MIXED$/;"	e	enum:__anon5
+WPA_PSK	_global_share.h	/^	WPA_PSK,$/;"	e	enum:__anon5
+WPA_PSK_MIXED	_global_share.h	/^	WPA_PSK_MIXED,$/;"	e	enum:__anon5
+W_802_11AN	_global_share.h	/^	W_802_11AN$/;"	e	enum:__anon6
+W_802_11B	_global_share.h	/^	W_802_11B= 0,$/;"	e	enum:__anon6
+W_802_11BGN	_global_share.h	/^	W_802_11BGN,$/;"	e	enum:__anon6
+W_802_11G	_global_share.h	/^	W_802_11G,$/;"	e	enum:__anon6
+W_802_11SUPER_G	_global_share.h	/^	W_802_11SUPER_G,$/;"	e	enum:__anon6
+W_802_11Static_G	_global_share.h	/^	W_802_11Static_G,$/;"	e	enum:__anon6
+WriteFile	locator.c	/^int WriteFile(PDEVICE_LIST pList, char *pFilepath)$/;"	f
+_DDRET	discover.h	/^typedef enum _DDRET$/;"	g
+_DEVICE_DISCOVERY_H__	discover.h	2;"	d
+_DEVICE_INFO	discover.h	/^typedef struct _DEVICE_INFO$/;"	s
+_DEVICE_INFO	locator.h	/^typedef struct _DEVICE_INFO$/;"	s
+_DEVICE_LIST	locator.h	/^typedef struct _DEVICE_LIST$/;"	s
+arrDevice	locator.h	/^	DEVICE_INFO		arrDevice[MAX_DEVICE_COUNT];$/;"	m	struct:_DEVICE_LIST
+cfg_find	cfg_lib.c	/^static pentry cfg_find(char *key, pentry *e)$/;"	f	file:
+cfg_free	cfg_lib.c	/^void cfg_free()$/;"	f
+cfg_get	cfg_lib.c	/^char *cfg_get(char *key)$/;"	f
+cfg_load	cfg_lib.c	/^int cfg_load(char *filename)$/;"	f
+cfg_save	cfg_lib.c	/^int cfg_save(char *filename)$/;"	f
+cfg_set	cfg_lib.c	/^int cfg_set(char *key, char *data)$/;"	f
+cfg_table_get	cfg_lib.c	/^char *cfg_table_get(char *key, int idx)$/;"	f
+client	discover.h	/^	LDAP_CLIENT client;$/;"	m	struct:__anon1
+client	discover.h	/^	LDAP_CLIENT client;$/;"	m	struct:__anon2
+client	locator.h	/^	LDAP_CLIENT client;$/;"	m	struct:__anon17
+client	locator.h	/^	LDAP_CLIENT client;$/;"	m	struct:__anon18
+clientAddr	discover.h	/^	u32 clientAddr;$/;"	m	struct:ldap_client
+clientAddr	locator.h	/^	u32 clientAddr;$/;"	m	struct:ldap_client
+clientPort	discover.h	/^	u16 clientPort;$/;"	m	struct:ldap_client
+clientPort	locator.h	/^	u16 clientPort;$/;"	m	struct:ldap_client
+daemonize	locator.c	/^void daemonize(int sock)$/;"	f
+data	cfg_lib.c	/^	char *data;$/;"	m	struct:entry	file:
+data	discover.h	/^	uchar data[82];$/;"	m	struct:__anon3
+data	locator.h	/^	uchar data[82];$/;"	m	struct:__anon19
+debug	default.script	/^debug(){$/;"	f
+entry	cfg_lib.c	/^typedef struct entry$/;"	s	file:
+entry	cfg_lib.c	/^} entry, *pentry;$/;"	t	typeref:struct:entry	file:
+flag	discover.h	/^	uchar flag;$/;"	m	struct:__anon1
+flag	discover.h	/^	uchar flag;$/;"	m	struct:__anon2
+flag	locator.h	/^	uchar flag;$/;"	m	struct:__anon17
+flag	locator.h	/^	uchar flag;$/;"	m	struct:__anon18
+get_IfHWAddr	sys_tools.c	/^int get_IfHWAddr(char *interface, uint8_t *addr)$/;"	f
+get_IfIPAddr	sys_tools.c	/^int get_IfIPAddr(char *interface, uint32_t *ipaddr)$/;"	f
+get_IfNetMask	sys_tools.c	/^int get_IfNetMask(char *interface, uint32_t *mask)$/;"	f
+get_lanIf	discover.c	/^char *get_lanIf(){$/;"	f
+get_lanIf	locator.c	/^char *get_lanIf(){$/;"	f
+get_sysVersion	sys_tools.c	/^char *get_sysVersion()$/;"	f
+hdr	discover.h	/^	LDAP_REPLY_PACKET_HEADER  hdr;$/;"	m	struct:__anon3
+hdr	locator.h	/^	LDAP_REPLY_PACKET_HEADER  hdr;$/;"	m	struct:__anon19
+key	cfg_lib.c	/^	char *key;$/;"	m	struct:entry	file:
+keyremap	cfg_lib.c	/^int keyremap(char *method,char *ucikey, char *key, char *value){$/;"	f
+ldap_class	discover.h	/^	u32 ldap_class;$/;"	m	struct:__anon1
+ldap_class	discover.h	/^	u32 ldap_class;$/;"	m	struct:__anon2
+ldap_class	locator.h	/^	u32 ldap_class;$/;"	m	struct:__anon17
+ldap_class	locator.h	/^	u32 ldap_class;$/;"	m	struct:__anon18
+ldap_client	discover.h	/^typedef struct ldap_client$/;"	s
+ldap_client	locator.h	/^typedef struct ldap_client$/;"	s
+ldap_server	discover.h	/^typedef struct ldap_server$/;"	s
+ldap_server	locator.h	/^typedef struct ldap_server$/;"	s
+ldap_type	discover.h	/^	u16 ldap_type;$/;"	m	struct:__anon1
+ldap_type	discover.h	/^	u16 ldap_type;$/;"	m	struct:__anon2
+ldap_type	locator.h	/^	u16 ldap_type;$/;"	m	struct:__anon17
+ldap_type	locator.h	/^	u16 ldap_type;$/;"	m	struct:__anon18
+localMacAddr	locator.c	/^uchar localMacAddr[6];$/;"	v
+log	discover.c	/^void log(int level, const char *fmt, ...)$/;"	f
+log	locator.c	/^void log(int level, const char *fmt, ...)$/;"	f
+mac_addr	discover.h	/^	uchar mac_addr[6];$/;"	m	struct:ldap_server
+mac_addr	locator.h	/^	uchar mac_addr[6];$/;"	m	struct:ldap_server
+main	discover.c	/^int main(int argc, char *argv[])$/;"	f
+main	locator.c	/^int main(int argc, char *argv[])$/;"	f
+main_mock	locator.c	/^int main_mock(int argc, char *argv[]){$/;"	f
+method	discover.h	/^	u16 method;$/;"	m	struct:__anon1
+method	discover.h	/^	u16 method;$/;"	m	struct:__anon2
+method	locator.h	/^	u16 method;$/;"	m	struct:__anon17
+method	locator.h	/^	u16 method;$/;"	m	struct:__anon18
+next	cfg_lib.c	/^	struct entry *next;$/;"	m	struct:entry	typeref:struct:entry::entry	file:
+opt	discover.h	/^	u16 opt;$/;"	m	struct:ldap_client
+opt	discover.h	/^	u16 opt;$/;"	m	struct:ldap_server
+opt	locator.h	/^	u16 opt;$/;"	m	struct:ldap_client
+opt	locator.h	/^	u16 opt;$/;"	m	struct:ldap_server
+password_auth	locator.c	/^int password_auth(char* tmp, char* authStr)$/;"	f
+pe	cfg_lib.c	/^static pentry pe = NULL;$/;"	v	file:
+pehead	cfg_lib.c	/^static pentry pehead = NULL;$/;"	v	file:
+pentry	cfg_lib.c	/^} entry, *pentry;$/;"	t	typeref:struct:entry	file:
+req_handler	locator.c	/^void req_handler(int fd, struct sockaddr_in *from, LDAP_REQUEST_PACKET_HEADER *pReqHdr, uchar *buf)$/;"	f
+request_recv	locator.c	/^int request_recv(int fd)$/;"	f
+sequence	discover.h	/^	u16 sequence;$/;"	m	struct:__anon1
+sequence	discover.h	/^	u16 sequence;$/;"	m	struct:__anon2
+sequence	locator.h	/^	u16 sequence;$/;"	m	struct:__anon17
+sequence	locator.h	/^	u16 sequence;$/;"	m	struct:__anon18
+server	discover.h	/^	LDAP_SERVER server;$/;"	m	struct:__anon1
+server	discover.h	/^	LDAP_SERVER server;$/;"	m	struct:__anon2
+server	locator.h	/^	LDAP_SERVER server;$/;"	m	struct:__anon17
+server	locator.h	/^	LDAP_SERVER server;$/;"	m	struct:__anon18
+strFirmwareVersion	discover.h	/^	char	strFirmwareVersion[12];$/;"	m	struct:_DEVICE_INFO
+strFirmwareVersion	locator.h	/^	char			strFirmwareVersion[12];$/;"	m	struct:_DEVICE_INFO
+strIp	discover.h	/^	char	strIp[16];$/;"	m	struct:_DEVICE_INFO
+strIp	locator.h	/^	char			strIp[16];$/;"	m	struct:_DEVICE_INFO
+strMac	discover.h	/^	char	strMac[6];$/;"	m	struct:_DEVICE_INFO
+strMac	locator.h	/^	unsigned char	strMac[6];$/;"	m	struct:_DEVICE_INFO
+strName	discover.h	/^	char	strName[32];$/;"	m	struct:_DEVICE_INFO
+strName	locator.h	/^	char			strName[32];$/;"	m	struct:_DEVICE_INFO
+strTypeName	discover.h	/^	char	strTypeName[20];$/;"	m	struct:_DEVICE_INFO
+strTypeName	locator.h	/^	char			strTypeName[20];$/;"	m	struct:_DEVICE_INFO
+sub	cfg_lib.c	/^	struct entry *sub;$/;"	m	struct:entry	typeref:struct:entry::entry	file:
+u16	discover.h	/^typedef unsigned short u16;$/;"	t
+u16	locator.h	/^typedef unsigned short u16;$/;"	t
+u32	discover.h	/^typedef unsigned int u32;$/;"	t
+u32	locator.h	/^typedef unsigned int u32;$/;"	t
+uchar	discover.h	/^typedef unsigned char uchar;$/;"	t
+uchar	locator.h	/^typedef unsigned char uchar;$/;"	t
+usCount	locator.h	/^	unsigned short	usCount;$/;"	m	struct:_DEVICE_LIST

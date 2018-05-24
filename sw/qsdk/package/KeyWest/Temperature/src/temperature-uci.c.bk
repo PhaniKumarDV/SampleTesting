@@ -1,0 +1,46 @@
+#include <stdio.h>
+#include <string.h>
+#include <uci.h>
+
+#define UCI_MAX_STR_LEN 256
+int main() {
+    struct uci_context *c;
+    struct uci_ptr p;
+    char opt[UCI_MAX_STR_LEN] = "temperature.main.status";
+    
+    c = uci_alloc_context();
+    if(uci_lookup_ptr(c, &p, opt, true) != UCI_OK) {
+        printf("UCI Error\n");
+        return 1;
+    }
+    printf("%s\n", p.o->v.string);
+
+    snprintf(opt, sizeof(opt), "temperature.main.status=0");
+    if(uci_lookup_ptr(c, &p, opt, true) != UCI_OK) {
+        printf("UCI Error\n");
+        return 1;
+    }
+    if(uci_set(c, &p) != UCI_OK) {
+        printf("Failed in Set\n");
+        return 1;
+    }
+    if(uci_save(c, p.p) != UCI_OK) {
+        printf("Failed in Save\n");
+        return 1;
+    }
+    if(uci_commit(c, &p.p, true) != UCI_OK) {
+        printf("Failed in commit\n");
+        return 1;
+    }
+    snprintf(opt, sizeof(opt), "temperature.main.status");
+    if(uci_lookup_ptr(c, &p, opt, true) != UCI_OK) {
+        printf("UCI Error\n");
+        return 1;
+    }
+    printf("%s\n", p.o->v.string);
+
+
+    uci_free_context(c);
+
+    return 0;
+}

@@ -1,0 +1,65 @@
+Index: hostapd-2016-10-02/src/drivers/drivers.mak
+===================================================================
+--- hostapd-2016-10-02.orig/src/drivers/drivers.mak	2017-04-24 13:15:00.709491676 +0530
++++ hostapd-2016-10-02/src/drivers/drivers.mak	2017-04-24 13:16:06.785003328 +0530
+@@ -36,7 +36,6 @@
+ NEED_AP_MLME=y
+ NEED_NETLINK=y
+ NEED_LINUX_IOCTL=y
+-NEED_RFKILL=y
+ NEED_RADIOTAP=y
+ 
+ ifdef CONFIG_LIBNL32
+@@ -123,7 +122,6 @@
+ CONFIG_WIRELESS_EXTENSION=y
+ NEED_NETLINK=y
+ NEED_LINUX_IOCTL=y
+-NEED_RFKILL=y
+ endif
+ 
+ ifdef CONFIG_DRIVER_NDIS
+@@ -149,7 +147,6 @@
+ ifdef CONFIG_WIRELESS_EXTENSION
+ DRV_WPA_CFLAGS += -DCONFIG_WIRELESS_EXTENSION
+ DRV_WPA_OBJS += ../src/drivers/driver_wext.o
+-NEED_RFKILL=y
+ endif
+ 
+ ifdef NEED_NETLINK
+@@ -162,6 +159,7 @@
+ 
+ ifdef NEED_RFKILL
+ DRV_OBJS += ../src/drivers/rfkill.o
++DRV_WPA_CFLAGS += -DCONFIG_RFKILL
+ endif
+ 
+ ifdef NEED_RADIOTAP
+Index: hostapd-2016-10-02/src/drivers/rfkill.h
+===================================================================
+--- hostapd-2016-10-02.orig/src/drivers/rfkill.h	2017-04-24 13:15:00.709491676 +0530
++++ hostapd-2016-10-02/src/drivers/rfkill.h	2017-04-24 13:15:00.709491676 +0530
+@@ -18,8 +18,24 @@
+ 	void (*unblocked_cb)(void *ctx);
+ };
+ 
++#ifdef CONFIG_RFKILL
+ struct rfkill_data * rfkill_init(struct rfkill_config *cfg);
+ void rfkill_deinit(struct rfkill_data *rfkill);
+ int rfkill_is_blocked(struct rfkill_data *rfkill);
++#else
++static inline struct rfkill_data * rfkill_init(struct rfkill_config *cfg)
++{
++	return (void *) 1;
++}
++
++static inline void rfkill_deinit(struct rfkill_data *rfkill)
++{
++}
++
++static inline int rfkill_is_blocked(struct rfkill_data *rfkill)
++{
++	return 0;
++}
++#endif
+ 
+ #endif /* RFKILL_H */

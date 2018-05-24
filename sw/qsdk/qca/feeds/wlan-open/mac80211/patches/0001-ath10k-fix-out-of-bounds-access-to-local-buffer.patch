@@ -1,0 +1,51 @@
+From a16703aaeaedec7a8bee5be5522c7c3e75478951 Mon Sep 17 00:00:00 2001
+From: Michael Mera <dev@michaelmera.com>
+Date: Mon, 24 Apr 2017 16:11:57 +0900
+Subject: [PATCH] ath10k: fix out of bounds access to local buffer
+
+During write to debugfs file simulate_fw_crash, fixed-size local buffer
+'buf' is accessed and modified at index 'count-1', where 'count' is the
+size of the write (so potentially out of bounds).
+This patch fixes this problem.
+
+Signed-off-by: Michael Mera <dev@michaelmera.com>
+Signed-off-by: Kalle Valo <kvalo@qca.qualcomm.com>
+---
+ drivers/net/wireless/ath/ath10k/debug.c |   16 ++++++++++------
+ 1 file changed, 10 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/net/wireless/ath/ath10k/debug.c b/drivers/net/wireless/ath/ath10k/debug.c
+index 4cd2a0f..389fcb7 100644
+--- a/drivers/net/wireless/ath/ath10k/debug.c
++++ b/drivers/net/wireless/ath/ath10k/debug.c
+@@ -625,17 +625,21 @@ static ssize_t ath10k_write_simulate_fw_crash(struct file *file,
+ 					      size_t count, loff_t *ppos)
+ {
+ 	struct ath10k *ar = file->private_data;
+-	char buf[32];
++	char buf[32] = {0};
++	ssize_t rc;
+ 	int ret;
+ 
+-	simple_write_to_buffer(buf, sizeof(buf) - 1, ppos, user_buf, count);
++	/* filter partial writes and invalid commands */
++	if (*ppos != 0 || count >= sizeof(buf) || count == 0)
++		return -EINVAL;
+ 
+-	/* make sure that buf is null terminated */
+-	buf[sizeof(buf) - 1] = 0;
++	rc = simple_write_to_buffer(buf, sizeof(buf) - 1, ppos, user_buf, count);
++	if (rc < 0)
++		return rc;
+ 
+ 	/* drop the possible '\n' from the end */
+-	if (buf[count - 1] == '\n')
+-		buf[count - 1] = 0;
++	if (buf[*ppos - 1] == '\n')
++		buf[*ppos - 1] = '\0';
+ 
+ 	mutex_lock(&ar->conf_mutex);
+ 
+-- 
+1.7.9.5
+

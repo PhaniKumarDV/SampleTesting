@@ -1,0 +1,240 @@
+
+
+/*
+ *
+ *  Locator peers shared configuration 
+ *
+ */
+
+
+#define LDP_UDAP_PORT		0xC9E8
+
+#define LDAP_TYPE_UCP		0xC001
+
+
+#define UDAP_DISCOVER_INTERVAL 500
+#define UDAP_DISCOVER_NUM 4
+#define UAP_FLAG_REQUEST 0x01
+#define UAP_CLASS_UCP		0x00010001
+
+#define UCP_METHOD_DISCOVER	0x0001
+#define UCP_METHOD_GET_IP	0x0002
+#define UCP_METHOD_SET_IP	0x0003
+#define UCP_METHOD_RESET	0x0004
+#define UCP_METHOD_AUTH		0x0005
+#define UCP_METHOD_GET_WLAN	0x0006
+#define UCP_METHOD_SET_WLAN	0x0007
+#define UCP_METHOD_GET_WIZARD	0x0008
+#define UCP_METHOD_SET_WIZARD	0x0009
+#define UCP_METHOD_GET_INFO	0x000A
+
+#define WEP_HEX					0x00
+#define WEP_ASCII				0x01
+
+#define UCP_CODE_AUTH_NAME	0x01
+#define UCP_CODE_DEVICE_NAME	0x02
+#define UCP_CODE_DEVICE_TYPE	0x03
+#define UCP_CODE_USE_DHCP	0x04
+#define UCP_CODE_IP_ADDR	0x05
+#define UCP_CODE_SUBNET_MASK	0x06
+#define UCP_CODE_GATEWAY_ADDR	0x07
+#define UCP_CODE_SOFTWARE_VER	0x08
+#define UCP_CODE_AUTH_PASSWORD	0x09 //login password
+#define UCP_CODE_SYSTEM_NAME	0x0A
+#define UCP_CODE_OPMODE			0x10
+#define UCP_CODE_WIRELESS_MODE	0x11
+#define UCP_CODE_SSID			0x12
+#define UCP_CODE_CHANNEL		0x13
+//Add by Jacy
+#define UCP_CODE_SECURITY		0x14	//0-Disable,1-WEP64,2-WEP128,3-WEP152,4-WPA-PSK,5-WPA2-PSK,6-WPA-PSK-MIXED,7-WPA,8-WPA2,9-WPA-MIXED
+#define UCP_CODE_SEC_METHOD		0x15	//Set WEP Authenetication
+#define UCP_CODE_ENCRYPTION		0x16	//WPA Encryption 0-TKIP,1-AES,2-AUTO
+#define UCP_CODE_WEP_INDEX		0x17
+#define UCP_CODE_SECURITY_KEY		0x18
+#define UCP_CODE_RADIUS_SERVER	0x19
+//#define UCP_CODE_RADIUS_SECRET	0x20
+
+/*
+#define UCP_CODE_WEPKEY64	0x14
+#define UCP_CODE_WEPKEY128	0x15
+#define UCP_CODE_WEPKEY152	0x16
+#define UCP_CODE_WPA_PSK	0x17
+*/
+#define UCP_CODE_SUPER_G	0x1A
+#define UCP_CODE_WLAN_MACADDR	0x1B
+
+//#define UCP_CODE_RADIUS_PORT	0x1D
+
+//jacy added
+//#define UCP_CODE_WPA2_PSK		0x22
+//#define UCP_CODE_WPA_MIXED_PSK		0x23
+//#define UCP_CODE_WPA2_RADIUS_SECRET		0x24
+//#define UCP_CODE_WPA_MIXED_RADIUS_SECRET		0x25
+//#define UCP_CODE_TKIP_AES_AUTO	0x26
+
+#define UCP_CODE_END		0xFF
+
+typedef enum
+{
+	PAGE_LOGIN = 0,
+	PAGE_IP_CFG,
+	PAGE_SYS_DECNAME,
+	PAGE_SYS,
+	PAGE_SYS_AP,
+	PAGE_SYS_CLIENT,
+	PAGE_SYS_CLIENT_INF,
+	PAGE_SYS_CLIENT_ADHOC,
+	PAGE_SYS_REPEATER,
+	PAGE_SEC,
+	PAGE_SEC_REPEATER,
+	PAGE_SEC_WEP,
+	PAGE_SEC_WPA_PSK,
+	PAGE_SEC_WPA
+}PAGE_NAME;
+
+typedef enum
+{
+	DISABLED = 0,
+	WEP64,
+	WEP128,
+	WEP152,
+	WPA_PSK,
+	WPA2_PSK,
+	WPA_PSK_MIXED,
+	WPA,
+	WPA2,
+	WPA_MIXED
+}SECUTRITY_MODE;
+
+typedef enum
+{
+	W_802_11B= 0,
+	W_802_11G,
+	W_802_11Static_G,
+	W_802_11SUPER_G,
+	W_802_11BGN,
+	W_802_11AN
+	
+}WIRELESS_MODE;
+/*  //jacy remove
+typedef enum
+{
+	AP_MODE = 0,
+	CLIENT_MODE,
+	REAPTER_MODE
+}OP_MODE;
+*/
+
+typedef enum
+{
+	SEL_AP_MODE = 0, //AP
+	SEL_INF, //Client Bridge
+	SEL_WDS_AP, // WDS AP
+	SEL_WDS_BRIDGE, // WDS BRIDGE
+	SEL_WDS_STA, //WDS STATION
+	SEL_CR, //Client Router
+	SEL_ADHOC, //AdHoc
+	SEL_REPEATER
+}SINGLE_OP_MODE;
+
+typedef enum
+{
+	AUTH_OPEN_SYSTEM = 0,
+	AUTH_SHARED_KEY,
+	AUTH_WPA,
+	AUTH_WPAPSK,
+	AUTH_AUTO  //scout add
+	
+}AUTH_MODE;
+
+typedef enum
+{
+	OFF = 0,
+	ON
+}ONOFF_MODE;
+
+typedef enum
+{
+	CFG_OP_MODE_AP = 0,
+	CFG_OP_MODE_STA,
+	CFG_OP_MODE_WDS_AP,
+	CFG_OP_MODE_WDS_BRIDGE,
+	CFG_OP_MODE_WDS_STA,
+	CFG_OP_MODE_CR,
+	CFG_OP_MODE_PPT,
+	CFG_OP_MODE_MPT,
+	CFG_OP_MODE_REPEATER,
+	CFG_OP_MODE_ADHOC
+}REAL_OP_MODE;
+
+typedef enum
+{
+	INFRASTRUCTURE = 0,
+	CLIENT_AD_HOC
+}RADIO_CLIENT_MODE;
+
+typedef enum
+{
+	TKIP = 0,
+	AES,
+	AUTO
+}ENCRYPTION_MODE;
+
+typedef enum
+{
+	TYPE_HEX = 0,
+	TYPE_ASCII,
+	TYPE_WPAPSK,
+	TYPE_WPA
+}KEY_TYPE;
+
+typedef enum {
+    ENCRYPTION_DISABLED,
+    ENCRYPTION_WEP,
+    ENCRYPTION_AES_OCB,
+    ENCRYPTION_AES_CCM,
+    ENCRYPTION_CKIP, // No MMH used
+    ENCRYPTION_TKIP, // implies Michael
+    ENCRYPTION_AUTO,
+    ENCRYPTION_CKIP_MMH
+} WLAN_ENCRYPTION_ALG;
+
+#define MODE_SELECT_11A				0x01
+#define MODE_SELECT_TURBO			0x02
+#define MODE_SELECT_11B				0x04
+#define MODE_SELECT_11G				0x08
+#define MODE_SELECT_108G			0x10
+#define MODE_SELECT_11BGN  		0x20
+#define MODE_SELECT_11AN  		0x40
+
+/* extra mode bits for dynamic turbo prime */
+/*
+#define MODE_SELECT_TPA   0x20
+#define MODE_SELECT_TPG   0x40
+#define MODE_SELECT_AUTO  0x80
+*/
+
+
+
+#define MODE_SELECT_2GHZ  (MODE_SELECT_11B | MODE_SELECT_11G | MODE_SELECT_108G)
+#define MODE_SELECT_ALL   (MODE_SELECT_11A | MODE_SELECT_TURBO | MODE_SELECT_2GHZ | MODE_SELECT_AUTO)
+#define ABOLT_SUPERG    (ABOLT_WME_ELE | ABOLT_BURST | ABOLT_FAST_FRAME | ABOLT_COMPRESSION | ABOLT_TURBO_G)
+
+
+typedef enum {
+    ABOLT_TURBO_G     = 0x01,      /* Legacy Turbo G */
+    ABOLT_TURBO_PRIME = 0x02,      /* Turbo Prime */
+    ABOLT_COMPRESSION = 0x04,      /* Compression */
+    ABOLT_FAST_FRAME  = 0x08,      /* Fast Frames */
+    ABOLT_BURST       = 0x10,      /* Bursting */
+    ABOLT_WME_ELE     = 0x20,      /* WME based cwmin/max/burst tuning */
+    ABOLT_FRIENDLY_TURBO = 0x80,  /* Friendly turbo that switches out based on adjacent non-turbo traffic */
+    ABOLT_XR          = 0x40,      /* XR */
+    ABOLT_ATH_ADVCAP  = (
+                          ABOLT_TURBO_PRIME |
+                          ABOLT_COMPRESSION |
+                          ABOLT_FAST_FRAME  |
+                          ABOLT_FRIENDLY_TURBO
+                        ),         /* Capabilties causes negotiation through AdvCap */
+} ABOLT_OPTION;
+

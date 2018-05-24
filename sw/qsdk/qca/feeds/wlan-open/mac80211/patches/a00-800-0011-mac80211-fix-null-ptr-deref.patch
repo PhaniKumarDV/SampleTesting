@@ -1,0 +1,578 @@
+Index: backports-20161201-3.14.77-9ab3068/net/mac80211/cfg.c
+===================================================================
+--- backports-20161201-3.14.77-9ab3068.orig/net/mac80211/cfg.c	2017-04-28 16:57:34.371888467 +0530
++++ backports-20161201-3.14.77-9ab3068/net/mac80211/cfg.c	2017-04-28 16:57:34.359888560 +0530
+@@ -623,10 +623,11 @@
+ 		int shift = ieee80211_vif_get_shift(&sta->sdata->vif);
+ 		u16 brate;
+ 
+-		sband = sta->local->hw.wiphy->bands[
+-				ieee80211_get_sdata_band(sta->sdata)];
+-		brate = sband->bitrates[rate->idx].bitrate;
+-		rinfo->legacy = DIV_ROUND_UP(brate, 1 << shift);
++		sband = ieee80211_get_sband(sta->sdata);
++		if (sband) {
++			brate = sband->bitrates[rate->idx].bitrate;
++			rinfo->legacy = DIV_ROUND_UP(brate, 1 << shift);
++		}
+ 	}
+ 	if (rate->flags & IEEE80211_TX_RC_40_MHZ_WIDTH)
+ 		rinfo->bw = RATE_INFO_BW_40;
+@@ -1219,10 +1220,11 @@
+ 	int ret = 0;
+ 	struct ieee80211_supported_band *sband;
+ 	struct ieee80211_sub_if_data *sdata = sta->sdata;
+-	enum nl80211_band band = ieee80211_get_sdata_band(sdata);
+ 	u32 mask, set;
+ 
+-	sband = local->hw.wiphy->bands[band];
++	sband = ieee80211_get_sband(sdata);
++	if (!sband)
++		return -EINVAL;
+ 
+ 	mask = params->sta_flags_mask;
+ 	set = params->sta_flags_set;
+@@ -1355,7 +1357,7 @@
+ 		ieee80211_parse_bitrates(&sdata->vif.bss_conf.chandef,
+ 					 sband, params->supported_rates,
+ 					 params->supported_rates_len,
+-					 &sta->sta.supp_rates[band]);
++					 &sta->sta.supp_rates[sband->band]);
+ 	}
+ 
+ 	if (params->ht_capa)
+@@ -1371,8 +1373,8 @@
+ 		/* returned value is only needed for rc update, but the
+ 		 * rc isn't initialized here yet, so ignore it
+ 		 */
+-		__ieee80211_vht_handle_opmode(sdata, sta,
+-					      params->opmode_notif, band);
++		__ieee80211_vht_handle_opmode(sdata, sta, params->opmode_notif,
++					      sband->band);
+ 	}
+ 
+ 	if (params->support_p2p_ps >= 0)
+@@ -2018,13 +2020,15 @@
+ 				struct bss_parameters *params)
+ {
+ 	struct ieee80211_sub_if_data *sdata = IEEE80211_DEV_TO_SUB_IF(dev);
+-	enum nl80211_band band;
++	struct ieee80211_supported_band *sband;
+ 	u32 changed = 0;
+ 
+ 	if (!sdata_dereference(sdata->u.ap.beacon, sdata))
+ 		return -ENOENT;
+ 
+-	band = ieee80211_get_sdata_band(sdata);
++	sband = ieee80211_get_sband(sdata);
++	if (!sband)
++		return -EINVAL;
+ 
+ 	if (params->use_cts_prot >= 0) {
+ 		sdata->vif.bss_conf.use_cts_prot = params->use_cts_prot;
+@@ -2037,7 +2041,7 @@
+ 	}
+ 
+ 	if (!sdata->vif.bss_conf.use_short_slot &&
+-	    band == NL80211_BAND_5GHZ) {
++	    sband->band == NL80211_BAND_5GHZ) {
+ 		sdata->vif.bss_conf.use_short_slot = true;
+ 		changed |= BSS_CHANGED_ERP_SLOT;
+ 	}
+@@ -2050,7 +2054,7 @@
+ 
+ 	if (params->basic_rates) {
+ 		ieee80211_parse_bitrates(&sdata->vif.bss_conf.chandef,
+-					 wiphy->bands[band],
++					 wiphy->bands[sband->band],
+ 					 params->basic_rates,
+ 					 params->basic_rates_len,
+ 					 &sdata->vif.bss_conf.basic_rates);
+Index: backports-20161201-3.14.77-9ab3068/net/mac80211/ibss.c
+===================================================================
+--- backports-20161201-3.14.77-9ab3068.orig/net/mac80211/ibss.c	2017-04-28 16:57:34.371888467 +0530
++++ backports-20161201-3.14.77-9ab3068/net/mac80211/ibss.c	2017-04-28 16:57:34.359888560 +0530
+@@ -992,7 +992,7 @@
+ 	enum nl80211_band band = rx_status->band;
+ 	enum nl80211_bss_scan_width scan_width;
+ 	struct ieee80211_local *local = sdata->local;
+-	struct ieee80211_supported_band *sband = local->hw.wiphy->bands[band];
++	struct ieee80211_supported_band *sband;
+ 	bool rates_updated = false;
+ 	u32 supp_rates = 0;
+ 
+@@ -1002,6 +1002,8 @@
+ 	if (!ether_addr_equal(mgmt->bssid, sdata->u.ibss.bssid))
+ 		return;
+ 
++	sband = local->hw.wiphy->bands[band];
++
+ 	rcu_read_lock();
+ 	sta = sta_info_get(sdata, mgmt->sa);
+ 
+Index: backports-20161201-3.14.77-9ab3068/net/mac80211/ieee80211_i.h
+===================================================================
+--- backports-20161201-3.14.77-9ab3068.orig/net/mac80211/ieee80211_i.h	2017-04-28 16:57:34.371888467 +0530
++++ backports-20161201-3.14.77-9ab3068/net/mac80211/ieee80211_i.h	2017-04-28 16:57:34.363888528 +0530
+@@ -1002,21 +1002,6 @@
+ 	lockdep_assert_held(&sdata->wdev.mtx);
+ }
+ 
+-static inline enum nl80211_band
+-ieee80211_get_sdata_band(struct ieee80211_sub_if_data *sdata)
+-{
+-	enum nl80211_band band = NL80211_BAND_2GHZ;
+-	struct ieee80211_chanctx_conf *chanctx_conf;
+-
+-	rcu_read_lock();
+-	chanctx_conf = rcu_dereference(sdata->vif.chanctx_conf);
+-	if (!WARN_ON(!chanctx_conf))
+-		band = chanctx_conf->def.chan->band;
+-	rcu_read_unlock();
+-
+-	return band;
+-}
+-
+ static inline int
+ ieee80211_chandef_get_shift(struct cfg80211_chan_def *chandef)
+ {
+@@ -1424,6 +1409,27 @@
+ 	return container_of(wdev, struct ieee80211_sub_if_data, wdev);
+ }
+ 
++static inline struct ieee80211_supported_band *
++ieee80211_get_sband(struct ieee80211_sub_if_data *sdata)
++{
++	struct ieee80211_chanctx_conf *chanctx_conf;
++	enum nl80211_band band;
++
++	rcu_read_lock();
++	chanctx_conf = rcu_dereference(sdata->vif.chanctx_conf);
++
++	if (!chanctx_conf) {
++		rcu_read_unlock();
++		WARN_ON(1);
++		return NULL;
++	}
++
++	band = chanctx_conf->def.chan->band;
++	rcu_read_unlock();
++
++	return sdata->local->hw.wiphy->bands[band];
++}
++
+ /* this struct represents 802.11n's RA/TID combination */
+ struct ieee80211_ra_tid {
+ 	u8 ra[ETH_ALEN];
+@@ -2036,7 +2042,8 @@
+ 
+ u32 ieee80211_sta_get_rates(struct ieee80211_sub_if_data *sdata,
+ 			    struct ieee802_11_elems *elems,
+-			    enum nl80211_band band, u32 *basic_rates);
++			    enum nl80211_band band,
++			    u32 *basic_rates);
+ int __ieee80211_request_smps_mgd(struct ieee80211_sub_if_data *sdata,
+ 				 enum ieee80211_smps_mode smps_mode);
+ int __ieee80211_request_smps_ap(struct ieee80211_sub_if_data *sdata,
+Index: backports-20161201-3.14.77-9ab3068/net/mac80211/mesh.c
+===================================================================
+--- backports-20161201-3.14.77-9ab3068.orig/net/mac80211/mesh.c	2017-04-28 16:57:34.371888467 +0530
++++ backports-20161201-3.14.77-9ab3068/net/mac80211/mesh.c	2017-04-28 16:57:34.363888528 +0530
+@@ -63,6 +63,7 @@
+ 	struct ieee80211_if_mesh *ifmsh = &sdata->u.mesh;
+ 	u32 basic_rates = 0;
+ 	struct cfg80211_chan_def sta_chan_def;
++	struct ieee80211_supported_band *sband;
+ 
+ 	/*
+ 	 * As support for each feature is added, check for matching
+@@ -83,7 +84,11 @@
+ 	     (ifmsh->mesh_auth_id == ie->mesh_config->meshconf_auth)))
+ 		return false;
+ 
+-	ieee80211_sta_get_rates(sdata, ie, ieee80211_get_sdata_band(sdata),
++	sband = ieee80211_get_sband(sdata);
++	if (!sband)
++		return false;
++
++	ieee80211_sta_get_rates(sdata, ie, sband->band,
+ 				&basic_rates);
+ 
+ 	if (sdata->vif.bss_conf.basic_rates != basic_rates)
+@@ -407,12 +412,13 @@
+ int mesh_add_ht_cap_ie(struct ieee80211_sub_if_data *sdata,
+ 		       struct sk_buff *skb)
+ {
+-	struct ieee80211_local *local = sdata->local;
+-	enum nl80211_band band = ieee80211_get_sdata_band(sdata);
+ 	struct ieee80211_supported_band *sband;
+ 	u8 *pos;
+ 
+-	sband = local->hw.wiphy->bands[band];
++	sband = ieee80211_get_sband(sdata);
++	if (!sband)
++		return -EINVAL;
++
+ 	if (!sband->ht_cap.ht_supported ||
+ 	    sdata->vif.bss_conf.chandef.width == NL80211_CHAN_WIDTH_20_NOHT ||
+ 	    sdata->vif.bss_conf.chandef.width == NL80211_CHAN_WIDTH_5 ||
+@@ -470,12 +476,13 @@
+ int mesh_add_vht_cap_ie(struct ieee80211_sub_if_data *sdata,
+ 			struct sk_buff *skb)
+ {
+-	struct ieee80211_local *local = sdata->local;
+-	enum nl80211_band band = ieee80211_get_sdata_band(sdata);
+ 	struct ieee80211_supported_band *sband;
+ 	u8 *pos;
+ 
+-	sband = local->hw.wiphy->bands[band];
++	sband = ieee80211_get_sband(sdata);
++	if (!sband)
++		return -EINVAL;
++
+ 	if (!sband->vht_cap.vht_supported ||
+ 	    sdata->vif.bss_conf.chandef.width == NL80211_CHAN_WIDTH_20_NOHT ||
+ 	    sdata->vif.bss_conf.chandef.width == NL80211_CHAN_WIDTH_5 ||
+@@ -925,12 +932,16 @@
+ 	struct cfg80211_csa_settings params;
+ 	struct ieee80211_csa_ie csa_ie;
+ 	struct ieee80211_if_mesh *ifmsh = &sdata->u.mesh;
+-	enum nl80211_band band = ieee80211_get_sdata_band(sdata);
++	struct ieee80211_supported_band *sband;
+ 	int err;
+ 	u32 sta_flags;
+ 
+ 	sdata_assert_lock(sdata);
+ 
++	sband = ieee80211_get_sband(sdata);
++	if (!sband)
++		return false;
++
+ 	sta_flags = IEEE80211_STA_DISABLE_VHT;
+ 	switch (sdata->vif.bss_conf.chandef.width) {
+ 	case NL80211_CHAN_WIDTH_20_NOHT:
+@@ -944,7 +955,7 @@
+ 
+ 	memset(&params, 0, sizeof(params));
+ 	memset(&csa_ie, 0, sizeof(csa_ie));
+-	err = ieee80211_parse_ch_switch_ie(sdata, elems, band,
++	err = ieee80211_parse_ch_switch_ie(sdata, elems, sband->band,
+ 					   sta_flags, sdata->vif.addr,
+ 					   &csa_ie);
+ 	if (err < 0)
+Index: backports-20161201-3.14.77-9ab3068/net/mac80211/mesh_plink.c
+===================================================================
+--- backports-20161201-3.14.77-9ab3068.orig/net/mac80211/mesh_plink.c	2017-04-28 16:57:34.371888467 +0530
++++ backports-20161201-3.14.77-9ab3068/net/mac80211/mesh_plink.c	2017-04-28 16:57:34.363888528 +0530
+@@ -93,18 +93,21 @@
+ static u32 mesh_set_short_slot_time(struct ieee80211_sub_if_data *sdata)
+ {
+ 	struct ieee80211_local *local = sdata->local;
+-	enum nl80211_band band = ieee80211_get_sdata_band(sdata);
+-	struct ieee80211_supported_band *sband = local->hw.wiphy->bands[band];
++	struct ieee80211_supported_band *sband;
+ 	struct sta_info *sta;
+ 	u32 erp_rates = 0, changed = 0;
+ 	int i;
+ 	bool short_slot = false;
+ 
+-	if (band == NL80211_BAND_5GHZ) {
++	sband = ieee80211_get_sband(sdata);
++	if (!sband)
++		return changed;
++
++	if (sband->band == NL80211_BAND_5GHZ) {
+ 		/* (IEEE 802.11-2012 19.4.5) */
+ 		short_slot = true;
+ 		goto out;
+-	} else if (band != NL80211_BAND_2GHZ)
++	} else if (sband->band != NL80211_BAND_2GHZ)
+ 		goto out;
+ 
+ 	for (i = 0; i < sband->n_bitrates; i++)
+@@ -121,7 +124,7 @@
+ 			continue;
+ 
+ 		short_slot = false;
+-		if (erp_rates & sta->sta.supp_rates[band])
++		if (erp_rates & sta->sta.supp_rates[sband->band])
+ 			short_slot = true;
+ 		 else
+ 			break;
+@@ -247,7 +250,13 @@
+ 	mgmt->u.action.u.self_prot.action_code = action;
+ 
+ 	if (action != WLAN_SP_MESH_PEERING_CLOSE) {
+-		enum nl80211_band band = ieee80211_get_sdata_band(sdata);
++		struct ieee80211_supported_band *sband;
++		enum nl80211_band band;
++
++		sband = ieee80211_get_sband(sdata);
++		if (!sband)
++			goto free;
++		band = sband->band;
+ 
+ 		/* capability info */
+ 		pos = skb_put(skb, 2);
+@@ -393,13 +402,16 @@
+ 			       struct ieee802_11_elems *elems, bool insert)
+ {
+ 	struct ieee80211_local *local = sdata->local;
+-	enum nl80211_band band = ieee80211_get_sdata_band(sdata);
+ 	struct ieee80211_supported_band *sband;
+ 	u32 rates, basic_rates = 0, changed = 0;
+ 	enum ieee80211_sta_rx_bandwidth bw = sta->sta.bandwidth;
+ 
+-	sband = local->hw.wiphy->bands[band];
+-	rates = ieee80211_sta_get_rates(sdata, elems, band, &basic_rates);
++	sband = ieee80211_get_sband(sdata);
++	if (!sband)
++		return;
++
++	rates = ieee80211_sta_get_rates(sdata, elems, sband->band,
++					&basic_rates);
+ 
+ 	spin_lock_bh(&sta->mesh->plink_lock);
+ 	sta->rx_stats.last_rx = jiffies;
+@@ -410,9 +422,9 @@
+ 		goto out;
+ 	sta->mesh->processed_beacon = true;
+ 
+-	if (sta->sta.supp_rates[band] != rates)
++	if (sta->sta.supp_rates[sband->band] != rates)
+ 		changed |= IEEE80211_RC_SUPP_RATES_CHANGED;
+-	sta->sta.supp_rates[band] = rates;
++	sta->sta.supp_rates[sband->band] = rates;
+ 
+ 	if (ieee80211_ht_cap_ie_to_sta_ht_cap(sdata, sband,
+ 					      elems->ht_cap_elem, sta))
+Index: backports-20161201-3.14.77-9ab3068/net/mac80211/mlme.c
+===================================================================
+--- backports-20161201-3.14.77-9ab3068.orig/net/mac80211/mlme.c	2017-04-28 16:57:34.371888467 +0530
++++ backports-20161201-3.14.77-9ab3068/net/mac80211/mlme.c	2017-04-28 16:58:08.599625168 +0530
+@@ -1851,11 +1851,16 @@
+ 					   u16 capab, bool erp_valid, u8 erp)
+ {
+ 	struct ieee80211_bss_conf *bss_conf = &sdata->vif.bss_conf;
++	struct ieee80211_supported_band *sband;
+ 	u32 changed = 0;
+ 	bool use_protection;
+ 	bool use_short_preamble;
+ 	bool use_short_slot;
+ 
++	sband = ieee80211_get_sband(sdata);
++	if (!sband)
++		return changed;
++
+ 	if (erp_valid) {
+ 		use_protection = (erp & WLAN_ERP_USE_PROTECTION) != 0;
+ 		use_short_preamble = (erp & WLAN_ERP_BARKER_PREAMBLE) == 0;
+@@ -1865,7 +1870,7 @@
+ 	}
+ 
+ 	use_short_slot = !!(capab & WLAN_CAPABILITY_SHORT_SLOT_TIME);
+-	if (ieee80211_get_sdata_band(sdata) == NL80211_BAND_5GHZ)
++	if (sband->band == NL80211_BAND_5GHZ)
+ 		use_short_slot = true;
+ 
+ 	if (use_protection != bss_conf->use_cts_prot) {
+@@ -2991,7 +2996,12 @@
+ 		goto out;
+ 	}
+ 
+-	sband = local->hw.wiphy->bands[ieee80211_get_sdata_band(sdata)];
++	sband = ieee80211_get_sband(sdata);
++	if (!sband) {
++		mutex_unlock(&sdata->local->sta_mtx);
++		ret = false;
++		goto out;
++	}
+ 
+ 	/* Set up internal HT/VHT capabilities */
+ 	if (elems.ht_cap_elem && !(ifmgd->flags & IEEE80211_STA_DISABLE_HT))
+Index: backports-20161201-3.14.77-9ab3068/net/mac80211/rate.c
+===================================================================
+--- backports-20161201-3.14.77-9ab3068.orig/net/mac80211/rate.c	2017-04-28 16:57:34.371888467 +0530
++++ backports-20161201-3.14.77-9ab3068/net/mac80211/rate.c	2017-04-28 16:57:34.363888528 +0530
+@@ -875,7 +875,9 @@
+ 	struct ieee80211_sta_rates *old;
+ 	struct ieee80211_supported_band *sband;
+ 
+-	sband = hw->wiphy->bands[ieee80211_get_sdata_band(sta->sdata)];
++	sband = ieee80211_get_sband(sta->sdata);
++	if (!sband)
++		return;
+ 	rate_control_apply_mask_ratetbl(sta, sband, rates);
+ 	/*
+ 	 * mac80211 guarantees that this function will not be called
+Index: backports-20161201-3.14.77-9ab3068/net/mac80211/sta_info.c
+===================================================================
+--- backports-20161201-3.14.77-9ab3068.orig/net/mac80211/sta_info.c	2017-04-28 16:57:34.371888467 +0530
++++ backports-20161201-3.14.77-9ab3068/net/mac80211/sta_info.c	2017-04-28 16:57:34.363888528 +0530
+@@ -395,10 +395,15 @@
+ 	sta->sta.smps_mode = IEEE80211_SMPS_OFF;
+ 	if (sdata->vif.type == NL80211_IFTYPE_AP ||
+ 	    sdata->vif.type == NL80211_IFTYPE_AP_VLAN) {
+-		struct ieee80211_supported_band *sband =
+-			hw->wiphy->bands[ieee80211_get_sdata_band(sdata)];
+-		u8 smps = (sband->ht_cap.cap & IEEE80211_HT_CAP_SM_PS) >>
+-				IEEE80211_HT_CAP_SM_PS_SHIFT;
++		struct ieee80211_supported_band *sband;
++		u8 smps;
++
++		sband = ieee80211_get_sband(sdata);
++		if (!sband)
++			goto free_txq;
++
++		smps = (sband->ht_cap.cap & IEEE80211_HT_CAP_SM_PS) >>
++			IEEE80211_HT_CAP_SM_PS_SHIFT;
+ 		/*
+ 		 * Assume that hostapd advertises our caps in the beacon and
+ 		 * this is the known_smps_mode for a station that just assciated
+Index: backports-20161201-3.14.77-9ab3068/net/mac80211/tdls.c
+===================================================================
+--- backports-20161201-3.14.77-9ab3068.orig/net/mac80211/tdls.c	2017-04-28 16:57:34.371888467 +0530
++++ backports-20161201-3.14.77-9ab3068/net/mac80211/tdls.c	2017-04-28 16:57:34.367888498 +0530
+@@ -47,8 +47,7 @@
+ 			   NL80211_FEATURE_TDLS_CHANNEL_SWITCH;
+ 	bool wider_band = ieee80211_hw_check(&local->hw, TDLS_WIDER_BW) &&
+ 			  !ifmgd->tdls_wider_bw_prohibited;
+-	enum nl80211_band band = ieee80211_get_sdata_band(sdata);
+-	struct ieee80211_supported_band *sband = local->hw.wiphy->bands[band];
++	struct ieee80211_supported_band *sband = ieee80211_get_sband(sdata);
+ 	bool vht = sband && sband->vht_cap.vht_supported;
+ 	u8 *pos = (void *)skb_put(skb, 10);
+ 
+@@ -180,11 +179,17 @@
+ static u16 ieee80211_get_tdls_sta_capab(struct ieee80211_sub_if_data *sdata,
+ 					u16 status_code)
+ {
++	struct ieee80211_supported_band *sband;
++
+ 	/* The capability will be 0 when sending a failure code */
+ 	if (status_code != 0)
+ 		return 0;
+ 
+-	if (ieee80211_get_sdata_band(sdata) == NL80211_BAND_2GHZ) {
++	sband = ieee80211_get_sband(sdata);
++	if (!sband)
++		return 0;
++
++	if (sband->band == NL80211_BAND_2GHZ) {
+ 		return WLAN_CAPABILITY_SHORT_SLOT_TIME |
+ 		       WLAN_CAPABILITY_SHORT_PREAMBLE;
+ 	}
+@@ -358,7 +363,6 @@
+ 				   u8 action_code, bool initiator,
+ 				   const u8 *extra_ies, size_t extra_ies_len)
+ {
+-	enum nl80211_band band = ieee80211_get_sdata_band(sdata);
+ 	struct ieee80211_local *local = sdata->local;
+ 	struct ieee80211_supported_band *sband;
+ 	struct ieee80211_sta_ht_cap ht_cap;
+@@ -367,8 +371,12 @@
+ 	size_t offset = 0, noffset;
+ 	u8 *pos;
+ 
+-	ieee80211_add_srates_ie(sdata, skb, false, band);
+-	ieee80211_add_ext_srates_ie(sdata, skb, false, band);
++	sband = ieee80211_get_sband(sdata);
++	if (!sband)
++		return;
++
++	ieee80211_add_srates_ie(sdata, skb, false, sband->band);
++	ieee80211_add_ext_srates_ie(sdata, skb, false, sband->band);
+ 	ieee80211_tdls_add_supp_channels(sdata, skb);
+ 
+ 	/* add any custom IEs that go before Extended Capabilities */
+@@ -439,7 +447,6 @@
+ 	 * the same on all bands. The specification limits the setup to a
+ 	 * single HT-cap, so use the current band for now.
+ 	 */
+-	sband = local->hw.wiphy->bands[band];
+ 	memcpy(&ht_cap, &sband->ht_cap, sizeof(ht_cap));
+ 
+ 	if ((action_code == WLAN_TDLS_SETUP_REQUEST ||
+@@ -545,9 +552,13 @@
+ 	struct ieee80211_if_managed *ifmgd = &sdata->u.mgd;
+ 	size_t offset = 0, noffset;
+ 	struct sta_info *sta, *ap_sta;
+-	enum nl80211_band band = ieee80211_get_sdata_band(sdata);
++	struct ieee80211_supported_band *sband;
+ 	u8 *pos;
+ 
++	sband = ieee80211_get_sband(sdata);
++	if (!sband)
++		return;
++
+ 	mutex_lock(&local->sta_mtx);
+ 
+ 	sta = sta_info_get(sdata, peer);
+@@ -612,7 +623,8 @@
+ 	ieee80211_tdls_add_link_ie(sdata, skb, peer, initiator);
+ 
+ 	/* only include VHT-operation if not on the 2.4GHz band */
+-	if (band != NL80211_BAND_2GHZ && sta->sta.vht_cap.vht_supported) {
++	if (sband->band != NL80211_BAND_2GHZ &&
++	    sta->sta.vht_cap.vht_supported) {
+ 		/*
+ 		 * if both peers support WIDER_BW, we can expand the chandef to
+ 		 * a wider compatible one, up to 80MHz
+Index: backports-20161201-3.14.77-9ab3068/net/mac80211/tx.c
+===================================================================
+--- backports-20161201-3.14.77-9ab3068.orig/net/mac80211/tx.c	2017-04-28 16:57:34.371888467 +0530
++++ backports-20161201-3.14.77-9ab3068/net/mac80211/tx.c	2017-04-28 16:57:34.367888498 +0530
+@@ -4391,7 +4391,10 @@
+ 		return bcn;
+ 
+ 	shift = ieee80211_vif_get_shift(vif);
+-	sband = hw->wiphy->bands[ieee80211_get_sdata_band(vif_to_sdata(vif))];
++	sband = ieee80211_get_sband(vif_to_sdata(vif));
++	if (!sband)
++		return bcn;
++
+ 	ieee80211_tx_monitor(hw_to_local(hw), copy, sband, 1, shift, false);
+ 
+ 	return bcn;
+Index: backports-20161201-3.14.77-9ab3068/net/mac80211/util.c
+===================================================================
+--- backports-20161201-3.14.77-9ab3068.orig/net/mac80211/util.c	2017-04-28 16:57:34.371888467 +0530
++++ backports-20161201-3.14.77-9ab3068/net/mac80211/util.c	2017-04-28 16:57:34.367888498 +0530
+@@ -1590,13 +1590,15 @@
+ 	size_t num_rates;
+ 	u32 supp_rates, rate_flags;
+ 	int i, j, shift;
++
+ 	sband = sdata->local->hw.wiphy->bands[band];
+ 
++	if (WARN_ON(!sband))
++		return 1;
++
+ 	rate_flags = ieee80211_chandef_rate_flags(&sdata->vif.bss_conf.chandef);
+ 	shift = ieee80211_vif_get_shift(&sdata->vif);
+ 
+-	if (WARN_ON(!sband))
+-		return 1;
+ 
+ 	num_rates = sband->n_bitrates;
+ 	supp_rates = 0;
+Index: backports-20161201-3.14.77-9ab3068/net/mac80211/debugfs_sta.c
+===================================================================
+--- backports-20161201-3.14.77-9ab3068.orig/net/mac80211/debugfs_sta.c	2017-04-28 16:57:34.371888467 +0530
++++ backports-20161201-3.14.77-9ab3068/net/mac80211/debugfs_sta.c	2017-04-28 16:57:34.367888498 +0530
+@@ -688,14 +688,13 @@
+ 	} else {
+ 		struct ieee80211_supported_band *sband;
+ 		struct ieee80211_sub_if_data *sdata = sta->sdata;
+-		enum nl80211_band band = ieee80211_get_sdata_band(sdata);
+ 		int shift = ieee80211_vif_get_shift(&sta->sdata->vif);
+ 		u16 brate, legacy_rate;
+ 
+ 		if (status->rate_idx > IEEE80211_LEGACY_RATE_NUM - 1)
+ 			goto out;
+ 
+-		sband = local->hw.wiphy->bands[band];
++		sband = ieee80211_get_sband(sdata);
+ 		brate = sband->bitrates[status->rate_idx].bitrate;
+ 		legacy_rate = DIV_ROUND_UP(brate, 1 << shift);
+ 		i = legacy_rate_to_index(legacy_rate);

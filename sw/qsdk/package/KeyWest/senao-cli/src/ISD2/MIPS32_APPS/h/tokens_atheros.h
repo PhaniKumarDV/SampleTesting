@@ -1,0 +1,859 @@
+/***************************************************************************** 
+;
+;   (C) Unpublished Work of Senao Networks, Inc.  All Rights Reserved.
+;
+;       THIS WORK IS AN UNPUBLISHED WORK AND CONTAINS CONFIDENTIAL,
+;       PROPRIETARY AND TRADESECRET INFORMATION OF SENAO INCORPORATED.
+;       ACCESS TO THIS WORK IS RESTRICTED TO (I) SENAO EMPLOYEES WHO HAVE A
+;       NEED TO KNOW TO PERFORM TASKS WITHIN THE SCOPE OF THEIR ASSIGNMENTS
+;       AND (II) ENTITIES OTHER THAN SENAO WHO HAVE ENTERED INTO APPROPRIATE
+;       LICENSE AGREEMENTS.  NO PART OF THIS WORK MAY BE USED, PRACTICED,
+;       PERFORMED, COPIED, DISTRIBUTED, REVISED, MODIFIED, TRANSLATED,
+;       ABBRIDGED, CONDENSED, EXPANDED, COLLECTED, COMPILED, LINKED, RECAST,
+;       TRANSFORMED OR ADAPTED WITHOUT THE PRIOR WRITTEN CONSENT OF SENAO.
+;       ANY USE OR EXPLOITATION OF THIS WORK WITHOUT AUTHORIZATION COULD
+;       SUBJECT THE PERPERTRATOR TO CRIMINAL AND CIVIL LIABILITY.
+;
+;------------------------------------------------------------------------------
+;
+;    Project : EOR7550
+;    Creator : 
+;    File    : 
+;    Abstract: This file should accord to project! So not synchonize
+;
+;       Modification History:
+;       By              Date     Ver.   Modification Description
+;       --------------- -------- -----  --------------------------------------
+;       cfho            2008-0721
+;*****************************************************************************/ 
+#ifndef _TOKEN_ATHEROS_H_
+#define _TOKEN_ATHEROS_H_
+
+#include "tokens_wireless.h"
+/* --------------- 1st SSID and main settings -------------------------- */
+#define ATH_TOK						  "ath"
+#define ATH1_TOK                      "ath1"
+#define APCLI_TOK                     "cli"
+#define _APCLI_                       APCLI_TOK
+#define ATH1_                         ATH1_TOK
+#define ATH1_ENABLE_TOK               ATH1_ _ENABLE_TOK
+
+#if HAS_HIDDEN_PAGE
+#define ATH_11N_CERTIFICATION		"ath_11n_cert"
+#endif
+#if HAS_LOCK_DFS_CHANNEL
+#define ATH_LOCK_DFS_CHANNEL		"ath_lock_dfs_ch"
+#endif
+#if HAS_DUALBAND_ISOLATION
+#define RADIO_ISOLATED_ENABLE_TOK	  "radio_isolated"
+#endif
+#if HAS_WLAN2LAN_ISOLATION
+#define WLAN2LAN_ISOLATED_ENABLE_TOK	"wlan2lan_isolated"
+#endif
+#define ATH_WPS_HARDWARE_BTN_TOK	"ath_wps_hw_btn"
+#define ATH1_RADIO_TOK                ATH1_ _RADIO_TOK
+#define ATH1_SSID_TOK                 ATH1_ _SSID_TOK
+#define ATH1_AUTO_CH_SEL_TOK          ATH1_ _AUTO_CH_SEL_TOK
+#define ATH1_AUTO_CH_CHK_TIME_TOK     ATH1_ _AUTO_CH_CHK_TIME_TOK
+#define ATH1_CHANNEL_TOK              ATH1_ _CHANNEL_TOK
+#define ATH1_CH_SET_TOK               ATH1_ _CH_SET_TOK
+#define ATH1_COUNTRYCODE_TOK          ATH1_ _COUNTRYCODE_TOK
+#define ATH1_USE_APCFG_COUNTRYCODE_TOK	ATH1_ _USE_APCFG_COUNTRYCODE_TOK
+#define ATH1_WEP_TOK                  ATH1_ _WEP_TOK
+#define ATH1_KEYID_TOK                ATH1_ _KEYID_TOK
+#define ATH1_KEYTYPE_TOK              ATH1_ _KEYTYPE_TOK
+#define ATH1_WEPKEY_TOK               ATH1_ _WEPKEY_TOK
+#define ATH1_WEPKEY_0_TOK             ATH1_ _WEPKEY_0_TOK
+#define ATH1_WEPKEY_1_TOK             ATH1_ _WEPKEY_1_TOK
+#define ATH1_WEPKEY_2_TOK             ATH1_ _WEPKEY_2_TOK
+#define ATH1_WEPKEY_3_TOK             ATH1_ _WEPKEY_3_TOK
+#define ATH1_DATARATE_TOK             ATH1_ _DATARATE_TOK
+#define ATH1_TXPOWER_TOK              ATH1_ _TXPOWER_TOK
+#define ATH1_BEACON_TOK               ATH1_ _BEACON_TOK
+#define ATH1_DATABEACON_TOK           ATH1_ _DATABEACON_TOK
+#define ATH1_FRAGMENT_TOK             ATH1_ _FRAGMENT_TOK
+#define ATH1_DISTANCE_TOK             ATH1_ _DISTANCE_TOK
+#define ATH1_ACKTIME_TOK              ATH1_ _ACKTIME_TOK
+#define ATH1_THRESHOLD_TOK            ATH1_ _THRESHOLD_TOK
+#define ATH1_MODE_TOK                 ATH1_ _MODE_TOK
+#define ATH1_PREAMBLE_TOK             ATH1_ _PREAMBLE_TOK
+#define ATH1_ENC_SSID_SEL_TOK		  ATH1_ _ENC_SSID_SEL_TOK
+#define ATH1_AUTH_TOK                 ATH1_ _AUTH_TOK
+#define ATH1_ENC_TYPE_TOK             ATH1_ _ENC_TYPE_TOK
+#define ATH1_WPAPASSPHRASE_TOK        ATH1_ _WPAPASSPHRASE_TOK
+#define ATH1_HIDESSID_TOK             ATH1_ _HIDESSID_TOK
+#define ATH1_WPAPSK_LIFETIME_TOK      ATH1_ _WPAPSK_LIFETIME_TOK
+#define ATH1_WPAPSK_LIFETIME_EN_TOK   ATH1_ _WPAPSK_LIFETIME_EN_TOK
+#define ATH1_WPAPSK_KEYTYPE_TOK       ATH1_ _WPAPSK_KEYTYPE_TOK
+#define ATH1_WMM_ENABLE_TOK           ATH1_ _WMM_ENABLE_TOK
+#define ATH1_11N_BW40_ENABLE_TOK      ATH1_ _11N_BW40_ENABLE_TOK
+#define ATH1_11N_BW40PLUS_ENABLE_TOK  ATH1_ _11N_BW40PLUS_ENABLE_TOK
+#if FOR_ATHEROS_PLATFORM || HAS_ATHEROS_WLAN_AR9K
+#define ATH1_11N_DATERATE_TOK         ATH1_ _11N_DATERATE_TOK
+#endif
+#define ATH1_DEV_TOK                  ATH1_ _DEV_TOK 
+#define ATH1_WPS_PIN_TOK              ATH1_ _WPS_PIN_TOK
+#define ATH1_WPS_STATUS_TOK           ATH1_ _WPS_STATUS_TOK
+#define ATH1_WPS_ENABLE_TOK           ATH1_ _WPS_ENABLE_TOK
+#define ATH1_SSID_NUM_TOK             ATH1_ _SSID_NUM_TOK
+#define ATH1_TXBURST_TOK              ATH1_ _TXBURST_TOK
+#define ATH1_TURBO_MODE_ENABLE_TOK    ATH1_ _TURBO_MODE_ENABLE_TOK
+#define ATH1_BGPROTECTION_TOK         ATH1_ _BGPROTECTION_TOK
+#define ATH1_8021X_ENABLE_TOK         ATH1_ _8021X_ENABLE_TOK
+#define ATH1_8021X_SERVIP_TOK         ATH1_ _8021X_SERVIP_TOK
+#define ATH1_8021X_SERVPORT_TOK       ATH1_ _8021X_SERVPORT_TOK
+#define ATH1_8021X_SERVPW_TOK         ATH1_ _8021X_SERVPW_TOK
+#define ATH1_AP_MODE_TOK              ATH1_ _AP_MODE_TOK
+#define ATH1_WDS_TYPE_TOK         	  ATH1_ _WDS_TYPE_TOK
+#define ATH1_WDS_SEC_TYPE_TOK         ATH1_ _WDS_SEC_TYPE_TOK
+#define ATH1_WDS_WPAPASSPHRASE_TOK    ATH1_ _WDS_WPAPASSPHRASE_TOK
+#define ATH1_WDS_MAC_TOK              ATH1_ _WDS_MAC_TOK
+#define ATH1_WDS_MAC_1_TOK            ATH1_ _WDS_MAC_1_TOK
+#define ATH1_WDS_MAC_2_TOK            ATH1_ _WDS_MAC_2_TOK
+#define ATH1_WDS_MAC_3_TOK            ATH1_ _WDS_MAC_3_TOK
+#define ATH1_WDS_MAC_4_TOK            ATH1_ _WDS_MAC_4_TOK
+#define ATH1_WDS_CLIENT_MAC_TOK		  ATH1_ _WDS_CLIENT_MAC_TOK
+#define ATH1_WDS_WEP_TOK              ATH1_ _WDS_WEP_TOK
+#define ATH1_WDS_KEYID_TOK            ATH1_ _WDS_KEYID_TOK
+#define ATH1_WDS_KEYTYPE_TOK          ATH1_ _WDS_KEYTYPE_TOK 
+#define ATH1_WDS_WEPKEY_TOK           ATH1_ _WDS_WEPKEY_TOK
+#define ATH1_WDS_WEPKEY_0_TOK         ATH1_ _WDS_WEPKEY_0_TOK
+#define ATH1_WDS_WEPKEY_1_TOK         ATH1_ _WDS_WEPKEY_1_TOK
+#define ATH1_WDS_WEPKEY_2_TOK         ATH1_ _WDS_WEPKEY_2_TOK
+#define ATH1_WDS_WEPKEY_3_TOK         ATH1_ _WDS_WEPKEY_3_TOK
+#define ATH1_STA_ISOLATED_ENABLE_TOK      ATH1_ _STA_ISOLATED_ENABLE_TOK
+#define ATH1_ISOLATED_ENABLE_TOK      ATH1_ _ISOLATED_ENABLE_TOK
+#if HAS_VLAN_SUPPORT
+#define ATH1_VLAN_ENABLE_TOK     	  ATH1_ _VLAN_ENABLE_TOK
+#endif
+#if defined (HAS_POWER_SAVING_WLAN) || defined (HAS_POWER_SAVING_ETH)
+#define ATH1_POWERSAVING_MODE_TOK         ATH1_ _POWERSAVING_MODE_TOK
+#endif
+#ifdef HAS_USER_DEFINE_AID_NUMBER
+#define ATH1_MAX_AID_NUM_TOK                    ATH1_ _MAX_AID_NUM_TOK
+#endif
+
+#define ATH1_STA_					ATH1_TOK _STA_TOK					
+#define ATH1_STA_RADIO_TOK			ATH1_STA_ _RADIO_TOK		
+#define ATH1_STA_MODE_TOK			ATH1_STA_ _MODE_TOK
+#define ATH1_STA_FRAGMENT_TOK       ATH1_STA_ _FRAGMENT_TOK
+#define ATH1_STA_THRESHOLD_TOK		ATH1_STA_ _THRESHOLD_TOK
+#define ATH1_STA_BEACON_TOK			ATH1_STA_ _BEACON_TOK
+#define ATH1_STA_DATABEACON_TOK		ATH1_STA_ _DATABEACON_TOK
+#define ATH1_STA_DATARATE_TOK		ATH1_STA_ _DATARATE_TOK
+#define ATH1_STA_11N_DATERATE_TOK	ATH1_STA_ _11N_DATERATE_TOK
+#define ATH1_STA_PREAMBLE_TOK		ATH1_STA_ _PREAMBLE_TOK
+#define ATH1_STA_TXPOWER_TOK		ATH1_STA_ _TXPOWER_TOK
+
+#if HAS_VLAN_SUPPORT
+#define ATH1_1_VLANTAG_TOK               ATH1_ _VLANTAG_TOK
+#define ATH1_2_VLANTAG_TOK               ATH1_2_ _VLANTAG_TOK
+#define ATH1_3_VLANTAG_TOK               ATH1_3_ _VLANTAG_TOK
+#define ATH1_4_VLANTAG_TOK               ATH1_4_ _VLANTAG_TOK
+#endif
+/**                     repeater token                              */
+#define ATH1_APCLI_ENABLE_TOK       ATH_TOK _APCLI_ _ENABLE_TOK
+#define ATH1_APCLI_CHANNEL_TOK      ATH_TOK _APCLI_ _CHANNEL_TOK
+#define ATH1_APCLI_SSID_TOK         ATH_TOK _APCLI_ _SSID_TOK
+#define ATH1_APCLI_HIDESSID_TOK     ATH_TOK _APCLI_ _HIDESSID_TOK
+#define ATH1_APCLI_BSSID_TOK        ATH_TOK _APCLI_ _BSSID_TOK 
+#define ATH1_APCLI_AUTH_TOK         ATH_TOK _APCLI_ _AUTH_TOK
+#define ATH1_APCLI_ENC_TYPE_TOK     ATH_TOK _APCLI_ _ENC_TYPE_TOK
+#define ATH1_APCLI_WEP_TOK          ATH_TOK _APCLI_ _WEP_TOK
+#define ATH1_APCLI_KEYID_TOK        ATH_TOK _APCLI_ _KEYID_TOK
+#define ATH1_APCLI_KEYTYPE_TOK      ATH_TOK _APCLI_ _KEYTYPE_TOK
+#define ATH1_APCLI_WEPKEY_0_TOK     ATH_TOK _APCLI_ _WEPKEY_0_TOK
+#define ATH1_APCLI_WEPKEY_1_TOK     ATH_TOK _APCLI_ _WEPKEY_1_TOK
+#define ATH1_APCLI_WEPKEY_2_TOK     ATH_TOK _APCLI_ _WEPKEY_2_TOK
+#define ATH1_APCLI_WEPKEY_3_TOK     ATH_TOK _APCLI_ _WEPKEY_3_TOK
+#define ATH1_APCLI_WPAKEY_TOK       ATH_TOK _APCLI_ _WPAKEY_TOK
+#define ATH1_APCLI_WPAPASSPHRASE_TOK       ATH_TOK _APCLI_ _WPAPASSPHRASE_TOK
+#define ATH1_APCLI_AP_AUTH_TOK         "athcliapauth" 
+#define ATH1_APCLI_AP_ENC_TYPE_TOK     "athcliapenctype" 
+// #define ATH1_APCLI_NTP_SERVER_TOK   ATH1_ _APCLI_ _ENABLE_TOK
+
+#if HAS_OBSCURE_PSK_IN_WEB
+#define ATH1_WEB_OBSCURE_PSK_TOK	"ath1_web_psk"
+#endif
+#if HAS_WPS_RADIO_SELECT_IN_WEB
+#define ATH_WEB_WPS_RADIO_SELECT_TOK "ath_web_sel_wps"
+#define ATH_WEB_ADV_WLAN_RADIO_SELECT_TOK "ath_web_adv_wlan"
+#endif
+/* ------------------------Second SSID-------------------------- */
+#define ATH1_ID_POS                     (3)
+#if HAS_ATH1_2_DEV
+#define ATH1_2_TOK                       "ath2"
+#define ATH1_2_                           ATH1_2_TOK
+#define ATH1_2_ENABLE_TOK                 ATH1_2_ _ENABLE_TOK
+#define ATH1_2_SSID_TOK                   ATH1_2_ _SSID_TOK
+#define ATH1_2_WEP_TOK                    ATH1_2_ _WEP_TOK
+#define ATH1_2_KEYID_TOK                  ATH1_2_ _KEYID_TOK
+#define ATH1_2_KEYTYPE_TOK                ATH1_2_ _KEYTYPE_TOK
+#define ATH1_2_WEPKEY_TOK                 ATH1_2_ _WEPKEY_TOK
+#define ATH1_2_WEPKEY_0_TOK               ATH1_2_ _WEPKEY_0_TOK
+#define ATH1_2_WEPKEY_1_TOK               ATH1_2_ _WEPKEY_1_TOK
+#define ATH1_2_WEPKEY_2_TOK               ATH1_2_ _WEPKEY_2_TOK
+#define ATH1_2_WEPKEY_3_TOK               ATH1_2_ _WEPKEY_3_TOK
+#define ATH1_2_ENC_TYPE_TOK               ATH1_2_ _ENC_TYPE_TOK
+#define ATH1_2_WPAPASSPHRASE_TOK          ATH1_2_ _WPAPASSPHRASE_TOK
+#define ATH1_2_HIDESSID_TOK               ATH1_2_ _HIDESSID_TOK
+#define ATH1_2_WPAPSK_LIFETIME_TOK        ATH1_2_ _WPAPSK_LIFETIME_TOK
+#define ATH1_2_WPAPSK_LIFETIME_EN_TOK     ATH1_2_ _WPAPSK_LIFETIME_EN_TOK
+#define ATH1_2_WPAPSK_KEYTYPE_TOK         ATH1_2_ _WPAPSK_KEYTYPE_TOK 
+#define ATH1_2_WMM_ENABLE_TOK             ATH1_2_ _WMM_ENABLE_TOK
+#define ATH1_2_AUTH_TOK                   ATH1_2_ _AUTH_TOK
+#define ATH1_2_8021X_ENABLE_TOK           ATH1_2_ _8021X_ENABLE_TOK
+#define ATH1_2_8021X_SERVIP_TOK           ATH1_2_ _8021X_SERVIP_TOK
+#define ATH1_2_8021X_SERVPORT_TOK         ATH1_2_ _8021X_SERVPORT_TOK
+#define ATH1_2_8021X_SERVPW_TOK           ATH1_2_ _8021X_SERVPW_TOK
+#define ATH1_2_WDS_SEC_TYPE_TOK           ATH1_2_ _WDS_SEC_TYPE_TOK
+#define ATH1_2_WDS_WPAPASSPHRASE_TOK      ATH1_2_ _WDS_WPAPASSPHRASE_TOK
+#define ATH1_2_WDS_MAC_TOK                ATH1_2_ _WDS_MAC_TOK
+#define ATH1_2_WDS_MAC_1_TOK              ATH1_2_ _WDS_MAC_1_TOK
+#define ATH1_2_WDS_MAC_2_TOK              ATH1_2_ _WDS_MAC_2_TOK
+#define ATH1_2_WDS_MAC_3_TOK              ATH1_2_ _WDS_MAC_3_TOK
+#define ATH1_2_WDS_MAC_4_TOK              ATH1_2_ _WDS_MAC_4_TOK
+#define ATH1_2_WDS_WEP_TOK                ATH1_2_ _WDS_WEP_TOK
+#define ATH1_2_WDS_KEYID_TOK              ATH1_2_ _WDS_KEYID_TOK
+#define ATH1_2_WDS_WEPKEY_0_TOK           ATH1_2_ _WDS_WEPKEY_0_TOK
+#define ATH1_2_WDS_WEPKEY_1_TOK           ATH1_2_ _WDS_WEPKEY_1_TOK
+#define ATH1_2_WDS_WEPKEY_2_TOK           ATH1_2_ _WDS_WEPKEY_2_TOK
+#define ATH1_2_WDS_WEPKEY_3_TOK           ATH1_2_ _WDS_WEPKEY_3_TOK
+#define ATH1_2_STA_ISOLATED_ENABLE_TOK      ATH1_2_ _STA_ISOLATED_ENABLE_TOK
+#define ATH1_2_ISOLATED_ENABLE_TOK        ATH1_2_ _ISOLATED_ENABLE_TOK
+
+#endif // HAS_ATH1_2_DEV //
+
+
+/* --------------------------   Third SSID-----------------------------------*/
+#if HAS_ATH1_3_DEV
+#define ATH1_3_TOK                       "ath3"
+#define ATH1_3_                           ATH1_3_TOK
+#define ATH1_3_ENABLE_TOK                 ATH1_3_ _ENABLE_TOK
+#define ATH1_3_SSID_TOK                   ATH1_3_ _SSID_TOK
+#define ATH1_3_WEP_TOK                    ATH1_3_ _WEP_TOK
+#define ATH1_3_KEYID_TOK                  ATH1_3_ _KEYID_TOK
+#define ATH1_3_KEYTYPE_TOK                ATH1_3_ _KEYTYPE_TOK
+#define ATH1_3_WEPKEY_TOK                 ATH1_3_ _WEPKEY_TOK
+#define ATH1_3_WEPKEY_0_TOK               ATH1_3_ _WEPKEY_0_TOK
+#define ATH1_3_WEPKEY_1_TOK               ATH1_3_ _WEPKEY_1_TOK
+#define ATH1_3_WEPKEY_2_TOK               ATH1_3_ _WEPKEY_2_TOK
+#define ATH1_3_WEPKEY_3_TOK               ATH1_3_ _WEPKEY_3_TOK
+#define ATH1_3_ENC_TYPE_TOK               ATH1_3_ _ENC_TYPE_TOK
+#define ATH1_3_WPAPASSPHRASE_TOK          ATH1_3_ _WPAPASSPHRASE_TOK
+#define ATH1_3_HIDESSID_TOK               ATH1_3_ _HIDESSID_TOK
+#define ATH1_3_WPAPSK_LIFETIME_TOK        ATH1_3_ _WPAPSK_LIFETIME_TOK
+#define ATH1_3_WPAPSK_LIFETIME_EN_TOK     ATH1_3_ _WPAPSK_LIFETIME_EN_TOK
+#define ATH1_3_WPAPSK_KEYTYPE_TOK         ATH1_3_ _WPAPSK_KEYTYPE_TOK 
+#define ATH1_3_WMM_ENABLE_TOK             ATH1_3_ _WMM_ENABLE_TOK
+#define ATH1_3_AUTH_TOK                   ATH1_3_ _AUTH_TOK
+#define ATH1_3_8021X_ENABLE_TOK           ATH1_3_ _8021X_ENABLE_TOK
+#define ATH1_3_8021X_SERVIP_TOK           ATH1_3_ _8021X_SERVIP_TOK
+#define ATH1_3_8021X_SERVPORT_TOK         ATH1_3_ _8021X_SERVPORT_TOK
+#define ATH1_3_8021X_SERVPW_TOK           ATH1_3_ _8021X_SERVPW_TOK
+#define ATH1_3_WDS_SEC_TYPE_TOK           ATH1_3_ _WDS_SEC_TYPE_TOK
+#define ATH1_3_WDS_WPAPASSPHRASE_TOK      ATH1_3_ _WDS_WPAPASSPHRASE_TOK
+#define ATH1_3_WDS_MAC_TOK                ATH1_3_ _WDS_MAC_TOK
+#define ATH1_3_WDS_MAC_1_TOK              ATH1_3_ _WDS_MAC_1_TOK
+#define ATH1_3_WDS_MAC_2_TOK              ATH1_3_ _WDS_MAC_2_TOK
+#define ATH1_3_WDS_MAC_3_TOK              ATH1_3_ _WDS_MAC_3_TOK
+#define ATH1_3_WDS_MAC_4_TOK              ATH1_3_ _WDS_MAC_4_TOK
+#define ATH1_3_WDS_WEP_TOK                ATH1_3_ _WDS_WEP_TOK
+#define ATH1_3_WDS_KEYID_TOK              ATH1_3_ _WDS_KEYID_TOK
+#define ATH1_3_WDS_WEPKEY_0_TOK           ATH1_3_ _WDS_WEPKEY_0_TOK
+#define ATH1_3_WDS_WEPKEY_1_TOK           ATH1_3_ _WDS_WEPKEY_1_TOK
+#define ATH1_3_WDS_WEPKEY_2_TOK           ATH1_3_ _WDS_WEPKEY_2_TOK
+#define ATH1_3_WDS_WEPKEY_3_TOK           ATH1_3_ _WDS_WEPKEY_3_TOK
+#define ATH1_3_STA_ISOLATED_ENABLE_TOK      ATH1_3_ _STA_ISOLATED_ENABLE_TOK
+#define ATH1_3_ISOLATED_ENABLE_TOK        ATH1_3_ _ISOLATED_ENABLE_TOK
+
+#endif // HAS_ATH1_3_DEV //
+
+/* --------------------------   Fourth SSID-----------------------------------*/
+#if HAS_ATH1_4_DEV
+#define ATH1_4_TOK                       "ath4"
+#define ATH1_4_                           ATH1_4_TOK
+#define ATH1_4_ENABLE_TOK                 ATH1_4_ _ENABLE_TOK
+#define ATH1_4_SSID_TOK                   ATH1_4_ _SSID_TOK
+#define ATH1_4_WEP_TOK                    ATH1_4_ _WEP_TOK
+#define ATH1_4_KEYID_TOK                  ATH1_4_ _KEYID_TOK
+#define ATH1_4_KEYTYPE_TOK                ATH1_4_ _KEYTYPE_TOK
+#define ATH1_4_WEPKEY_TOK                 ATH1_4_ _WEPKEY_TOK
+#define ATH1_4_WEPKEY_0_TOK               ATH1_4_ _WEPKEY_0_TOK
+#define ATH1_4_WEPKEY_1_TOK               ATH1_4_ _WEPKEY_1_TOK
+#define ATH1_4_WEPKEY_2_TOK               ATH1_4_ _WEPKEY_2_TOK
+#define ATH1_4_WEPKEY_3_TOK               ATH1_4_ _WEPKEY_3_TOK
+#define ATH1_4_ENC_TYPE_TOK               ATH1_4_ _ENC_TYPE_TOK
+#define ATH1_4_WPAPASSPHRASE_TOK          ATH1_4_ _WPAPASSPHRASE_TOK
+#define ATH1_4_HIDESSID_TOK               ATH1_4_ _HIDESSID_TOK
+#define ATH1_4_WPAPSK_LIFETIME_TOK        ATH1_4_ _WPAPSK_LIFETIME_TOK
+#define ATH1_4_WPAPSK_LIFETIME_EN_TOK     ATH1_4_ _WPAPSK_LIFETIME_EN_TOK
+#define ATH1_4_WPAPSK_KEYTYPE_TOK         ATH1_4_ _WPAPSK_KEYTYPE_TOK 
+#define ATH1_4_WMM_ENABLE_TOK             ATH1_4_ _WMM_ENABLE_TOK
+#define ATH1_4_AUTH_TOK                   ATH1_4_ _AUTH_TOK
+#define ATH1_4_8021X_ENABLE_TOK           ATH1_4_ _8021X_ENABLE_TOK
+#define ATH1_4_8021X_SERVIP_TOK           ATH1_4_ _8021X_SERVIP_TOK
+#define ATH1_4_8021X_SERVPORT_TOK         ATH1_4_ _8021X_SERVPORT_TOK
+#define ATH1_4_8021X_SERVPW_TOK           ATH1_4_ _8021X_SERVPW_TOK
+#define ATH1_4_WDS_SEC_TYPE_TOK           ATH1_4_ _WDS_SEC_TYPE_TOK
+#define ATH1_4_WDS_WPAPASSPHRASE_TOK      ATH1_4_ _WDS_WPAPASSPHRASE_TOK
+#define ATH1_4_WDS_MAC_TOK                ATH1_4_ _WDS_MAC_TOK
+#define ATH1_4_WDS_MAC_1_TOK              ATH1_4_ _WDS_MAC_1_TOK
+#define ATH1_4_WDS_MAC_2_TOK              ATH1_4_ _WDS_MAC_2_TOK
+#define ATH1_4_WDS_MAC_3_TOK              ATH1_4_ _WDS_MAC_3_TOK
+#define ATH1_4_WDS_MAC_4_TOK              ATH1_4_ _WDS_MAC_4_TOK
+#define ATH1_4_WDS_WEP_TOK                ATH1_4_ _WDS_WEP_TOK
+#define ATH1_4_WDS_KEYID_TOK              ATH1_4_ _WDS_KEYID_TOK
+#define ATH1_4_WDS_WEPKEY_0_TOK           ATH1_4_ _WDS_WEPKEY_0_TOK
+#define ATH1_4_WDS_WEPKEY_1_TOK           ATH1_4_ _WDS_WEPKEY_1_TOK
+#define ATH1_4_WDS_WEPKEY_2_TOK           ATH1_4_ _WDS_WEPKEY_2_TOK
+#define ATH1_4_WDS_WEPKEY_3_TOK           ATH1_4_ _WDS_WEPKEY_3_TOK
+#define ATH1_4_STA_ISOLATED_ENABLE_TOK        ATH1_4_ _STA_ISOLATED_ENABLE_TOK
+#define ATH1_4_ISOLATED_ENABLE_TOK        ATH1_4_ _ISOLATED_ENABLE_TOK
+
+#endif // HAS_ATH1_4_DEV //
+
+
+
+#define ATH2_TOK                      "ath2"
+#define ATH2_1_TOK                    "ath21"
+#define ATH2_                         ATH2_1_TOK
+#define ATH2_ENABLE_TOK               ATH2_ _ENABLE_TOK
+
+#define ATH2_RADIO_TOK                ATH2_ _RADIO_TOK
+#define ATH2_SSID_TOK                 ATH2_ _SSID_TOK
+#define ATH2_AUTO_CH_SEL_TOK          ATH2_ _AUTO_CH_SEL_TOK
+#define ATH2_AUTO_CH_CHK_TIME_TOK     ATH2_ _AUTO_CH_CHK_TIME_TOK
+#define ATH2_CHANNEL_TOK              ATH2_ _CHANNEL_TOK
+#define ATH2_CH_SET_TOK               ATH2_ _CH_SET_TOK
+#define ATH2_COUNTRYCODE_TOK          ATH2_ _COUNTRYCODE_TOK
+#define ATH2_USE_APCFG_COUNTRYCODE_TOK	ATH2_ _USE_APCFG_COUNTRYCODE_TOK
+#define ATH2_WEP_TOK                  ATH2_ _WEP_TOK
+#define ATH2_KEYID_TOK                ATH2_ _KEYID_TOK
+#define ATH2_KEYTYPE_TOK              ATH2_ _KEYTYPE_TOK
+#define ATH2_WEPKEY_TOK               ATH2_ _WEPKEY_TOK
+#define ATH2_WEPKEY_0_TOK             ATH2_ _WEPKEY_0_TOK
+#define ATH2_WEPKEY_1_TOK             ATH2_ _WEPKEY_1_TOK
+#define ATH2_WEPKEY_2_TOK             ATH2_ _WEPKEY_2_TOK
+#define ATH2_WEPKEY_3_TOK             ATH2_ _WEPKEY_3_TOK
+#define ATH2_DATARATE_TOK             ATH2_ _DATARATE_TOK
+#define ATH2_TXPOWER_TOK              ATH2_ _TXPOWER_TOK
+#define ATH2_BEACON_TOK               ATH2_ _BEACON_TOK
+#define ATH2_DATABEACON_TOK           ATH2_ _DATABEACON_TOK
+#define ATH2_FRAGMENT_TOK             ATH2_ _FRAGMENT_TOK
+#define ATH2_DISTANCE_TOK             ATH2_ _DISTANCE_TOK
+#define ATH2_ACKTIME_TOK              ATH2_ _ACKTIME_TOK
+#define ATH2_THRESHOLD_TOK            ATH2_ _THRESHOLD_TOK
+#define ATH2_MODE_TOK                 ATH2_ _MODE_TOK
+#define ATH2_PREAMBLE_TOK             ATH2_ _PREAMBLE_TOK
+#define ATH2_ENC_SSID_SEL_TOK		  ATH2_ _ENC_SSID_SEL_TOK
+#define ATH2_AUTH_TOK                 ATH2_ _AUTH_TOK
+#define ATH2_ENC_TYPE_TOK             ATH2_ _ENC_TYPE_TOK
+#define ATH2_WPAPASSPHRASE_TOK        ATH2_ _WPAPASSPHRASE_TOK
+#define ATH2_HIDESSID_TOK             ATH2_ _HIDESSID_TOK
+#define ATH2_WPAPSK_LIFETIME_TOK      ATH2_ _WPAPSK_LIFETIME_TOK
+#define ATH2_WPAPSK_LIFETIME_EN_TOK   ATH2_ _WPAPSK_LIFETIME_EN_TOK
+#define ATH2_WPAPSK_KEYTYPE_TOK       ATH2_ _WPAPSK_KEYTYPE_TOK
+#define ATH2_WMM_ENABLE_TOK           ATH2_ _WMM_ENABLE_TOK
+#define ATH2_11N_BW40_ENABLE_TOK      ATH2_ _11N_BW40_ENABLE_TOK
+#define ATH2_11N_BW40PLUS_ENABLE_TOK  ATH2_ _11N_BW40PLUS_ENABLE_TOK
+#define ATH2_11N_DATERATE_TOK         ATH2_ _11N_DATERATE_TOK
+#define ATH2_DEV_TOK                  ATH2_ _DEV_TOK 
+#define ATH2_WPS_PIN_TOK              ATH2_ _WPS_PIN_TOK
+#define ATH2_WPS_STATUS_TOK           ATH2_ _WPS_STATUS_TOK
+#define ATH2_WPS_ENABLE_TOK           ATH2_ _WPS_ENABLE_TOK
+#define ATH2_SSID_NUM_TOK             ATH2_ _SSID_NUM_TOK
+#define ATH2_TXBURST_TOK              ATH2_ _TXBURST_TOK
+#define ATH2_TURBO_MODE_ENABLE_TOK    ATH2_ _TURBO_MODE_ENABLE_TOK
+#define ATH2_BGPROTECTION_TOK         ATH2_ _BGPROTECTION_TOK
+#define ATH2_8021X_ENABLE_TOK         ATH2_ _8021X_ENABLE_TOK
+#define ATH2_8021X_SERVIP_TOK         ATH2_ _8021X_SERVIP_TOK
+#define ATH2_8021X_SERVPORT_TOK       ATH2_ _8021X_SERVPORT_TOK
+#define ATH2_8021X_SERVPW_TOK         ATH2_ _8021X_SERVPW_TOK
+#define ATH2_AP_MODE_TOK              ATH2_ _AP_MODE_TOK
+#define ATH2_WDS_TYPE_TOK         	  ATH2_ _WDS_TYPE_TOK
+#define ATH2_WDS_SEC_TYPE_TOK         ATH2_ _WDS_SEC_TYPE_TOK
+#define ATH2_WDS_WPAPASSPHRASE_TOK    ATH2_ _WDS_WPAPASSPHRASE_TOK
+#define ATH2_WDS_MAC_TOK              ATH2_ _WDS_MAC_TOK
+#define ATH2_WDS_MAC_1_TOK            ATH2_ _WDS_MAC_1_TOK
+#define ATH2_WDS_MAC_2_TOK            ATH2_ _WDS_MAC_2_TOK
+#define ATH2_WDS_MAC_3_TOK            ATH2_ _WDS_MAC_3_TOK
+#define ATH2_WDS_MAC_4_TOK            ATH2_ _WDS_MAC_4_TOK
+#define ATH2_WDS_CLIENT_MAC_TOK		  ATH2_ _WDS_CLIENT_MAC_TOK
+#define ATH2_WDS_WEP_TOK              ATH2_ _WDS_WEP_TOK
+#define ATH2_WDS_KEYID_TOK            ATH2_ _WDS_KEYID_TOK
+#define ATH2_WDS_KEYTYPE_TOK          ATH2_ _WDS_KEYTYPE_TOK 
+#define ATH2_WDS_WEPKEY_TOK           ATH2_ _WDS_WEPKEY_TOK
+#define ATH2_WDS_WEPKEY_0_TOK         ATH2_ _WDS_WEPKEY_0_TOK
+#define ATH2_WDS_WEPKEY_1_TOK         ATH2_ _WDS_WEPKEY_1_TOK
+#define ATH2_WDS_WEPKEY_2_TOK         ATH2_ _WDS_WEPKEY_2_TOK
+#define ATH2_WDS_WEPKEY_3_TOK         ATH2_ _WDS_WEPKEY_3_TOK
+#define ATH2_STA_ISOLATED_ENABLE_TOK      ATH2_ _STA_ISOLATED_ENABLE_TOK
+#define ATH2_ISOLATED_ENABLE_TOK      ATH2_ _ISOLATED_ENABLE_TOK
+#if HAS_VLAN_SUPPORT
+#define ATH2_VLAN_ENABLE_TOK     	  ATH2_ _VLAN_ENABLE_TOK
+#endif
+#if defined (HAS_POWER_SAVING_WLAN) || defined (HAS_POWER_SAVING_ETH)
+#define ATH2_POWERSAVING_MODE_TOK         ATH2_ _POWERSAVING_MODE_TOK
+#endif
+#ifdef HAS_USER_DEFINE_AID_NUMBER
+#define ATH2_MAX_AID_NUM_TOK            ATH2_ _MAX_AID_NUM_TOK
+#endif
+#define ATH2_STA_					ATH2_ _STA_TOK					
+#define ATH2_STA_RADIO_TOK			ATH2_STA_ _RADIO_TOK		
+#define ATH2_STA_MODE_TOK			ATH2_STA_ _MODE_TOK
+#define ATH2_STA_FRAGMENT_TOK       ATH2_STA_ _FRAGMENT_TOK
+#define ATH2_STA_THRESHOLD_TOK		ATH2_STA_ _THRESHOLD_TOK
+#define ATH2_STA_BEACON_TOK			ATH2_STA_ _BEACON_TOK
+#define ATH2_STA_DATABEACON_TOK		ATH2_STA_ _DATABEACON_TOK
+#define ATH2_STA_DATARATE_TOK		ATH2_STA_ _DATARATE_TOK
+#define ATH2_STA_11N_DATERATE_TOK	ATH2_STA_ _11N_DATERATE_TOK
+#define ATH2_STA_PREAMBLE_TOK		ATH2_STA_ _PREAMBLE_TOK
+#define ATH2_STA_TXPOWER_TOK		ATH2_STA_ _TXPOWER_TOK
+
+#if HAS_VLAN_SUPPORT
+#define ATH2_1_VLANTAG_TOK               ATH2_ _VLANTAG_TOK
+#define ATH2_2_VLANTAG_TOK               ATH2_2_ _VLANTAG_TOK
+#define ATH2_3_VLANTAG_TOK               ATH2_3_ _VLANTAG_TOK
+#define ATH2_4_VLANTAG_TOK               ATH2_4_ _VLANTAG_TOK
+#endif
+
+#define ATH2_APCLI_					ATH2_TOK _APCLI_
+/**        repeater token                                       */
+#define ATH2_APCLI_ENABLE_TOK       ATH2_APCLI_ _ENABLE_TOK
+#define ATH2_APCLI_CHANNEL_TOK      ATH2_APCLI_ _CHANNEL_TOK
+#define ATH2_APCLI_SSID_TOK         ATH2_APCLI_ _SSID_TOK
+#define ATH2_APCLI_HIDESSID_TOK     ATH2_APCLI_ _HIDESSID_TOK
+#define ATH2_APCLI_BSSID_TOK        ATH2_APCLI_ _BSSID_TOK 
+#define ATH2_APCLI_AUTH_TOK         ATH2_APCLI_ _AUTH_TOK
+#define ATH2_APCLI_ENC_TYPE_TOK     ATH2_APCLI_ _ENC_TYPE_TOK
+#define ATH2_APCLI_WEP_TOK          ATH2_APCLI_ _WEP_TOK
+#define ATH2_APCLI_KEYID_TOK        ATH2_APCLI_ _KEYID_TOK
+#define ATH2_APCLI_KEYTYPE_TOK      ATH2_APCLI_ _KEYTYPE_TOK
+#define ATH2_APCLI_WEPKEY_0_TOK     ATH2_APCLI_ _WEPKEY_0_TOK
+#define ATH2_APCLI_WEPKEY_1_TOK     ATH2_APCLI_ _WEPKEY_1_TOK
+#define ATH2_APCLI_WEPKEY_2_TOK     ATH2_APCLI_ _WEPKEY_2_TOK
+#define ATH2_APCLI_WEPKEY_3_TOK     ATH2_APCLI_ _WEPKEY_3_TOK
+#define ATH2_APCLI_WPAKEY_TOK       ATH2_APCLI_ _WPAKEY_TOK
+#define ATH2_APCLI_WPAPASSPHRASE_TOK       ATH2_APCLI_ _WPAPASSPHRASE_TOK
+#define ATH2_APCLI_AP_AUTH_TOK         "ath2cliapauth" 
+#define ATH2_APCLI_AP_ENC_TYPE_TOK     "ath2cliapenctype" 
+// #define ATH2_APCLI_NTP_SERVER_TOK   ATH2_ _APCLI_ _ENABLE_TOK
+
+#if HAS_OBSCURE_PSK_IN_WEB
+#define ATH2_WEB_OBSCURE_PSK_TOK	"ath2_web_psk"
+#endif
+/* ------------------------Second SSID-------------------------- */
+#define ATH2_ID_POS                     (4)
+#if HAS_ATH2_2_DEV
+#define ATH2_2_TOK                       "ath22"
+#define ATH2_2_                           ATH2_2_TOK
+#define ATH2_2_ENABLE_TOK                 ATH2_2_ _ENABLE_TOK
+#define ATH2_2_SSID_TOK                   ATH2_2_ _SSID_TOK
+#define ATH2_2_WEP_TOK                    ATH2_2_ _WEP_TOK
+#define ATH2_2_KEYID_TOK                  ATH2_2_ _KEYID_TOK
+#define ATH2_2_KEYTYPE_TOK                ATH2_2_ _KEYTYPE_TOK
+#define ATH2_2_WEPKEY_TOK                 ATH2_2_ _WEPKEY_TOK
+#define ATH2_2_WEPKEY_0_TOK               ATH2_2_ _WEPKEY_0_TOK
+#define ATH2_2_WEPKEY_1_TOK               ATH2_2_ _WEPKEY_1_TOK
+#define ATH2_2_WEPKEY_2_TOK               ATH2_2_ _WEPKEY_2_TOK
+#define ATH2_2_WEPKEY_3_TOK               ATH2_2_ _WEPKEY_3_TOK
+#define ATH2_2_ENC_TYPE_TOK               ATH2_2_ _ENC_TYPE_TOK
+#define ATH2_2_WPAPASSPHRASE_TOK          ATH2_2_ _WPAPASSPHRASE_TOK
+#define ATH2_2_HIDESSID_TOK               ATH2_2_ _HIDESSID_TOK
+#define ATH2_2_WPAPSK_LIFETIME_TOK        ATH2_2_ _WPAPSK_LIFETIME_TOK
+#define ATH2_2_WPAPSK_LIFETIME_EN_TOK     ATH2_2_ _WPAPSK_LIFETIME_EN_TOK
+#define ATH2_2_WPAPSK_KEYTYPE_TOK         ATH2_2_ _WPAPSK_KEYTYPE_TOK 
+#define ATH2_2_WMM_ENABLE_TOK             ATH2_2_ _WMM_ENABLE_TOK
+#define ATH2_2_AUTH_TOK                   ATH2_2_ _AUTH_TOK
+#define ATH2_2_8021X_ENABLE_TOK           ATH2_2_ _8021X_ENABLE_TOK
+#define ATH2_2_8021X_SERVIP_TOK           ATH2_2_ _8021X_SERVIP_TOK
+#define ATH2_2_8021X_SERVPORT_TOK         ATH2_2_ _8021X_SERVPORT_TOK
+#define ATH2_2_8021X_SERVPW_TOK           ATH2_2_ _8021X_SERVPW_TOK
+#define ATH2_2_WDS_SEC_TYPE_TOK           ATH2_2_ _WDS_SEC_TYPE_TOK
+#define ATH2_2_WDS_WPAPASSPHRASE_TOK      ATH2_2_ _WDS_WPAPASSPHRASE_TOK
+#define ATH2_2_WDS_MAC_TOK                ATH2_2_ _WDS_MAC_TOK
+#define ATH2_2_WDS_MAC_1_TOK              ATH2_2_ _WDS_MAC_1_TOK
+#define ATH2_2_WDS_MAC_2_TOK              ATH2_2_ _WDS_MAC_2_TOK
+#define ATH2_2_WDS_MAC_3_TOK              ATH2_2_ _WDS_MAC_3_TOK
+#define ATH2_2_WDS_MAC_4_TOK              ATH2_2_ _WDS_MAC_4_TOK
+#define ATH2_2_WDS_WEP_TOK                ATH2_2_ _WDS_WEP_TOK
+#define ATH2_2_WDS_KEYID_TOK              ATH2_2_ _WDS_KEYID_TOK
+#define ATH2_2_WDS_WEPKEY_0_TOK           ATH2_2_ _WDS_WEPKEY_0_TOK
+#define ATH2_2_WDS_WEPKEY_1_TOK           ATH2_2_ _WDS_WEPKEY_1_TOK
+#define ATH2_2_WDS_WEPKEY_2_TOK           ATH2_2_ _WDS_WEPKEY_2_TOK
+#define ATH2_2_WDS_WEPKEY_3_TOK           ATH2_2_ _WDS_WEPKEY_3_TOK
+#define ATH2_2_STA_ISOLATED_ENABLE_TOK      ATH2_2_ _STA_ISOLATED_ENABLE_TOK
+#define ATH2_2_ISOLATED_ENABLE_TOK        ATH2_2_ _ISOLATED_ENABLE_TOK
+
+#endif // HAS_ATH2_2_DEV //
+
+
+/* --------------------------   Third SSID-----------------------------------*/
+#if HAS_ATH2_3_DEV
+#define ATH2_3_TOK                       "ath23"
+#define ATH2_3_                           ATH2_3_TOK
+#define ATH2_3_ENABLE_TOK                 ATH2_3_ _ENABLE_TOK
+#define ATH2_3_SSID_TOK                   ATH2_3_ _SSID_TOK
+#define ATH2_3_WEP_TOK                    ATH2_3_ _WEP_TOK
+#define ATH2_3_KEYID_TOK                  ATH2_3_ _KEYID_TOK
+#define ATH2_3_KEYTYPE_TOK                ATH2_3_ _KEYTYPE_TOK
+#define ATH2_3_WEPKEY_TOK                 ATH2_3_ _WEPKEY_TOK
+#define ATH2_3_WEPKEY_0_TOK               ATH2_3_ _WEPKEY_0_TOK
+#define ATH2_3_WEPKEY_1_TOK               ATH2_3_ _WEPKEY_1_TOK
+#define ATH2_3_WEPKEY_2_TOK               ATH2_3_ _WEPKEY_2_TOK
+#define ATH2_3_WEPKEY_3_TOK               ATH2_3_ _WEPKEY_3_TOK
+#define ATH2_3_ENC_TYPE_TOK               ATH2_3_ _ENC_TYPE_TOK
+#define ATH2_3_WPAPASSPHRASE_TOK          ATH2_3_ _WPAPASSPHRASE_TOK
+#define ATH2_3_HIDESSID_TOK               ATH2_3_ _HIDESSID_TOK
+#define ATH2_3_WPAPSK_LIFETIME_TOK        ATH2_3_ _WPAPSK_LIFETIME_TOK
+#define ATH2_3_WPAPSK_LIFETIME_EN_TOK     ATH2_3_ _WPAPSK_LIFETIME_EN_TOK
+#define ATH2_3_WPAPSK_KEYTYPE_TOK         ATH2_3_ _WPAPSK_KEYTYPE_TOK 
+#define ATH2_3_WMM_ENABLE_TOK             ATH2_3_ _WMM_ENABLE_TOK
+#define ATH2_3_AUTH_TOK                   ATH2_3_ _AUTH_TOK
+#define ATH2_3_8021X_ENABLE_TOK           ATH2_3_ _8021X_ENABLE_TOK
+#define ATH2_3_8021X_SERVIP_TOK           ATH2_3_ _8021X_SERVIP_TOK
+#define ATH2_3_8021X_SERVPORT_TOK         ATH2_3_ _8021X_SERVPORT_TOK
+#define ATH2_3_8021X_SERVPW_TOK           ATH2_3_ _8021X_SERVPW_TOK
+#define ATH2_3_WDS_SEC_TYPE_TOK           ATH2_3_ _WDS_SEC_TYPE_TOK
+#define ATH2_3_WDS_WPAPASSPHRASE_TOK      ATH2_3_ _WDS_WPAPASSPHRASE_TOK
+#define ATH2_3_WDS_MAC_TOK                ATH2_3_ _WDS_MAC_TOK
+#define ATH2_3_WDS_MAC_1_TOK              ATH2_3_ _WDS_MAC_1_TOK
+#define ATH2_3_WDS_MAC_2_TOK              ATH2_3_ _WDS_MAC_2_TOK
+#define ATH2_3_WDS_MAC_3_TOK              ATH2_3_ _WDS_MAC_3_TOK
+#define ATH2_3_WDS_MAC_4_TOK              ATH2_3_ _WDS_MAC_4_TOK
+#define ATH2_3_WDS_WEP_TOK                ATH2_3_ _WDS_WEP_TOK
+#define ATH2_3_WDS_KEYID_TOK              ATH2_3_ _WDS_KEYID_TOK
+#define ATH2_3_WDS_WEPKEY_0_TOK           ATH2_3_ _WDS_WEPKEY_0_TOK
+#define ATH2_3_WDS_WEPKEY_1_TOK           ATH2_3_ _WDS_WEPKEY_1_TOK
+#define ATH2_3_WDS_WEPKEY_2_TOK           ATH2_3_ _WDS_WEPKEY_2_TOK
+#define ATH2_3_WDS_WEPKEY_3_TOK           ATH2_3_ _WDS_WEPKEY_3_TOK
+#define ATH2_3_STA_ISOLATED_ENABLE_TOK      ATH2_3_ _STA_ISOLATED_ENABLE_TOK
+#define ATH2_3_ISOLATED_ENABLE_TOK        ATH2_3_ _ISOLATED_ENABLE_TOK
+
+#endif // HAS_ATH2_3_DEV //
+
+/* --------------------------   Fourth SSID-----------------------------------*/
+#if HAS_ATH2_4_DEV
+#define ATH2_4_TOK                       "ath24"
+#define ATH2_4_                           ATH2_4_TOK
+#define ATH2_4_ENABLE_TOK                 ATH2_4_ _ENABLE_TOK
+#define ATH2_4_SSID_TOK                   ATH2_4_ _SSID_TOK
+#define ATH2_4_WEP_TOK                    ATH2_4_ _WEP_TOK
+#define ATH2_4_KEYID_TOK                  ATH2_4_ _KEYID_TOK
+#define ATH2_4_KEYTYPE_TOK                ATH2_4_ _KEYTYPE_TOK
+#define ATH2_4_WEPKEY_TOK                 ATH2_4_ _WEPKEY_TOK
+#define ATH2_4_WEPKEY_0_TOK               ATH2_4_ _WEPKEY_0_TOK
+#define ATH2_4_WEPKEY_1_TOK               ATH2_4_ _WEPKEY_1_TOK
+#define ATH2_4_WEPKEY_2_TOK               ATH2_4_ _WEPKEY_2_TOK
+#define ATH2_4_WEPKEY_3_TOK               ATH2_4_ _WEPKEY_3_TOK
+#define ATH2_4_ENC_TYPE_TOK               ATH2_4_ _ENC_TYPE_TOK
+#define ATH2_4_WPAPASSPHRASE_TOK          ATH2_4_ _WPAPASSPHRASE_TOK
+#define ATH2_4_HIDESSID_TOK               ATH2_4_ _HIDESSID_TOK
+#define ATH2_4_WPAPSK_LIFETIME_TOK        ATH2_4_ _WPAPSK_LIFETIME_TOK
+#define ATH2_4_WPAPSK_LIFETIME_EN_TOK     ATH2_4_ _WPAPSK_LIFETIME_EN_TOK
+#define ATH2_4_WPAPSK_KEYTYPE_TOK         ATH2_4_ _WPAPSK_KEYTYPE_TOK 
+#define ATH2_4_WMM_ENABLE_TOK             ATH2_4_ _WMM_ENABLE_TOK
+#define ATH2_4_AUTH_TOK                   ATH2_4_ _AUTH_TOK
+#define ATH2_4_8021X_ENABLE_TOK           ATH2_4_ _8021X_ENABLE_TOK
+#define ATH2_4_8021X_SERVIP_TOK           ATH2_4_ _8021X_SERVIP_TOK
+#define ATH2_4_8021X_SERVPORT_TOK         ATH2_4_ _8021X_SERVPORT_TOK
+#define ATH2_4_8021X_SERVPW_TOK           ATH2_4_ _8021X_SERVPW_TOK
+#define ATH2_4_WDS_SEC_TYPE_TOK           ATH2_4_ _WDS_SEC_TYPE_TOK
+#define ATH2_4_WDS_WPAPASSPHRASE_TOK      ATH2_4_ _WDS_WPAPASSPHRASE_TOK
+#define ATH2_4_WDS_MAC_TOK                ATH2_4_ _WDS_MAC_TOK
+#define ATH2_4_WDS_MAC_1_TOK              ATH2_4_ _WDS_MAC_1_TOK
+#define ATH2_4_WDS_MAC_2_TOK              ATH2_4_ _WDS_MAC_2_TOK
+#define ATH2_4_WDS_MAC_3_TOK              ATH2_4_ _WDS_MAC_3_TOK
+#define ATH2_4_WDS_MAC_4_TOK              ATH2_4_ _WDS_MAC_4_TOK
+#define ATH2_4_WDS_WEP_TOK                ATH2_4_ _WDS_WEP_TOK
+#define ATH2_4_WDS_KEYID_TOK              ATH2_4_ _WDS_KEYID_TOK
+#define ATH2_4_WDS_WEPKEY_0_TOK           ATH2_4_ _WDS_WEPKEY_0_TOK
+#define ATH2_4_WDS_WEPKEY_1_TOK           ATH2_4_ _WDS_WEPKEY_1_TOK
+#define ATH2_4_WDS_WEPKEY_2_TOK           ATH2_4_ _WDS_WEPKEY_2_TOK
+#define ATH2_4_WDS_WEPKEY_3_TOK           ATH2_4_ _WDS_WEPKEY_3_TOK
+#define ATH2_4_STA_ISOLATED_ENABLE_TOK      ATH2_4_ _STA_ISOLATED_ENABLE_TOK
+#define ATH2_4_ISOLATED_ENABLE_TOK        ATH2_4_ _ISOLATED_ENABLE_TOK
+
+#endif // HAS_ATH2_4_DEV //
+
+#if HAS_SUPPORT_ATHEROS_RADIO2_WLAN
+#if HAS_SUPPORT_ATH_RADIO2_MACFILTER
+/* ------------------  ath radio2 ap macfilter tokens   -----------------------*/
+#define ATH2_MACFILTER_PRE_TOK                ATH2_ MACFILTER_PRE_TOK
+#define ATH2_MACFILTER_TYPE_TOK               ATH2_ MACFILTER_TYPE_TOK  
+#define ATH2_MACFILTER_ENABLE_TOK           ATH2_  MACFILTER_ENABLE_TOK
+#define ATH2_MACFILTER_TOK                      ATH2_ MACFILTER_TOK       
+#define ATH2_MACFILTER_01_TOK                 ATH2_ MACFILTER_01_TOK    
+#define ATH2_MACFILTER_02_TOK              ATH2_ MACFILTER_02_TOK    
+#define ATH2_MACFILTER_03_TOK              ATH2_ MACFILTER_03_TOK    
+#define ATH2_MACFILTER_04_TOK              ATH2_ MACFILTER_04_TOK    
+#define ATH2_MACFILTER_05_TOK              ATH2_ MACFILTER_05_TOK    
+#define ATH2_MACFILTER_06_TOK              ATH2_ MACFILTER_06_TOK    
+#define ATH2_MACFILTER_07_TOK              ATH2_ MACFILTER_07_TOK    
+#define ATH2_MACFILTER_08_TOK              ATH2_ MACFILTER_08_TOK    
+#define ATH2_MACFILTER_09_TOK              ATH2_ MACFILTER_09_TOK    
+#define ATH2_MACFILTER_10_TOK              ATH2_ MACFILTER_10_TOK    
+#if NUM_MAC_FILTERS > 10
+#define ATH2_MACFILTER_11_TOK               ATH2_  MACFILTER_11_TOK
+#define ATH2_MACFILTER_12_TOK               ATH2_  MACFILTER_12_TOK
+#define ATH2_MACFILTER_13_TOK               ATH2_  MACFILTER_13_TOK
+#define ATH2_MACFILTER_14_TOK               ATH2_  MACFILTER_14_TOK
+#define ATH2_MACFILTER_15_TOK               ATH2_  MACFILTER_15_TOK
+#define ATH2_MACFILTER_16_TOK               ATH2_  MACFILTER_16_TOK
+#define ATH2_MACFILTER_17_TOK               ATH2_  MACFILTER_17_TOK
+#define ATH2_MACFILTER_18_TOK               ATH2_  MACFILTER_18_TOK
+#define ATH2_MACFILTER_19_TOK               ATH2_  MACFILTER_19_TOK
+#define ATH2_MACFILTER_20_TOK               ATH2_  MACFILTER_20_TOK
+#if NUM_ATH2_MAC_FILTERS > 20
+#define ATH2_MACFILTER_21_TOK                 ATH2_  MACFILTER_21_TOK      
+#define ATH2_MACFILTER_22_TOK                 ATH2_  MACFILTER_22_TOK      
+#define ATH2_MACFILTER_23_TOK                 ATH2_  MACFILTER_23_TOK      
+#define ATH2_MACFILTER_24_TOK                 ATH2_  MACFILTER_24_TOK      
+#define ATH2_MACFILTER_25_TOK                 ATH2_  MACFILTER_25_TOK      
+#define ATH2_MACFILTER_26_TOK                 ATH2_  MACFILTER_26_TOK      
+#define ATH2_MACFILTER_27_TOK                 ATH2_  MACFILTER_27_TOK      
+#define ATH2_MACFILTER_28_TOK                 ATH2_  MACFILTER_28_TOK      
+#define ATH2_MACFILTER_29_TOK                 ATH2_  MACFILTER_29_TOK      
+#define ATH2_MACFILTER_30_TOK                 ATH2_  MACFILTER_30_TOK      
+#define ATH2_MACFILTER_31_TOK                 ATH2_  MACFILTER_31_TOK 
+#define ATH2_MACFILTER_32_TOK                 ATH2_  MACFILTER_32_TOK 
+#if NUM_ATH2_MAC_FILTERS > 32
+#define ATH2_MACFILTER_33_TOK                 ATH2_  MACFILTER_33_TOK  
+#define ATH2_MACFILTER_34_TOK                 ATH2_  MACFILTER_34_TOK  
+#define ATH2_MACFILTER_35_TOK                 ATH2_  MACFILTER_35_TOK  
+#define ATH2_MACFILTER_36_TOK                 ATH2_  MACFILTER_36_TOK  
+#define ATH2_MACFILTER_37_TOK                 ATH2_  MACFILTER_37_TOK  
+#define ATH2_MACFILTER_38_TOK                 ATH2_  MACFILTER_38_TOK  
+#define ATH2_MACFILTER_39_TOK                 ATH2_  MACFILTER_39_TOK  
+#define ATH2_MACFILTER_40_TOK                 ATH2_  MACFILTER_40_TOK  
+#define ATH2_MACFILTER_41_TOK                 ATH2_  MACFILTER_41_TOK  
+#define ATH2_MACFILTER_42_TOK                 ATH2_  MACFILTER_42_TOK  
+#define ATH2_MACFILTER_43_TOK                 ATH2_  MACFILTER_43_TOK  
+#define ATH2_MACFILTER_44_TOK                 ATH2_  MACFILTER_44_TOK  
+#define ATH2_MACFILTER_45_TOK                 ATH2_  MACFILTER_45_TOK  
+#define ATH2_MACFILTER_46_TOK                 ATH2_  MACFILTER_46_TOK  
+#define ATH2_MACFILTER_47_TOK                 ATH2_  MACFILTER_47_TOK  
+#define ATH2_MACFILTER_48_TOK                 ATH2_  MACFILTER_48_TOK  
+#define ATH2_MACFILTER_49_TOK                 ATH2_  MACFILTER_49_TOK  
+#define ATH2_MACFILTER_50_TOK                 ATH2_  MACFILTER_50_TOK  
+#if NUM_ATH2_MAC_FILTERS > 50
+#define ATH2_MACFILTER_51_TOK                 ATH2_  MACFILTER_51_TOK
+#define ATH2_MACFILTER_52_TOK                 ATH2_  MACFILTER_52_TOK
+#define ATH2_MACFILTER_53_TOK                 ATH2_  MACFILTER_53_TOK
+#define ATH2_MACFILTER_54_TOK                 ATH2_  MACFILTER_54_TOK
+#define ATH2_MACFILTER_55_TOK                 ATH2_  MACFILTER_55_TOK
+#define ATH2_MACFILTER_56_TOK                 ATH2_  MACFILTER_56_TOK
+#define ATH2_MACFILTER_57_TOK                 ATH2_  MACFILTER_57_TOK
+#define ATH2_MACFILTER_58_TOK                 ATH2_  MACFILTER_58_TOK
+#define ATH2_MACFILTER_59_TOK                 ATH2_  MACFILTER_59_TOK
+#define ATH2_MACFILTER_60_TOK                 ATH2_  MACFILTER_60_TOK
+#define ATH2_MACFILTER_61_TOK                 ATH2_  MACFILTER_61_TOK
+#define ATH2_MACFILTER_62_TOK                 ATH2_  MACFILTER_62_TOK
+#define ATH2_MACFILTER_63_TOK                 ATH2_  MACFILTER_63_TOK
+#define ATH2_MACFILTER_64_TOK                 ATH2_  MACFILTER_64_TOK
+#if NUM_ATH2_MAC_FILTERS > 64
+#define ATH2_MACFILTER_65_TOK                  ATH2_  MACFILTER_65_TOK  
+#define ATH2_MACFILTER_66_TOK                  ATH2_  MACFILTER_66_TOK  
+#define ATH2_MACFILTER_67_TOK                  ATH2_  MACFILTER_67_TOK  
+#define ATH2_MACFILTER_68_TOK                  ATH2_  MACFILTER_68_TOK  
+#define ATH2_MACFILTER_69_TOK                  ATH2_  MACFILTER_69_TOK  
+#define ATH2_MACFILTER_70_TOK                  ATH2_  MACFILTER_70_TOK  
+#define ATH2_MACFILTER_71_TOK                  ATH2_  MACFILTER_71_TOK  
+#define ATH2_MACFILTER_72_TOK                  ATH2_  MACFILTER_72_TOK  
+#define ATH2_MACFILTER_73_TOK                  ATH2_  MACFILTER_73_TOK  
+#define ATH2_MACFILTER_74_TOK                  ATH2_  MACFILTER_74_TOK  
+#define ATH2_MACFILTER_75_TOK                  ATH2_  MACFILTER_75_TOK  
+#define ATH2_MACFILTER_76_TOK                  ATH2_  MACFILTER_76_TOK  
+#define ATH2_MACFILTER_77_TOK                  ATH2_  MACFILTER_77_TOK  
+#define ATH2_MACFILTER_78_TOK                  ATH2_  MACFILTER_78_TOK  
+#define ATH2_MACFILTER_79_TOK                  ATH2_  MACFILTER_79_TOK  
+#define ATH2_MACFILTER_80_TOK                  ATH2_  MACFILTER_80_TOK  
+#define ATH2_MACFILTER_81_TOK                  ATH2_  MACFILTER_81_TOK  
+#define ATH2_MACFILTER_82_TOK                  ATH2_  MACFILTER_82_TOK  
+#define ATH2_MACFILTER_83_TOK                  ATH2_  MACFILTER_83_TOK  
+#define ATH2_MACFILTER_84_TOK                  ATH2_  MACFILTER_84_TOK  
+#define ATH2_MACFILTER_85_TOK                  ATH2_  MACFILTER_85_TOK  
+#define ATH2_MACFILTER_86_TOK                  ATH2_  MACFILTER_86_TOK  
+#define ATH2_MACFILTER_87_TOK                  ATH2_  MACFILTER_87_TOK  
+#define ATH2_MACFILTER_88_TOK                  ATH2_  MACFILTER_88_TOK  
+#define ATH2_MACFILTER_89_TOK                  ATH2_  MACFILTER_89_TOK  
+#define ATH2_MACFILTER_90_TOK                  ATH2_  MACFILTER_90_TOK  
+#define ATH2_MACFILTER_91_TOK                  ATH2_  MACFILTER_91_TOK  
+#define ATH2_MACFILTER_92_TOK                  ATH2_  MACFILTER_92_TOK  
+#define ATH2_MACFILTER_93_TOK                  ATH2_  MACFILTER_93_TOK  
+#define ATH2_MACFILTER_94_TOK                  ATH2_  MACFILTER_94_TOK  
+#define ATH2_MACFILTER_95_TOK                  ATH2_  MACFILTER_95_TOK  
+#define ATH2_MACFILTER_96_TOK                  ATH2_  MACFILTER_96_TOK  
+#define ATH2_MACFILTER_97_TOK                  ATH2_  MACFILTER_97_TOK  
+#define ATH2_MACFILTER_98_TOK                  ATH2_  MACFILTER_98_TOK  
+#define ATH2_MACFILTER_99_TOK                  ATH2_  MACFILTER_99_TOK  
+#define ATH2_MACFILTER_100_TOK                 ATH2_  MACFILTER_100_TOK 
+#define ATH2_MACFILTER_101_TOK                 ATH2_  MACFILTER_101_TOK 
+#define ATH2_MACFILTER_102_TOK                 ATH2_  MACFILTER_102_TOK 
+#define ATH2_MACFILTER_103_TOK                 ATH2_  MACFILTER_103_TOK 
+#define ATH2_MACFILTER_104_TOK                 ATH2_  MACFILTER_104_TOK 
+#define ATH2_MACFILTER_105_TOK                 ATH2_  MACFILTER_105_TOK 
+#define ATH2_MACFILTER_106_TOK                 ATH2_  MACFILTER_106_TOK 
+#define ATH2_MACFILTER_107_TOK                 ATH2_  MACFILTER_107_TOK 
+#define ATH2_MACFILTER_108_TOK                 ATH2_  MACFILTER_108_TOK 
+#define ATH2_MACFILTER_109_TOK                 ATH2_  MACFILTER_109_TOK 
+#define ATH2_MACFILTER_110_TOK                 ATH2_  MACFILTER_110_TOK 
+#define ATH2_MACFILTER_111_TOK                 ATH2_  MACFILTER_111_TOK 
+#define ATH2_MACFILTER_112_TOK                 ATH2_  MACFILTER_112_TOK 
+#define ATH2_MACFILTER_113_TOK                 ATH2_  MACFILTER_113_TOK 
+#define ATH2_MACFILTER_114_TOK                 ATH2_  MACFILTER_114_TOK 
+#define ATH2_MACFILTER_115_TOK                 ATH2_  MACFILTER_115_TOK 
+#define ATH2_MACFILTER_116_TOK                 ATH2_  MACFILTER_116_TOK 
+#define ATH2_MACFILTER_117_TOK                 ATH2_  MACFILTER_117_TOK 
+#define ATH2_MACFILTER_118_TOK                 ATH2_  MACFILTER_118_TOK 
+#define ATH2_MACFILTER_119_TOK                 ATH2_  MACFILTER_119_TOK 
+#define ATH2_MACFILTER_120_TOK                 ATH2_  MACFILTER_120_TOK 
+#define ATH2_MACFILTER_121_TOK                 ATH2_  MACFILTER_121_TOK
+#define ATH2_MACFILTER_122_TOK                 ATH2_  MACFILTER_122_TOK
+#define ATH2_MACFILTER_123_TOK                 ATH2_  MACFILTER_123_TOK
+#define ATH2_MACFILTER_124_TOK                 ATH2_  MACFILTER_124_TOK
+#define ATH2_MACFILTER_125_TOK                 ATH2_  MACFILTER_125_TOK
+#define ATH2_MACFILTER_126_TOK                 ATH2_  MACFILTER_126_TOK
+#define ATH2_MACFILTER_127_TOK                 ATH2_  MACFILTER_127_TOK
+#define ATH2_MACFILTER_128_TOK                 ATH2_  MACFILTER_128_TOK
+#if NUM_ATH2_MAC_FILTERS > 128
+#define ATH2_MACFILTER_129_TOK                 ATH2_  MACFILTER_129_TOK 
+#define ATH2_MACFILTER_130_TOK                 ATH2_  MACFILTER_130_TOK 
+#define ATH2_MACFILTER_131_TOK                 ATH2_  MACFILTER_131_TOK 
+#define ATH2_MACFILTER_132_TOK                 ATH2_  MACFILTER_132_TOK 
+#define ATH2_MACFILTER_133_TOK                 ATH2_  MACFILTER_133_TOK 
+#define ATH2_MACFILTER_134_TOK                 ATH2_  MACFILTER_134_TOK 
+#define ATH2_MACFILTER_135_TOK                 ATH2_  MACFILTER_135_TOK 
+#define ATH2_MACFILTER_136_TOK                 ATH2_  MACFILTER_136_TOK 
+#define ATH2_MACFILTER_137_TOK                 ATH2_  MACFILTER_137_TOK 
+#define ATH2_MACFILTER_138_TOK                 ATH2_  MACFILTER_138_TOK 
+#define ATH2_MACFILTER_139_TOK                 ATH2_  MACFILTER_139_TOK 
+#define ATH2_MACFILTER_140_TOK                 ATH2_  MACFILTER_140_TOK 
+#define ATH2_MACFILTER_141_TOK                 ATH2_  MACFILTER_141_TOK 
+#define ATH2_MACFILTER_142_TOK                 ATH2_  MACFILTER_142_TOK 
+#define ATH2_MACFILTER_143_TOK                 ATH2_  MACFILTER_143_TOK 
+#define ATH2_MACFILTER_144_TOK                 ATH2_  MACFILTER_144_TOK 
+#define ATH2_MACFILTER_145_TOK                 ATH2_  MACFILTER_145_TOK 
+#define ATH2_MACFILTER_146_TOK                 ATH2_  MACFILTER_146_TOK 
+#define ATH2_MACFILTER_147_TOK                 ATH2_  MACFILTER_147_TOK 
+#define ATH2_MACFILTER_148_TOK                 ATH2_  MACFILTER_148_TOK 
+#define ATH2_MACFILTER_149_TOK                 ATH2_  MACFILTER_149_TOK 
+#define ATH2_MACFILTER_150_TOK                 ATH2_  MACFILTER_150_TOK 
+#define ATH2_MACFILTER_151_TOK                 ATH2_  MACFILTER_151_TOK 
+#define ATH2_MACFILTER_152_TOK                 ATH2_  MACFILTER_152_TOK 
+#define ATH2_MACFILTER_153_TOK                 ATH2_  MACFILTER_153_TOK 
+#define ATH2_MACFILTER_154_TOK                 ATH2_  MACFILTER_154_TOK 
+#define ATH2_MACFILTER_155_TOK                 ATH2_  MACFILTER_155_TOK 
+#define ATH2_MACFILTER_156_TOK                 ATH2_  MACFILTER_156_TOK 
+#define ATH2_MACFILTER_157_TOK                 ATH2_  MACFILTER_157_TOK 
+#define ATH2_MACFILTER_158_TOK                 ATH2_  MACFILTER_158_TOK 
+#define ATH2_MACFILTER_159_TOK                 ATH2_  MACFILTER_159_TOK 
+#define ATH2_MACFILTER_160_TOK                 ATH2_  MACFILTER_160_TOK 
+#define ATH2_MACFILTER_161_TOK                 ATH2_  MACFILTER_161_TOK 
+#define ATH2_MACFILTER_162_TOK                 ATH2_  MACFILTER_162_TOK 
+#define ATH2_MACFILTER_163_TOK                 ATH2_  MACFILTER_163_TOK 
+#define ATH2_MACFILTER_164_TOK                 ATH2_  MACFILTER_164_TOK 
+#define ATH2_MACFILTER_165_TOK                 ATH2_  MACFILTER_165_TOK 
+#define ATH2_MACFILTER_166_TOK                 ATH2_  MACFILTER_166_TOK 
+#define ATH2_MACFILTER_167_TOK                 ATH2_  MACFILTER_167_TOK 
+#define ATH2_MACFILTER_168_TOK                 ATH2_  MACFILTER_168_TOK 
+#define ATH2_MACFILTER_169_TOK                 ATH2_  MACFILTER_169_TOK 
+#define ATH2_MACFILTER_170_TOK                 ATH2_  MACFILTER_170_TOK 
+#define ATH2_MACFILTER_171_TOK                 ATH2_  MACFILTER_171_TOK 
+#define ATH2_MACFILTER_172_TOK                 ATH2_  MACFILTER_172_TOK 
+#define ATH2_MACFILTER_173_TOK                 ATH2_  MACFILTER_173_TOK 
+#define ATH2_MACFILTER_174_TOK                 ATH2_  MACFILTER_174_TOK 
+#define ATH2_MACFILTER_175_TOK                 ATH2_  MACFILTER_175_TOK 
+#define ATH2_MACFILTER_176_TOK                 ATH2_  MACFILTER_176_TOK 
+#define ATH2_MACFILTER_177_TOK                 ATH2_  MACFILTER_177_TOK 
+#define ATH2_MACFILTER_178_TOK                 ATH2_  MACFILTER_178_TOK 
+#define ATH2_MACFILTER_179_TOK                 ATH2_  MACFILTER_179_TOK 
+#define ATH2_MACFILTER_180_TOK                 ATH2_  MACFILTER_180_TOK 
+#define ATH2_MACFILTER_181_TOK                 ATH2_  MACFILTER_181_TOK 
+#define ATH2_MACFILTER_182_TOK                 ATH2_  MACFILTER_182_TOK 
+#define ATH2_MACFILTER_183_TOK                 ATH2_  MACFILTER_183_TOK 
+#define ATH2_MACFILTER_184_TOK                 ATH2_  MACFILTER_184_TOK 
+#define ATH2_MACFILTER_185_TOK                 ATH2_  MACFILTER_185_TOK 
+#define ATH2_MACFILTER_186_TOK                 ATH2_  MACFILTER_186_TOK 
+#define ATH2_MACFILTER_187_TOK                 ATH2_  MACFILTER_187_TOK 
+#define ATH2_MACFILTER_188_TOK                 ATH2_  MACFILTER_188_TOK 
+#define ATH2_MACFILTER_189_TOK                 ATH2_  MACFILTER_189_TOK 
+#define ATH2_MACFILTER_190_TOK                 ATH2_  MACFILTER_190_TOK 
+#define ATH2_MACFILTER_191_TOK                 ATH2_  MACFILTER_191_TOK 
+#define ATH2_MACFILTER_192_TOK                 ATH2_  MACFILTER_192_TOK 
+#define ATH2_MACFILTER_193_TOK                 ATH2_  MACFILTER_193_TOK 
+#define ATH2_MACFILTER_194_TOK                 ATH2_  MACFILTER_194_TOK 
+#define ATH2_MACFILTER_195_TOK                 ATH2_  MACFILTER_195_TOK 
+#define ATH2_MACFILTER_196_TOK                 ATH2_  MACFILTER_196_TOK 
+#define ATH2_MACFILTER_197_TOK                 ATH2_  MACFILTER_197_TOK 
+#define ATH2_MACFILTER_198_TOK                 ATH2_  MACFILTER_198_TOK 
+#define ATH2_MACFILTER_199_TOK                 ATH2_  MACFILTER_199_TOK 
+#define ATH2_MACFILTER_200_TOK                 ATH2_  MACFILTER_200_TOK 
+#define ATH2_MACFILTER_201_TOK                 ATH2_  MACFILTER_201_TOK 
+#define ATH2_MACFILTER_202_TOK                 ATH2_  MACFILTER_202_TOK 
+#define ATH2_MACFILTER_203_TOK                 ATH2_  MACFILTER_203_TOK 
+#define ATH2_MACFILTER_204_TOK                 ATH2_  MACFILTER_204_TOK 
+#define ATH2_MACFILTER_205_TOK                 ATH2_  MACFILTER_205_TOK 
+#define ATH2_MACFILTER_206_TOK                 ATH2_  MACFILTER_206_TOK 
+#define ATH2_MACFILTER_207_TOK                 ATH2_  MACFILTER_207_TOK 
+#define ATH2_MACFILTER_208_TOK                 ATH2_  MACFILTER_208_TOK 
+#define ATH2_MACFILTER_209_TOK                 ATH2_  MACFILTER_209_TOK 
+#define ATH2_MACFILTER_210_TOK                 ATH2_  MACFILTER_210_TOK 
+#define ATH2_MACFILTER_211_TOK                 ATH2_  MACFILTER_211_TOK 
+#define ATH2_MACFILTER_212_TOK                 ATH2_  MACFILTER_212_TOK 
+#define ATH2_MACFILTER_213_TOK                 ATH2_  MACFILTER_213_TOK 
+#define ATH2_MACFILTER_214_TOK                 ATH2_  MACFILTER_214_TOK 
+#define ATH2_MACFILTER_215_TOK                 ATH2_  MACFILTER_215_TOK 
+#define ATH2_MACFILTER_216_TOK                 ATH2_  MACFILTER_216_TOK 
+#define ATH2_MACFILTER_217_TOK                 ATH2_  MACFILTER_217_TOK 
+#define ATH2_MACFILTER_218_TOK                 ATH2_  MACFILTER_218_TOK 
+#define ATH2_MACFILTER_219_TOK                 ATH2_  MACFILTER_219_TOK 
+#define ATH2_MACFILTER_220_TOK                 ATH2_  MACFILTER_220_TOK 
+#define ATH2_MACFILTER_221_TOK                 ATH2_  MACFILTER_221_TOK 
+#define ATH2_MACFILTER_222_TOK                 ATH2_  MACFILTER_222_TOK 
+#define ATH2_MACFILTER_223_TOK                 ATH2_  MACFILTER_223_TOK 
+#define ATH2_MACFILTER_224_TOK                 ATH2_  MACFILTER_224_TOK 
+#define ATH2_MACFILTER_225_TOK                 ATH2_  MACFILTER_225_TOK 
+#define ATH2_MACFILTER_226_TOK                 ATH2_  MACFILTER_226_TOK 
+#define ATH2_MACFILTER_227_TOK                 ATH2_  MACFILTER_227_TOK 
+#define ATH2_MACFILTER_228_TOK                 ATH2_  MACFILTER_228_TOK 
+#define ATH2_MACFILTER_229_TOK                 ATH2_  MACFILTER_229_TOK 
+#define ATH2_MACFILTER_230_TOK                 ATH2_  MACFILTER_230_TOK 
+#define ATH2_MACFILTER_231_TOK                 ATH2_  MACFILTER_231_TOK 
+#define ATH2_MACFILTER_232_TOK                 ATH2_  MACFILTER_232_TOK 
+#define ATH2_MACFILTER_233_TOK                 ATH2_  MACFILTER_233_TOK 
+#define ATH2_MACFILTER_234_TOK                 ATH2_  MACFILTER_234_TOK 
+#define ATH2_MACFILTER_235_TOK                 ATH2_  MACFILTER_235_TOK 
+#define ATH2_MACFILTER_236_TOK                 ATH2_  MACFILTER_236_TOK 
+#define ATH2_MACFILTER_237_TOK                 ATH2_  MACFILTER_237_TOK 
+#define ATH2_MACFILTER_238_TOK                 ATH2_  MACFILTER_238_TOK 
+#define ATH2_MACFILTER_239_TOK                 ATH2_  MACFILTER_239_TOK 
+#define ATH2_MACFILTER_240_TOK                 ATH2_  MACFILTER_240_TOK 
+#define ATH2_MACFILTER_241_TOK                 ATH2_  MACFILTER_241_TOK 
+#define ATH2_MACFILTER_242_TOK                 ATH2_  MACFILTER_242_TOK 
+#define ATH2_MACFILTER_243_TOK                 ATH2_  MACFILTER_243_TOK 
+#define ATH2_MACFILTER_244_TOK                 ATH2_  MACFILTER_244_TOK 
+#define ATH2_MACFILTER_245_TOK                 ATH2_  MACFILTER_245_TOK 
+#define ATH2_MACFILTER_246_TOK                 ATH2_  MACFILTER_246_TOK 
+#define ATH2_MACFILTER_247_TOK                 ATH2_  MACFILTER_247_TOK 
+#define ATH2_MACFILTER_248_TOK                 ATH2_  MACFILTER_248_TOK 
+#define ATH2_MACFILTER_249_TOK                 ATH2_  MACFILTER_249_TOK 
+#define ATH2_MACFILTER_250_TOK                 ATH2_  MACFILTER_250_TOK 
+#define ATH2_MACFILTER_251_TOK                 ATH2_  MACFILTER_251_TOK 
+#define ATH2_MACFILTER_252_TOK                 ATH2_  MACFILTER_252_TOK 
+#define ATH2_MACFILTER_253_TOK                 ATH2_  MACFILTER_253_TOK 
+#define ATH2_MACFILTER_254_TOK                 ATH2_  MACFILTER_254_TOK 
+#define ATH2_MACFILTER_255_TOK                 ATH2_  MACFILTER_255_TOK 
+#define ATH2_MACFILTER_256_TOK                 ATH2_  MACFILTER_256_TOK 
+#endif                                       
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif /*HAS_SUPPORT_ATH_RADIO2_MACFILTER*/
+#endif /*HAS_SUPPORT_ATHEROS_RADIO2_WLAN*/
+
+#endif //_TOKEN_ATHEROS_H_
+

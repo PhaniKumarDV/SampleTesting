@@ -1,0 +1,27 @@
+#!/bin/sh
+[ -z "$1" ] && echo "Error: should be run by locator" && exit 1
+
+. /lib/functions.sh
+
+debug(){
+[ -e "/tmp/LOCATOR_DEBUG" ] && echo "$@"
+}
+
+	case "$1" in
+		SET_IP)
+			debug "== $0 called =="
+			/etc/init.d/lanip reload
+		;;
+		RESET)
+			debug "== $0 called =="
+			. /lib/functions.sh
+			jffs2_mark_erase rootfs_data
+			sleep 1
+			reboot
+		;;
+	esac
+
+# user rules
+[ -f /etc/locator.user ] && . /etc/locator.user
+
+exit 0

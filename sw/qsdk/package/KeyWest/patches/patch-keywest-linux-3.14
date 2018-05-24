@@ -1,0 +1,140 @@
+diff -urN linux-3.14/drivers/sifydrv/sifydrv.c linux-3.14_mod/drivers/sifydrv/sifydrv.c
+--- linux-3.14/drivers/sifydrv/sifydrv.c	2018-05-22 15:00:57.886913970 +0530
++++ linux-3.14_mod/drivers/sifydrv/sifydrv.c	2018-05-22 16:09:09.807925280 +0530
+@@ -37,6 +37,9 @@
+ static struct class *devone_class = NULL;
+ static dev_t devone_dev;
+ 
++void (*intimate_dying_gasp)(void *arg);
++EXPORT_SYMBOL(intimate_dying_gasp);
++
+ // 1pps irq no from GPIO5
+ unsigned int n1pps_irq_no = 0;
+ // dying gasp irq no from GPIO 63
+@@ -68,9 +71,12 @@
+ // IRQ handler for dying gasp when GPIO63 pull low
+ static irqreturn_t lost_pwr_irq(int irq, void *dev_id)
+ {
+-    printk("Dying gasp irq %d received \n", irq);
+-    nlost_power_flg = 1;
+-		
++	printk("Dying gasp irq %d received \n", irq);
++	nlost_power_flg = 1;
++
++	if ( intimate_dying_gasp != NULL ) {
++		intimate_dying_gasp(NULL);
++	}	
+ 	if(nTimerValue > 0)
+ 		mod_timer(&Timer_Dgasp, jiffies + nTimerValue);
+ 	
+@@ -97,7 +103,7 @@
+ 	switch (cmd) {
+ 	case GET_NMEA_READ_PERIOD:
+ 	    copy_to_user((unsigned int *)arg,&nNMEA_read_period,sizeof(nNMEA_read_period));
+-		printk("GET_NMEA_READ_PERIOD ret =%d \n",*((unsigned int *)arg));
++		//printk("GET_NMEA_READ_PERIOD ret =%d \n",*((unsigned int *)arg));
+ 		break;
+ 	case GET_LOW_POWER_STATE:	    
+ 		 copy_to_user((unsigned int *)arg,&nlost_power_flg,sizeof(nlost_power_flg));
+diff -urN linux-3.14/include/asm-generic/param.h linux-3.14_mod/include/asm-generic/param.h
+--- linux-3.14/include/asm-generic/param.h	2018-05-22 15:02:22.065695937 +0530
++++ linux-3.14_mod/include/asm-generic/param.h	2018-05-22 16:08:04.527318866 +0530
+@@ -4,7 +4,7 @@
+ #include <uapi/asm-generic/param.h>
+ 
+ # undef HZ
+-# define HZ		CONFIG_HZ	/* Internal kernel timer frequency */
++# define HZ		1000	/* Internal kernel timer frequency */
+ # define USER_HZ	100		/* some user interfaces are */
+ # define CLOCKS_PER_SEC	(USER_HZ)       /* in "ticks" like times() */
+ #endif /* __ASM_GENERIC_PARAM_H */
+diff -urN linux-3.14/include/uapi/linux/if_bridge.h linux-3.14_mod/include/uapi/linux/if_bridge.h
+--- linux-3.14/include/uapi/linux/if_bridge.h	2018-05-22 15:03:01.989066799 +0530
++++ linux-3.14_mod/include/uapi/linux/if_bridge.h	2018-05-22 16:08:04.527318866 +0530
+@@ -43,6 +43,7 @@
+ #define BRCTL_SET_PORT_PRIORITY 16
+ #define BRCTL_SET_PATH_COST 17
+ #define BRCTL_GET_FDB_ENTRIES 18
++#define BRCTL_DEL_FDB_ENTRIES 19
+ 
+ #define BR_STATE_DISABLED 0
+ #define BR_STATE_LISTENING 1
+diff -urN linux-3.14/kernel/timeconst.bc linux-3.14_mod/kernel/timeconst.bc
+--- linux-3.14/kernel/timeconst.bc	2018-05-22 15:03:04.223087552 +0530
++++ linux-3.14_mod/kernel/timeconst.bc	2018-05-22 16:08:04.527318866 +0530
+@@ -49,9 +49,9 @@
+ 	print "#include <linux/param.h>\n"
+ 	print "#include <linux/types.h>\n\n"
+ 
+-	print "#if HZ != ", hz, "\n"
+-	print "#error \qkernel/timeconst.h has the wrong HZ value!\q\n"
+-	print "#endif\n\n"
++	print "//#if HZ != ", hz, "\n"
++	print "//#error \qkernel/timeconst.h has the wrong HZ value!\q\n"
++	print "//#endif\n\n"
+ 
+ 	if (hz < 2) {
+ 		print "#error Totally bogus HZ value!\n"
+diff -urN linux-3.14/net/bridge/br_fdb.c linux-3.14_mod/net/bridge/br_fdb.c
+--- linux-3.14/net/bridge/br_fdb.c	2018-05-22 15:03:09.880140102 +0530
++++ linux-3.14_mod/net/bridge/br_fdb.c	2018-05-22 16:08:04.528318875 +0530
+@@ -296,6 +296,21 @@
+ 	spin_unlock_bh(&br->hash_lock);
+ }
+ 
++void br_fdb_del_all(struct net_bridge *br)
++{
++    int i;
++    spin_lock_bh(&br->hash_lock);
++
++    for (i = 0; i < BR_HASH_SIZE; i++) {
++        struct net_bridge_fdb_entry *f;
++        struct hlist_node *n;
++        hlist_for_each_entry_safe(f, n, &br->hash[i], hlist) {
++            if (!f->is_local & !f->is_static)
++                fdb_delete(br, f);
++        }
++    }
++    spin_unlock_bh(&br->hash_lock);
++}
+ /* Flush all entries referring to a specific port.
+  * if do_all is set also flush static entries
+  */
+diff -urN linux-3.14/net/bridge/br_ioctl.c linux-3.14_mod/net/bridge/br_ioctl.c
+--- linux-3.14/net/bridge/br_ioctl.c	2018-05-22 15:03:09.881140111 +0530
++++ linux-3.14_mod/net/bridge/br_ioctl.c	2018-05-22 16:08:04.528318875 +0530
+@@ -289,6 +289,10 @@
+ 	case BRCTL_GET_FDB_ENTRIES:
+ 		return get_fdb_entries(br, (void __user *)args[1],
+ 				       args[2], args[3]);
++
++    case BRCTL_DEL_FDB_ENTRIES:
++        br_fdb_del_all(br);
++        return 0;
+ 	}
+ 
+ 	return -EOPNOTSUPP;
+diff -urN linux-3.14/net/bridge/br_private.h linux-3.14_mod/net/bridge/br_private.h
+--- linux-3.14/net/bridge/br_private.h	2018-05-22 15:03:09.883140130 +0530
++++ linux-3.14_mod/net/bridge/br_private.h	2018-05-22 16:08:04.528318875 +0530
+@@ -369,6 +369,8 @@
+ int br_fdb_init(void);
+ void br_fdb_fini(void);
+ void br_fdb_flush(struct net_bridge *br);
++void br_fdb_del_all(struct net_bridge *br);
++
+ void br_fdb_find_delete_local(struct net_bridge *br,
+ 			      const struct net_bridge_port *p,
+ 			      const unsigned char *addr, u16 vid);
+diff -urN linux-3.14/net/netfilter/nfnetlink.c linux-3.14_mod/net/netfilter/nfnetlink.c
+--- linux-3.14/net/netfilter/nfnetlink.c	2018-05-22 15:03:25.501285212 +0530
++++ linux-3.14_mod/net/netfilter/nfnetlink.c	2018-05-22 16:08:04.529318884 +0530
+@@ -268,7 +268,7 @@
+ 		if (nlh->nlmsg_len < NLMSG_HDRLEN ||
+ 		    skb->len < nlh->nlmsg_len ||
+ 		    nlmsg_len(nlh) < sizeof(struct nfgenmsg)) {
+-			nfnl_err_reset(&err_list);
++			//nfnl_err_reset(&err_list);
+ 			success = false;
+ 			goto done;
+ 		}

@@ -1,0 +1,21 @@
+<%#
+ Copyright 2008 Steven Barth <steven@midlink.org>
+  Copyright 2008 Jo-Philipp Wich <jow@openwrt.org>
+   Licensed to the public under the Apache License 2.0.
+   -%>
+
+<%+header%>
+<div class="page-content">
+   <h2><a id="content" name="content"><%:ARP Table%></a></h2>
+   <fieldset>
+   <div id="content_syslog">
+   <textarea readonly="readonly" wrap="off" rows="<%=arptbl:cmatch("\n")+2%>" id="syslog"><%=arptbl:pcdata()%></textarea>
+   </div>
+   </fieldset>
+   <div>&nbsp;</div>
+   <div class="cbi-page-actions right">
+    <input type="button" class="cbi-button" value="<%:Refresh%>" onclick="location.href='<%=luci.dispatcher.build_url("admin/monitor/arptbl")%>'" />
+    <input type="button" class="cbi-button" value="<%:Clear%>" onclick="location.href='<%=luci.dispatcher.build_url("admin/monitor/clr_arptbl")%>'" />
+    </div>
+</div>
+<%+footer%>

@@ -1,0 +1,1057 @@
+diff -urN qca-wifi-org/cmn_dev/dp/inc/cdp_txrx_stats_struct.h qca-wifi-mod/cmn_dev/dp/inc/cdp_txrx_stats_struct.h
+--- qca-wifi-org/cmn_dev/dp/inc/cdp_txrx_stats_struct.h	2018-01-18 15:26:33.000000000 +0530
++++ qca-wifi-mod/cmn_dev/dp/inc/cdp_txrx_stats_struct.h	2018-05-23 22:17:15.385855094 +0530
+@@ -505,6 +505,11 @@
+ 	OL_ATH_PARAM_CHAN_FREE  = 366,
+ 	OL_ATH_PARAM_CHAN_AP_TX_UTIL = 367,
+ 	OL_ATH_PARAM_CHAN_OBSS_RX_UTIL  =368,
++	OL_ATH_PARAM_TXDISTANCE = 369,
++	OL_ATH_PARAM_DYING_GASP = 370,
++	OL_ATH_PARAM_DG_TIMER_INTERVAL = 371,
++	OL_ATH_PARAM_DG_ACK_DISABLE = 372,
++	OL_ATH_PARAM_LINKID = 373
+ 
+ } ol_ath_param_t;
+ 
+diff -urN qca-wifi-org/include/ieee80211.h qca-wifi-mod/include/ieee80211.h
+--- qca-wifi-org/include/ieee80211.h	2018-04-30 15:49:08.000000000 +0530
++++ qca-wifi-mod/include/ieee80211.h	2018-05-23 22:17:15.481857228 +0530
+@@ -768,6 +768,7 @@
+ #define IEEE80211_ACTION_TPC_REQUEST        2   /* Transmit Power control */
+ #define IEEE80211_ACTION_TPC_REPORT         3
+ #define IEEE80211_ACTION_CHAN_SWITCH        4   /* 802.11h Channel Switch Announcement */
++#define IEEE80211_ACTION_DYING_GASP	    5   /*Dying Gasp*/
+ 
+ /* HT actions */
+ #define IEEE80211_ACTION_HT_TXCHWIDTH       0   /* recommended transmission channel width */
+@@ -840,6 +841,24 @@
+         struct ieee80211_ie_op_mode opmode;
+ } __packed;
+ 
++#define DG_PKT_TYPE_INFORM 1
++#define DG_PKT_TYPE_ACK	   2
++
++struct ieee80211_dying_gasp_ie {
++    u_int8_t    type;
++    u_int8_t	link_id;
++    u_int16_t	seq_no;
++    u_long   	ts;
++    u_int32_t  	ipv4;
++    u_int8_t	customer_name[32];
++    
++} __packed;
++
++/* VHT - Dying gasp*/
++struct ieee80211_action_vht_dying_gasp {
++    struct ieee80211_action     at_header;
++    struct ieee80211_dying_gasp_ie at_dying_gasp;
++} __packed;
+ 
+ /* VHT - recommended Channel width and Nss */
+ struct ieee80211_action_vht_opmode {
+diff -urN qca-wifi-org/offload/os/linux/ol_ath_iw_handler.c qca-wifi-mod/offload/os/linux/ol_ath_iw_handler.c
+--- qca-wifi-org/offload/os/linux/ol_ath_iw_handler.c	2018-04-30 15:49:07.000000000 +0530
++++ qca-wifi-mod/offload/os/linux/ol_ath_iw_handler.c	2018-05-23 22:17:15.490857428 +0530
+@@ -1022,6 +1022,24 @@
+         IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1, 0,         "acktimeout" },
+     { OL_ATH_PARAM_TXACKTIMEOUT | OL_ATH_PARAM_SHIFT,
+         0, IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1,         "get_acktimeout" },
++    { OL_ATH_PARAM_TXDISTANCE | OL_ATH_PARAM_SHIFT,
++        IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1, 0,         "distance" },
++    { OL_ATH_PARAM_TXDISTANCE | OL_ATH_PARAM_SHIFT,
++        0, IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1,         "get_distance" },
++    { OL_ATH_PARAM_DYING_GASP | OL_ATH_PARAM_SHIFT,
++        IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1, 0,         "dying_gasp" },
++    { OL_ATH_PARAM_DYING_GASP | OL_ATH_PARAM_SHIFT,
++        0, IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1,         "get_dying_gasp" },
++    { OL_ATH_PARAM_DG_TIMER_INTERVAL | OL_ATH_PARAM_SHIFT,
++        IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1, 0,         "dgtimeout" },
++    { OL_ATH_PARAM_DG_TIMER_INTERVAL | OL_ATH_PARAM_SHIFT,
++        0, IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1,         "get_dgtimeout" },
++    { OL_ATH_PARAM_DG_ACK_DISABLE | OL_ATH_PARAM_SHIFT,
++        IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1, 0,         "dgackdisable" },
++    { OL_ATH_PARAM_DG_ACK_DISABLE | OL_ATH_PARAM_SHIFT,
++        0, IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1,         "get_dgackdisable" },
++    { OL_ATH_PARAM_LINKID | OL_ATH_PARAM_SHIFT,
++        IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1, 0,         "linkid" },
+     { OL_ATH_PARAM_BEST_UL_HYST | OL_ATH_PARAM_SHIFT,
+         IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1, 0,       "ul_hyst" },
+     { OL_ATH_PARAM_BEST_UL_HYST | OL_ATH_PARAM_SHIFT,
+diff -urN qca-wifi-org/offload/wlan/include/ol_if_athvar.h qca-wifi-mod/offload/wlan/include/ol_if_athvar.h
+--- qca-wifi-org/offload/wlan/include/ol_if_athvar.h	2018-04-30 15:49:07.000000000 +0530
++++ qca-wifi-mod/offload/wlan/include/ol_if_athvar.h	2018-05-23 22:17:15.530858318 +0530
+@@ -1048,6 +1048,8 @@
+ void ol_ath_vap_tx_lock(void *ptr);
+ void ol_ath_vap_tx_unlock(void *ptr);
+ 
++
++void ieee80211_send_dying_gasp(struct ieee80211vap *vap,u_int32_t send_ack,struct ieee80211_node *ni);
+ int
+ ol_transfer_target_eeprom_caldata(struct ol_ath_softc_net80211 *scn, u_int32_t address, bool compressed);
+ 
+diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_ath_config.c qca-wifi-mod/offload/wlan/lmac_offload_if/ol_if_ath_config.c
+--- qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_ath_config.c	2018-04-30 15:49:07.000000000 +0530
++++ qca-wifi-mod/offload/wlan/lmac_offload_if/ol_if_ath_config.c	2018-05-23 22:17:15.562859029 +0530
+@@ -53,6 +53,8 @@
+ #endif
+ void ol_ath_reset_vap_stat(struct ieee80211com *ic);
+ uint32_t promisc_is_active (struct ieee80211com *ic);
++extern void (*intimate_dying_gasp)(void *arg);
++extern void dying_gasp_fn ( void * arg ) ;
+ 
+ extern int ol_ath_target_start(struct ol_ath_softc_net80211 *scn);
+ extern void ol_ath_dump_target(struct ol_ath_softc_net80211 *scn);
+@@ -1839,7 +1841,54 @@
+             }
+             break;
+ #endif /* OL_ATH_CE_DEBUG */
+-        case OL_ATH_PARAM_TXACKTIMEOUT:
++	case OL_ATH_PARAM_DYING_GASP:
++            {
++                if (value < 1 || value > 2) {
++                    retval = -EINVAL;
++                }
++                ic->dying_gasp = value;
++    		/*Dying gasp initialization only when enabled */
++		if ( value == 1) {
++    			intimate_dying_gasp = dying_gasp_fn;
++			printk("%s:Dying gasp enabled---->HZ: %d \n",__func__,HZ);
++		}
++		else if ( value == 2) {
++    			intimate_dying_gasp = NULL;
++			printk("%s:Dying gasp disabled---->HZ: %d \n",__func__,HZ);
++		}
++            }
++	    break;
++        case OL_ATH_PARAM_DG_TIMER_INTERVAL:
++            {
++            	ic->ic_dg_timer_interval = value;
++            }
++            break;
++        case OL_ATH_PARAM_DG_ACK_DISABLE:
++            {
++            	ic->ic_dg_ack_disable = value;
++            }
++            break;
++        case OL_ATH_PARAM_LINKID:
++            {
++            	ic->ic_link_id = value;
++            }
++            break;
++	case OL_ATH_PARAM_TXDISTANCE: 
++	    value = value * 1000; //Distance in meters
++	    if ( value >= 0 && value < 53100 ) {
++		    u_int32_t acktimeout = (9+(value/300) + ((value % 300)?1:0));
++		    acktimeout = acktimeout * 2 + 3;
++
++		    if (acktimeout < DEFAULT_TX_ACK_TIMEOUT )
++			    acktimeout = DEFAULT_TX_ACK_TIMEOUT;
++		    else if (acktimeout > MAX_TX_ACK_TIMEOUT)
++			    acktimeout = MAX_TX_ACK_TIMEOUT;
++		    (void)ol_ath_pdev_set_param(scn,
++				    wmi_pdev_param_tx_ack_timeout, acktimeout, 0);
++		    scn->tx_ack_timeout = acktimeout;
++	    } 
++	    break;
++	case OL_ATH_PARAM_TXACKTIMEOUT:
+             {
+                 if ((scn->target_type == TARGET_TYPE_AR900B) || (scn->target_type == TARGET_TYPE_QCA9984) ||
+                    (scn->target_type == TARGET_TYPE_QCA9888) || (scn->target_type == TARGET_TYPE_IPQ4019))
+@@ -2374,6 +2423,22 @@
+             }
+             break;
+ #endif /* OL_ATH_CE_DEBUG */
++        case OL_ATH_PARAM_DYING_GASP:
++                *(int *)buff = ic->dying_gasp;
++	    break;
++        case OL_ATH_PARAM_DG_TIMER_INTERVAL:
++            {
++            	*(int *)buff = ic->ic_dg_timer_interval;
++            }
++            break;
++        case OL_ATH_PARAM_DG_ACK_DISABLE:
++            {
++            	*(int *)buff = ic->ic_dg_ack_disable ;
++            }
++            break;
++        case OL_ATH_PARAM_TXDISTANCE:
++                *(int *)buff = scn->tx_ack_timeout;
++	    break;
+         case OL_ATH_PARAM_TXACKTIMEOUT:
+             if ((scn->target_type == TARGET_TYPE_AR900B) || (scn->target_type == TARGET_TYPE_QCA9984) ||
+                (scn->target_type == TARGET_TYPE_QCA9888) || (scn->target_type == TARGET_TYPE_IPQ4019))
+diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_vap.c qca-wifi-mod/offload/wlan/lmac_offload_if/ol_if_vap.c
+--- qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_vap.c	2018-04-30 15:49:07.000000000 +0530
++++ qca-wifi-mod/offload/wlan/lmac_offload_if/ol_if_vap.c	2018-05-23 22:17:15.577859363 +0530
+@@ -65,6 +65,8 @@
+ #define MAX_UNRESPONSIVE_TIME_MIN_THRESHOLD_SECS  5
+ #define MAX_UNRESPONSIVE_TIME_MAX_THRESHOLD_SECS  (u_int16_t)~0
+ 
++struct timer_list       dg_timer;
++extern int dg_ack_rcvd;
+ extern int ol_ath_set_vap_dscp_tid_map(struct ieee80211vap *vap);
+ extern int ol_ath_ucfg_get_peer_mumimo_tx_count(wlan_if_t vaphandle, u_int32_t aid);
+ static int wlan_get_peer_mumimo_tx_count(wlan_if_t vaphandle, u_int32_t aid)
+@@ -3717,6 +3719,33 @@
+     return 0;
+ }
+ 
++void dying_gasp_fn ( void * arg ) {
++	struct net_device *dev = dev_get_by_name(&init_net,"ath1");
++	if ( dev != NULL ) {
++		osif_dev  *osdev = ath_netdev_priv(dev);
++		wlan_if_t vap = osdev->os_if;
++		ieee80211_send_dying_gasp( vap , 0, NULL );
++		//printk("dg_ack_rcvd : %d \n",dg_ack_rcvd);	
++		//printk("vap->iv_ic->ic_dg_timer_interval = %d,HZ = %d,jiffies = %9lu , Next jiffies = %9lu \n",vap->iv_ic->ic_dg_timer_interval,HZ,jiffies, 
++		//	jiffies+(vap->iv_ic->ic_dg_timer_interval*HZ/1000));
++		if(!dg_ack_rcvd) {
++			//printk("Reset timer\n");
++			mod_timer(&dg_timer,jiffies+(vap->iv_ic->ic_dg_timer_interval*HZ/1000));
++		}
++		else {
++			//printk("Delete timer\n");
++			del_timer(&dg_timer);
++		}
++
++		dev_put(dev);
++	}
++	return ;
++}
++void dying_gasp_timer ( unsigned long  arg )
++{
++	struct ol_ath_softc_net80211 *scn = ( struct ol_ath_softc_net80211 *)arg;
++	dying_gasp_fn(scn);
++}
+ /* Intialization functions */
+ void
+ ol_ath_vap_attach(struct ieee80211com *ic)
+@@ -3754,6 +3783,7 @@
+         ath_green_ap_start(ic);
+     }
+ #endif  /* ATH_SUPPORT_GREEN_AP */
++   setup_timer(&dg_timer, dying_gasp_timer, (unsigned long)scn );
+ }
+ 
+ 
+diff -urN qca-wifi-org/offload/wlan/regdmn/ol_regdomain.c qca-wifi-mod/offload/wlan/regdmn/ol_regdomain.c
+--- qca-wifi-org/offload/wlan/regdmn/ol_regdomain.c	2018-04-30 15:49:07.000000000 +0530
++++ qca-wifi-mod/offload/wlan/regdmn/ol_regdomain.c	2018-05-23 22:17:15.603859941 +0530
+@@ -779,7 +779,9 @@
+         case DEBUG_REG_DMN:
+         case NO_ENUMRD:
+             if (ol_regdmn_handle->ol_regdmn_countryCode ==
+-                        CTRY_UNITED_STATES_FCC49) {
++                        CTRY_UNITED_STATES_FCC49 || 
++                ol_regdmn_handle->ol_regdmn_countryCode == 
++                        CTRY_RUSSIA_1) {
+                 return true;
+             }
+             break;
+@@ -1525,12 +1527,21 @@
+     if (regdmn == OVERRIDE_RD && ol_regdmn_duplicate_channel(icv, chans, *next+1))
+         return;
+     icv->ic_ieee = ol_ath_mhz2ieee(ic, icv->ic_freq, icv->ic_flags);
++#if 0
+     if(vht_ch_freq_seg1) {
+         icv->ic_vhtop_ch_freq_seg1 = ol_ath_mhz2ieee(ic, vht_ch_freq_seg1, icv->ic_flags);
+     }
+     else {
+         icv->ic_vhtop_ch_freq_seg1 = 0;
+     }
++#else
++    if( cm->mode == REGDMN_MODE_11AC_VHT80 ) {
++        icv->ic_vhtop_ch_freq_seg1 = ol_ath_mhz2ieee(ic, vht_ch_freq_seg1, icv->ic_flags);
++    }
++    else {
++        icv->ic_vhtop_ch_freq_seg1 = 0;
++    }
++#endif
+     if(vht_ch_freq_seg2) {
+         icv->ic_vhtop_ch_freq_seg2 = ol_ath_mhz2ieee(ic, vht_ch_freq_seg2, icv->ic_flags);
+     }
+@@ -1566,13 +1577,14 @@
+     u_int16_t chanSep;
+     ol_scn_t scn_handle;
+     struct ieee80211com *ic;
+-    u_int32_t ch144, ch144_eppr_ovrd;
++    //int i;
++    //u_int32_t ch144, ch144_eppr_ovrd;
+ 
+     struct ol_ath_softc_net80211 *scn = NULL;
+     scn_handle = ol_regdmn_handle->scn_handle;
+     ic = &scn_handle->sc_ic;
+     sec_channel_count = 0;
+-    ch144_eppr_ovrd = 0;
++    //ch144_eppr_ovrd = 0;
+ 
+     scn = OL_ATH_SOFTC_NET80211(ic);
+     /*
+@@ -1898,6 +1910,7 @@
+         // Walk through the 5G band to find 80 Mhz channel
+         else  if ((cm->mode == REGDMN_MODE_11AC_VHT80) && (rd == &rd5GHz))
+         {
++#if 0
+             ol_regdmn_init_vht80_chan(&vht80_chans);
+ 
+             if (regdmn != OVERRIDE_RD) {
+@@ -1925,6 +1938,10 @@
+                 ol_regdmn_add_vht80_chan(&vht80_chans, 5690);
+                 ol_regdmn_add_vht80_chan(&vht80_chans, 5775);
+             }
++#else
++                hi_adj = -30;
++                low_adj = 30;
++#endif
+         }
+ 
+         if(rd == &rd2GHz) {
+@@ -1959,6 +1976,7 @@
+                     (!is_49ghz_cap) && (regdmn != OVERRIDE_RD))
+                     continue;
+ 
++#if 0
+                 if (((IS_HT40_MODE(cm->mode)) || (IS_VHT40_MODE(cm->mode))) && (rd == &rd5GHz)) {
+                     /* For 5G HT40 mode, channel seperation should be 40. */
+                     chanSep = 40;
+@@ -1993,7 +2011,9 @@
+                         }
+                     }
+                 }
+-
++#else
++                    chanSep = fband->channelSep;
++#endif
+                 for (c=fband->lowChannel + low_adj;
+                      ((c <= (fband->highChannel + hi_adj)) &&
+                       (c >= (fband->lowChannel + low_adj)));
+@@ -2069,6 +2089,7 @@
+                         QDF_PRINT_INFO(ic->ic_print_idx, QDF_MODULE_ID_ANY, QDF_TRACE_LEVEL_INFO, "Skipping HT40 channel (en_jap_dfs_ht40 = 0)\n");
+                         continue;
+                     }
++#if 0
+                     if(rd == &rd5GHz)
+                     {
+                         /*
+@@ -2125,7 +2146,7 @@
+                             }
+                         }
+                     }
+-
++#endif
+                     OS_MEMZERO(&icv, sizeof(icv));
+                     if(cm->mode == REGDMN_MODE_11AC_VHT80_80) {
+ 
+@@ -2188,16 +2209,18 @@
+                          * For all 4.9G, VHT80 is not allowed.
+                          * Except for CTRY_DEBUG.
+                          */
+-                        if ((fband->lowChannel < 5180) && (cc != CTRY_DEBUG) && (regdmn != OVERRIDE_RD)) {
++                        if ((fband->lowChannel < 4920) && (cc != CTRY_DEBUG) && (regdmn != OVERRIDE_RD)) {
+                             continue;
+                         }
+-
++#if 0
+                         if(!ol_regdmn_find_vht80_chan(&vht80_chans, c, &vht_ch_freq_seg1)) {
+                             if (regdmn != OVERRIDE_RD){
+                                 QDF_PRINT_INFO(ic->ic_print_idx, QDF_MODULE_ID_ANY, QDF_TRACE_LEVEL_INFO, KERN_INFO"Skipping VHT80 channel %d\n", c);
+                             }
+                             continue;
+                         }
++#endif
++                        vht_ch_freq_seg1 = c;
+                         vht_ch_freq_seg2 = 0;
+                         if (ol_validate_restricted_channel(scn_handle, cm, c, vht_ch_freq_seg1, vht_ch_freq_seg2)) {
+                             populate_icv(&icv, c, vht_ch_freq_seg1, vht_ch_freq_seg2, fband, 0,  cm, rd, rd5GHz, dfsDomain, scn_handle, regdmn, chans, &next);
+diff -urN qca-wifi-org/offload/wlan/regdmn/ol_regdomain_common.h qca-wifi-mod/offload/wlan/regdmn/ol_regdomain_common.h
+--- qca-wifi-org/offload/wlan/regdmn/ol_regdomain_common.h	2018-04-30 15:49:07.000000000 +0530
++++ qca-wifi-mod/offload/wlan/regdmn/ol_regdomain_common.h	2018-05-23 22:17:15.621860341 +0530
+@@ -52,6 +52,14 @@
+ 	NO_ENUMRD	= 0x00,
+     OVERRIDE_RD = 0x01,
+ 	NULL1_WORLD	= 0x03,		/* For 11b-only countries (no 11a allowed) */
++	SF_RUSSIA_49_51 = 0x04,		/* Sify custom  */
++	SF_RUSSIA_51_53 = 0x05,		/* Sify custom */
++	SF_RUSSIA_53_56 = 0x06,		/* Sify custom */
++	SF_RUSSIA_56_58 = 0x09,		/* Sify custom */
++	SF_RUSSIA_58_59 = 0x24,		/* Sify custom */
++	SF_INDIA_UL     = 0x25,		/* Sify custom */
++	SF_INDIA_L      = 0x27,		/* Sify custom */
++
+ 	NULL1_ETSIB	= 0x07,		/* Israel */
+ 	NULL1_ETSIC	= 0x08,
+ 	FCC1_FCCA	= 0x10,		/* USA */
+@@ -216,7 +224,14 @@
+ 
+ 	NULL1		= 0x0198,
+ 	WORLD		= 0x0199,
+-	DEBUG_REG_DMN	= 0x01ff,
++    DEBUG_REG_DMN	= 0x01ff,
++    RUSSIA01    = 0x0201,   /* Sify custom */ 
++    RUSSIA02    = 0x0202,   /* Sify custom */
++    RUSSIA03    = 0x0203,   /* Sify custom */
++    RUSSIA04    = 0x0204,   /* Sify custom */
++    RUSSIA05    = 0x0205,   /* Sify custom */
++    INDIAUL     = 0x0206,   /* Sify custom */
++    INDIAL      = 0x0207,   /* Sify custom */
+     OVER1_OVERA = 0x0200,
+ };
+ 
+@@ -354,6 +369,13 @@
+ 	{WORA_WORLD,	WORA_WORLD,	WORA_WORLD,	DISALLOW_ADHOC_11A | DISALLOW_ADHOC_11A_TURB, NO_REQ, PSCAN_DEFER, 0 },
+ 	{WORB_WORLD,	WORB_WORLD,	WORB_WORLD,	DISALLOW_ADHOC_11A | DISALLOW_ADHOC_11A_TURB, NO_REQ, PSCAN_DEFER, 0 },
+ 	{WORC_WORLD,	WORC_WORLD,	WORC_WORLD,	NO_REQ, NO_REQ, PSCAN_DEFER, 0 },
++	{SF_RUSSIA_49_51,	RUSSIA01,		WORLD,		DISALLOW_ADHOC_11A | DISALLOW_ADHOC_11A_TURB, NO_REQ, PSCAN_DEFER, 0 }, /* Sify custom */
++	{SF_RUSSIA_51_53,	RUSSIA02,		WORLD,		DISALLOW_ADHOC_11A | DISALLOW_ADHOC_11A_TURB, NO_REQ, PSCAN_DEFER, 0 }, /* Sify custom */
++	{SF_RUSSIA_53_56,	RUSSIA03,		WORLD,		DISALLOW_ADHOC_11A | DISALLOW_ADHOC_11A_TURB, NO_REQ, PSCAN_DEFER, 0 }, /* Sify custom */
++	{SF_RUSSIA_56_58,	RUSSIA04,		WORLD,		DISALLOW_ADHOC_11A | DISALLOW_ADHOC_11A_TURB, NO_REQ, PSCAN_DEFER, 0 }, /* Sify custom */
++	{SF_RUSSIA_58_59,	RUSSIA05,		WORLD,		DISALLOW_ADHOC_11A | DISALLOW_ADHOC_11A_TURB, NO_REQ, PSCAN_DEFER, 0 }, /* Sify custom */
++	{SF_INDIA_UL,	    INDIAUL,		WORLD,		DISALLOW_ADHOC_11A | DISALLOW_ADHOC_11A_TURB, NO_REQ, PSCAN_DEFER, 0 },  /* Sify custom */
++	{SF_INDIA_L,	    INDIAL,		WORLD,		DISALLOW_ADHOC_11A | DISALLOW_ADHOC_11A_TURB, NO_REQ, PSCAN_DEFER, 0 }  /* Sify custom */
+ };
+ 
+ /*
+@@ -561,7 +583,14 @@
+     {CTRY_VIRGIN_ISLANDS, FCC3_FCCA,  "VI", "VIRGIN ISLANDS", YES,  NO,  NO, YES, YES, YES, YES, YES, YES, YES, 7000 },
+     {CTRY_WALLIS_FUTUNA, ETSI1_WORLD, "WF", "WALLIS AND FUTUNA", YES, YES, YES, YES, YES, YES, YES, YES, YES, YES, 7000 },
+     {CTRY_YEMEN,       NULL1_WORLD,   "YE", "YEMEN",          YES,  NO, YES, YES, YES,  NO,  NO, NO, NO, NO, 7000 },
+-    {CTRY_ZIMBABWE,    ETSI1_WORLD,   "ZW", "ZIMBABWE",       YES,  NO, YES, YES, YES,  YES,  YES, YES, YES, YES, 7000 }
++    {CTRY_ZIMBABWE,    ETSI1_WORLD,   "ZW", "ZIMBABWE",       YES,  NO, YES, YES, YES,  YES,  YES, YES, YES, YES, 7000 },
++    {CTRY_RUSSIA_1, SF_RUSSIA_49_51,  "S1", "RUSSIA1",          YES,  NO,  NO, YES, YES, YES, YES, YES, YES, YES, 7000 },
++    {CTRY_RUSSIA_2, SF_RUSSIA_51_53,  "S2", "RUSSIA2",          YES,  NO,  NO, YES, YES, YES, YES, YES, YES, YES, 7000 },
++    {CTRY_RUSSIA_3, SF_RUSSIA_53_56,  "S3", "RUSSIA3",          YES,  NO,  NO, YES, YES, YES, YES, YES, YES, YES, 7000 },
++    {CTRY_RUSSIA_4, SF_RUSSIA_56_58,  "S4", "RUSSIA4",          YES,  NO,  NO, YES, YES, YES, YES, YES, YES, YES, 7000 },
++    {CTRY_RUSSIA_5, SF_RUSSIA_58_59,  "S5", "RUSSIA5",          YES,  NO,  NO, YES, YES, YES, YES, YES, YES, YES, 7000 },
++    {CTRY_INDIA_UL,     SF_INDIA_UL,  "S6", "INDIA1",          YES,  NO,  NO, YES, YES, YES, YES, YES, YES, YES, 7000 },
++    {CTRY_INDIA_L,      SF_INDIA_L,   "S7", "INDIA2",          YES,  NO,  NO, YES, YES, YES, YES, YES, YES, YES, 7000 }
+ };
+ 
+ 
+@@ -705,6 +734,13 @@
+ 	W1_5260_5320,
+ 	W1_5745_5825,
+ 	W1_5500_5700,
++    RU_4920_5150,
++    RU_5150_5350,   /* Sify custom */
++    RU_5350_5600,   /* Sify custom */
++    RU_5600_5850,   /* Sify custom */
++    RU_5850_5925,   /* Sify custom */
++    INUL_5825_5875,   /* Sify custom */
++    INL_5725_5875,   /* Sify custom */
+ 	A_DEMO_ALL_CHANNELS,
+     OVERRIDE_MODE_ALL_CHANNELS_5,
+     OVERRIDE_MODE_ALL_CHANNELS_10,
+@@ -844,6 +880,15 @@
+ 	{ 5260, 5320, 30, 0, 20, 20, DFS_FCC3 | DFS_ETSI, PSCAN_WWR, 0 },		/* W1_5260_5320 */
+ 	{ 5745, 5825, 30, 0, 20, 20, NO_DFS, PSCAN_WWR, 0 },				/* W1_5745_5825 */
+ 	{ 5500, 5700, 30, 0, 20, 20, DFS_FCC3 | DFS_ETSI, PSCAN_WWR, 0 },		/* W1_5500_5700 */
++
++    { 4920, 5150, 30, 6, 20, 5, NO_DFS, PSCAN_ETSI, 0 },                /* RU_4920_5150 custom */
++    { 5150, 5350, 30, 6, 20, 5, NO_DFS, PSCAN_ETSI, 0 },                /* RU_5150_5350 custom */
++    { 5350, 5600, 30, 6, 20, 5, NO_DFS, PSCAN_ETSI, 0 },                /* RU_5350_5600 custom */
++    { 5600, 5850, 30, 6, 20, 5, NO_DFS, PSCAN_ETSI, 0 },                /* RU_5600_5850 custom */
++    { 5850, 5925, 30, 6, 20, 5, NO_DFS, PSCAN_ETSI, 0 },                /* RU_5850_5925 custom */
++    { 5825, 5875, 30, 6, 20, 5, NO_DFS, PSCAN_ETSI, 0 },                /* INUL_5825_5875 custom */
++    { 5725, 5875, 30, 6, 20, 5, NO_DFS, PSCAN_ETSI, 0 },                /* INL_5725_5875 custom */
++
+ 	{ 4920, 6100, 30, 6, 20, 20, NO_DFS, NO_PSCAN, 0 },				/* A_DEMO_ALL_CHANNELS */
+     { 4920, 6100, 50, 20, 20, 5,  DFS_FCC3 | DFS_ETSI | DFS_MKK4, NO_PSCAN, 0 },             /* OVERRIDE_MODE_ALL_CHANNELS_5 */
+     { 4920, 6100, 50, 20, 20, 10, DFS_FCC3 | DFS_ETSI | DFS_MKK4, NO_PSCAN, 0 },             /* OVERRIDE_MODE_ALL_CHANNELS_10 */
+@@ -1221,6 +1266,70 @@
+      CHAN_TURBO_G_BMZERO
+      },
+ 
++    {RUSSIA01, ETSI, NO_DFS, NO_PSCAN, DISALLOW_ADHOC_11A | DISALLOW_ADHOC_11A_TURB,
++        BM(RU_4920_5150, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1),
++        BMZERO,
++        BMZERO,
++        BMZERO,
++        BMZERO,
++        CHAN_TURBO_G_BMZERO
++    },
++
++    {RUSSIA02, ETSI, NO_DFS, NO_PSCAN, DISALLOW_ADHOC_11A | DISALLOW_ADHOC_11A_TURB,
++        BM(RU_5150_5350, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1),
++        BMZERO,
++        BMZERO,
++        BMZERO,
++        BMZERO,
++        CHAN_TURBO_G_BMZERO
++    },
++
++    {RUSSIA03, ETSI, NO_DFS, NO_PSCAN, DISALLOW_ADHOC_11A | DISALLOW_ADHOC_11A_TURB,
++        BM(RU_5350_5600, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1),
++        BMZERO,
++        BMZERO,
++        BMZERO,
++        BMZERO,
++        CHAN_TURBO_G_BMZERO
++    },
++
++    {RUSSIA04, ETSI, NO_DFS, NO_PSCAN, DISALLOW_ADHOC_11A | DISALLOW_ADHOC_11A_TURB,
++        BM(RU_5600_5850, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1),
++        BMZERO,
++        BMZERO,
++        BMZERO,
++        BMZERO,
++        CHAN_TURBO_G_BMZERO
++    },
++
++    {RUSSIA05, ETSI, NO_DFS, NO_PSCAN, DISALLOW_ADHOC_11A | DISALLOW_ADHOC_11A_TURB,
++        BM(RU_5850_5925, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1),
++        BMZERO,
++        BMZERO,
++        BMZERO,
++        BMZERO,
++        CHAN_TURBO_G_BMZERO
++    },
++
++    {INDIAUL, ETSI, NO_DFS, NO_PSCAN, DISALLOW_ADHOC_11A | DISALLOW_ADHOC_11A_TURB,
++        BM(INUL_5825_5875, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1),
++        BMZERO,
++        BMZERO,
++        BMZERO,
++        BMZERO,
++        CHAN_TURBO_G_BMZERO
++    },
++
++    {INDIAL, ETSI, NO_DFS, NO_PSCAN, DISALLOW_ADHOC_11A | DISALLOW_ADHOC_11A_TURB,
++        BM(INL_5725_5875, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1),
++        BMZERO,
++        BMZERO,
++        BMZERO,
++        BMZERO,
++        CHAN_TURBO_G_BMZERO
++    },
++
++
+ #ifndef ATH_NO_5G_SUPPORT
+ 	{APL1, FCC, NO_DFS, NO_PSCAN, NO_REQ,
+ 	 BM(F4_5745_5825, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1),
+diff -urN qca-wifi-org/offload/wlan/regdmn/ol_regdomain.h qca-wifi-mod/offload/wlan/regdmn/ol_regdomain.h
+--- qca-wifi-org/offload/wlan/regdmn/ol_regdomain.h	2018-04-30 15:49:07.000000000 +0530
++++ qca-wifi-mod/offload/wlan/regdmn/ol_regdomain.h	2018-05-23 22:17:15.622860363 +0530
+@@ -1063,7 +1063,14 @@
+     CTRY_CANADA2              = 5001,    /* Canada for AP only */
+     CTRY_BELGIUM2             = 5002,    /* Belgium/Cisco implementation */
+     CTRY_ARGENTINA2           = 5003,    /* Argentina for AP only */
+-    CTRY_INDIA2               = 5006     /* India with 5.9GHz support */
++    CTRY_INDIA2               = 5006,    /* India with 5.9GHz support */
++    CTRY_RUSSIA_1             = 5011,    /* Russia 4920-5150 support */
++    CTRY_RUSSIA_2             = 5012,    /* Russia 5150-5350 support */
++    CTRY_RUSSIA_3             = 5013,    /* Russia 5350-5600 support */
++    CTRY_RUSSIA_4             = 5014,    /* Russia 5600-5850 support */
++    CTRY_RUSSIA_5             = 5015,    /* Russia 5850-5925 support */
++    CTRY_INDIA_UL             = 5016,    /* India 5825-5875 support */
++    CTRY_INDIA_L              = 5017     /* India 5725-5875 support */
+ };
+ 
+ 
+diff -urN qca-wifi-org/offload/wlan/umac_offload_if/ol_if_scan.c qca-wifi-mod/offload/wlan/umac_offload_if/ol_if_scan.c
+--- qca-wifi-org/offload/wlan/umac_offload_if/ol_if_scan.c	2018-04-30 15:49:07.000000000 +0530
++++ qca-wifi-mod/offload/wlan/umac_offload_if/ol_if_scan.c	2018-05-23 22:17:15.651861008 +0530
+@@ -975,7 +975,7 @@
+     return EINVAL;
+ 
+ }
+-
++#if 0
+ static const u_int16_t default_scan_order[] = {
+     /* 2.4Ghz ch: 1,6,11,7,13 */
+     2412, 2437, 2462, 2442, 2472,
+@@ -1007,7 +1007,36 @@
+     /* Add MKK quarter-rates */
+     4912, 4917, 4922, 4927, 4932, 4937, 5032, 5037, 5042, 5047, 5052, 5057,
+ };
+-
++#else
++static const u_int16_t default_scan_order[] = {
++    2412, 2417, 2422, 2427, 2432, 2437, 2442, 2447, 2452, 2457, 
++    2462, 2467, 2472, 2477, 2482, 2487, 2492, 2497,
++    4920, 4925, 4930, 4935, 4940, 4945, 4950, 4955, 4960, 4965,
++    4970, 4975, 4980, 4985, 4990, 4995, 5000, 5005, 5010, 5015,
++    5020, 5025, 5030, 5035, 5040, 5045, 5050, 5055, 5060, 5065,
++    5070, 5075, 5080, 5085, 5090, 5095, 5100, 5105, 5110, 5115,
++    5120, 5125, 5130, 5135, 5140, 5145, 5150, 5155, 5160, 5165,
++    5170, 5175, 5180, 5185, 5190, 5195, 5200, 5205, 5210, 5215, 
++    5220, 5225, 5230, 5235, 5240, 5245, 5250, 5255, 5260, 5265, 
++    5270, 5275, 5280, 5285, 5290, 5295, 5300, 5305, 5310, 5315, 
++    5320, 5325, 5330, 5335, 5340, 5345, 5350, 5355, 5360, 5365, 
++    5370, 5375, 5380, 5385, 5390, 5395, 5400, 5405, 5410, 5415, 
++    5420, 5425, 5430, 5435, 5440, 5445, 5450, 5455, 5460, 5465, 
++    5470, 5475, 5480, 5485, 5490, 5495, 5500, 5505, 5510, 5515, 
++    5520, 5525, 5530, 5535, 5540, 5545, 5550, 5555, 5560, 5565, 
++    5570, 5575, 5580, 5585, 5590, 5595, 5600, 5605, 5610, 5615, 
++    5620, 5625, 5630, 5635, 5640, 5645, 5650, 5655, 5660, 5665, 
++    5670, 5675, 5680, 5685, 5690, 5695, 5700, 5705, 5710, 5715, 
++    5720, 5725, 5730, 5735, 5740, 5745, 5750, 5755, 5760, 5765, 
++    5770, 5775, 5780, 5785, 5790, 5795, 5800, 5805, 5810, 5815, 
++    5820, 5825, 5830, 5835, 5840, 5845, 5850, 5855, 5860, 5865, 
++    5870, 5875, 5880, 5885, 5890, 5895, 5900, 5905, 5910, 5915, 
++    5920, 5925, 5930, 5935, 5940, 5945, 5950, 5955, 5960, 5965, 
++    5970, 5975, 5980, 5985, 5990, 5995, 6000, 6005, 6010, 6015, 
++    6020, 6025, 6030, 6035, 6040, 6045, 6050, 6055, 6060, 6065, 
++    6070, 6075, 6080, 6085, 6090, 6095, 6100
++};
++#endif
+ /*
+  * get all the channels to scan .
+  * can be called whenever the set of supported channels are changed.
+@@ -1022,6 +1051,7 @@
+     u_int16_t *scan_order = (u_int16_t *)default_scan_order;
+     u_int32_t scan_order_size = IEEE80211_N(default_scan_order);
+     int i = 0;
++    int fixed_chan;
+     struct scan_chan_list_params *param;
+ 
+     param = (struct scan_chan_list_params *)
+@@ -1035,6 +1065,12 @@
+ 
+     ss->ss_nallchans = 0;
+     ss->ss_nchans = 0;
++    /* Fixed channel support in client mode */
++    if( ic->sta_freq > 0 )
++    {
++       scan_order_size = 1;
++       fixed_chan = ic->sta_freq;
++    }
+ 
+     if (ic->ic_custom_scan_order_size > 0) {
+         QDF_PRINT_INFO(QDF_PRINT_IDX_SHARED, QDF_MODULE_ID_ANY, QDF_TRACE_LEVEL_INFO, "Using custom scan order\n"),
+@@ -1045,7 +1081,12 @@
+     spin_lock(&ss->ss_lock);
+ 
+     for (i = 0; i < scan_order_size; ++i) {
+-        c = ol_ath_find_full_channel(ic,scan_order[i]);
++        if( scan_order_size == 1 ) {
++            c = ol_ath_find_full_channel(ic,fixed_chan);
++        }
++        else {
++            c = ol_ath_find_full_channel(ic,scan_order[i]);
++        }
+ 
+ #if ATH_SUPPORT_DFS && ATH_SUPPORT_STA_DFS
+         if (c != NULL && !IEEE80211_IS_CHAN_RADAR(c)) {
+@@ -1060,12 +1101,18 @@
+     /* Iterate again adding half-rate and quarter-rate channels */
+     for (i = 0; i < scan_order_size; ++i) {
+ 
+-        if (scan_order[i] < IEEE80211_2GHZ_FREQUENCY_THRESHOLD)
++        if (scan_order[i] < IEEE80211_2GHZ_FREQUENCY_THRESHOLD && scan_order_size != 1)
+             continue;
+ 
+         c = NULL;
+-        c = ieee80211_find_channel(ic, scan_order[i], 0,
+-                                   (IEEE80211_CHAN_A | IEEE80211_CHAN_HALF));
++        if( scan_order_size == 1 ) {
++            c = ieee80211_find_channel(ic, fixed_chan, 0,
++                    (IEEE80211_CHAN_A | IEEE80211_CHAN_HALF));
++        }
++        else {
++            c = ieee80211_find_channel(ic, scan_order[i], 0,
++                    (IEEE80211_CHAN_A | IEEE80211_CHAN_HALF));
++        }
+ #if ATH_SUPPORT_DFS && ATH_SUPPORT_STA_DFS
+         if (c != NULL && !IEEE80211_IS_CHAN_RADAR(c)) {
+ #else
+@@ -1075,8 +1122,14 @@
+         }
+ 
+         c = NULL;
+-        c = ieee80211_find_channel(ic, scan_order[i], 0,
+-                                   (IEEE80211_CHAN_A | IEEE80211_CHAN_QUARTER));
++        if( scan_order_size == 1 ) {
++            c = ieee80211_find_channel(ic, fixed_chan, 0,
++                    (IEEE80211_CHAN_A | IEEE80211_CHAN_QUARTER));
++        }
++        else {
++            c = ieee80211_find_channel(ic, scan_order[i], 0,
++                    (IEEE80211_CHAN_A | IEEE80211_CHAN_QUARTER));
++        }
+ 
+ #if ATH_SUPPORT_DFS && ATH_SUPPORT_STA_DFS
+         if (c != NULL && !IEEE80211_IS_CHAN_RADAR(c)) {
+@@ -1087,16 +1140,21 @@
+         }
+     }
+ 
+-    if (ss->ss_flags & IEEE80211_SCAN_80MHZ) {
++    if (ss->ss_flags & IEEE80211_SCAN_80MHZ) 
++    {
+         /* Iterate again adding VHT40 & VHT80 channels */
+         for (i = 0,c = NULL; i < scan_order_size; ++i) {
+-
+-            if (scan_order[i] < IEEE80211_2GHZ_FREQUENCY_THRESHOLD)
++            if (scan_order[i] < IEEE80211_2GHZ_FREQUENCY_THRESHOLD && scan_order_size != 1)
+                 continue;
+ 
+             if (IEEE80211_SUPPORT_PHY_MODE(ic, IEEE80211_MODE_11AC_VHT40PLUS)) {
+                 c = NULL;
+-                c = ieee80211_find_channel(ic, scan_order[i], 0, IEEE80211_CHAN_11AC_VHT40PLUS);
++                if( scan_order_size == 1 ) {
++                    c = ieee80211_find_channel(ic, fixed_chan, 0, IEEE80211_CHAN_11AC_VHT40PLUS);
++                }
++                else {
++                    c = ieee80211_find_channel(ic, scan_order[i], 0, IEEE80211_CHAN_11AC_VHT40PLUS);
++                }
+             }
+ 
+ #if ATH_SUPPORT_DFS && ATH_SUPPORT_STA_DFS
+@@ -1109,7 +1167,12 @@
+ 
+             if (IEEE80211_SUPPORT_PHY_MODE(ic, IEEE80211_MODE_11AC_VHT80)) {
+                 c = NULL;
+-                c = ieee80211_find_channel(ic, scan_order[i], 0, IEEE80211_CHAN_11AC_VHT80);
++                if( scan_order_size == 1 ) {
++                    c = ieee80211_find_channel(ic, fixed_chan, 0, IEEE80211_CHAN_11AC_VHT80);
++                }
++                else {
++                    c = ieee80211_find_channel(ic, scan_order[i], 0, IEEE80211_CHAN_11AC_VHT80);
++                }
+             }
+ #if ATH_SUPPORT_DFS && ATH_SUPPORT_STA_DFS
+             if (c != NULL && !IEEE80211_IS_CHAN_RADAR(c)) {
+@@ -1121,7 +1184,12 @@
+ 
+             if (IEEE80211_SUPPORT_PHY_MODE(ic, IEEE80211_MODE_11AC_VHT160)) {
+                 c = NULL;
+-                c = ieee80211_find_channel(ic, scan_order[i], 0, IEEE80211_CHAN_11AC_VHT160);
++                if( scan_order_size == 1 ) {
++                    c = ieee80211_find_channel(ic, fixed_chan, 0, IEEE80211_CHAN_11AC_VHT160);
++                }
++                else {
++                    c = ieee80211_find_channel(ic, scan_order[i], 0, IEEE80211_CHAN_11AC_VHT160);
++                }
+             }
+             if (c != NULL) {
+                 ss->ss_all_chans[ss->ss_nallchans++] = c;
+@@ -1129,7 +1197,12 @@
+ 
+             if (IEEE80211_SUPPORT_PHY_MODE(ic, IEEE80211_MODE_11AC_VHT80_80)) {
+                 c = NULL;
+-                c = ieee80211_find_channel(ic, scan_order[i], 0, IEEE80211_CHAN_11AC_VHT80_80);
++                if( scan_order_size == 1 ) {
++                    c = ieee80211_find_channel(ic, fixed_chan, 0, IEEE80211_CHAN_11AC_VHT80_80);
++                }
++                else {
++                    c = ieee80211_find_channel(ic, scan_order[i], 0, IEEE80211_CHAN_11AC_VHT80_80);
++                }
+             }
+             if (c != NULL) {
+                 ss->ss_all_chans[ss->ss_nallchans++] = c;
+diff -urN qca-wifi-org/os/linux/src/ieee80211_wireless.c qca-wifi-mod/os/linux/src/ieee80211_wireless.c
+--- qca-wifi-org/os/linux/src/ieee80211_wireless.c	2018-04-30 15:49:07.000000000 +0530
++++ qca-wifi-mod/os/linux/src/ieee80211_wireless.c	2018-05-23 22:17:15.680861653 +0530
+@@ -524,6 +524,7 @@
+ {
+     osif_dev *osnetdev = ath_netdev_priv(dev);
+     wlan_if_t vap = osnetdev->os_if;
++    struct ieee80211com *ic = vap->iv_ic;
+     int i;
+ 
+     debug_print_ioctl(dev->name, SIOCSIWFREQ, "siwfreq") ;
+@@ -534,6 +535,11 @@
+     /*
+     * Necessary to cast, to properly interpret negative channel numbers
+     */
++    /* To enable fixed channel on Client mode, writing -1 to station freq in case of acs enabled */
++    ic->sta_freq = 0;
++    if( freq->m == 0 )
++      ic->sta_freq = -1;
++
+     if (freq->e == 1)
+         i = (u_int8_t)wlan_mhz2ieee(osnetdev->os_devhandle, freq->m / 100000, 0);
+     else
+@@ -600,6 +606,24 @@
+ }
+ 
+ static int
++ieee80211_ioctl_siwnickname(struct net_device *dev,
++    struct iw_request_info *info,
++    struct iw_point *data, char *ssid)
++{
++    osif_dev *osifp = ath_netdev_priv(dev);
++    wlan_if_t vap = osifp->os_if; 
++
++    if (data->length > IEEE80211_NWID_LEN)
++	    data->length = IEEE80211_NWID_LEN;
++
++    OS_MEMZERO(vap->iv_ic->ic_customer_name, 32);
++    OS_MEMCPY(vap->iv_ic->ic_customer_name, ssid, data->length);
++    printk("Cusname: %s \n",vap->iv_ic->ic_customer_name);
++
++    return 0;
++}
++
++static int
+ ieee80211_ioctl_giwessid(struct net_device *dev,
+     struct iw_request_info *info,
+     struct iw_point *data, char *essid)
+@@ -14992,7 +15016,7 @@
+ #endif /* SIOCGIWSCAN */
+     (iw_handler) ieee80211_ioctl_siwessid,      /* SIOCSIWESSID */
+     (iw_handler) ieee80211_ioctl_giwessid,      /* SIOCGIWESSID */
+-    (iw_handler) NULL,      /* SIOCSIWNICKN */
++    (iw_handler) ieee80211_ioctl_siwnickname,      /* SIOCSIWNICKN */
+     (iw_handler) NULL,      /* SIOCGIWNICKN */
+     (iw_handler) NULL,              /* -- hole -- */
+     (iw_handler) NULL,              /* -- hole -- */
+diff -urN qca-wifi-org/os/linux/src/umac_exports.c qca-wifi-mod/os/linux/src/umac_exports.c
+--- qca-wifi-org/os/linux/src/umac_exports.c	2018-04-30 15:49:07.000000000 +0530
++++ qca-wifi-mod/os/linux/src/umac_exports.c	2018-05-23 22:17:15.695861986 +0530
+@@ -203,6 +203,7 @@
+ #endif
+ 
+ EXPORT_SYMBOL(ieee80211_send_rcsa);
++EXPORT_SYMBOL(ieee80211_send_dying_gasp);
+ EXPORT_SYMBOL(ieee80211_dfs_cac_cancel);
+ EXPORT_SYMBOL(ieee80211_update_dfs_next_channel);
+ #if ATH_SUPPORT_DFS && ATH_SUPPORT_STA_DFS
+diff -urN qca-wifi-org/umac/base/ieee80211_channel.c qca-wifi-mod/umac/base/ieee80211_channel.c
+--- qca-wifi-org/umac/base/ieee80211_channel.c	2018-04-30 15:49:07.000000000 +0530
++++ qca-wifi-mod/umac/base/ieee80211_channel.c	2018-05-23 22:17:15.711862342 +0530
+@@ -1989,6 +1989,13 @@
+      * TBD: If curchan = channel, still need to set channel again to pass
+      * SendRecv_ext in ndistest.
+      */
++    /* Fixed channel in client mode: updating configured frequency if acs is disabled */
++    if( ic->sta_freq == 0 )
++       ic->sta_freq = channel->ic_freq;
++
++    /* TODO: Fixed channel in client mode is not working on 80MHz, so enabling ACS on 80MHz*/
++    if( vap->iv_opmode == IEEE80211_M_HOSTAP || vap->iv_des_mode == IEEE80211_MODE_11AC_VHT80 )
++        ic->sta_freq = -1;
+     if (ieee80211_vap_ready_is_set(vap) || ieee80211_vap_dfswait_is_set(vap) ||
+         (ic->cw_inter_found)) {// && ic->ic_curchan != channel) {
+         ieee80211_set_channel(ic, channel);
+diff -urN qca-wifi-org/umac/base/ieee80211_config.c qca-wifi-mod/umac/base/ieee80211_config.c
+--- qca-wifi-org/umac/base/ieee80211_config.c	2018-04-30 15:49:07.000000000 +0530
++++ qca-wifi-mod/umac/base/ieee80211_config.c	2018-05-23 22:19:12.583460723 +0530
+@@ -478,12 +478,13 @@
+              vap->iv_fixed_rate.series = IEEE80211_FIXED_RATE_NONE;
+         } else {
+              if (val & 0x80) {
+-
++#if 0
+                 if (!IEEE80211_IS_CHAN_VHT(ic->ic_curchan) && !IEEE80211_IS_CHAN_11N(ic->ic_curchan))
+                 {
+                     QDF_PRINT_INFO(ic->ic_print_idx, QDF_MODULE_ID_ANY, QDF_TRACE_LEVEL_INFO, "Rate is not allowed in current mode\n");
+                     return -EINVAL;
+                 }
++#endif
+                 vap->iv_fixed_rate.mode   = IEEE80211_FIXED_RATE_MCS;
+              } else {
+                  vap->iv_fixed_rate.mode   = IEEE80211_FIXED_RATE_LEGACY;
+diff -urN qca-wifi-org/umac/include/ieee80211_node.h qca-wifi-mod/umac/include/ieee80211_node.h
+--- qca-wifi-org/umac/include/ieee80211_node.h	2018-04-30 15:49:07.000000000 +0530
++++ qca-wifi-mod/umac/include/ieee80211_node.h	2018-05-23 22:17:15.719862520 +0530
+@@ -585,6 +585,7 @@
+     bool        is_ft_reassoc;
+     ni_mgmt_stats_t ni_mgmt_stats;
+     ni_ctrl_stats_t ni_ctrl_stats;
++    u_int32_t   dg_count;
+ } IEEE80211_NODE, *PIEEE80211_NODE;
+ 
+ 
+diff -urN qca-wifi-org/umac/include/ieee80211_vap.h qca-wifi-mod/umac/include/ieee80211_vap.h
+--- qca-wifi-org/umac/include/ieee80211_vap.h	2018-04-30 15:49:07.000000000 +0530
++++ qca-wifi-mod/umac/include/ieee80211_vap.h	2018-05-23 22:17:15.728862720 +0530
+@@ -177,4 +177,5 @@
+  *  Return ieee80211_cwm_width
+  */
+ enum ieee80211_cwm_width ieee80211_get_vap_max_chwidth (struct ieee80211vap *vap);
++void ieee80211_send_dying_gasp(struct ieee80211vap *vap,u_int32_t send_ack,struct ieee80211_node *ni);
+ #endif
+diff -urN qca-wifi-org/umac/include/ieee80211_var.h qca-wifi-mod/umac/include/ieee80211_var.h
+--- qca-wifi-org/umac/include/ieee80211_var.h	2018-04-30 15:49:07.000000000 +0530
++++ qca-wifi-mod/umac/include/ieee80211_var.h	2018-05-23 22:17:15.742863031 +0530
+@@ -1886,6 +1886,12 @@
+     u_int32_t                           ic_whc_scaling_factor; /* scaling factor for WHC best uplink algorithm */
+     u_int32_t                           device_id;   /* Device id from probe */
+     u_int32_t                           vendor_id;   /* Vendor id from probe */
++    int                                 sta_freq;        /* setting in Mhz */
++    u_int32_t                           dying_gasp;
++    u_int8_t                          	ic_link_id;
++    char				ic_customer_name[32];
++    u_int32_t				ic_dg_timer_interval;
++    u_int32_t				ic_dg_ack_disable;
+ } IEEE80211COM, *PIEEE80211COM;
+ 
+ #define BEST_UL_HYST_DEF        10
+diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee80211_mgmt.c
+--- qca-wifi-org/umac/mlme/ieee80211_mgmt.c	2018-04-30 15:49:07.000000000 +0530
++++ qca-wifi-mod/umac/mlme/ieee80211_mgmt.c	2018-05-23 22:17:15.760863431 +0530
+@@ -22,10 +22,17 @@
+ #include "ieee80211_wifipos_pvt.h"
+ #endif
+ #include "dfs_ioctl.h"
++#include <linux/inetdevice.h>
++#include <linux/rtnetlink.h>
++
+ /*
+  * xmit management processing code.
+  */
+ 
++unsigned int dg_ack_rcvd;
++unsigned int dg_seq;
++EXPORT_SYMBOL(dg_ack_rcvd);
++
+ /*
+  * Set the direction field and address fields of an outgoing
+  * non-QoS frame.  Note this should be called early on in
+@@ -921,6 +928,55 @@
+             return 0;
+     }
+ }
++int get_default_ipaddr_by_devname(const char *devname)
++{
++	int addr;
++	struct net_device *dev;
++	if (!devname) return 0;
++	/* find netdev by name, increment refcnt */
++	dev=dev_get_by_name(&init_net,devname);
++	if (!dev) return 0;
++	/* get ip addr from rtable (global scope) */
++	addr = inet_select_addr(dev, 0, RT_SCOPE_UNIVERSE);
++	/* decrement netdev refcnt */
++	dev_put(dev);
++	return addr;
++}
++
++void ieee80211_send_dying_gasp(struct ieee80211vap *vap, u_int32_t send_ack, struct ieee80211_node *ack_ni)
++{
++    struct ieee80211_action_mgt_args actionargs;
++
++    if( NULL != vap) {
++            struct ieee80211_node   *ni = NULL; 
++            if (ieee80211vap_get_opmode(vap) == IEEE80211_M_HOSTAP && !send_ack) {
++                /* create temporary node for broadcast */
++                ni = ieee80211_tmp_node(vap, IEEE80211_GET_BCAST_ADDR(vap->iv_ic));
++            } else {
++		if ( send_ack ) {
++			ni = ack_ni;
++			//printk("use ack ni\n");
++		}
++		else {
++                	ni = vap->iv_bss;
++		}
++            }
++            if (ni != NULL) {
++                actionargs.category = IEEE80211_ACTION_CAT_VHT;
++                actionargs.action   = IEEE80211_ACTION_DYING_GASP;
++                actionargs.arg1     = send_ack;
++                actionargs.arg2     = 0;
++                actionargs.arg3     = 0;
++                ieee80211_send_action(ni, &actionargs, NULL);
++                if (ieee80211vap_get_opmode(vap) == IEEE80211_M_HOSTAP && !send_ack) {
++                    /* temporary node - decrement reference count so that the node will be
++                     * automatically freed upon completion */
++                    ieee80211_free_node(ni);
++                }
++            }
++    }
++}
++
+ 
+ int
+ ieee80211_send_action(
+@@ -1183,21 +1239,51 @@
+     break;
+ 
+     case IEEE80211_ACTION_CAT_VHT: {
+-        struct ieee80211_action_vht_opmode *opmode_frame;
++        struct ieee80211_action_vht_opmode *frame_opmode;
++        struct ieee80211_action_vht_dying_gasp *frame;
+         enum ieee80211_cwm_width cw_width = ic->ic_cwm_get_width(ic);
+-        IEEE80211_NOTE(vap, IEEE80211_MSG_ACTION, ni,
+-                           "%s: VHT Op Mode Notify action frame. Width %d Nss = %d",
+-                            __func__, cw_width, vap->iv_nss);
+-        wbuf = ieee80211_getmgtframe(ni, IEEE80211_FC0_SUBTYPE_ACTION, &frm, 0);
+-        if (wbuf == NULL) {
+-            error = -ENOMEM;
+-            break;
+-        }
+-        opmode_frame = (struct ieee80211_action_vht_opmode *)frm;
+-        opmode_frame->at_header.ia_category = IEEE80211_ACTION_CAT_VHT;
+-        opmode_frame->at_header.ia_action  = IEEE80211_ACTION_VHT_OPMODE;
+-        ieee80211_add_opmode((u_int8_t *)&opmode_frame->at_op_mode, ni, ic, IEEE80211_ACTION_CAT_VHT);
+-        frm += sizeof(struct ieee80211_action_vht_opmode);
++       
++	switch (actionargs->action) { 
++		case IEEE80211_ACTION_DYING_GASP:
++	 		wbuf = ieee80211_getmgtframe(ni, IEEE80211_FC0_SUBTYPE_ACTION, &frm, 0);
++        		if (wbuf == NULL) {
++            			error = -ENOMEM;
++            			break;
++        		}
++        		frame = (struct ieee80211_action_vht_dying_gasp *)frm;
++			frame->at_header.ia_category = IEEE80211_ACTION_CAT_VHT;
++			frame->at_header.ia_action  = IEEE80211_ACTION_DYING_GASP;
++			if ( actionargs->arg1 == 0 ) {
++				frame->at_dying_gasp.type = DG_PKT_TYPE_INFORM;
++				frame->at_dying_gasp.ipv4 = get_default_ipaddr_by_devname("br-lan");
++				frame->at_dying_gasp.ts = jiffies;
++				frame->at_dying_gasp.seq_no = dg_seq++;
++				frame->at_dying_gasp.link_id = ic->ic_link_id;
++				strncpy(frame->at_dying_gasp.customer_name,ic->ic_customer_name,32);
++			}
++			else if ( actionargs->arg1 == 1 ) {
++				frame->at_dying_gasp.type = DG_PKT_TYPE_ACK;
++			}
++			frm += sizeof(struct ieee80211_action_vht_dying_gasp);
++			break;
++		case IEEE80211_ACTION_VHT_OPMODE:
++			IEEE80211_NOTE(vap, IEEE80211_MSG_ACTION, ni,
++					"%s: VHT Op Mode Notify action frame. Width %d Nss = %d",
++					__func__, cw_width, vap->iv_nss);
++			wbuf = ieee80211_getmgtframe(ni, IEEE80211_FC0_SUBTYPE_ACTION, &frm, 0);
++			if (wbuf == NULL) {
++				error = -ENOMEM;
++				break;
++			}
++			frame_opmode = (struct ieee80211_action_vht_opmode *)frm;
++			frame_opmode->at_header.ia_category = IEEE80211_ACTION_CAT_VHT;
++			frame_opmode->at_header.ia_action  = IEEE80211_ACTION_VHT_OPMODE;
++			ieee80211_add_opmode((u_int8_t *)&frame_opmode->at_op_mode, ni, ic, IEEE80211_ACTION_CAT_VHT);
++			frm += sizeof(struct ieee80211_action_vht_opmode);	
++			break;
++		default :
++			break;
++	}
+     }
+     break;
+ 
+@@ -3825,13 +3911,32 @@
+ 
+                     ieee80211_parse_opmode(ni, (u_int8_t *)&ia_opmode->at_op_mode, subtype);
+                 }
++		action_taken = FALSE;// set to false so that it is forwarded to hostapd
+                 break;
++	    case IEEE80211_ACTION_DYING_GASP: 
++              	{
++                    struct ieee80211_action_vht_dying_gasp *frame = (struct ieee80211_action_vht_dying_gasp *)frm;
++		    u_int32_t ip = frame->at_dying_gasp.ipv4;
++			if(frame->at_dying_gasp.type == DG_PKT_TYPE_INFORM ) {
++				if (vap->iv_opmode == IEEE80211_M_HOSTAP && !vap->iv_ic->ic_dg_ack_disable) {
++					ieee80211_send_dying_gasp( vap , 1, ni);
++					//printk("\n:dying gasp ack sent---> \n");
++				}
++				printk("(%9lu)[Remote Time stamp : %9lu][Cus name:%s][Link id:%d][%d.%d.%d.%d] Seq No:%d --> Recv pkts %d \n",
++					jiffies,frame->at_dying_gasp.ts, frame->at_dying_gasp.customer_name,frame->at_dying_gasp.link_id,
++					(ip & 0xFF),(ip >> 8) & 0xFF,(ip >> 16 ) & 0xFF,(ip >> 24) & 0xFF,
++					frame->at_dying_gasp.seq_no,ni->dg_count++);
++			}
++			else if (frame->at_dying_gasp.type == DG_PKT_TYPE_ACK ) {
++				dg_ack_rcvd = 1;
++			}
++		}
++		break;
+             default:
+                 IEEE80211_NOTE(vap, IEEE80211_MSG_ACTION, ni,
+                         "%s: Unhandled OR invalid VHT action code - %d", __func__, ia->ia_action);
+                 break;
+         }
+-        action_taken = FALSE; // set to false so that it is forwarded to hostapd
+         break;
+     }
+ 

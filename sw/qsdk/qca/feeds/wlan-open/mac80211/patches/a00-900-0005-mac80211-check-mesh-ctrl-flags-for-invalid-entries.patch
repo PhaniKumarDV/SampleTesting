@@ -1,0 +1,27 @@
+diff --git a/include/linux/ieee80211.h b/include/linux/ieee80211.h
+index a80516f..cccaa6b 100644
+--- a/include/linux/ieee80211.h
++++ b/include/linux/ieee80211.h
+@@ -666,6 +666,8 @@ struct ieee80211s_hdr {
+ #define MESH_FLAGS_AE		0x3
+ #define MESH_FLAGS_PS_DEEP	0x4
+
++#define MESH_CTRL_FLAGS_MAXVAL	0x2
++
+ /**
+  * enum ieee80211_preq_flags - mesh PREQ element flags
+  *
+diff --git a/net/mac80211/rx.c b/net/mac80211/rx.c
+index d044f9c..cf52e9a 100644
+--- a/net/mac80211/rx.c
++++ b/net/mac80211/rx.c
+@@ -2437,6 +2437,9 @@ ieee80211_rx_h_mesh_fwding(struct ieee80211_rx_data *rx)
+	if (!mesh_hdr->ttl)
+		return RX_DROP_MONITOR;
+
++	if (mesh_hdr->flags > MESH_CTRL_FLAGS_MAXVAL)
++		return RX_DROP_MONITOR;
++
+	if (mesh_hdr->flags & MESH_FLAGS_AE) {
+		struct mesh_path *mppath;
+		char *proxied_addr;

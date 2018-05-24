@@ -1,0 +1,191 @@
+CONFIG_TARGET_ipq806x=y
+CONFIG_TARGET_ipq806x_QSDK_Premium=y
+CONFIG_TARGET_BOARD="ipq806x"
+CONFIG_DEVEL=y
+CONFIG_TOOLCHAINOPTS=y
+CONFIG_BUSYBOX_CUSTOM=y
+CONFIG_BUSYBOX_CONFIG_ADDUSER=y
+CONFIG_BUSYBOX_CONFIG_DHCPD_LEASES_FILE=""
+CONFIG_BUSYBOX_CONFIG_DHCPRELAY=y
+# CONFIG_BUSYBOX_CONFIG_FEATURE_FANCY_PING is not set
+CONFIG_BUSYBOX_CONFIG_FEATURE_UDHCPC_ARPING=y
+CONFIG_BUSYBOX_CONFIG_FEATURE_UDHCPD_BASE_IP_ON_MAC=y
+CONFIG_BUSYBOX_CONFIG_FIRST_SYSTEM_ID=0
+# CONFIG_BUSYBOX_CONFIG_HEXDUMP is not set
+CONFIG_BUSYBOX_CONFIG_HOSTNAME=y
+CONFIG_BUSYBOX_CONFIG_LAST_ID=0
+CONFIG_BUSYBOX_CONFIG_LAST_SYSTEM_ID=0
+# CONFIG_BUSYBOX_CONFIG_NC is not set
+# CONFIG_BUSYBOX_CONFIG_TELNET is not set
+# CONFIG_BUSYBOX_CONFIG_TFTPD is not set
+CONFIG_BUSYBOX_CONFIG_UDHCPC6=y
+CONFIG_BUSYBOX_CONFIG_UDHCPD=y
+# CONFIG_BUSYBOX_CONFIG_WGET is not set
+CONFIG_CLEAN_IPKG=y
+CONFIG_COLLECT_KERNEL_DEBUG=y
+# CONFIG_FEED_alljoyn is not set
+# CONFIG_FEED_apple_homekit is not set
+# CONFIG_FEED_voice_control is not set
+# CONFIG_GCC_USE_VERSION_4_8_LINARO is not set
+CONFIG_GCC_USE_VERSION_5=y
+CONFIG_GCC_VERSION="5.2.0"
+CONFIG_GCC_VERSION_5=y
+CONFIG_GIT_MIRROR="git://codeaurora.org/quic/qsdk/"
+# CONFIG_KERNEL_CC_STACKPROTECTOR_NONE is not set
+CONFIG_KERNEL_CC_STACKPROTECTOR_REGULAR=y
+CONFIG_KERNEL_CGROUPS=y
+# CONFIG_KERNEL_DEBUG_INFO_REDUCED is not set
+CONFIG_KERNEL_DIRECT_IO=y
+CONFIG_KERNEL_DYNAMIC_DEBUG=y
+CONFIG_KERNEL_IPC_NS=y
+CONFIG_KERNEL_MEMCG=y
+CONFIG_KERNEL_MM_OWNER=y
+CONFIG_KERNEL_NAMESPACES=y
+CONFIG_KERNEL_NET_NS=y
+CONFIG_KERNEL_PID_NS=y
+CONFIG_KERNEL_RESOURCE_COUNTERS=y
+# CONFIG_KERNEL_SWAP is not set
+CONFIG_KERNEL_USER_NS=y
+CONFIG_KERNEL_UTS_NS=y
+CONFIG_LLDPD_WITH_CDP=y
+CONFIG_LLDPD_WITH_CUSTOM=y
+CONFIG_LLDPD_WITH_DOT1=y
+CONFIG_LLDPD_WITH_DOT3=y
+CONFIG_LLDPD_WITH_EDP=y
+CONFIG_LLDPD_WITH_FDP=y
+CONFIG_LLDPD_WITH_LLDPMED=y
+CONFIG_LLDPD_WITH_PRIVSEP=y
+CONFIG_LLDPD_WITH_SONMP=y
+CONFIG_LOCALMIRROR="http://172.18.18.68/pkgs"
+# CONFIG_PACKAGE_alsa is not set
+# CONFIG_PACKAGE_alsa-lib is not set
+# CONFIG_PACKAGE_alsa-utils is not set
+CONFIG_PACKAGE_ar=m
+CONFIG_PACKAGE_binutils=m
+CONFIG_PACKAGE_bluetopia=m
+CONFIG_PACKAGE_btdiag=m
+CONFIG_PACKAGE_dgaspinfo=y
+# CONFIG_PACKAGE_dnsmasq-dhcpv6 is not set
+CONFIG_PACKAGE_dnsmasq-full=m
+CONFIG_PACKAGE_dnsmasq_full_auth=y
+CONFIG_PACKAGE_dnsmasq_full_dhcpv6=y
+CONFIG_PACKAGE_dnsmasq_full_dnssec=y
+CONFIG_PACKAGE_dnsmasq_full_ipset=y
+# CONFIG_PACKAGE_dropbear is not set
+CONFIG_PACKAGE_ebtables=y
+CONFIG_PACKAGE_gdb=m
+CONFIG_PACKAGE_gpsinfo=y
+CONFIG_PACKAGE_iputils-ping=m
+CONFIG_PACKAGE_iputils-ping6=m
+CONFIG_PACKAGE_iw=m
+CONFIG_PACKAGE_iwinfo=m
+CONFIG_PACKAGE_kmod-8021q=y
+# CONFIG_PACKAGE_kmod-ac97 is not set
+# CONFIG_PACKAGE_kmod-ata-core is not set
+CONFIG_PACKAGE_kmod-cfg80211=m
+CONFIG_PACKAGE_kmod-ebtables=y
+CONFIG_PACKAGE_kmod-ebtables-ipv4=y
+CONFIG_PACKAGE_kmod-ebtables-ipv6=y
+# CONFIG_PACKAGE_kmod-fs-msdos is not set
+# CONFIG_PACKAGE_kmod-fs-ntfs is not set
+CONFIG_PACKAGE_kmod-fw-auth-test=m
+CONFIG_PACKAGE_kmod-ipt-ipset=m
+CONFIG_PACKAGE_kmod-ipt-nat6=y
+CONFIG_PACKAGE_kmod-mii=m
+CONFIG_PACKAGE_kmod-nf-nat6=y
+CONFIG_PACKAGE_kmod-nfnetlink=m
+# CONFIG_PACKAGE_kmod-nls-iso8859-1 is not set
+# CONFIG_PACKAGE_kmod-qpic_panel_ertft is not set
+# CONFIG_PACKAGE_kmod-scsi-core is not set
+# CONFIG_PACKAGE_kmod-sound-soc-core is not set
+# CONFIG_PACKAGE_kmod-sound-soc-ipq is not set
+CONFIG_PACKAGE_kmod-tun=m
+# CONFIG_PACKAGE_kmod-usb-core is not set
+# CONFIG_PACKAGE_kmod-usb-dwc3 is not set
+# CONFIG_PACKAGE_kmod-usb-dwc3-ipq40xx is not set
+# CONFIG_PACKAGE_kmod-usb-dwc3-of-simple is not set
+# CONFIG_PACKAGE_kmod-usb-dwc3-qcom is not set
+# CONFIG_PACKAGE_kmod-usb-gadget is not set
+# CONFIG_PACKAGE_kmod-usb-phy-dwc3-ipq4019 is not set
+# CONFIG_PACKAGE_kmod-usb-phy-dwc3-ipq40xx is not set
+# CONFIG_PACKAGE_kmod-usb-phy-dwc3-qcom is not set
+# CONFIG_PACKAGE_kmod-usb-phy-ipq807x is not set
+# CONFIG_PACKAGE_kmod-usb-phy-qcom-dwc3 is not set
+# CONFIG_PACKAGE_kmod-usb-storage is not set
+# CONFIG_PACKAGE_kmod-usb3 is not set
+CONFIG_PACKAGE_kmod-vxlan=y
+CONFIG_PACKAGE_libbfd=m
+CONFIG_PACKAGE_libblkid=m
+CONFIG_PACKAGE_libbz2=m
+CONFIG_PACKAGE_libdw=m
+CONFIG_PACKAGE_libelf1=m
+CONFIG_PACKAGE_libevent2=y
+CONFIG_PACKAGE_libgpg-error=y
+CONFIG_PACKAGE_libltdl=m
+CONFIG_PACKAGE_liblzo=m
+CONFIG_PACKAGE_libnetsnmp=y
+CONFIG_PACKAGE_libnettle=m
+CONFIG_PACKAGE_libopcodes=m
+CONFIG_PACKAGE_libpcre=y
+CONFIG_PACKAGE_libthread-db=m
+# CONFIG_PACKAGE_lk-ipq40xx is not set
+# CONFIG_PACKAGE_lk-ipq806x is not set
+CONFIG_PACKAGE_lldpd=y
+# CONFIG_PACKAGE_luci-app-upnp is not set
+CONFIG_PACKAGE_mac80211-scripts=y
+# CONFIG_PACKAGE_map is not set
+# CONFIG_PACKAGE_map-t is not set
+# CONFIG_PACKAGE_ntfs-3g is not set
+CONFIG_PACKAGE_objdump=m
+CONFIG_PACKAGE_openssh-keygen=y
+CONFIG_PACKAGE_openssh-server=y
+# CONFIG_PACKAGE_opkg is not set
+CONFIG_PACKAGE_perf=m
+# CONFIG_PACKAGE_pm-utils is not set
+# CONFIG_PACKAGE_qca-wifi-fw-hw2-10.4-asic is not set
+CONFIG_PACKAGE_qos-scripts=y
+CONFIG_PACKAGE_remserial=m
+# CONFIG_PACKAGE_rng-tools is not set
+CONFIG_PACKAGE_snmpd=y
+# CONFIG_PACKAGE_xl2tpd is not set
+CONFIG_PKG_RELRO_FULL=y
+# CONFIG_PKG_RELRO_NONE is not set
+CONFIG_TARGET_INITRAMFS_COMPRESSION_LZMA=y
+CONFIG_TARGET_ROOTFS_INITRAMFS=y
+CONFIG_WPA_MSG_MIN_PRIORITY=0
+# CONFIG_KERNEL_BLK_CGROUP is not set
+# CONFIG_KERNEL_CGROUP_DEVICE is not set
+# CONFIG_KERNEL_CGROUP_FREEZER is not set
+# CONFIG_KERNEL_NETPRIO_CGROUP is not set
+# CONFIG_KERNEL_NET_CLS_CGROUP is not set
+CONFIG_PACKAGE_flock=y
+# CONFIG_PACKAGE_kmod-ac97 is not set
+CONFIG_PACKAGE_kmod-fuse=y
+# CONFIG_PACKAGE_kmod-i2c-algo-bit is not set
+# CONFIG_PACKAGE_kmod-i2c-algo-pca is not set
+# CONFIG_PACKAGE_kmod-i2c-algo-pcf is not set
+CONFIG_PACKAGE_kmod-i2c-core=y
+# CONFIG_PACKAGE_kmod-i2c-gpio is not set
+# CONFIG_PACKAGE_kmod-i2c-mux is not set
+# CONFIG_PACKAGE_kmod-i2c-tiny-usb is not set
+# CONFIG_PACKAGE_kmod-igb is not set
+CONFIG_PACKAGE_kmod-lib-lzo=y
+CONFIG_PACKAGE_kmod-regmap=y
+CONFIG_PACKAGE_kmod-sound-core=y
+# CONFIG_PACKAGE_kmod-sound-i8x0 is not set
+# CONFIG_PACKAGE_kmod-sound-seq is not set
+# CONFIG_PACKAGE_kmod-sound-soc-ac97 is not set
+# CONFIG_PACKAGE_kmod-sound-soc-core is not set
+# CONFIG_PACKAGE_kmod-sound-soc-ipq is not set
+# CONFIG_PACKAGE_kmod-usb-audio is not set
+CONFIG_PACKAGE_miniupnpd=y
+CONFIG_PACKAGE_ppp-mod-pppol2tp=y
+
+CONFIG_PACKAGE_pkg2=y
+CONFIG_PACKAGE_senao-cli=y
+CONFIG_PACKAGE_kw-base-files=y
+CONFIG_PACKAGE_kw-temperature=y
+CONFIG_PACKAGE_kw-gps=y
+CONFIG_PACKAGE_kw-leds=y
+CONFIG_PACKAGE_locator=y
+CONFIG_LOCALMIRROR="http://172.18.18.68/pkgs"

@@ -1,0 +1,26 @@
+#!/bin/sh /etc/rc.common
+
+#Shpin add
+
+START=99
+#STOP=10
+
+start() {
+	include /lib/network
+	config_load network
+	
+	config="lan"
+	config_get iftype "$config" type
+	config_get ifname "$config" device
+
+	for dev in $ifname; do
+		route_for_locator "$config" "$dev" "$iftype"
+	done
+	
+	locator
+}
+
+stop() {
+    killall locator
+}
+

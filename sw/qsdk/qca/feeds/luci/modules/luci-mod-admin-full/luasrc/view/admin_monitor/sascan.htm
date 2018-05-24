@@ -1,0 +1,30 @@
+<%#
+ Copyright 2008 Steven Barth <steven@midlink.org>
+ Copyright 2008 Jo-Philipp Wich <jow@openwrt.org>
+ Licensed to the public under the Apache License 2.0.
+-%>
+<%+header%>
+
+<script type="text/javascript">
+function enable()
+{
+    document.getElementById("s1").disabled=false;
+}
+function start_scan()
+{
+    document.getElementById("s1").disabled=true;
+    setTimeout("enable()",30000);
+    document.getElementById("syslog").innerHTML="Scan is in progress....Wait for 30 Seconds";
+    location.href='<%=luci.dispatcher.build_url("admin/monitor/saresult")%>';
+}
+</script>
+<div class="page-content">
+<h2><a id="content" name="content"><%:Spectrum Analyzer%></a></h2>
+<div class="cbi-page-actions right">
+<input type="button" id="s1" class="cbi-button" value="<%:Scan%>" onclick="start_scan()" />
+</div>
+<div id="content_saresult">
+<textarea readonly="readonly" wrap="off" rows="<%=saresult:cmatch("\n")+2%>" id="syslog"><%=saresult:pcdata()%></textarea>
+</div>
+</div>
+<%+footer%>

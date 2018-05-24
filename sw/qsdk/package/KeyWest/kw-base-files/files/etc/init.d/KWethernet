@@ -1,0 +1,61 @@
+#!/bin/sh /etc/rc.common
+START=90
+USE_PROCD=1
+
+
+service_triggers() {
+        procd_add_reload_trigger "ethernet"
+}
+
+start_service() {
+
+   procd_open_instance
+
+    speed_duplex=$(uci get ethernet.ethernet.mode)
+    eth0_state=$(cat /sys/class/net/eth0/operstate)
+    if [ "$eth0_state" = "up" ]
+    then
+
+        case $speed_duplex in
+            0)
+            #auto neg 
+            ethtool -s eth0 autoneg on advertise 0x2f
+            ;;                                       
+
+            1)
+            #10 mpbs full duplex
+            ethtool -s eth0 speed 10 duplex half autoneg off
+            ;;                                              
+
+            2)
+            #10 mpbs half duplex
+            ethtool -s eth0 speed 10 duplex full autoneg off
+            ;;                                              
+
+            3)
+            #100 mpbs half duplex
+            ethtool -s eth0 speed 100 duplex half autoneg off
+            ;;                                               
+
+            4)
+            #100 mpbs full duplex
+            ethtool -s eth0 speed 100 duplex full autoneg off
+            ;;                                               
+
+            5)
+            #1G full duplex
+            ethtool -s eth0 speed 1000 duplex full autoneg on advertise 0x020
+            ;;                                                               
+
+            *)
+            ;;
+        esac
+
+    else
+        echo "eth0 state $eth0_state"
+    fi                               
+ procd_close_instance
+
+}
+
+

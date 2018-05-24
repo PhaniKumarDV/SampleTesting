@@ -1,0 +1,480 @@
+diff -urN uci-2015-08-27.1_org/file.c uci-2015-08-27.1_mod/file.c
+--- uci-2015-08-27.1_org/file.c	2018-05-21 11:38:59.983646328 +0530
++++ uci-2015-08-27.1_mod/file.c	2018-05-21 16:03:02.329220398 +0530
+@@ -28,6 +28,7 @@
+ #include <glob.h>
+ #include <string.h>
+ #include <stdlib.h>
++#include <time.h>
+ 
+ #include "uci.h"
+ #include "uci_internal.h"
+@@ -714,6 +715,343 @@
+ 
+ 	return filename;
+ }
++struct uci_help uci_help_array[] =
++{
++	{"vlan.sys.mgmtvlan","Management VLAN-ID",0,0},
++	{"vlan.sys.accessvlan", "Access VLAN-ID",0,0},
++	{"vlan.sys.svlan", "QinQ Service VLAN-ID",0,0},
++	{"vlan.sys.allowedtrunkvlan", "Tunk VLAN Mode",0,0},
++	{"vlan.sys.allowedcvlan", "QinQ Mode",0,0},
++	{"vlan.sys.svlanethertype", "QinQ S-VLAN EthernetType",0,0},
++	{"vlan.sys.enablevlan", "VLAN Enable(1)/Disable(0)",0,0},
++	{"vlan.sys.vlanmode", "VLAN Operation Mode",0,0},
++	{"vlan.sys.accessvlanip", "Access VLAN IP Address",0,0},
++	{"vlan.sys.accessvlanmask", "Access VLAN IP Mask",0,0},
++	{"vlan.@trunkvlan.vid", "Trunk VLAN-ID",0,0},
++	{"vlan.@cvlan.vid", "QinQ Customer VLAN-ID",0,0},
++
++	{"quagga.sys.routingEnable", "Routing Enable(1)/Disable(0)",0,0},
++	{"quagga.sys.srouteEnable", "Static Routing Enable(1)/Disable(0)",0,0},
++	{"quagga.sys.ripEnable", "RIP Protocol Enable(1)/Disable(0)",0,0},
++	{"quagga.rip.version", "RIP Version",0,0},
++	{"quagga.rip.defaultMetric", "RIP Default metric",0,0},
++	{"quagga.rip.tmrUpdate", "RIP Update timer",0,0},
++	{"quagga.rip.tmrTimeout", "RIP Timeout value",0,0},
++
++	{"quagga.@sroute.network", "Static route network address",0,0},
++	{"quagga.@sroute.netmask", "Static route network netmask",0,0},
++	{"quagga.@sroute.gateway", "Static route network getway",0,0},
++	{"quagga.@sroute.metric", "Static route network metric",0,0},
++	{"quagga.@sroute.iface", "Static route network interface",0,0},
++	{"quagga.@sroute.isdefault", "Static route default(1)/normal(0)",0,0},
++
++
++	{"wrt-radauth.sys.enableRadAuth", "Radius enable(1)/disable(0)",0,0},
++	{"wrt-radauth.sys.primaryServer", "Radius primary server",0,0},
++	{"wrt-radauth.sys.secondaryServer", "Radius seconday server",0,0},
++	{"wrt-radauth.sys.primaryPort", "Radius primary port",0,0},
++	{"wrt-radauth.sys.secondaryPort", "Radius seconday port",0,0},
++	{"wrt-radauth.sys.requestTimeout", "Radius retry count period",0,0},
++	{"wrt-radauth.sys.requestRetries", "Radius retry count",0,0},
++	{"wrt-radauth.sys.reauthTime", "Radius re-authentication time",0,0},
++	{"wrt-radauth.sys.retryTime", "Radius retry time",0,0},
++	{"wrt-radauth.sys.primarySecret", "Radius primary secret",1,0},
++	{"wrt-radauth.sys.secondarySecret", "Radius secondary secret",1,0},
++
++	{"filter.sys.enableFilter", "Filtering Enable(1)/Disable(0)",0,0},
++	{"filter.sys.dropAllL2Muticast", "Drop All L2 Multicast packets Enable(1)/Disable(0)",0,0},
++	{"filter.sys.dropAllL3Muticast", "Drop All L3 Multicast packets Enable(1)/Disable(0)",0,0},
++	{"filter.sys.dropAllL2Broadcast", "Drop All L2 Broadcast packets Enable(1)/Disable(0)",0,0},
++	{"filter.sys.dropAllL3Broadcast", "Drop All L3 Broadcast packets Enable(1)/Disable(0)",0,0},
++	{"filter.sys.type", "Filtering Type",0,0},
++
++	{"filter.@ip.ip", "IP Filter IP address",0,0},
++	{"filter.@ip.mask", "IP Filter subnet mask",0,0},
++	{"filter.@ip.srcIp", "IP Filter source IP address",0,0},
++	{"filter.@ip.srcMask", "IP Filter source mask",0,0},
++	{"filter.@ip.destIp", "IP Filter destination IP address",0,0},
++	{"filter.@ip.destMask", "IP Filter destination mask",0,0},
++	{"filter.@ip.protocol", "IP Filter protocol",0,0},
++	{"filter.@ip.port", "IP Filter port",0,0},
++	{"filter.@ip.srcPort", "IP Filter source port",0,0},
++	{"filter.@ip.destPort", "IP Filter destination port",0,0},
++
++	{"filter.@mac.mac", "MAC Filter MAC address",0,0},
++	{"filter.@mac.destMac", "MAC Filter destination MAC address",0,0},
++	{"filter.@mac.srcMac", "MAC Filter source MAC address",0,0},
++
++	{"tc.1.TcEnable", "Traffic shaping enable(1)/disable(0)",0,0},
++	{"tc.1.TcInRate", "Traffic shaping incoming limit",0,0},
++	{"tc.1.TcOutRate", "Traffic shaping outgoing limit",0,0},
++
++	{"ipnat.ipnat.enable", "NAT enable(1)/disable(0)",0,0},
++
++	{"network.sys.opmode", "Operational Mode",0,0},
++	{"network.lan.ipaddr", "LAN IP Address",0,0},
++	{"network.lan.netmask", "LAN IP Subnet Mask",0,0},
++	{"network.lan.gateway", "LAN Gateway",0,0},
++	{"network.lan.dns", "DNS",0,0},
++	{"network.lan.ip6LinkLocalEn", "IPv6 link-local address enable(1)/disable(0)",0,0},
++	{"network.lan.ip6addr", "IPv6 link-local address",0,0},
++	{"network.lan.ip6gw", "IPv6 default gateway",0,0},
++	{"network.lan.proto", "LAN IP Network static/dhcp",0,0},
++	{"network.lan.mtu", "LAN MTU size",0,0},
++	{"network.lan.WANMTUMode", "LAN MTU mode manual(1)/auto(0)",0,0},
++
++	{"dhcp.lan.dhcp_stop_addr", "DHCP server ending IP address",0,0},
++	{"dhcp.lan.start", "DHCP server starting IP address",0,0},
++	{"dhcp.lan.ignore", "DHCP server enable(0)/disable(1)",0,0},
++	{"dhcp.lan.netmask", "DHCP server netmask",0,0},
++	{"dhcp.lan.gateway", "DHCP server gateway",0,0},
++	{"dhcp.lan.leasetime", "DHCP server leasetime",0,0},
++
++
++	{"network.wan.ipaddr", "WAN IP Address",0,0},
++	{"network.wan.netmask", "WAN IP Subnet Mask",0,0},
++	{"network.wan.gateway", "WAN Gateway",0,0},
++	{"network.wan.mtu", "WAN MTU size",0,0},
++	{"network.wan.proto", "WAN IP Network static/dhcp",0,0},
++	{"network.wan.WANMTUMode", "WAN MTU mode manual(1)/auto(0)",0,0},
++	{"network.wan.WANGeneralDomain", "WAN domain name",0,0},
++	{"network.wan.WANGeneralAccount", "WAN account name",0,0},
++
++	{"keywest.boot.logout", "Web i/f Logout",0,1},
++	{"keywest.boot.telnetpass", "Telnet password",1,0},
++	{"keywest.boot.webadminpass", "Web admin password",1,0},
++	{"keywest.boot.webuserpass", "Web user password",1,0},
++	{"keywest.boot.websuperpass", "Web super password",1,0},
++	{"keywest.boot.arpclear", "ARP table cleared",0,1},
++	{"keywest.boot.bridgeclear", "Bridge table cleared",0,1},
++	{"keywest.boot.rebootclear", "Reboot log cleared",0,1},
++	{"keywest.boot.savesetting", "Save a copy of current setting",0,1},
++	{"keywest.boot.restoresetting", "Restore current setting",0,1},
++	{"keywest.boot.fwupgrade", "Firmware upgrade",0,0},
++	{"keywest.boot.confresetip",   "Configuration rest with retain IP",0,1},
++	{"keywest.boot.confresetwoip", "Configuration rest without retain IP",0,1},
++	{"keywest.boot.sysreboot", "System reboot",0,1},
++	{"keywest.boot.spectralstartscan", "Spectrum analyzer channel",0,0},
++	{"keywest.boot.spectralstopscan", "Spectrum analyzer stopped",0,0},
++	{"keywest.boot.spectralsamples", "Spectrum analyzer samples",0,0},
++	{"keywest.boot.spectralreset", "Spectrum analyzer reset",0,1},
++	{"keywest.boot.syslogclear", "Syslog cleared",0,1},
++	{"keywest.boot.ethclear1", "Network statistics for all interface cleared",0,1},
++	{"keywest.boot.ethclear2", "Ethernet statistics cleared",0,1},
++	{"keywest.boot.ethclear3", "Ethernet events cleared",0,1},
++	{"keywest.boot.ethclear4", "Ethernet events last boot log cleared",0,1},
++	{"keywest.boot.ethclear5", "Ethernet advanced statistics cleared",0,1},
++
++	{"keywest.boot.athclear1", "Wireless statistics cleared",0,1},
++	{"keywest.boot.athclear3", "MAC ID, RSSI And SNR for remote devices assosiated counters cleared",0,1},
++	{"keywest.boot.athclear4", "SNR, RSSI for the device counters cleared",0,1},
++	{"keywest.boot.athclear5", "Wireless events cleared",0,1},
++	{"keywest.boot.athclear6", "Wireless events last boot log cleared",0,1},
++	{"keywest.boot.athclear7", "Wireless advanced statistics cleared",0,1},
++
++	{"keywest.ether.mode", "Ethernet mode auto(2),10m-half(3),10m-full(4),100m-half(5),100m-full(6)",0,0},
++	{"keywest.ethtimer.value", "Ethernet Inactivity Timer",0,0},
++	{"keywest.templog.templogclear", "Temperature log is cleared",0,1},
++	{"keywest.templog.interval", "Temperature log interval",0,0},
++	{"keywest.location.cname", "Customer name",0,0},
++	{"keywest.location.lname", "Customer location",0,0},
++	{"keywest.location.email", "Customer email",0,0},
++	{"keywest.location.phone", "Customer phone",0,0},
++	{"keywest.location.linkid", "Customer link ID1",0,0},
++	{"keywest.location.linkid2", "Customer link ID2",0,0},
++	{"keywest.location.linkid3", "Customer link ID3",0,0},
++	{"keywest.location.linkid4", "Customer link ID4",0,0},
++/*	
++ *	KWSET: these are now updated by GNSS daemon
++	{"keywest.location.latitude", "Customer Latitude",0,0},
++	{"keywest.location.longitude", "Customer Longitude",0,0},
++	{"keywest.location.azimuth", "Customer Azhimuth Angle",0,0},
++*/	
++	{"keywest.location.Polarization", "Customer Polarization",0,0},
++	{"keywest.location.bstid", "Customer Base Station Id",0,0},
++	{"keywest.boot.pingtarget", "Diagnostics ping target",0,0},
++	{"keywest.boot.pingsize",   "Diagnostics ping packet size",0,0},
++	{"keywest.boot.pingcount",  "Diagnostics ping count",0,0},
++	{"keywest.boot.traceroute", "Diagnostics traceroute target",0,0},
++
++	{"snmpd.public.community", "SNMP r/o community name",1,0},
++	{"snmpd.private.community", "SNMP r/w community name",1,0},
++	{"snmpd.@snmpv3.snmpv3enable", "SNMPv3 enable(1)/disable(0)",0,0},
++	{"snmpd.@snmpv3.username", "SNMPv3 username",1,0},
++	{"snmpd.@snmpv3.authkey", "SNMPv3 auth key",1,0},
++	{"snmpd.@snmpv3.privkey", "SNMPv3 priv key",1,0},
++	{"snmpd.@snmpv3.privprotocol", "SNMPv3 priv protocol des(0),none(1)",0,0},
++	{"snmpd.@snmpv3.authprotocol", "SNMPv3 auth protocol md5(0),sha(1),none(2)",0,0},
++	{"snmpd.@snmpv3.EngineID", "SNMPv3 engine-id",0,0},
++	{"snmpd.@system.SnmpTrapDstIP", "SNMP trap destination ipaddress",0,0},
++	{"snmpd.@system.SnmpTrapCmnty", "SNMP trap community name",1,0},
++
++	{"system.log.LogServerEnable", "SysLog server enable(1)/disable(0)",0,0},
++	{"system.system.log_ip", "SysLog server IP address/computer name",0,0},
++	{"system.log.LogLocalEnable", "Local log enable(1)/disable(0)",0,0},
++
++	{"wireless.wifi0.hwmode", "Wireless wifi0 mode",0,0},
++	{"wireless.wifi1.hwmode", "Wireless wifi1 mode",0,0},
++	{"wireless.wifi0.channel", "Wireless wifi0 channel",0,0},
++	{"wireless.wifi1.channel", "Wireless wifi1 channel",0,0},
++	{"wireless.wifi0.distance", "Wireless wifi0 Distance",0,0},
++	{"wireless.wifi1.distance", "Wireless wifi1 Distance",0,0},
++	{"wireless.wifi0.country", "Wireless wifi0 Country Code",0,0},
++	{"wireless.wifi1.country", "Wireless wifi1 Country Code",0,0},
++	{"wireless.wifi0.countryName", "Wireless wifi0 Country",0,0},
++	{"wireless.wifi1.countryName", "Wireless wifi1 Country",0,0},
++	{"wireless.wifi0.txpower", "Wireless wifi0 TX Power",0,0},
++	{"wireless.wifi1.txpower", "Wireless wifi1 TX Power",0,0},
++	{"wireless.wifi0.WLANHTMode", "Channel wifi0 HT mode",0,0},
++	{"wireless.wifi1.WLANHTMode", "Channel wifi1 HT mode",0,0},
++	{"wireless.wifi0.txpower", "Wireless wifi0 TX Power",0,0},
++	{"wireless.wifi1.txpower", "Wireless wifi1 TX Power",0,0},
++	{"wireless.wifi0.obeyregpower", "wifi0 Obey regulatory power enable(1)/disable(0)",0,0},
++	{"wireless.wifi1.obeyregpower", "wifi1 Obey regulatory power enable(1)/disable(0)",0,0},
++	{"wireless.wifi0.WLANAggreEnable", "Wireless wifi0 aggregation",0,0},
++	{"wireless.wifi1.WLANAggreEnable", "Wireless wifi1 aggregation",0,0},
++	{"wireless.wifi0.WLANAggreFrames", "Wireless wifi0 aggregation frames",0,0},
++	{"wireless.wifi1.WLANAggreFrames", "Wireless wifi1 aggregation frames",0,0},
++	{"wireless.wifi0.WLANAggreBytes", "Wireless wifi0 aggregation bytes",0,0},
++	{"wireless.wifi1.WLANAggreBytes", "Wireless wifi1 aggregation bytes",0,0},
++	{"wireless.wifi0.chainmasksel", "Auto wifi0 chainmask selection",0,0},
++	{"wireless.wifi1.chainmasksel", "Auto wifi1 chainmask selection",0,0},
++	{"wireless.wifi0.txchainmask", "Transmit wifi0 chainmask selection",0,0},
++	{"wireless.wifi1.txchainmask", "Transmit wifi1 chainmask selection",0,0},
++	{"wireless.wifi0.rxchainmask", "Recieve wifi0 chainmask selection",0,0},
++	{"wireless.wifi1.rxchainmask", "Recieve wifi1 chainmask selection",0,0},
++	{"wireless.wifi0.MacInMac", "MAC-in-MAC wifi0 wireless feature enable(1)/disable(0)",0,0},
++	{"wireless.wifi1.MacInMac", "MAC-in-MAC wifi1 wireless feature enable(1)/disable(0)",0,0},
++
++	{"wireless.@wifi-iface[0].ssid","Wireless SSID",0,0},
++	{"wireless.@wifi-iface[1].ssid","Wireless SSID",0,0},
++	{"wireless.@wifi-iface[0].rate","Wireless data rate",0,0},
++	{"wireless.@wifi-iface[1].rate","Wireless data rate",0,0},
++	{"wireless.@wifi-iface[0].rts","Wireless RTS/CTS",0,0},
++	{"wireless.@wifi-iface[1].rts","Wireless RTS/CTS",0,0},
++	{"wireless.@wifi-iface[0].encryption","Wireless encryption",0,0},
++	{"wireless.@wifi-iface[1].encryption","Wireless encryption",0,0},
++	{"wireless.@wifi-iface[0].key","Wireless encryption key",1,0},
++	{"wireless.@wifi-iface[1].key","Wireless encryption key",1,0},
++	{"wireless.@wifi-iface[0].macpolicy","Wireless MAC filter policy",0,0},
++	{"wireless.@wifi-iface[1].macpolicy","Wireless MAC filter policy",0,0},
++	{"wireless.@wifi-iface[0].maclist","Wireless MAC filter",0,0},
++	{"wireless.@wifi-iface[1].maclist","Wireless MAC filter",0,0},
++	{"wireless.@wifi-iface[0].bssid","Prefered BSSID",0,0},
++	{"wireless.@wifi-iface[1].bssid","Prefered BSSID",0,0},
++
++	{"ipsec.sys.enable","IPSec enable(1)/disable(0)",0,0},
++	{"ipsec.sys.peer","IPSec peer IP address",0,0},
++	{"ipsec.sys.local","IPSec local IP address",0,0},
++	{"ipsec.phase1.hashAlgorithm","IPSec phase-1 hashing algorithm",0,0},
++	{"ipsec.phase1.encryptionAlgorithm","IPSec phase-1 encryption algorithm",0,0},
++	{"ipsec.phase1.authenticationMethod","IPSec phase-1 authentication algorithm",0,0},
++	{"ipsec.phase1.sharedKey","IPSec phase-1 shared key",1,0},
++	{"ipsec.phase1.exchangeMode","IPSec phase-1key exchange mode",0,0},
++	{"ipsec.phase1.diffieHellman","IPSec phase-1 diffie hellman",0,0},
++	{"ipsec.phase2.encryptionAlgorithm","IPSec phase-2 encryption algorithm",0,0},
++	{"ipsec.phase2.authenticationAlgorithm","IPSec phase-2 authentication algorithm",0,0},
++	{"ipsec.phase2.compressionAlgorithm","IPSec phase-2 compression algorithm",0,0},
++	{"ipsec.phase2.lifetime","IPSec phase-2 lifetime (hr)",0,0},
++	{"ipsec.phase2.diffieHellman","IPSec phase-2 diffie hellman",0,0},
++	{"ipsec.@acl.src","IPSec acl source IP address",0,0},
++	{"ipsec.@acl.dst","IPSec acl destination IP address",0,0},
++	{"ipsec.@acl","IPSec acl",0,0},
++
++	{"ntpclient.@ntpclient.TimeSettingMode","Time setting mode manual(0)/ntp(1)",0,0},
++	{"ntpclient.@ntpserver.hostname","User defined NTP server",0,0},
++	{"ntpclient.@ntpclient.NTPSrvMode","User defined NTP Server enable(1)/disable(0)",0,0},
++
++	{"ntpclient.daylightsaving.startMonth","Dayligh saving start month",0,0},
++	{"ntpclient.daylightsaving.startWeek","Dayligh saving start week",0,0},
++	{"ntpclient.daylightsaving.startDay","Dayligh saving start day",0,0},
++	{"ntpclient.daylightsaving.startHour","Dayligh saving start hour",0,0},
++	{"ntpclient.daylightsaving.endMonth","Dayligh saving end month",0,0},
++	{"ntpclient.daylightsaving.endWeek","Dayligh saving end week",0,0},
++	{"ntpclient.daylightsaving.endDay","Dayligh saving end day",0,0},
++	{"ntpclient.daylightsaving.endHour","Dayligh saving end hour",0,0},
++
++	{"system.system.timezone","Time Zone",0,0},
++	{"ntpclient.daylightsaving.DayLightEnable","Daylight saving enable(1)/disable(0)",0,0},
++};
++
++static char gip[64] = {0};
++static char gcmd[128];
++static char* _uci_get_ip(pid_t pid)
++{
++        FILE *fp = NULL;
++        if (!pid) return NULL;
++        sprintf(gcmd,"/tmp/el/%d/ip",pid);
++        fp = fopen (gcmd,"r");
++        if (fp)
++        {
++                fscanf(fp,"%s",gip);
++                fclose(fp);
++                return gip;
++        }
++        return NULL;
++}
++
++pid_t uci_get_ppid (pid_t pid)
++{
++        char *buff= NULL;
++        size_t len = 255;
++        pid_t ppid = 0;
++        sprintf(gcmd,"cut -f4 -d' ' /proc/%d/stat",pid);
++        FILE *fp = (FILE*)popen(gcmd,"r");
++        while(getline(&buff,&len,fp) >= 0)
++        {
++                ppid = atoi(buff);
++        }
++        fclose(fp);
++        free(buff);
++        return ppid;
++}
++static char* uci_get_ip ()
++{
++        pid_t pppid = 0;
++        pid_t ppppid = 0;
++        pid_t pppppid = 0;
++        char *ip = NULL;
++        int rt = 0;
++        pppid = uci_get_ppid (getppid());
++        ppppid = uci_get_ppid (pppid);
++        pppppid = uci_get_ppid (ppppid);
++        do
++        {
++                ip = _uci_get_ip (pppid); if(ip) break;
++                ip = _uci_get_ip (getppid()); if(ip) break;
++                ip = _uci_get_ip (getpid()); if(ip) break;
++                ip = _uci_get_ip (ppppid); if(ip) break;
++                ip = _uci_get_ip (pppppid); if(ip) break;
++        }while(0);
++        if (ip) rt = 1;
++#if 1
++        sprintf(gcmd,"echo \"pid=%d,%d,%d,%d,%d %02X\" >> /tmp/event_log",getpid(),getppid(),pppid,ppppid,pppppid,rt);
++        system(gcmd);
++        sprintf(gcmd,"ps -ejf > /tmp/event_ps");
++        system(gcmd);
++#endif
++        return ip;
++}
++
++static void uci_get_help_txt (struct uci_ptr *ptr,char **help, bool *secret, bool *action)
++{
++	static char cmd[128];
++	int  i =0;
++	sprintf(cmd,"%s.%s.%s",ptr->package,ptr->section,ptr->option);
++	for (i = 0; i< sizeof(uci_help_array)/sizeof(struct uci_help); i++)
++	{
++		if (strcmp(cmd,uci_help_array[i].cmd) == 0)
++		{
++			*help = uci_help_array[i].help;
++			*secret = uci_help_array[i].secret;
++			*action = uci_help_array[i].action;
++			return;
++		}
++	}
++
++	return;
++}
++
+ 
+ static void uci_file_commit(struct uci_context *ctx, struct uci_package **package, bool overwrite)
+ {
+@@ -752,6 +1090,106 @@
+ 	/* flush unsaved changes and reload from delta file */
+ 	UCI_TRAP_SAVE(ctx, done);
+ 	if (p->has_delta) {
++		struct uci_element *e = NULL;
++		char hstr[128] = {0};
++		bool header = false;
++		bool logw = false;
++		char last_cmd[128] = {0};
++		char cmd[128] = {0};
++		FILE *fp = NULL;
++		long int fz = 0;
++
++		fp =  fopen("/etc/uci_delta","r");
++		if (fp)
++		{
++			fseek(fp, 0L, SEEK_END);
++			fz = ftell(fp);
++			rewind(fp);
++			fclose(fp);
++
++			if (fz >= 256000)
++				system("\rm /etc/uci_delta");
++		}
++
++		uci_foreach_element(&p->saved_delta, e)
++		{
++			struct uci_delta *h = uci_to_delta(e);
++			struct uci_ptr ptr;
++			char  *help = NULL;
++			bool secret = 0;
++			bool action = 0;
++			time_t mytime;
++			char *ip = NULL;
++			mytime = time(NULL);
++			ptr.package = p->e.name;
++			ptr.section = h->section;
++			ptr.option = h->e.name;
++			ptr.flags = 0;
++			uci_get_help_txt (&ptr, &help,&secret,&action);
++			if (help)
++			{
++					if (header == false)
++					{
++
++						// get IP from PID, PPID of PPPID
++						ip = uci_get_ip ();
++						if (ip)
++						{
++							sprintf(hstr,"echo \"[IP = %s,%s]\" >> /etc/uci_delta",ip,strtok(ctime(&mytime),"\n"));
++						}
++						else
++						{
++							sprintf(hstr,"echo \"[%s]\" >> /etc/uci_delta",strtok(ctime(&mytime),"\n"));
++						}
++
++						sprintf(hstr,"echo \"[%s]\" >> /etc/uci_delta",strtok(ctime(&mytime),"\n"));
++						header = true;
++					}
++					if (h->value)
++					{
++						if (!secret && !action)
++						{
++							if (strcmp(h->value,"11na")==0)
++							{
++								strcpy(h->value,"11an");
++							}
++							sprintf(cmd,"echo \"%s set to %s\" >> /etc/uci_delta",help,
++									(((strlen(h->value) != 0) && (strcmp(h->value," ") != 0))?h->value:"nil"));
++						}
++						else
++						{
++							if (secret)
++							{
++								sprintf(cmd,"echo \"%s set to %s\" >> /etc/uci_delta",help,"{hidden}");
++							}
++							else
++							{
++								sprintf(cmd,"echo \"%s\" >> /etc/uci_delta",help);
++							}
++						}
++					}
++					else
++					{
++						if (h->cmd == UCI_CMD_REMOVE)
++						{
++							sprintf(cmd,"echo \"- %s\" >> /etc/uci_delta",help);
++						}
++					}
++					if (strcmp(cmd,last_cmd)!=0)
++					{
++						system(cmd);
++						logw = true;
++						strcpy(last_cmd,cmd);
++					}
++				}
++
++		}
++		if (logw && header)
++		{
++			/* write header */
++			system(hstr);
++		}
++
+ 		if (!overwrite) {
+ 			name = uci_strdup(ctx, p->e.name);
+ 			path = uci_strdup(ctx, p->path);
+diff -urN uci-2015-08-27.1_org/uci.h uci-2015-08-27.1_mod/uci.h
+--- uci-2015-08-27.1_org/uci.h	2018-05-21 11:38:59.928646161 +0530
++++ uci-2015-08-27.1_mod/uci.h	2018-05-21 11:41:02.253018314 +0530
+@@ -459,6 +459,14 @@
+ 	} v;
+ };
+ 
++struct uci_help 
++{
++        char *cmd;
++        char *help;
++        bool secret;
++        bool action;
++};
++
+ /*
+  * UCI_CMD_ADD is used for anonymous sections or list values
+  */

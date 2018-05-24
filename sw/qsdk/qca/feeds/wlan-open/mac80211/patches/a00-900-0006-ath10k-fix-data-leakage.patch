@@ -1,0 +1,18 @@
+--- a/drivers/net/wireless/ath/ath10k/debug.c
++++ b/drivers/net/wireless/ath/ath10k/debug.c
+@@ -1284,14 +1284,11 @@ static ssize_t ath10k_write_htt_max_amsd
+ {
+ 	struct ath10k *ar = file->private_data;
+ 	int res;
+-	char buf[64];
++	char buf[64]={0};
+ 	unsigned int amsdu, ampdu;
+ 
+ 	simple_write_to_buffer(buf, sizeof(buf) - 1, ppos, user_buf, count);
+ 
+-	/* make sure that buf is null terminated */
+-	buf[sizeof(buf) - 1] = 0;
+-
+ 	res = sscanf(buf, "%u %u", &amsdu, &ampdu);
+ 
+ 	if (res != 2)

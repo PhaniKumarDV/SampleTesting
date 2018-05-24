@@ -1,0 +1,62 @@
+diff -urN bridge-utils-1.5/brctl/brctl_cmd.c bridge-utils-1.5_mod/brctl/brctl_cmd.c
+--- bridge-utils-1.5/brctl/brctl_cmd.c	2018-04-30 21:50:55.000000000 +0530
++++ bridge-utils-1.5_mod/brctl/brctl_cmd.c	2018-05-04 15:29:51.136361343 +0530
+@@ -402,6 +402,24 @@
+ 	return 0;
+ }
+ 
++
++static int br_cmd_clearmacs(int argc, char *const* argv)
++{
++    const char *brname = argv[1];
++    int err,n;
++    n=brctl_clean_fdb(brname);
++    printf("Sify:::%d",n);
++    switch (n)
++    {
++        case 0:
++            return 0;
++        default:
++            printf("can't clear mac entries %s\n");
++            return 1;
++    }
++}
++
++
+ static int br_cmd_hairpin(int argc, char *const* argv)
+ {
+ 	int hairpin, err;
+@@ -469,6 +487,9 @@
+ 	  "<bridge>\t\tshow bridge stp info"},
+ 	{ 2, "stp", br_cmd_stp,
+ 	  "<bridge> {on|off}\tturn stp on/off" },
++	{ 1, "clearmacs", br_cmd_clearmacs, 
++	  "<bridge>\t\tto clear learn table"},
++
+ };
+ 
+ const struct command *command_lookup(const char *cmd)
+diff -urN bridge-utils-1.5/libbridge/libbridge_devif.c bridge-utils-1.5_mod/libbridge/libbridge_devif.c
+--- bridge-utils-1.5/libbridge/libbridge_devif.c	2018-04-30 21:50:55.000000000 +0530
++++ bridge-utils-1.5_mod/libbridge/libbridge_devif.c	2018-05-04 15:30:27.994803623 +0530
+@@ -397,6 +397,20 @@
+ 	__jiffies_to_tv(&ent->ageing_timer_value, f->ageing_timer_value);
+ }
+ 
++
++int  brctl_clean_fdb(const char *bridge)
++{
++    int ret;
++    unsigned long arg[1] = {BRCTL_DEL_FDB_ENTRIES};
++    struct ifreq ifr;
++    int retries = 0;
++    strncpy(ifr.ifr_name, bridge, IFNAMSIZ);
++    ifr.ifr_data = (char *) arg;
++    ret = ioctl(br_socket_fd, SIOCDEVPRIVATE, &ifr);
++    return ret < 0 ? errno : ret;
++}
++
++
+ int br_read_fdb(const char *bridge, struct fdb_entry *fdbs, 
+ 		unsigned long offset, int num)
+ {

@@ -1,0 +1,27 @@
+diff --git a/drivers/net/wireless/ath/ath10k/debug.h b/drivers/net/wireless/ath/ath10k/debug.h
+index 2b2cfab..c987fb6 100644
+--- a/drivers/net/wireless/ath/ath10k/debug.h
++++ b/drivers/net/wireless/ath/ath10k/debug.h
+@@ -38,6 +38,7 @@ enum ath10k_debug_mask {
+ 	ATH10K_DBG_WMI_PRINT	= 0x00002000,
+ 	ATH10K_DBG_PCI_PS	= 0x00004000,
+ 	ATH10K_DBG_AHB		= 0x00008000,
++	ATH10K_DBG_FWLOG	= 0x00010000,
+ 	ATH10K_DBG_SMART_ANT	= 0x01000000,
+ 	ATH10K_DBG_ANY		= 0xffffffff,
+ };
+diff --git a/drivers/net/wireless/ath/ath10k/fwlog.c b/drivers/net/wireless/ath/ath10k/fwlog.c
+index d986aa7..63547c2 100644
+--- a/drivers/net/wireless/ath/ath10k/fwlog.c
++++ b/drivers/net/wireless/ath/ath10k/fwlog.c
+@@ -1471,8 +1471,8 @@ static void ath10k_fwlog_parse_msg(struct ath10k *ar, u8 *data, int len) {
+ 	len -= sizeof(dropped);
+ 
+ 	if (dropped > 0)
+-		printk(FW_DBGLOG_PRINT_PREFIX "%d log buffers are dropped \n",
+-		       dropped);
++		ath10k_dbg(ar, ATH10K_DBG_FWLOG, FW_DBGLOG_PRINT_PREFIX
++			   "%d log buffers are dropped \n\n", dropped);
+ 
+ 	count = 0;
+ 	buffer = (u32 *)data;

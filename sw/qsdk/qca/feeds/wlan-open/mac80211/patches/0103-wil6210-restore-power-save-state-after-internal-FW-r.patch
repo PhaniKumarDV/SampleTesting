@@ -1,0 +1,95 @@
+--- a/drivers/net/wireless/ath/wil6210/cfg80211.c
++++ b/drivers/net/wireless/ath/wil6210/cfg80211.c
+@@ -1811,12 +1811,6 @@ static int wil_cfg80211_set_power_mgmt(struct wiphy *wiphy,
+ {
+ 	struct wil6210_priv *wil = wiphy_to_wil(wiphy);
+ 	enum wmi_ps_profile_type ps_profile;
+-	int rc;
+-
+-	if (!test_bit(WMI_FW_CAPABILITY_PS_CONFIG, wil->fw_capabilities)) {
+-		wil_err(wil, "set_power_mgmt not supported\n");
+-		return -EOPNOTSUPP;
+-	}
+ 
+ 	wil_dbg_misc(wil, "enabled=%d, timeout=%d\n",
+ 		     enabled, timeout);
+@@ -1826,11 +1820,7 @@ static int wil_cfg80211_set_power_mgmt(struct wiphy *wiphy,
+ 	else
+ 		ps_profile = WMI_PS_PROFILE_TYPE_PS_DISABLED;
+ 
+-	rc  = wmi_ps_dev_profile_cfg(wil, ps_profile);
+-	if (rc)
+-		wil_err(wil, "wmi_ps_dev_profile_cfg failed (%d)\n", rc);
+-
+-	return rc;
++	return wil_ps_update(wil, ps_profile);
+ }
+ 
+ static struct cfg80211_ops wil_cfg80211_ops = {
+--- a/drivers/net/wireless/ath/wil6210/main.c
++++ b/drivers/net/wireless/ath/wil6210/main.c
+@@ -596,6 +596,9 @@ int wil_priv_init(struct wil6210_priv *wil)
+ 
+ 	if (rx_ring_overflow_thrsh == WIL6210_RX_HIGH_TRSH_INIT)
+ 		rx_ring_overflow_thrsh = WIL6210_RX_HIGH_TRSH_DEFAULT;
++
++	wil->ps_profile =  WMI_PS_PROFILE_TYPE_DEFAULT;
++
+ 	return 0;
+ 
+ out_wmi_wq:
+@@ -925,6 +928,24 @@ void wil_abort_scan(struct wil6210_priv *wil, bool sync)
+ 	}
+ }
+ 
++int wil_ps_update(struct wil6210_priv *wil, enum wmi_ps_profile_type ps_profile)
++{
++	int rc;
++
++	if (!test_bit(WMI_FW_CAPABILITY_PS_CONFIG, wil->fw_capabilities)) {
++		wil_err(wil, "set_power_mgmt not supported\n");
++		return -EOPNOTSUPP;
++	}
++
++	rc  = wmi_ps_dev_profile_cfg(wil, ps_profile);
++	if (rc)
++		wil_err(wil, "wmi_ps_dev_profile_cfg failed (%d)\n", rc);
++	else
++		wil->ps_profile = ps_profile;
++
++	return rc;
++}
++
+ /*
+  * We reset all the structures, and we reset the UMAC.
+  * After calling this routine, you're expected to reload
+@@ -1055,6 +1076,9 @@ int wil_reset(struct wil6210_priv *wil, bool load_fw)
+ 			return rc;
+ 		}
+ 
++		if (wil->ps_profile != WMI_PS_PROFILE_TYPE_DEFAULT)
++			wil_ps_update(wil, wil->ps_profile);
++
+ 		wil_collect_fw_info(wil);
+ 
+ 		if (wil->platform_ops.notify) {
+--- a/drivers/net/wireless/ath/wil6210/wil6210.h
++++ b/drivers/net/wireless/ath/wil6210/wil6210.h
+@@ -705,6 +705,8 @@ struct wil6210_priv {
+ 		struct scan_acs_info ch_info[4];
+ 	} __packed survey_reply;
+ 
++	enum wmi_ps_profile_type ps_profile;
++
+ #ifdef CONFIG_PM
+ #ifdef CONFIG_PM_SLEEP
+ 	struct notifier_block pm_notify;
+@@ -831,6 +833,8 @@ int wil_if_add(struct wil6210_priv *wil);
+ void wil_if_remove(struct wil6210_priv *wil);
+ int wil_priv_init(struct wil6210_priv *wil);
+ void wil_priv_deinit(struct wil6210_priv *wil);
++int wil_ps_update(struct wil6210_priv *wil,
++		  enum wmi_ps_profile_type ps_profile);
+ int wil_reset(struct wil6210_priv *wil, bool no_fw);
+ void wil_fw_error_recovery(struct wil6210_priv *wil);
+ void wil_set_recovery_state(struct wil6210_priv *wil, int state);

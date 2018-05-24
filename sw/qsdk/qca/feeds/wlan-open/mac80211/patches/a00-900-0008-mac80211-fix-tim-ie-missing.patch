@@ -1,0 +1,13 @@
+diff --git a/net/mac80211/sta_info.c b/net/mac80211/sta_info.c
+index 62f37ee..b5f61d6 100644
+--- a/net/mac80211/sta_info.c
++++ b/net/mac80211/sta_info.c
+@@ -693,7 +693,7 @@ static void __sta_info_recalc_tim(struct sta_info *sta, bool ignore_pending)
+ 	}
+ 
+ 	/* No need to do anything if the driver does all */
+-	if (!local->ops->set_tim)
++	if (ieee80211_hw_check(&local->hw, AP_LINK_PS) && !local->ops->set_tim)
+ 		return;
+ 
+ 	if (sta->dead)

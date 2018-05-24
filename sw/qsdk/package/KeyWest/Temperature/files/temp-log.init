@@ -1,0 +1,33 @@
+#!/bin/sh /etc/rc.common
+# Temperature loging init script
+
+TEMPLOG_BIN="/usr/sbin/temp-log.sh"
+
+START=90
+
+USE_PROCD=1
+
+service_triggers() {
+    procd_add_reload_trigger "system"
+}
+
+
+start_service() {        
+    local status="$(uci_get system.@system[0].templogstatus)"
+    local int="$(uci_get system.@system[0].temploginterval)"
+
+    echo "Starting Temperature Log"
+    procd_open_instance
+    procd_set_param respawn
+
+    if [ "${status}" == "1" ] ; then
+        procd_set_param command "$TEMPLOG_BIN" $int 1
+    else
+        procd_set_param command "$TEMPLOG_BIN" $int 0
+    fi
+    procd_close_instance
+}                 
+
+stop() {
+	killall temp-log.sh
+} 

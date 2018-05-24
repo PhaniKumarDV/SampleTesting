@@ -1,0 +1,30 @@
+diff -urN wireless_tools.29/iwconfig.c wireless_tools.29_mod/iwconfig.c
+--- wireless_tools.29/iwconfig.c	2018-05-08 12:04:48.457640178 +0530
++++ wireless_tools.29_mod/iwconfig.c	2018-05-08 12:23:02.714467299 +0530
+@@ -1115,7 +1115,6 @@
+   return(i);
+ }
+ 
+-#ifndef WE_ESSENTIAL
+ /*------------------------------------------------------------------*/
+ /*
+  * Set Nickname
+@@ -1152,6 +1151,7 @@
+   return(1);
+ }
+ 
++#ifndef WE_ESSENTIAL
+ /*------------------------------------------------------------------*/
+ /*
+  * Set commit
+@@ -1722,9 +1722,9 @@
+ 	"Set Encode",			"{NNNN-NNNN|off}"  },
+   { "power",		set_power_info,		1,	SIOCSIWPOWER,
+ 	"Set Power Management",		"{period N|timeout N|saving N|off}" },
+-#ifndef WE_ESSENTIAL
+   { "nickname",		set_nick_info,		1,	SIOCSIWNICKN,
+ 	"Set Nickname",			"NNN" },
++#ifndef WE_ESSENTIAL
+   { "nwid",		set_nwid_info,		1,	SIOCSIWNWID,
+ 	"Set NWID",			"{NN|on|off}" },
+   { "sens",		set_sens_info,		1,	SIOCSIWSENS,
