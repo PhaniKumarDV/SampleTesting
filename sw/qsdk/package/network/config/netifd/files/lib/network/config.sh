@@ -62,6 +62,7 @@ prepare_interface_bridge() {
 
 	[ -n "$config" ] || return 0
 	ubus call network.interface."$config" prepare
+    /etc/init.d/fallbackip start
 }
 
 setup_interface() {

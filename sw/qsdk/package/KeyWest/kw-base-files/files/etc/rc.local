@@ -1,6 +1,18 @@
 # Put your custom commands here that should be executed once
 # the system init finished. By default this file does nothing.
 
+/etc/init.d/dropbear stop
+/etc/init.d/dropbear disable
+
+if [ -e "/etc/debug" ]; then
+    echo "PermitRootLogin yes" >> /etc/ssh/sshd_config
+else
+    echo "PermitRootLogin no" >> /etc/ssh/sshd_config
+fi
+
+/etc/init.d/sshd enable
+/etc/init.d/sshd start
+
 echo 1 > /sys/devices/soc.0/gpio_led.6/leds/lan1/brightness
 echo "System Initialization Done"
 
