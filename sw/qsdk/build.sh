@@ -40,7 +40,8 @@ fi
 
 NOW=$(date +%y%m%d-%H%M%S)
 
-make V=s 2>&1 > build_log_$NOW.txt
+# make V=s 2>&1 > build_log_$NOW.txt
+make V=s 2>&1
 
 
 if [ "$?" = "0" ] ; then
