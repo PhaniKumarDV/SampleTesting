@@ -1149,6 +1149,7 @@ enable_qcawifi() {
 		[ -n "$countryie" ] && iwpriv "$ifname" countryie "$countryie"
 
 		local name=$(uci get system.customer.name)
+		iwpriv "$phy" str_type 1
 		[ -n "$name" ] && iwconfig $ifname nickname $name
 
 		case "$enc" in

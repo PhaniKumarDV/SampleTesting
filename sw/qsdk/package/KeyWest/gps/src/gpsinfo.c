@@ -380,6 +380,16 @@ int ReadGPSInfo(char *da, int fLen)
                 printf("Time: %s\n", gps.time);
                 snprintf(cmd, 128, "system.gps.time=%s", gps.time);
                 UpdateUCI(cmd);
+		
+		/* Update latitude and longitude to driver*/
+		system("iwpriv wifi1 str_type 2");		
+                snprintf(cmd, 128, "iwconfig ath1 nickname %s", gps.lng);
+		system(cmd);
+
+		system("iwpriv wifi1 str_type 3");		
+                snprintf(cmd, 128, "iwconfig ath1 nickname %s", gps.lat);
+		system(cmd);
+
             } 
             break;
         } else {
