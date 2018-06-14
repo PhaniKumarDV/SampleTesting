@@ -188,4 +188,5 @@ CONFIG_PACKAGE_kw-temperature=y
 CONFIG_PACKAGE_kw-gps=y
 CONFIG_PACKAGE_kw-leds=y
 CONFIG_PACKAGE_locator=y
+CONFIG_PACKAGE_sify_events=y
 CONFIG_LOCALMIRROR="http://172.18.18.68/pkgs"

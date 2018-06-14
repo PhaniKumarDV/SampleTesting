@@ -1,0 +1,11 @@
+#!/bin/sh /etc/rc.common
+START=60
+start () {
+	 echo "Staring sify_events ..."
+  	/usr/sbin/sify_events -d
+	 echo " Done"
+}
+stop () {
+	echo "Stopping sify_events ..."
+	killall -q -9 sify_events && sleep 1
+}
