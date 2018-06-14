@@ -1,0 +1,106 @@
+#!/bin/sh /etc/rc.common
+START=63
+WRT_RADAUTH_ENABLE=0
+CONF=/etc/wrt-radauth.conf
+log () {
+   echo $1 >> /tmp/rad-auth.logs
+}
+
+start () {
+	echo " " > /tmp/rad-auth.logs
+	log "In Start"
+	config_load wrt-radauth
+	config_get WRT_RADAUTH_ENABLE sys enableRadAuth 0
+	config_get primaryserver sys primaryServer 127.0.0.1
+	config_get secondaryserver sys secondaryServer
+	config_get prisockport sys primaryPort 1812
+	config_get secsockport sys secondaryPort 1812
+	config_get requesttimeout sys requestTimeout 3
+	config_get requestretries sys requestRetries 3
+	config_get reauthtime sys reauthTime 300
+	config_get retrytime sys retryTime 120
+	config_get priradiussecret sys primarySecret public	
+	config_get secradiussecret sys secondarySecret public
+	config_get priradiuspass sys primaryPassword public123	
+	config_get secradiuspass sys secondaryPassword	public123
+	config_get syslogenable sys syslogEnable 1
+	config_get logfile sys logFile 0
+	config_get loglevel sys logLevel 3
+	config_load network
+	config_get opmode sys opmode
+	[ -n "$primaryserver" ] && echo "radius_primary_server $primaryserver" > $CONF
+	[ -n "$secondaryserver" ] && echo "radius_secondary_server $secondaryserver" >> $CONF
+	[ -n "$prisockport" ] && echo "radius_primary_port $prisockport" >>$CONF
+	[ -n "$secsockport" ] && echo "radius_secondary_port $secsockport" >>$CONF
+	[ -n "$requesttimeout" ] && echo "radius_request_timeout $requesttimeout" >> $CONF
+	[ -n "$requestretries" ] && echo "radius_request_retries $requestretries" >> $CONF
+	[ -n "$reauthtime" ] && echo "radius_reauth_time $reauthtime" >> $CONF
+	[ -n "$retrytime" ] && echo "radius_retry_time $retrytime" >> $CONF
+	[ -n "$priradiussecret" ] && echo "radius_primary_secret $priradiussecret" >> $CONF
+	[ -n "$secradiussecret" ] && echo "radius_secondary_secret $secradiussecret" >> $CONF
+	[ -n "$priradiussecret" ] && echo "radius_primary_password $priradiussecret" >> $CONF
+	[ -n "$secradiussecret" ] && echo "radius_secondary_password $secradiussecret" >> $CONF
+#	[ -n "$priradiuspass" ] && echo "radius_primary_password $priradiuspass" >> $CONF
+#	[ -n "$secradiuspass" ] && echo "radius_secondary_password $secradiuspass" >> $CONF
+	[ -n "$syslogenable" ] && echo "radius_log_syslog $syslogenable" >> $CONF
+	[ -n "$logfile" ] && echo "radius_log_file $logfile" >> $CONF
+	echo "radius_log_stdout 1" >> $CONF
+	[ -n "$loglevel" ] && echo "radius_log_level $loglevel" >> $CONF
+
+	config_foreach vsa_add vsa
+        log "Opmode=$opmode"
+	log "Rad-auth-status=$WRT_RADAUTH_ENABLE"
+	cat $CONF >> /tmp/rad-auth.logs
+
+	if [ "$WRT_RADAUTH_ENABLE" -ne 0 ] && [ "$opmode" != "stawds" ]
+	then
+		 echo "Staring radius client ..."
+		 log  "Staring radius client ..."
+		 /usr/sbin/wrt-radauthd ath1 -d
+		 echo " Done"
+		 ps >>/tmp/rad-auth.logs
+	fi
+}
+stop () {
+	echo "Stopping radius client ..."
+	
+	killall -q -9 wrt-radauthd && sleep 3
+	
+#flush acl and apply wireless mac filter acl settings 
+	iwpriv ath1 maccmd 3
+	maclist=$(uci -q get wireless.@wifi-iface[0].maclist)
+	for mac in $maclist; do
+		iwpriv ath1 addmac "$mac"
+	done
+	macpolicy=$(uci -q get wireless.@wifi-iface[0].macpolicy)
+	case "$macpolicy" in
+		allow)
+			iwpriv "ath1" maccmd 1
+			;;
+		deny)
+			iwpriv "ath1" maccmd 2
+			;;
+		*)
+			iwpriv "ath1" maccmd 0
+			;;
+	esac
+	
+	echo " Done"
+}
+disable ()
+{
+	uci set wrt-radauth.sys.enableRadAuth=0
+	uci commit wrt-radauth.sys.enableRadAuth
+	stop
+}
+vsa_add () {
+	local cfg="$1"
+	config_get vendorid "$cfg" vendorId 24160
+	config_get atttibutetype "$cfg" atttibuteType 1
+	config_get attributeaction "$cfg" attributeAction echo
+	echo "radius_vsa_start 0" >> $CONF
+	echo "radius_vsa_vendor_id $vendorid" >> $CONF
+	echo "radius_vsa_attr_type $atttibutetype" >> $CONF
+	echo "radius_vsa_attr_action $attributeaction" >> $CONF
+	echo "radius_vsa_end 0" >> $CONF
+}

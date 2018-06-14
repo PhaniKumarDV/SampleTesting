@@ -1,0 +1,25 @@
+config system sys
+	option enableRadAuth 1
+	option primaryServer 192.168.1.100
+	option secondaryServer 192.168.1.100
+	option primaryPort 1812
+	option secondaryPort 1812
+	option requestTimeout 3
+	option requestRetries 3
+	option reauthTime 21600
+	option retryTime 300
+	option primarySecret public
+	option secondarySecret public
+	option primaryPassword public123
+	option secondaryPassword public123
+	option syslogEnable 0
+	option logFile 0
+	option logLevel 3
+config vsa
+	option vendorId 24160
+	option atttibuteType 1
+	option attributeAction 'echo'
+config vsa
+	option vendorId 24160
+	option atttibuteType 1
+	option attributeAction 'echo'
