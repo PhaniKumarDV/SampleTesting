@@ -1,5 +1,4 @@
 config system sys
-	option enableRadAuth 1
 	option primaryServer 192.168.1.100
 	option secondaryServer 192.168.1.100
 	option primaryPort 1812

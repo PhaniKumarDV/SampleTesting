@@ -41,6 +41,8 @@ function index()
 		page.leaf = true
 		page.subindex = true
 
+		entry({"admin", "wireless", "radauth"}, cbi("admin_wireless/radauth"), _("RADIUS"), 16)
+
 		if page.inreq then
 			local wdev
 			local net = require "luci.model.network".init(uci)
