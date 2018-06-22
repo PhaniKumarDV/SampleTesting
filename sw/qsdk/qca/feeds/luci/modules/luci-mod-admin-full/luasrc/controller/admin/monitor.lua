@@ -28,11 +28,21 @@ end
 function action_logtype( logtype )
 	local data = {}
 	if( string.match(logtype,"1") ) then
-		data = luci.util.exec("ifconfig wifi1")
+		data = luci.util.exec("/usr/sbin/sify_linkstatistics 1")
+	end
+	if( string.match(logtype,"2") ) then
+		data = luci.util.exec("/usr/sbin/sify_linkstatistics 4")
 	end
 	if( string.match(logtype,"3") ) then
 		if string.len(string.sub(luci.util.exec("cat /tmp/wifi_packet_logs"),1,-2) ) > 20 then
 			data = luci.util.exec("cat /tmp/wifi_packet_logs")
+		else
+			data = "Wireless Log file is empty."
+		end
+	end
+	if( string.match(logtype,"4") ) then
+		if string.len(string.sub(luci.util.exec("cat /etc/log/wifi_packet_logs"),1,-2) ) > 20 then
+			data = luci.util.exec("cat /etc/log/wifi_packet_logs")
 		else
 			data = "Wireless Log file is empty."
 		end
@@ -86,7 +96,7 @@ function action_wifi0stats()
 end
 
 function action_wifi1stats()
-	local wifi1stats = luci.util.exec("ifconfig wifi1")
+	local wifi1stats = luci.util.exec("/usr/sbin/sify_linkstatistics 1")
 	luci.template.render("admin_monitor/wifi1_stats", {wifi1stats=wifi1stats})
 end
 
