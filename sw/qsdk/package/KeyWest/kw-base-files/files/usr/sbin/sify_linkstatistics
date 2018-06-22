@@ -1,0 +1,169 @@
+#!/bin/sh
+
+#
+# Tool to get the network interface statistics 
+# Author :- Aneesh G 
+#
+
+LOG_FILE="/tmp/sify_wireless_stat"
+LOG_FILE_ETH="/tmp/sify_eth_stat"
+
+
+log ()
+{
+
+ifconfig ath0 | grep "RX packets" >> $LOG_FILE
+ifconfig ath0 | grep "TX packets" >> $LOG_FILE
+ifconfig ath0 | grep "collisions" >> $LOG_FILE
+ifconfig ath0 | grep "RX bytes" >> $LOG_FILE
+iwconfig ath0 | grep Quality | awk '{print $1,$2}' >> $LOG_FILE
+iwconfig ath0 | grep excessive >> $LOG_FILE
+
+sed -i -e 's/^[ \t]*//' -e 's/[ \t]*$//' $LOG_FILE
+echo "--------------------------" >> $LOG_FILE 
+
+}
+
+eth_stat ()
+{
+
+ifconfig eth0 | grep "RX packets" >> $LOG_FILE_ETH                                     
+ifconfig eth0 | grep "TX packets" >> $LOG_FILE_ETH                                     
+ifconfig eth0 | grep "collisions" >> $LOG_FILE_ETH                                     
+ifconfig eth0 | grep "RX bytes" >> $LOG_FILE_ETH  
+
+sed -i -e 's/^[ \t]*//' -e 's/[ \t]*$//' $LOG_FILE_ETH
+echo "--------------------------" >> $LOG_FILE_ETH
+}
+
+
+snr ()
+{
+awk '{print $5}' /proc/net/wireless > /tmp/.tmplog
+cat /tmp/.tmplog | awk 'NR==3' > /tmp/.tmplog     
+cat /tmp/.tmplog | sed -e 's/\.//g' > /tmp/.tmplog 
+noise=$(cat /tmp/.tmplog)
+
+wlanconfig ath0 list sta | awk '{print $5}'  > /tmp/.snr
+cat /tmp/.snr | awk 'NR==2' > /tmp/.snr
+rssi=$(cat /tmp/.snr)
+
+echo $noise
+echo $rssi
+
+snr_val=$(( $rssi + $noise ))
+
+echo "SNR=$snr_val"
+
+}
+
+snr_all ()
+{
+
+wlanconfig ath1 list sta | awk '{print $1,$6}' > /tmp/.snr
+count=0
+while read line
+do
+    name=$line
+    if [ $count -eq 0 ];then
+        
+        echo $name | awk '{print $1, "            ",  "SNR",    $2} ' >>  $LOG_FILE
+        count=$(($count + 1))
+        else
+        #rssi=$(echo $name | awk '{print $2}')
+        echo $name | awk '{print $2}' >/tmp/.rssi
+        #   cat /tmp/.rssi     
+        rssi=$(cat /tmp/.rssi)
+        SNR=$(($rssi + (-95)))
+        #  echo $SNR  
+        echo $name $SNR  >> $LOG_FILE
+        #echo $name | awk '{print $1, $2, $SNR}'
+        fi
+                                                      
+done < /tmp/.snr
+
+}
+
+local_rssi ()
+{
+
+iwconfig ath0 | grep "Signal level" > /tmp/.localrssi
+echo " RSSI AND SNR OF THE DEVICE " >> $LOG_FILE
+l_rssi=$(cat /tmp/.localrssi | awk '{print $4} ' | cut  -d'=' -f2)
+l_signal_level=$(cat /tmp/.localrssi | awk '{print $7} ' | cut  -d'=' -f2)
+
+l_snr=$((l_rssi - (l_signal_level)))
+
+echo "RSSI=$l_rssi, SNR=$l_snr"  >> $LOG_FILE
+}
+
+
+if [ "$1" -eq 1 ]; then
+	date=`date`
+	echo "$date" > $LOG_FILE
+	echo "===========================" >>  $LOG_FILE
+	log
+	cat $LOG_FILE
+	exit
+fi
+
+if [ "$1" -eq 3 ];then
+        date=`date`
+        echo "--------------------------" >> $LOG_FILE
+        echo "$date" > $LOG_FILE
+        echo "===========================" >>  $LOG_FILE
+	cat /proc/net/dev | grep Inter- >>  $LOG_FILE                              
+        cat /proc/net/dev | grep face >>  $LOG_FILE                                
+        cat /proc/net/dev | grep eth0 >> $LOG_FILE                               
+        cat /proc/net/dev | grep ath0 >> $LOG_FILE 
+        cat $LOG_FILE
+	exit
+fi	
+if [ "$1" -eq 2 ];then
+	while :
+	do
+	date=`date`
+	echo "$date" > $LOG_FILE
+	echo "===========================" >>  $LOG_FILE
+	log
+	
+	cat $LOG_FILE
+	sleep 2
+	done
+	exit
+fi
+
+if [ "$1" -eq 4 ];then
+	date=`date`                                                  
+	echo "$date" > $LOG_FILE  
+	echo "===========================" >>  $LOG_FILE
+	echo "MAC ID, RSSI And SNR For Remote Devices Assosiated" >>  $LOG_FILE
+	echo "===========================" >>  $LOG_FILE 
+	snr_all
+	cat $LOG_FILE
+	exit 
+fi
+if [ "$1" -eq 5 ];then
+        date=`date`            
+        echo "$date" > $LOG_FILE
+        echo "===========================" >>  $LOG_FILE
+        local_rssi
+        cat $LOG_FILE                         
+        exit                                            
+fi              
+	
+if [ "$1" -eq 6 ];then                                                             
+        date=`date`                                                                
+        echo "$date" > $LOG_FILE_ETH                                                  
+        echo "===========================" >>  $LOG_FILE_ETH
+        eth_stat                                                               
+        cat $LOG_FILE_ETH
+        exit                                                                       
+fi             
+	echo "USAGE"
+	echo "$0 1 -> Display Wireless Statitics"
+	echo "$0 2 -> Continious log for Wireless Statitics"
+	echo "$0 3 -> Network Statitics for All Interface"
+	echo "$0 4 -> MAC ID, RSSI And SNR For Remote Devices Assosiated"
+	echo "$0 5 -> SNR, RSSI For The Device"
+	echo "$0 6 -> Display Ethernet Statitics" 

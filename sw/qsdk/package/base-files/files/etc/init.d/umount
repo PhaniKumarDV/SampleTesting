@@ -3,6 +3,10 @@
 
 STOP=99
 stop() {
+	cd /etc
+	mkdir log
+	cp -rf /tmp/wifi_packet_logs /etc/log/
+	cp -rf /tmp/eth_events.txt /etc/log/
 	sync
 	/bin/umount -a -d -r
 }
