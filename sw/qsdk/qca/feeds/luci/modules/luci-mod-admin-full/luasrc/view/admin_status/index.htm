@@ -434,6 +434,8 @@
 								tx_rate:  net.assoclist[bssid].tx_rate,
 								tx_mcs:   net.assoclist[bssid].tx_mcs,
 								tx_40mhz: net.assoclist[bssid].tx_40mhz,
+								tx_tput: net.assoclist[bssid].tx_tput,
+								rx_tput: net.assoclist[bssid].rx_tput,
 								link:     net.link,
 								name:     net.name
 							});
@@ -492,8 +494,7 @@
 							'%h'.format(assoclist[i].name).nobr()
 					);
 
-					tr.insertCell(-1).innerHTML = String.format('%d <%:dBm%>', assoclist[i].signal).nobr();
-					tr.insertCell(-1).innerHTML = String.format('%d <%:dBm%>', assoclist[i].noise).nobr();
+					tr.insertCell(-1).innerHTML = String.format('%d <%:dB%>', assoclist[i].signal-assoclist[i].noise).nobr();
 
 					tr.insertCell(-1).innerHTML = (assoclist[i].rx_mcs > -1)
 						? String.format('%.1f <%:Mbit/s%>, MCS %d, %d<%:MHz%>', assoclist[i].rx_rate / 1000, assoclist[i].rx_mcs, assoclist[i].rx_40mhz ? 40 : 20).nobr()
@@ -504,6 +505,8 @@
 						? String.format('%.1f <%:Mbit/s%>, MCS %d, %d<%:MHz%>', assoclist[i].tx_rate / 1000, assoclist[i].tx_mcs, assoclist[i].tx_40mhz ? 40 : 20).nobr()
 						: String.format('%.1f <%:Mbit/s%>', assoclist[i].tx_rate / 1000).nobr()
 					;
+					tr.insertCell(-1).innerHTML = String.format('%d <%:Mbps%>', assoclist[i].rx_tput / (1000 * 1000) );
+					tr.insertCell(-1).innerHTML = String.format('%d <%:Mbps%>', assoclist[i].tx_tput / (1000 * 1000) );
 				}
 
 				if (ac.rows.length == 1)
@@ -616,10 +619,11 @@
 			<th class="cbi-section-table-cell">&#160;</th>
 			<th class="cbi-section-table-cell"><%:MAC-Address%></th>
 			<th class="cbi-section-table-cell"><%:Network%></th>
-			<th class="cbi-section-table-cell"><%:Signal%></th>
-			<th class="cbi-section-table-cell"><%:Noise%></th>
+			<th class="cbi-section-table-cell"><%:SNR%></th>
 			<th class="cbi-section-table-cell"><%:RX Rate%></th>
 			<th class="cbi-section-table-cell"><%:TX Rate%></th>
+			<th class="cbi-section-table-cell"><%:RX Throughput%></th>
+			<th class="cbi-section-table-cell"><%:TX Throughput%></th>
 		</tr>
 		<tr class="cbi-section-table-row">
 			<td colspan="7"><em><br /><%:Collecting data...%></em></td>
