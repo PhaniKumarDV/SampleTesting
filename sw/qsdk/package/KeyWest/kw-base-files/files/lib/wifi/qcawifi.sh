@@ -1941,6 +1941,10 @@ enable_qcawifi() {
 		# 256 QAM capability needs to be parsed first, since
 		# vhtmcs enables/disable rate indices 8, 9 for 2G
 		# only if vht_11ng is set or not
+		config_get ullmt "$vif" ullmt
+		[ -n "$ullmt" ] && iwpriv "$ifname" ul_limit "$ullmt"
+		config_get dllmt "$vif" dllmt
+		[ -n "$dllmt" ] && iwpriv "$ifname" dl_limit "$dllmt"
 		config_get_bool vht_11ng "$vif" vht_11ng
 		[ -n "$vht_11ng" ] && iwpriv "$ifname" vht_11ng "$vht_11ng"
 
@@ -2265,6 +2269,8 @@ detect_qcawifi() {
 
 		hwcaps=$(cat ${dev}/hwcaps)
 		dying_gasp=2
+		ul_limit="409600"
+		dl_limit="409600"
 		case "${hwcaps}" in
 			*11bgn)
 				ht_mode="HT20"
@@ -2285,11 +2291,15 @@ detect_qcawifi() {
 				ht_mode="HT20"
 				country_code="5016"
 				wds_mode="1"
+				ul_limit="887000"
+				dl_limit="887000"
 				mode_11=ac
 				dying_gasp=1;;
                         *11abgn/ac)
 				ht_mode="HT80"
 				country_code="5016"
+				ul_limit="887000"
+				dl_limit="887000"
 				wds_mode="1"
 				mode_11=ac
 				dying_gasp=1;;
@@ -2333,6 +2343,8 @@ config wifi-iface
 	option encryption none
 	option wds	$wds_mode
 	option dyinggasp $dying_gasp
+	option ullmt    $ul_limit
+	option dllmt    $dl_limit
 
 EOF
 	devidx=$(($devidx + 1))

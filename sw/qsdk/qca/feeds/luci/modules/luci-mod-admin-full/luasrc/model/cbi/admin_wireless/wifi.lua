@@ -481,6 +481,8 @@ if (radio == "11ac" or radio == "11na" or radio == "11a") then
 	gasp = s:taboption("general", ListValue, "dyinggasp", translate("Dying Gasp"))
 	gasp:value("1", translate("Enable"))
 	gasp:value("2", translate("Disable"))
+	s:taboption("general", Value, "ullmt", translate("Uplink Limit"), "Kbps")
+	s:taboption("general", Value, "dllmt", translate("Downlink Limit"), "Kbps")
 end
 
 network = s:taboption("general", Value, "network", translate("Network"),
