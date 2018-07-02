@@ -38,7 +38,6 @@
 #include "common.h"
 #include "wireless.h"
 #include "wrt-radauth.h"
-//#include "ieee80211_ioctl.h"
 
 #include <endian.h>
 #if __BYTE_ORDER == __BIG_ENDIAN
@@ -49,7 +48,16 @@
 #error "__BYTE_ORDER undefined"
 #endif
 
-#include "ieee80211_external.h"
+#define EXTERNAL_USE_ONLY
+
+#ifndef __packed
+#define __packed    __attribute__((__packed__))
+#endif
+
+#include "_ieee80211.h"
+#include "ieee80211_defines.h"
+#include "ieee80211.h"
+#include "ieee80211_ioctl.h"
 
 static void 
 handle_newlink(struct ifinfomsg *ifi, unsigned char *buf, size_t len);

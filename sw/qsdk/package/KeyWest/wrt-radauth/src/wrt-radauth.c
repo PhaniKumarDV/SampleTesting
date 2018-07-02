@@ -40,6 +40,25 @@
 #include "wireless.h"
 #define __MAIN__
 #include "common.h"
+
+#include <endian.h>
+#if __BYTE_ORDER == __BIG_ENDIAN
+#define _BYTE_ORDER _BIG_ENDIAN
+#elif __BYTE_ORDER == __LITTLE_ENDIAN
+#define _BYTE_ORDER _LITTLE_ENDIAN
+#else
+#error "__BYTE_ORDER undefined"
+#endif
+
+#define EXTERNAL_USE_ONLY
+
+#ifndef __packed
+#define __packed    __attribute__((__packed__))
+#endif
+
+#include "_ieee80211.h"
+#include "ieee80211_defines.h"
+#include "ieee80211.h"
 #include "ieee80211_ioctl.h"
 
 #ifndef IFLA_WIRELESS

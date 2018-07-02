@@ -16,7 +16,6 @@
 
 #ifndef _IEEE80211_DEFINES_H_
 #define _IEEE80211_DEFINES_H_
-
 /*
  * Public defines for Atheros Upper MAC Layer
  */
