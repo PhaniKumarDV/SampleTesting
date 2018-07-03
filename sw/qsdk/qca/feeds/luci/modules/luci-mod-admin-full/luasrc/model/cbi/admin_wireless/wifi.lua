@@ -478,6 +478,9 @@ mode:value("adhoc", translate("Ad-Hoc"))
 bssid = s:taboption("general", Value, "bssid", translate("<abbr title=\"Basic Service Set Identifier\">BSSID</abbr>"))
 
 if (radio == "11ac" or radio == "11na" or radio == "11a") then 
+	gasp = s:taboption("general", ListValue, "kwnamsdu", translate("AMSDU"))
+	gasp:value("1", translate("Enable"))
+	gasp:value("2", translate("Disable"))
 	gasp = s:taboption("general", ListValue, "dyinggasp", translate("Dying Gasp"))
 	gasp:value("1", translate("Enable"))
 	gasp:value("2", translate("Disable"))

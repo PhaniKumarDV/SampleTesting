@@ -639,6 +639,9 @@ enable_qcawifi() {
 
 	# Advanced QCA wifi per-radio parameters configuration
 
+	config_get kwnamsdu "$vif" kwnamsdu
+	[ -n "$kwnamsdu" ] && iwpriv "$phy" kwn_amsdu $kwnamsdu
+
 	local id=$(uci get system.customer.linkid)
 	[ -n "$id" ] && iwpriv "$phy" linkid $id
 
@@ -2345,6 +2348,7 @@ config wifi-iface
 	option dyinggasp $dying_gasp
 	option ullmt    $ul_limit
 	option dllmt    $dl_limit
+	option kwnamsdu 1
 
 EOF
 	devidx=$(($devidx + 1))
