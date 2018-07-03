@@ -436,6 +436,10 @@
 								tx_40mhz: net.assoclist[bssid].tx_40mhz,
 								tx_tput: net.assoclist[bssid].tx_tput,
 								rx_tput: net.assoclist[bssid].rx_tput,
+								local_snr_a1: net.assoclist[bssid].local_snr_a1,
+								local_snr_a2: net.assoclist[bssid].local_snr_a2,
+								remote_snr_a1: net.assoclist[bssid].remote_snr_a1,
+								remote_snr_a2: net.assoclist[bssid].remote_snr_a2,
 								link:     net.link,
 								name:     net.name
 							});
@@ -453,8 +457,8 @@
 			if (ac)
 			{
 				/* clear all rows */
-				while( ac.rows.length > 1 )
-					ac.rows[0].parentNode.deleteRow(1);
+				while( ac.rows.length > 2 )
+					ac.rows[1].parentNode.deleteRow(2);
 
 				assoclist.sort(function(a, b) {
 					return (a.name == b.name)
@@ -487,26 +491,20 @@
 					);
 
 					tr.insertCell(-1).innerHTML = assoclist[i].bssid;
-
 					tr.insertCell(-1).innerHTML = String.format(
 						'<a href="%s">%s</a>',
 							assoclist[i].link,
 							'%h'.format(assoclist[i].name).nobr()
 					);
 
-					tr.insertCell(-1).innerHTML = String.format('%d <%:dB%>', assoclist[i].signal-assoclist[i].noise).nobr();
-
-					tr.insertCell(-1).innerHTML = (assoclist[i].rx_mcs > -1)
-						? String.format('%.1f <%:Mbit/s%>, MCS %d, %d<%:MHz%>', assoclist[i].rx_rate / 1000, assoclist[i].rx_mcs, assoclist[i].rx_40mhz ? 40 : 20).nobr()
-						: String.format('%.1f <%:Mbit/s%>', assoclist[i].rx_rate / 1000).nobr()
-					;
-
-					tr.insertCell(-1).innerHTML = (assoclist[i].tx_mcs > -1)
-						? String.format('%.1f <%:Mbit/s%>, MCS %d, %d<%:MHz%>', assoclist[i].tx_rate / 1000, assoclist[i].tx_mcs, assoclist[i].tx_40mhz ? 40 : 20).nobr()
-						: String.format('%.1f <%:Mbit/s%>', assoclist[i].tx_rate / 1000).nobr()
-					;
-					tr.insertCell(-1).innerHTML = String.format('%d <%:Mbps%>', assoclist[i].rx_tput / (1000 * 1000) );
-					tr.insertCell(-1).innerHTML = String.format('%d <%:Mbps%>', assoclist[i].tx_tput / (1000 * 1000) );
+					tr.insertCell(-1).innerHTML = assoclist[i].local_snr_a1;
+					tr.insertCell(-1).innerHTML = assoclist[i].local_snr_a2;
+					tr.insertCell(-1).innerHTML = assoclist[i].remote_snr_a1;
+					tr.insertCell(-1).innerHTML = assoclist[i].remote_snr_a2;
+					tr.insertCell(-1).innerHTML = assoclist[i].rx_rate / 1000;
+					tr.insertCell(-1).innerHTML = assoclist[i].tx_rate / 1000;
+					tr.insertCell(-1).innerHTML = assoclist[i].rx_tput > (1000 * 1000) ? (assoclist[i].rx_tput / ( 1000 * 1000 )).toFixed(2) : 0;
+					tr.insertCell(-1).innerHTML = assoclist[i].tx_tput > (1000 * 1000) ? (assoclist[i].tx_tput / ( 1000 * 1000 )).toFixed(2) : 0;
 				}
 
 				if (ac.rows.length == 1)
@@ -618,12 +616,22 @@
 		<tr class="cbi-section-table-titles">
 			<th class="cbi-section-table-cell">&#160;</th>
 			<th class="cbi-section-table-cell"><%:MAC-Address%></th>
-			<th class="cbi-section-table-cell"><%:Network%></th>
-			<th class="cbi-section-table-cell"><%:SNR%></th>
-			<th class="cbi-section-table-cell"><%:RX Rate%></th>
-			<th class="cbi-section-table-cell"><%:TX Rate%></th>
-			<th class="cbi-section-table-cell"><%:RX Throughput%></th>
-			<th class="cbi-section-table-cell"><%:TX Throughput%></th>
+			<th class="cbi-section-table-cell"><%:Network-Name%></th>
+			<th class="cbi-section-table-cell" colspan="2"><%:Local SNR (dB)%></th>
+			<th class="cbi-section-table-cell" colspan="2"><%:Remote SNR (dB)%></th>
+			<th class="cbi-section-table-cell" colspan="2"><%:Rate (Mbps)%></th>
+			<th class="cbi-section-table-cell" colspan="2"><%:Throughput (Mbps)%></th>
+		</tr>
+		<tr class="cbi-section-table-titles">
+			<th class="cbi-section-table-cell" colspan="3"></th>
+			<th class="cbi-section-table-cell"><%:A1%></th>
+			<th class="cbi-section-table-cell"><%:A2%></th>
+			<th class="cbi-section-table-cell"><%:A1%></th>
+			<th class="cbi-section-table-cell"><%:A2%></th>
+			<th class="cbi-section-table-cell"><%:Rx%></th>
+			<th class="cbi-section-table-cell"><%:Tx%></th>
+			<th class="cbi-section-table-cell"><%:In%></th>
+			<th class="cbi-section-table-cell"><%:Out%></th>
 		</tr>
 		<tr class="cbi-section-table-row">
 			<td colspan="7"><em><br /><%:Collecting data...%></em></td>
