@@ -1,0 +1,33 @@
+#!/bin/sh /etc/rc.common
+START=92
+USE_PROCD=1
+
+
+service_triggers() {
+        procd_add_reload_trigger "tool"
+}
+
+start_service() {
+
+   procd_open_instance
+
+    size=$(uci get tool.tool.size)
+    dur=$(uci get tool.tool.dur)
+    dir=$(uci get tool.tool.dir)
+    mac=$(uci get tool.tool.mac)
+    cnt=$(uci get tool.tool.cnt)
+
+    iwpriv ath1 addmac $mac                              
+    iwpriv ath1 kwn_tput_dur $dur                              
+    iwpriv ath1 kwn_tput_cnt $cnt                              
+    iwpriv ath1 kwn_tput_size $size
+    iwpriv ath1 kwn_tput_dir $dir                              
+
+                              
+ procd_close_instance
+}
+
+
+reload_service() {
+    iwpriv ath1 kwn_tput_test 1
+}

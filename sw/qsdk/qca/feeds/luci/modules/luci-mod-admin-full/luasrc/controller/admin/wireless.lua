@@ -37,11 +37,19 @@ function index()
 		page = entry({"admin", "wireless", "wireless_shutdown"}, call("wifi_shutdown"), nil)
 		page.leaf = true
 
+		page = entry({"admin", "wireless", "details"}, call("details"), nil)
+		page.leaf = true
+
 		page = entry({"admin", "wireless", "wireless"}, arcombine(template("admin_wireless/wifi_overview"), cbi("admin_wireless/wifi")), _("Overview"), 15)
 		page.leaf = true
 		page.subindex = true
 
-		entry({"admin", "wireless", "radauth"}, cbi("admin_wireless/radauth"), _("RADIUS"), 16)
+		local mode = luci.sys.exec("uci get wireless.@wifi-iface[1].mode")
+		local wds = luci.sys.exec("uci get wireless.@wifi-iface[1].wds")
+		if (string.match(mode,"ap") and string.match(wds,"1") ) then
+			entry({"admin", "wireless", "radauth"}, cbi("admin_wireless/radauth"), _("RADIUS"), 16)
+		end
+		entry({"admin", "wireless", "tool"}, cbi("admin_wireless/tool"), _("Performance Tool"), 17)
 
 		if page.inreq then
 			local wdev
@@ -59,6 +67,11 @@ function index()
 		end
 	end
 
+end
+
+function details( index )
+	local entryind = index
+	luci.template.render("admin_wireless/detailed_stats", {entryind=entryind})
 end
 
 function wifi_join()
