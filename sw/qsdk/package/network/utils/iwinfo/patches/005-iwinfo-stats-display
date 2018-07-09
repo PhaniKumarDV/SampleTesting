@@ -1,14 +1,10 @@
 diff -urN libiwinfo-2015-06-01_org/include/iwinfo.h libiwinfo-2015-06-01_mod/include/iwinfo.h
---- libiwinfo-2015-06-01_org/include/iwinfo.h	2018-07-09 11:00:20.517421368 +0530
+--- libiwinfo-2015-06-01_org/include/iwinfo.h	2018-07-09 13:57:34.289239779 +0530
 +++ libiwinfo-2015-06-01_mod/include/iwinfo.h	2018-07-09 10:58:21.613423398 +0530
-@@ -98,6 +98,23 @@
- 	uint32_t tx_packets;
- 	struct iwinfo_rate_entry rx_rate;
- 	struct iwinfo_rate_entry tx_rate;
-+    char local_lat[32];
-+    char local_long[32];
-+    char remote_lat[32];
-+    char remote_long[32];
+@@ -102,6 +102,19 @@
+     char local_long[32];
+     char remote_lat[32];
+     char remote_long[32];
 +	uint64_t tx_tput;
 +	uint64_t rx_tput;
 +	uint32_t local_snr_a1;
@@ -26,7 +22,7 @@ diff -urN libiwinfo-2015-06-01_org/include/iwinfo.h libiwinfo-2015-06-01_mod/inc
  
  struct iwinfo_txpwrlist_entry {
 diff -urN libiwinfo-2015-06-01_org/iwinfo_lua.c libiwinfo-2015-06-01_mod/iwinfo_lua.c
---- libiwinfo-2015-06-01_org/iwinfo_lua.c	2018-07-09 11:01:23.601420291 +0530
+--- libiwinfo-2015-06-01_org/iwinfo_lua.c	2018-07-09 13:58:03.333239283 +0530
 +++ libiwinfo-2015-06-01_mod/iwinfo_lua.c	2018-07-09 10:58:28.217423286 +0530
 @@ -254,6 +254,7 @@
  	int i, len;
@@ -52,26 +48,7 @@ diff -urN libiwinfo-2015-06-01_org/iwinfo_lua.c libiwinfo-2015-06-01_mod/iwinfo_
  			lua_pushnumber(L, e->signal);
  			lua_setfield(L, -2, "signal");
  
-@@ -293,6 +300,18 @@
- 			lua_pushnumber(L, e->tx_rate.rate);
- 			lua_setfield(L, -2, "tx_rate");
- 
-+			lua_pushstring(L, e->local_lat);
-+			lua_setfield(L, -2, "local_lat");
-+
-+			lua_pushstring(L, e->local_long);
-+			lua_setfield(L, -2, "local_long");
-+
-+			lua_pushstring(L, e->remote_lat);
-+			lua_setfield(L, -2, "remote_lat");
-+
-+			lua_pushstring(L, e->remote_long);
-+			lua_setfield(L, -2, "remote_long");
-+
- 			if (e->rx_rate.mcs >= 0)
- 			{
- 				lua_pushnumber(L, e->rx_rate.mcs);
-@@ -316,6 +335,42 @@
+@@ -328,6 +335,42 @@
  				lua_pushboolean(L, e->tx_rate.is_short_gi);
  				lua_setfield(L, -2, "tx_short_gi");
  			}
@@ -115,29 +92,12 @@ diff -urN libiwinfo-2015-06-01_org/iwinfo_lua.c libiwinfo-2015-06-01_mod/iwinfo_
  		}
  	}
 diff -urN libiwinfo-2015-06-01_org/iwinfo_qcawifi.c libiwinfo-2015-06-01_mod/iwinfo_qcawifi.c
---- libiwinfo-2015-06-01_org/iwinfo_qcawifi.c	2018-07-09 11:02:54.089418745 +0530
+--- libiwinfo-2015-06-01_org/iwinfo_qcawifi.c	2018-07-09 13:58:28.057238861 +0530
 +++ libiwinfo-2015-06-01_mod/iwinfo_qcawifi.c	2018-07-09 10:58:38.577423109 +0530
-@@ -751,6 +751,7 @@
- 	uint8_t tmp[24*1024];
- 	struct ieee80211req_sta_info *si;
- 	struct iwinfo_assoclist_entry entry;
-+	char cmd[512];
- 
- 	if( qcawifi_iswifi(ifname) )
- 		return -1;
-@@ -789,6 +790,28 @@
- 
- 			entry.rx_rate.mcs = -1;
- 			entry.tx_rate.mcs = -1;
-+#if 0			
-+			snprintf(cmd,512,"echo si->isi_len :%d,tl: %d, l_lat: %s, l_lon :%s,r_lat: %s,r_lon: %s >> /etc/temp",si->isi_len,tl,
-+				si->isi_l_latitude, si->isi_l_longitude,si->isi_r_latitude,si->isi_r_longitude);		
-+			system(cmd);
-+#endif
-+			memcpy(entry.local_lat, si->isi_l_latitude+5, sizeof(entry.local_lat));
-+			memcpy(entry.local_long, si->isi_l_longitude+5, sizeof(entry.local_long));
-+			memcpy(entry.remote_lat, si->isi_r_latitude+5, sizeof(entry.local_long));
-+			memcpy(entry.remote_long, si->isi_r_longitude+5, sizeof(entry.remote_long));
+@@ -799,6 +799,20 @@
+ 			memcpy(entry.local_long, si->isi_l_longitude+5, sizeof(entry.local_long));
+ 			memcpy(entry.remote_lat, si->isi_r_latitude+5, sizeof(entry.local_long));
+ 			memcpy(entry.remote_long, si->isi_r_longitude+5, sizeof(entry.remote_long));
 +			entry.tx_tput = si->isi_tx_tput;
 +			entry.rx_tput = si->isi_rx_tput;
 +			entry.local_snr_a1 = si->isi_local_snr_a1;
@@ -151,6 +111,7 @@ diff -urN libiwinfo-2015-06-01_org/iwinfo_qcawifi.c libiwinfo-2015-06-01_mod/iwi
 +			entry.remote_mpdu_err = si->isi_remote_mpdu_err;
 +			entry.local_retries = si->isi_local_retries;
 +			entry.remote_retries = si->isi_remote_retries;
- 
++
  			memcpy(&buf[bl], &entry, sizeof(struct iwinfo_assoclist_entry));
  
+ 			bl += sizeof(struct iwinfo_assoclist_entry);
