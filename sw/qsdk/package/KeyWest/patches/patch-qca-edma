@@ -1,0 +1,59 @@
+diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
+--- qca-edma-org/edma.c	2018-07-09 14:25:58.833210000 +0530
++++ qca-edma-mod/edma.c	2018-07-09 14:28:22.017208226 +0530
+@@ -1535,6 +1535,40 @@
+ 	return __EDMA_LINKDOWN;
+ }
+ 
++
++static loff_t pos = 0;
++int sify_filewrite (int input)
++{
++       struct file *file;
++       char up_data [] ="Ethernet Up";  
++       char down_data [] ="Ethernet Down"; 
++       mm_segment_t old_fs;
++
++       old_fs = get_fs();  //Save the current FS segment
++       set_fs(get_ds());
++
++       file = filp_open("/tmp/eth_events.txt", O_WRONLY| O_CREAT| O_APPEND | O_SYNC, 0644);
++
++       if(file){
++
++               if (input == 0)
++               {
++                       vfs_write(file, up_data, sizeof (up_data), &pos);
++                       pos = pos+sizeof (up_data);
++               }
++               else
++               {
++                       vfs_write(file, down_data, (sizeof(down_data)+1), &pos);
++                       pos = pos+(sizeof (down_data)+1);
++
++               }
++
++       }
++       filp_close(file,NULL);
++       set_fs(old_fs); //Reset to save FS
++
++}
++
+ /* edma_adjust_link()
+  *	check for edma link status
+  */
+@@ -1551,12 +1585,14 @@
+ 
+ 	if (status == __EDMA_LINKUP && adapter->link_state == __EDMA_LINKDOWN) {
+ 		dev_info(&adapter->pdev->dev, "%s: GMAC Link is up with phy_speed=%d\n", netdev->name, phydev->speed);
++                sify_filewrite(1);
+ 		adapter->link_state = __EDMA_LINKUP;
+ 		netif_carrier_on(netdev);
+ 		if (netif_running(netdev))
+ 			netif_tx_wake_all_queues(netdev);
+ 	} else if (status == __EDMA_LINKDOWN && adapter->link_state == __EDMA_LINKUP) {
+ 		dev_info(&adapter->pdev->dev, "%s: GMAC Link is down\n", netdev->name);
++                sify_filewrite(0);
+ 		adapter->link_state = __EDMA_LINKDOWN;
+ 		netif_carrier_off(netdev);
+ 		netif_tx_stop_all_queues(netdev);

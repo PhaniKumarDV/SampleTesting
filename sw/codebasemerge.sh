@@ -22,6 +22,8 @@ cp qsdk/package/KeyWest/kw-base-files/files/lib/wifi/qcawifi.sh qsdk/qca/feeds/q
 # Applying patch for qca wifi driver and kernel
 cd qsdk/qca/src/qca-wifi/
 patch -p1 < ../../../package/KeyWest/patches/patch_qca_wifi
+cd ../qca-edma/
+patch -p1 < ../../../package/KeyWest/patches/patch-qca-edma
 cd ../linux-3.14
 patch -p1 < ../../../package/KeyWest/patches/patch-keywest-linux-3.14
 cd ../../../../
