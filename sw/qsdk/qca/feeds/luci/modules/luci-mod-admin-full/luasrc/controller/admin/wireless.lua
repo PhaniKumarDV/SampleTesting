@@ -40,6 +40,13 @@ function index()
 		page = entry({"admin", "wireless", "details"}, call("details"), nil)
 		page.leaf = true
 
+		page = entry({"admin", "wireless", "disconnect"}, call("disconnect"), nil)
+		page.leaf = true
+
+		page = entry({"admin", "wireless", "starttool"}, call("starttool"), nil)
+		page.leaf = true
+		page = entry({"admin", "wireless", "stoptool"}, call("stoptool"), nil)
+		page.leaf = true
 		page = entry({"admin", "wireless", "wireless"}, arcombine(template("admin_wireless/wifi_overview"), cbi("admin_wireless/wifi")), _("Overview"), 15)
 		page.leaf = true
 		page.subindex = true
@@ -49,7 +56,7 @@ function index()
 		if (string.match(mode,"ap") and string.match(wds,"1") ) then
 			entry({"admin", "wireless", "radauth"}, cbi("admin_wireless/radauth"), _("RADIUS"), 16)
 		end
-		entry({"admin", "wireless", "tool"}, cbi("admin_wireless/tool"), _("Performance Tool"), 17)
+		--entry({"admin", "wireless", "tool"}, cbi("admin_wireless/tool"), _("Performance Tool"), 17)
 
 		if page.inreq then
 			local wdev
@@ -72,6 +79,29 @@ end
 function details( index )
 	local entryind = index
 	luci.template.render("admin_wireless/detailed_stats", {entryind=entryind})
+end
+
+function disconnect( mac )
+	luci.sys.exec("iwpriv ath1 kickmac "..mac)
+	luci.http.redirect(luci.dispatcher.build_url("admin/wireless/wireless"))
+end
+
+function starttool( mac )
+	local data = {}
+	luci.sys.exec("uci set tool.tool.mac="..mac)
+	luci.sys.exec("/etc/init.d/KWtool start")
+	luci.sys.exec("iwpriv ath1 kwn_tput_test 1")
+	data = "Performance test is in progress..."
+	luci.http.prepare_content("application/json")
+	luci.http.write_json(data)
+end
+
+function stoptool( mac )
+	local data = {}
+	luci.sys.exec("iwpriv ath1 kwn_tput_test 0")
+	data = "Performance test is stopped..."
+	luci.http.prepare_content("application/json")
+	luci.http.write_json(data)
 end
 
 function wifi_join()

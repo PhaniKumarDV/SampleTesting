@@ -34,7 +34,7 @@ diff -urN qca-wifi-org/include/ieee80211_defines.h qca-wifi-mod/include/ieee8021
  typedef enum _ieee80211_send_frame_type {
 diff -urN qca-wifi-org/include/ieee80211.h qca-wifi-mod/include/ieee80211.h
 --- qca-wifi-org/include/ieee80211.h	2018-06-08 11:00:50.000000000 +0530
-+++ qca-wifi-mod/include/ieee80211.h	2018-07-05 16:28:59.074153278 +0530
++++ qca-wifi-mod/include/ieee80211.h	2018-07-09 10:04:55.076254823 +0530
 @@ -768,6 +768,9 @@
  #define IEEE80211_ACTION_TPC_REQUEST        2   /* Transmit Power control */
  #define IEEE80211_ACTION_TPC_REPORT         3
@@ -45,7 +45,7 @@ diff -urN qca-wifi-org/include/ieee80211.h qca-wifi-mod/include/ieee80211.h
  
  /* HT actions */
  #define IEEE80211_ACTION_HT_TXCHWIDTH       0   /* recommended transmission channel width */
-@@ -840,6 +843,49 @@
+@@ -840,6 +843,52 @@
          struct ieee80211_ie_op_mode opmode;
  } __packed;
  
@@ -57,6 +57,9 @@ diff -urN qca-wifi-org/include/ieee80211.h qca-wifi-mod/include/ieee80211.h
 +    u_int32_t  	snr_a1; 
 +    u_int32_t  	snr_a2; 
 +    u_int64_t   rx_tput_mbps;
++    u_int32_t  	phy_err; 
++    u_int32_t  	mpdu_err; 
++    u_int32_t  	retries; 
 +} __packed;
 +
 +/* VHT - Node Stats*/
@@ -95,7 +98,7 @@ diff -urN qca-wifi-org/include/ieee80211.h qca-wifi-mod/include/ieee80211.h
  
  /* VHT - recommended Channel width and Nss */
  struct ieee80211_action_vht_opmode {
-@@ -1243,6 +1289,14 @@
+@@ -1243,6 +1292,14 @@
  } __packed;
  
  /*
@@ -110,7 +113,7 @@ diff -urN qca-wifi-org/include/ieee80211.h qca-wifi-mod/include/ieee80211.h
   * 802.11n HT Capability IE
   */
  struct ieee80211_ie_htcap {
-@@ -2813,6 +2867,17 @@
+@@ -2813,6 +2870,23 @@
          u_int8_t isi_tx_rate_mcs;
          u_int8_t isi_tx_rate_flags;
  #endif
@@ -125,6 +128,12 @@ diff -urN qca-wifi-org/include/ieee80211.h qca-wifi-mod/include/ieee80211.h
 +        u_int32_t isi_remote_snr_a1;        /* Remote SNR A1 */
 +        u_int32_t isi_remote_snr_a2;        /* Remote SNR A2 */
 +        u_int32_t  isi_ip_addr;
++        u_int32_t isi_local_phy_err;        /* Local Phy Err */
++        u_int32_t isi_remote_phy_err;       /* Remote Phy Err */
++        u_int32_t isi_local_mpdu_err;       /* Local MPDU Err */
++        u_int32_t isi_remote_mpdu_err;      /* Remote MPDU Err */
++        u_int32_t isi_local_retries;        /* Local Retries */
++        u_int32_t isi_remote_retries;       /* Remote Retries */
  
  };
  
@@ -177,8 +186,8 @@ diff -urN qca-wifi-org/offload/wlan/include/ol_if_athvar.h qca-wifi-mod/offload/
  
 diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_ath.c qca-wifi-mod/offload/wlan/lmac_offload_if/ol_if_ath.c
 --- qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_ath.c	2018-06-08 11:00:45.000000000 +0530
-+++ qca-wifi-mod/offload/wlan/lmac_offload_if/ol_if_ath.c	2018-07-03 13:49:18.829214390 +0530
-@@ -6743,6 +6743,32 @@
++++ qca-wifi-mod/offload/wlan/lmac_offload_if/ol_if_ath.c	2018-07-09 10:05:41.896254023 +0530
+@@ -6743,6 +6743,36 @@
      OS_SET_TIMER(&ic->ic_inact_timer, IEEE80211_SESSION_WAIT*1000);
  }
  
@@ -197,9 +206,13 @@ diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_ath.c qca-wifi-mod/off
 +		return;
 +	TAILQ_FOREACH(vap, &ic->ic_vaps, iv_next) {
 +		if (vap != NULL) {
-+			ol_get_radio_stats(scn,&stats->interface_stats);
-+                        vap->local_snr_a1 = stats->interface_stats.rx_rssi_chain0.rx_rssi_pri20;
-+                        vap->local_snr_a2 = stats->interface_stats.rx_rssi_chain1.rx_rssi_pri20;
++			ol_get_wlan_dbg_stats( scn, &stats->stats );
++			ol_get_radio_stats( scn, &stats->interface_stats );
++                        vap->kwn_local_snr_a1 = stats->interface_stats.rx_rssi_chain0.rx_rssi_pri20;
++                        vap->kwn_local_snr_a2 = stats->interface_stats.rx_rssi_chain1.rx_rssi_pri20;
++                        vap->kwn_local_phy_err = stats->stats.rx.phy_errs;
++                        vap->kwn_local_mpdu_err = stats->stats.rx.mpdu_errs;
++                        vap->kwn_local_retries = stats->interface_stats.tx_retries;
 +			ieee80211_send_node_stats( vap );
 +			OS_SET_TIMER(&ic->kwn_stats_timer, 2000);
 +			break;
@@ -211,7 +224,7 @@ diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_ath.c qca-wifi-mod/off
  static int
  ol_ath_set_mgmt_retry_limit(struct ieee80211com *ic , u_int8_t limit)
  {
-@@ -8133,6 +8159,7 @@
+@@ -8133,6 +8163,7 @@
                                                  ol_ath_esp_estimate_event_handler, WMI_RX_UMAC_CTX);
  #endif
  
@@ -219,7 +232,7 @@ diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_ath.c qca-wifi-mod/off
  #if OL_ATH_SUPPORT_LED
          if (scn->target_version == AR9888_REV2_VERSION || scn->target_version == AR9887_REV1_VERSION) {
              scn->scn_led_gpio = PEREGRINE_LED_GPIO ;
-@@ -8645,6 +8672,7 @@
+@@ -8645,6 +8676,7 @@
          num_mem_chunks = scn->num_mem_chunks;
      }
  
@@ -1235,7 +1248,7 @@ diff -urN qca-wifi-org/umac/base/ieee80211_config.c qca-wifi-mod/umac/base/ieee8
                   vap->iv_fixed_rate.mode   = IEEE80211_FIXED_RATE_LEGACY;
 diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.c qca-wifi-mod/umac/base/ieee80211_ucfg.c
 --- qca-wifi-org/umac/base/ieee80211_ucfg.c	2018-06-08 11:00:49.000000000 +0530
-+++ qca-wifi-mod/umac/base/ieee80211_ucfg.c	2018-07-05 16:33:29.170166157 +0530
++++ qca-wifi-mod/umac/base/ieee80211_ucfg.c	2018-07-09 10:06:49.988252860 +0530
 @@ -3974,6 +3974,47 @@
      case IEEE80211_PARAM_DFS_INFO_NOTIFY_APP:
          ic->ic_dfs_info_notify_channel_available = !!value;
@@ -1312,7 +1325,7 @@ diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.c qca-wifi-mod/umac/base/ieee802
      len = sta_space(node, &ielen, vap);
      if (len > req->space) {
          return;
-@@ -6685,7 +6734,28 @@
+@@ -6685,7 +6734,34 @@
      si->isi_is_256qam = wlan_node_get_256qam_support(node);
      si->isi_rx_nss = wlan_node_get_rx_spatial(node);
      si->isi_tx_nss = wlan_node_get_tx_spatial(node);
@@ -1334,11 +1347,17 @@ diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.c qca-wifi-mod/umac/base/ieee802
 +#endif
 +    si->isi_tx_tput = node->tx_tput_mbps;
 +    si->isi_rx_tput = iv_stats->kwn_rx_tput_mbps;
-+    si->isi_local_snr_a1 = vap->local_snr_a1;
-+    si->isi_local_snr_a2 = vap->local_snr_a2;
++    si->isi_local_snr_a1 = vap->kwn_local_snr_a1;
++    si->isi_local_snr_a2 = vap->kwn_local_snr_a2;
 +    si->isi_remote_snr_a1 = node->remote_snr_a1;
 +    si->isi_remote_snr_a2 = node->remote_snr_a2;
 +    si->isi_ip_addr = node->ip_addr;
++    si->isi_local_phy_err = vap->kwn_local_phy_err;
++    si->isi_remote_phy_err = node->remote_phy_err;
++    si->isi_local_mpdu_err = vap->kwn_local_mpdu_err;
++    si->isi_remote_mpdu_err = node->remote_mpdu_err;
++    si->isi_local_retries = vap->kwn_local_retries;
++    si->isi_remote_retries = node->remote_retries;
      cp = (u_int8_t *)(si+1);
  
      if(!wlan_node_getwpaie(vap, macaddr, ni_ie, &ni_ie_len)) {
@@ -1451,8 +1470,8 @@ diff -urN qca-wifi-org/umac/include/ieee80211_mlme.h qca-wifi-mod/umac/include/i
                             u_int32_t                            beacon_frame_length,
 diff -urN qca-wifi-org/umac/include/ieee80211_node.h qca-wifi-mod/umac/include/ieee80211_node.h
 --- qca-wifi-org/umac/include/ieee80211_node.h	2018-06-08 11:00:49.000000000 +0530
-+++ qca-wifi-mod/umac/include/ieee80211_node.h	2018-07-05 16:33:59.722167614 +0530
-@@ -585,6 +585,13 @@
++++ qca-wifi-mod/umac/include/ieee80211_node.h	2018-07-09 10:07:14.452252443 +0530
+@@ -585,6 +585,16 @@
      bool        is_ft_reassoc;
      ni_mgmt_stats_t ni_mgmt_stats;
      ni_ctrl_stats_t ni_ctrl_stats;
@@ -1463,6 +1482,9 @@ diff -urN qca-wifi-org/umac/include/ieee80211_node.h qca-wifi-mod/umac/include/i
 +    u_int32_t   remote_snr_a2;
 +    uint32_t    ip_addr;
 +    u_int64_t   tx_tput_mbps;
++    u_int32_t   remote_phy_err;
++    u_int32_t   remote_mpdu_err;
++    u_int32_t   remote_retries;
  } IEEE80211_NODE, *PIEEE80211_NODE;
  
  
@@ -1490,7 +1512,7 @@ diff -urN qca-wifi-org/umac/include/ieee80211_vap.h qca-wifi-mod/umac/include/ie
  #endif
 diff -urN qca-wifi-org/umac/include/ieee80211_var.h qca-wifi-mod/umac/include/ieee80211_var.h
 --- qca-wifi-org/umac/include/ieee80211_var.h	2018-06-08 11:00:49.000000000 +0530
-+++ qca-wifi-mod/umac/include/ieee80211_var.h	2018-07-05 16:34:06.738167948 +0530
++++ qca-wifi-mod/umac/include/ieee80211_var.h	2018-07-09 10:07:54.072251766 +0530
 @@ -1886,6 +1886,17 @@
      u_int32_t                           ic_whc_scaling_factor; /* scaling factor for WHC best uplink algorithm */
      u_int32_t                           device_id;   /* Device id from probe */
@@ -1509,14 +1531,14 @@ diff -urN qca-wifi-org/umac/include/ieee80211_var.h qca-wifi-mod/umac/include/ie
  } IEEE80211COM, *PIEEE80211COM;
  
  #define BEST_UL_HYST_DEF        10
-@@ -2908,6 +2919,19 @@
+@@ -2908,6 +2919,22 @@
      bool                       iv_wps_session;
      csa_deauth_type            iv_csa_deauth_mode; /* if set, sends deauth to all stations after CSA */
      u_int8_t                   iv_filter_ssid[IEEE80211_NWID_LEN+1]; /* Filter SSID from scan results */
 +    u_int32_t                  kwn_ul_limit;
 +    u_int32_t                  kwn_dl_limit;
-+    u_int32_t                  local_snr_a1;
-+    u_int32_t                  local_snr_a2;
++    u_int32_t                  kwn_local_snr_a1;
++    u_int32_t                  kwn_local_snr_a2;
 +    struct tasklet_struct      kwn_tput_tq;             /* Holds a hrtimer to send broadcast probe response from a vap */
 +    u_int64_t                  kwn_tput_test_start_time;
 +    u_int32_t                  kwn_tput_test_duration;
@@ -1524,8 +1546,11 @@ diff -urN qca-wifi-org/umac/include/ieee80211_var.h qca-wifi-mod/umac/include/ie
 +    u_int32_t                  kwn_tput_test_pkt_per_ms;
 +    char                       kwn_tput_test_mac[6];
 +    u_int8_t                   kwn_tput_test_in_progress;
-+    u_int8_t 		       kwn_tput_test_direction;
-+    u_int8_t 		       kwn_tput_test_from_app;
++    u_int8_t                   kwn_tput_test_direction;
++    u_int8_t                   kwn_tput_test_from_app;
++    u_int32_t                  kwn_local_phy_err;
++    u_int32_t                  kwn_local_mpdu_err;
++    u_int32_t                  kwn_local_retries;
  } IEEE80211VAP, *PIEEE80211VAP;
  
  #if QCN_IE
@@ -1592,7 +1617,7 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt_ap.c qca-wifi-mod/umac/mlme/ieee
              if (iswpaoui(frm)) {
 diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee80211_mgmt.c
 --- qca-wifi-org/umac/mlme/ieee80211_mgmt.c	2018-06-08 11:00:48.000000000 +0530
-+++ qca-wifi-mod/umac/mlme/ieee80211_mgmt.c	2018-07-05 16:35:12.950171105 +0530
++++ qca-wifi-mod/umac/mlme/ieee80211_mgmt.c	2018-07-09 10:09:28.328250156 +0530
 @@ -22,10 +22,17 @@
  #include "ieee80211_wifipos_pvt.h"
  #endif
@@ -1724,7 +1749,7 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee802
  
  int
  ieee80211_send_action(
-@@ -1183,21 +1296,84 @@
+@@ -1183,21 +1296,87 @@
      break;
  
      case IEEE80211_ACTION_CAT_VHT: {
@@ -1797,9 +1822,12 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee802
 +			frame_stats->at_header.ia_category = IEEE80211_ACTION_CAT_VHT;
 +			frame_stats->at_header.ia_action  = IEEE80211_ACTION_NODE_STATS;
 +			frame_stats->at_node_stats.ipv4 = get_default_ipaddr_by_devname("br-lan");
-+			frame_stats->at_node_stats.snr_a1 = vap->local_snr_a1;
-+			frame_stats->at_node_stats.snr_a2 = vap->local_snr_a2;
++			frame_stats->at_node_stats.snr_a1 = vap->kwn_local_snr_a1;
++			frame_stats->at_node_stats.snr_a2 = vap->kwn_local_snr_a2;
 +			frame_stats->at_node_stats.rx_tput_mbps = iv_stats->kwn_rx_tput_mbps;
++			frame_stats->at_node_stats.phy_err = vap->kwn_local_phy_err;
++			frame_stats->at_node_stats.mpdu_err = vap->kwn_local_mpdu_err;
++			frame_stats->at_node_stats.retries = vap->kwn_local_retries;
 +			frm += sizeof( struct ieee80211_action_vht_node_stats );
 +			break;
 +		case IEEE80211_ACTION_VHT_OPMODE:
@@ -1823,7 +1851,7 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee802
      }
      break;
  
-@@ -2241,6 +2417,7 @@
+@@ -2241,6 +2420,7 @@
  }
  int
  ieee80211_parse_beacon(struct ieee80211vap                  *vap,
@@ -1831,7 +1859,7 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee802
                         struct ieee80211_beacon_frame        *beacon_frame,
                         const struct ieee80211_frame         *wh,
                         u_int32_t                            beacon_frame_length,
-@@ -2404,6 +2581,9 @@
+@@ -2404,6 +2584,9 @@
              scan_entry_parameters->ie_list.htcap = (u_int8_t *) &(((struct ieee80211_ie_htcap *) info_element)->hc_ie);
              break;
          case IEEE80211_ELEMID_RESERVED_47:
@@ -1841,7 +1869,7 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee802
              break;
          case IEEE80211_ELEMID_RSN:
              scan_entry_parameters->ie_list.rsn = (u_int8_t *) info_element;
-@@ -2435,6 +2615,9 @@
+@@ -2435,6 +2618,9 @@
              scan_entry_parameters->ie_list.extcaps = (u_int8_t *) info_element;
              break;
          case IEEE80211_ELEMID_RESERVED_133:
@@ -1851,7 +1879,7 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee802
              break;
          case IEEE80211_ELEMID_TPC:
              break;
-@@ -2864,6 +3047,7 @@
+@@ -2864,6 +3050,7 @@
      }
  
      scan_entry = ieee80211_scan_table_update(ni->ni_vap,
@@ -1859,7 +1887,7 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee802
                                               wh,
                                               wbuf_get_pktlen(wbuf),
                                               subtype,
-@@ -3825,13 +4009,71 @@
+@@ -3825,13 +4012,74 @@
  
                      ieee80211_parse_opmode(ni, (u_int8_t *)&ia_opmode->at_op_mode, subtype);
                  }
@@ -1921,6 +1949,9 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee802
 +                        ni->remote_snr_a2 = frame_stats->at_node_stats.snr_a2;
 +                        ni->ip_addr = frame_stats->at_node_stats.ipv4;
 +                        ni->tx_tput_mbps = frame_stats->at_node_stats.rx_tput_mbps;
++                        ni->remote_phy_err = frame_stats->at_node_stats.phy_err;
++                        ni->remote_mpdu_err = frame_stats->at_node_stats.mpdu_err;
++                        ni->remote_retries = frame_stats->at_node_stats.retries;
 +		}
 +		break;
              default:
