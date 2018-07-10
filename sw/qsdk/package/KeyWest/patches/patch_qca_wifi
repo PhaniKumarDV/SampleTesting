@@ -186,7 +186,7 @@ diff -urN qca-wifi-org/offload/wlan/include/ol_if_athvar.h qca-wifi-mod/offload/
  
 diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_ath.c qca-wifi-mod/offload/wlan/lmac_offload_if/ol_if_ath.c
 --- qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_ath.c	2018-06-08 11:00:45.000000000 +0530
-+++ qca-wifi-mod/offload/wlan/lmac_offload_if/ol_if_ath.c	2018-07-09 10:05:41.896254023 +0530
++++ qca-wifi-mod/offload/wlan/lmac_offload_if/ol_if_ath.c	2018-07-10 10:25:41.723823549 +0530
 @@ -6743,6 +6743,36 @@
      OS_SET_TIMER(&ic->ic_inact_timer, IEEE80211_SESSION_WAIT*1000);
  }
@@ -212,7 +212,7 @@ diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_ath.c qca-wifi-mod/off
 +                        vap->kwn_local_snr_a2 = stats->interface_stats.rx_rssi_chain1.rx_rssi_pri20;
 +                        vap->kwn_local_phy_err = stats->stats.rx.phy_errs;
 +                        vap->kwn_local_mpdu_err = stats->stats.rx.mpdu_errs;
-+                        vap->kwn_local_retries = stats->interface_stats.tx_retries;
++                        vap->kwn_local_retries = stats->stats.tx.mpdus_requed;
 +			ieee80211_send_node_stats( vap );
 +			OS_SET_TIMER(&ic->kwn_stats_timer, 2000);
 +			break;
