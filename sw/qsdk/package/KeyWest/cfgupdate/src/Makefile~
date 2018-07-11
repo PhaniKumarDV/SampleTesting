@@ -1,0 +1,9 @@
+all: cfgupdate
+
+LIBS += -luci
+
+cfgupdate: cfgupdate_info.c
+	$(CC) $(CFLAGS) $(LDFLAGS) $(LIBS) -o $@ $<
+
+clean:
+	rm -f cfgupdate
