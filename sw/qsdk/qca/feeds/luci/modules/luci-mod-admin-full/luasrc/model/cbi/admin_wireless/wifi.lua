@@ -140,11 +140,11 @@ if (radio == "11ac" or radio == "11na" or radio == "11a") then
 	coun = s:taboption("general", ListValue, "country", translate("Country"))
 	coun:value("5016", translate("INDIA_UL"))
 	coun:value("5017", translate("INDIA_L"))
-	coun:value("5011", translate("RUSSIA_4920_5150"))
-	coun:value("5012", translate("RUSSIA_5150_5350"))
-	coun:value("5013", translate("RUSSIA_5350_5600"))
-	coun:value("5014", translate("RUSSIA_5600_5850"))
-	coun:value("5015", translate("RUSSIA_5850_5925"))
+	coun:value("5011", translate("RUSSIA"))
+	--coun:value("5012", translate("RUSSIA_5150_5350"))
+	--coun:value("5013", translate("RUSSIA_5350_5600"))
+	--coun:value("5014", translate("RUSSIA_5600_5850"))
+	--coun:value("5015", translate("RUSSIA_5850_5925"))
 end
 
 
