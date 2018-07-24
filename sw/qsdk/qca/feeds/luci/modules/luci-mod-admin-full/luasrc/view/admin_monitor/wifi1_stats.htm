@@ -15,7 +15,7 @@
 function get_results()
 {
     var id = document.getElementById("logtype").value;
-    XHR.get('<%=luci.dispatcher.build_url("admin", "monitor")%>/log_' + (id ? 'type' : 'type') + '/' + id, null,
+    XHR.get('<%=luci.dispatcher.build_url("admin", "monitor")%>/wifi_log_type' + '/' + id, null,
 	function(x, data) {
 		if (data) { 
 			document.getElementById("result").innerHTML=data;

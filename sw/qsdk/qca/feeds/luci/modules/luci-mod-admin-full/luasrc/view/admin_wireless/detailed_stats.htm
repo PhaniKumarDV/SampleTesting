@@ -141,6 +141,10 @@
 							document.getElementById("rem_mpdu").innerHTML = assoclist[j].remote_mpdu_err;
 							document.getElementById("loc_retry").innerHTML = assoclist[j].local_retries;
 							document.getElementById("rem_retry").innerHTML = assoclist[j].remote_retries;
+							document.getElementById("loc_cusname").innerHTML = assoclist[j].l_customer_name;
+							document.getElementById("rem_cusname").innerHTML = assoclist[j].r_customer_name;
+							document.getElementById("loc_id").innerHTML = assoclist[j].l_link_id;
+							document.getElementById("rem_id").innerHTML = assoclist[j].r_link_id;
 						}
 					}
 				}
@@ -207,6 +211,16 @@
 				<td>Retries</td>
 				<td id="loc_retry"></td>
 				<td id="rem_retry"></td>
+			</tr>
+			<tr>
+				<td>Customer Name</td>
+				<td id="loc_cusname"></td>
+				<td id="rem_cusname"></td>
+			</tr>
+			<tr>
+				<td>Link Id</td>
+				<td id="loc_id"></td>
+				<td id="rem_id"></td>
 			</tr>
 		</table>
 	</fieldset>

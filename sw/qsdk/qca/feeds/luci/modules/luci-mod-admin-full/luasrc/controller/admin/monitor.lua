@@ -13,7 +13,7 @@ function index()
     entry({"admin", "monitor", "clr_arptbl"}, call("action_clr_arptbl"))
     entry({"admin", "monitor", "wifi0stats"}, call("action_wifi0stats"), _("Wifi0 Statistics"), 3).leaf = true
     entry({"admin", "monitor", "wifi1stats"}, call("action_wifi1stats"), _("Wifi1 Statistics"), 4).leaf = true
-    page = entry({"admin", "monitor", "log_type"}, call("action_logtype"), nil)
+    page = entry({"admin", "monitor", "wifi_log_type"}, call("action_wifi_logtype"), nil)
     page.leaf = true
     entry({"admin", "monitor", "ethstats"}, call("action_ethstats"), _("Ethernet Statistics"), 5).leaf = true
     entry({"admin", "monitor", "learntbl"}, call("action_learntbl"), _("Bridge"), 6).leaf = true
@@ -25,7 +25,7 @@ function action_sascan()
 	luci.template.render("admin_monitor/sascan", {saresult=saresult})
 end
 
-function action_logtype( logtype )
+function action_wifi_logtype( logtype )
 	local data = {}
 	if( string.match(logtype,"1") ) then
 		data = luci.util.exec("/usr/sbin/sify_linkstatistics 1")
