@@ -17,7 +17,7 @@ int myindex;
 char prev_mac[25]={0};
 int ifd,isock_fd;
 int se_daemon = -1;
-
+#define IEEE80211_EV_DYING_GASP 45
 #define PRINTF(fmt, ...)\
 do\
 {\
@@ -26,8 +26,8 @@ do\
 	if(se_daemon < 0)printf("\r\n");\
 }while(0)
 /* Sify Specific */
-void sify_file_write(char *,int);
-void sify_file_write(char *sify_buf,int status)
+void sify_file_write(char *,int,int);
+void sify_file_write(char *sify_buf,int status, int reason)
 {
 	time_t rawtime;
 	struct tm *timeinfo;
@@ -60,8 +60,16 @@ void sify_file_write(char *sify_buf,int status)
 	}
 	else
 	{
+        if( reason == IEEE80211_EV_DYING_GASP )
+        {
+		fprintf(sify_fp, "%s: Reason: Power Off, Disassociated on %s",sify_buf,asctime(timeinfo));
+		syslog(LOG_INFO, "%s: Reason: Power Off, Disassociated on %s",sify_buf,asctime(timeinfo));		       
+        }
+        else
+        {
 		fprintf(sify_fp, "%s: Disassociated on %s",sify_buf,asctime(timeinfo));
 		syslog(LOG_INFO, "%s: Disassociated on %s",sify_buf,asctime(timeinfo));		       
+        }
 	}
 	fclose(sify_fp); /* close file */
 }
@@ -283,9 +291,6 @@ static void handle_ifla_wireless ( char *data, int len)
 				PRINTF("[%s:%d] IWEVEXPIRED\r\n",__func__,__LINE__);
 				for (ix = 0; ix < 6; ++ix)
 				{
-					if(iwe->u.ap_addr.sa_data[ix]==0x00)
-						mac_status++;
-
 					if(ix<5)
 						sprintf(tm_mac,"%02x:",(unsigned char) iwe->u.addr.sa_data[ix]);
 					else
@@ -295,15 +300,12 @@ static void handle_ifla_wireless ( char *data, int len)
 					memset(tm_mac,'\0',3);
 				}
 				//syslog(LOG_INFO,"Wireless SU Expired:%s",mac);		       
-				sify_file_write(mac,0);
+				sify_file_write(mac,0,iwe->u.addr.sa_data[6]);
 				break;
 			case IWEVREGISTERED:
 				PRINTF("[%s:%d] IWEVREGISTERED\r\n",__func__,__LINE__);
 				for (ix = 0; ix < 6; ++ix)
 				{
-					if(iwe->u.ap_addr.sa_data[ix]==0x00)
-						mac_status++;
-
 					if(ix<5)
 						sprintf(tm_mac,"%02x:",(unsigned char) iwe->u.addr.sa_data[ix]);
 					else
@@ -312,7 +314,7 @@ static void handle_ifla_wireless ( char *data, int len)
 					memset(tm_mac,'\0',3);
 				}
 				//syslog(LOG_INFO,"New Wireless SU Registered:%s",mac);
-				sify_file_write(mac,1);
+				sify_file_write(mac,1,0);
 				break;
 			case IWEVASSOCREQIE:
 				break;
