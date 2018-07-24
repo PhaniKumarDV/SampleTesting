@@ -9,8 +9,9 @@
 #define TEMP_LOG_FILE "/tmp/temp-log"
 
 float Temperature() {
-    int v;
+    short v;
     short swapV;
+    int v1 = 0;
     unsigned char *p = (unsigned char *)&swapV;
     FILE *fp;
     float finalValue;
@@ -19,10 +20,11 @@ float Temperature() {
     fp = popen("cat /sys/class/hwmon/hwmon0/device/temp1_input", "r");
     while (fgets(val, sizeof(val), fp) != NULL) 
     {
-        v = atoi(val);
+        v1 = atoi(val);
     }
     pclose(fp);
 
+    v = (short)v1;
     *p = *((unsigned char *)&v + 1);
     *(p + 1) = *(unsigned char*)&v;
 
