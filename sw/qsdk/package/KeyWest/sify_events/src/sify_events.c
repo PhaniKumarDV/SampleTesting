@@ -350,7 +350,7 @@ static void handle_ifla_wireless ( char *data, int len)
 					if((registered  == 1) || (registered == -1))
 					{
 						//syslog(LOG_ALERT,"Wireless Device Unegistered Successfully:%s",prev_mac);
-						sify_file_write(prev_mac,0);
+						sify_file_write(prev_mac,0,0);
 						registered = 0;
 					}
 				}
@@ -360,7 +360,7 @@ static void handle_ifla_wireless ( char *data, int len)
 					{
 						strcpy(prev_mac,mac);
 						//syslog(LOG_ALERT,"Wireless Device Registered Successfully:%s",mac);
-						sify_file_write(mac,1);
+						sify_file_write(mac,1,0);
 						registered = 1;
 					}
 				}
