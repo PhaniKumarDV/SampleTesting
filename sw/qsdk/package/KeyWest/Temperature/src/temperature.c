@@ -9,11 +9,19 @@
 #define TEMP_LOG_FILE "/tmp/temp-log"
 
 float Temperature() {
-    short v = 39500;
+    int v;
     short swapV;
     unsigned char *p = (unsigned char *)&swapV;
-
+    FILE *fp;
     float finalValue;
+    char val[10];
+     
+    fp = popen("cat /sys/class/hwmon/hwmon0/device/temp1_input", "r");
+    while (fgets(val, sizeof(val), fp) != NULL) 
+    {
+        v = atoi(val);
+    }
+    pclose(fp);
 
     *p = *((unsigned char *)&v + 1);
     *(p + 1) = *(unsigned char*)&v;
@@ -68,22 +76,23 @@ int UIC_SetTemperature(float v)
 int main(int argc, char **argv) {
     float temp = 0;
     int doLog = 0;
+    char cmd[50];
 
     if(argc != 2) {
-        printf("Inalid arguments..\n");
+        printf("Invalid arguments..\n");
         exit(1);
     }
 
     doLog = atoi(argv[1]);
-    if(doLog != 0 && doLog != 1) {
-        printf("Inalid arguments..\n");
+    if(doLog != 0 && doLog != 1 && doLog != 2) {
+        printf("Invalid arguments..\n");
         exit(1);
     }
 
     temp = Temperature();
     UIC_SetTemperature(temp);
 
-    if(doLog) {
+    if(doLog == 1) {
         FILE *fp;
         char str[MAX_STR_LEN] = {0};
         time_t now = time(NULL);
@@ -100,6 +109,10 @@ int main(int argc, char **argv) {
         snprintf(str, MAX_STR_LEN, "%s - Temperature: %.2fC\n", timeStr, temp);
         fwrite(str, 1, strlen(str), fp);
         fclose(fp);
+    }
+    if(doLog == 2) {
+	sprintf(cmd,"echo "" > %s",TEMP_LOG_FILE);
+	system(cmd);    
     }
 
     return 1;

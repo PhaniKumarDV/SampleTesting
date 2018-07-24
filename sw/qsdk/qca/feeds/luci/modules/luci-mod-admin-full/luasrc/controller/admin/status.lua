@@ -13,6 +13,7 @@ function index()
 	entry({"admin", "status", "dmesg"}, call("action_dmesg"), _("Kernel Log"), 5)
 entry({"admin", "status", "conflog"}, call("action_conflog"), _("Configuration Log"), 6)
 	entry({"admin", "status", "templog"}, call("action_templog"), _("Temperature Log"), 7)
+	entry({"admin", "status", "clr_templog"}, call("action_clr_templog"))
 	--entry({"admin", "status", "processes"}, cbi("admin_status/processes"), _("Processes"), 8)
 
 	entry({"admin", "status", "realtime"}, alias("admin", "status", "realtime", "load"), _("Realtime Graphs"), 9)
@@ -48,6 +49,12 @@ function action_dmesg()
 end
 
 function action_templog()
+	local templog = luci.sys.exec("cat /tmp/temp-log")
+	luci.template.render("admin_status/templog", {templog=templog})
+end
+
+function action_clr_templog()
+	luci.sys.exec("echo '' > /tmp/temp-log")
 	local templog = luci.sys.exec("cat /tmp/temp-log")
 	luci.template.render("admin_status/templog", {templog=templog})
 end

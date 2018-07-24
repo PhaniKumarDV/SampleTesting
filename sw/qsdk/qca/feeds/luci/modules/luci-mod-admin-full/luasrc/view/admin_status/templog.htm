@@ -5,8 +5,17 @@
 -%>
 
 <%+header%>
+<script type="text/javascript">
+function clear_log()
+{
+    location.href='<%=luci.dispatcher.build_url("admin/status/clr_templog")%>';
+}
+</script>
 <div class="page-content">
 <h2><a id="content" name="content"><%:Temperature Log%></a></h2>
+<div class="cbi-page-actions right">
+<input type="button" id="s1" class="cbi-button" value="<%:Clear%>" onclick="clear_log()" />
+</div>
 <div id="content_templog">
 <textarea readonly="readonly" wrap="off" rows="<%=templog:cmatch("\n")+2%>" id="syslog"><%=templog:pcdata()%></textarea>
 </div>
