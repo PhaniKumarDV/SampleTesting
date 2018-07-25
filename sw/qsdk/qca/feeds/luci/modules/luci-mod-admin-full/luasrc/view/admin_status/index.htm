@@ -403,7 +403,7 @@
 								net.link, net.ssid,
 								net.mode,
 								net.channel, net.frequency,
-								net.bitrate || '?'
+								(net.bitrate * 1000) || '?'
 						);
 
 						if (is_assoc)
