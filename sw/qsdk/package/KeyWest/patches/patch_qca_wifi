@@ -801,7 +801,7 @@ diff -urN qca-wifi-org/offload/wlan/umac_offload_if/ol_if_mgmt.c qca-wifi-mod/of
  
 diff -urN qca-wifi-org/offload/wlan/umac_offload_if/ol_if_scan.c qca-wifi-mod/offload/wlan/umac_offload_if/ol_if_scan.c
 --- qca-wifi-org/offload/wlan/umac_offload_if/ol_if_scan.c	2018-06-08 11:00:45.000000000 +0530
-+++ qca-wifi-mod/offload/wlan/umac_offload_if/ol_if_scan.c	2018-07-26 13:42:16.388036155 +0530
++++ qca-wifi-mod/offload/wlan/umac_offload_if/ol_if_scan.c	2018-07-26 18:32:49.533035382 +0530
 @@ -975,7 +975,7 @@
      return EINVAL;
  
@@ -861,7 +861,7 @@ diff -urN qca-wifi-org/offload/wlan/umac_offload_if/ol_if_scan.c qca-wifi-mod/of
  
      param = (struct scan_chan_list_params *)
          kmalloc((sizeof(struct scan_chan_list_params) +
-@@ -1035,6 +1066,31 @@
+@@ -1035,6 +1066,30 @@
  
      ss->ss_nallchans = 0;
      ss->ss_nchans = 0;
@@ -877,7 +877,6 @@ diff -urN qca-wifi-org/offload/wlan/umac_offload_if/ol_if_scan.c qca-wifi-mod/of
 +                break;
 +            scan_order[j] = i;
 +            acs->acs_ieee_chan[j] = ieee80211_mhz2ieee(ic, i, 0);
-+            printk("acs channel %d \n",acs->acs_ieee_chan[j]);
 +            j++;
 +        }
 +        acs->acs_nchans_scan = j;
@@ -893,7 +892,7 @@ diff -urN qca-wifi-org/offload/wlan/umac_offload_if/ol_if_scan.c qca-wifi-mod/of
  
      if (ic->ic_custom_scan_order_size > 0) {
          QDF_PRINT_INFO(QDF_PRINT_IDX_SHARED, QDF_MODULE_ID_ANY, QDF_TRACE_LEVEL_INFO, "Using custom scan order\n"),
-@@ -1045,7 +1101,12 @@
+@@ -1045,7 +1100,12 @@
      spin_lock(&ss->ss_lock);
  
      for (i = 0; i < scan_order_size; ++i) {
@@ -907,7 +906,7 @@ diff -urN qca-wifi-org/offload/wlan/umac_offload_if/ol_if_scan.c qca-wifi-mod/of
  
  #if ATH_SUPPORT_DFS && ATH_SUPPORT_STA_DFS
          if (c != NULL && !IEEE80211_IS_CHAN_RADAR(c)) {
-@@ -1060,12 +1121,18 @@
+@@ -1060,12 +1120,18 @@
      /* Iterate again adding half-rate and quarter-rate channels */
      for (i = 0; i < scan_order_size; ++i) {
  
@@ -929,7 +928,7 @@ diff -urN qca-wifi-org/offload/wlan/umac_offload_if/ol_if_scan.c qca-wifi-mod/of
  #if ATH_SUPPORT_DFS && ATH_SUPPORT_STA_DFS
          if (c != NULL && !IEEE80211_IS_CHAN_RADAR(c)) {
  #else
-@@ -1075,8 +1142,14 @@
+@@ -1075,8 +1141,14 @@
          }
  
          c = NULL;
@@ -946,7 +945,7 @@ diff -urN qca-wifi-org/offload/wlan/umac_offload_if/ol_if_scan.c qca-wifi-mod/of
  
  #if ATH_SUPPORT_DFS && ATH_SUPPORT_STA_DFS
          if (c != NULL && !IEEE80211_IS_CHAN_RADAR(c)) {
-@@ -1087,16 +1160,21 @@
+@@ -1087,16 +1159,21 @@
          }
      }
  
@@ -972,7 +971,7 @@ diff -urN qca-wifi-org/offload/wlan/umac_offload_if/ol_if_scan.c qca-wifi-mod/of
              }
  
  #if ATH_SUPPORT_DFS && ATH_SUPPORT_STA_DFS
-@@ -1109,7 +1187,12 @@
+@@ -1109,7 +1186,12 @@
  
              if (IEEE80211_SUPPORT_PHY_MODE(ic, IEEE80211_MODE_11AC_VHT80)) {
                  c = NULL;
@@ -986,7 +985,7 @@ diff -urN qca-wifi-org/offload/wlan/umac_offload_if/ol_if_scan.c qca-wifi-mod/of
              }
  #if ATH_SUPPORT_DFS && ATH_SUPPORT_STA_DFS
              if (c != NULL && !IEEE80211_IS_CHAN_RADAR(c)) {
-@@ -1121,7 +1204,12 @@
+@@ -1121,7 +1203,12 @@
  
              if (IEEE80211_SUPPORT_PHY_MODE(ic, IEEE80211_MODE_11AC_VHT160)) {
                  c = NULL;
@@ -1000,7 +999,7 @@ diff -urN qca-wifi-org/offload/wlan/umac_offload_if/ol_if_scan.c qca-wifi-mod/of
              }
              if (c != NULL) {
                  ss->ss_all_chans[ss->ss_nallchans++] = c;
-@@ -1129,7 +1217,12 @@
+@@ -1129,7 +1216,12 @@
  
              if (IEEE80211_SUPPORT_PHY_MODE(ic, IEEE80211_MODE_11AC_VHT80_80)) {
                  c = NULL;
@@ -1311,8 +1310,24 @@ diff -urN qca-wifi-org/qca_ol/osif_ol.c qca-wifi-mod/qca_ol/osif_ol.c
  	    goto bad1;
 diff -urN qca-wifi-org/umac/base/ieee80211_channel.c qca-wifi-mod/umac/base/ieee80211_channel.c
 --- qca-wifi-org/umac/base/ieee80211_channel.c	2018-06-08 11:00:49.000000000 +0530
-+++ qca-wifi-mod/umac/base/ieee80211_channel.c	2018-07-03 10:12:53.964984596 +0530
-@@ -1989,6 +1989,13 @@
++++ qca-wifi-mod/umac/base/ieee80211_channel.c	2018-07-26 18:36:49.261046813 +0530
+@@ -21,6 +21,7 @@
+ #include <if_smart_ant.h>
+ #include <qdf_lock.h>
+ #include <osif_private.h>
++#include <ieee80211_acs_internal.h>
+ 
+ int ieee80211_ucfg_set_chanswitch(wlan_if_t vaphandle, u_int8_t chan, u_int8_t tbtt, u_int16_t ch_width);
+ 
+@@ -1930,6 +1931,7 @@
+ {
+     struct ieee80211vap *vap = vaphandle;
+     struct ieee80211com *ic = vap->iv_ic;
++    struct ieee80211_acs *acs = ic->ic_acs;
+ 
+     if (!channel) {
+         IEEE80211_DPRINTF(vap, IEEE80211_MSG_ACS,
+@@ -1989,6 +1991,19 @@
       * TBD: If curchan = channel, still need to set channel again to pass
       * SendRecv_ext in ndistest.
       */
@@ -1322,7 +1337,13 @@ diff -urN qca-wifi-org/umac/base/ieee80211_channel.c qca-wifi-mod/umac/base/ieee
 +
 +    /* TODO: Fixed channel in client mode is not working on 80MHz, so enabling ACS on 80MHz*/
 +    if( vap->iv_opmode == IEEE80211_M_HOSTAP || vap->iv_des_mode == IEEE80211_MODE_11AC_VHT80 )
++    {
++        /* For Fixed channel in AP, updating the acs chans to 0 */
++        if( ic->sta_freq > 0 ) {
++            acs->acs_nchans_scan = 0;
++        }
 +        ic->sta_freq = -1;
++    }
      if (ieee80211_vap_ready_is_set(vap) || ieee80211_vap_dfswait_is_set(vap) ||
          (ic->cw_inter_found)) {// && ic->ic_curchan != channel) {
          ieee80211_set_channel(ic, channel);
