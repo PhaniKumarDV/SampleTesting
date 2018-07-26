@@ -345,7 +345,10 @@
 							tr.insertCell(-1).innerHTML = assoclist[j].tx_rate / 1000;
 							tr.insertCell(-1).innerHTML = assoclist[j].rx_tput > (1000 * 1000) ? (assoclist[j].rx_tput / ( 1000 * 1000 )).toFixed(2) : 0;
 							tr.insertCell(-1).innerHTML = assoclist[j].tx_tput > (1000 * 1000) ? (assoclist[j].tx_tput / ( 1000 * 1000 )).toFixed(2) : 0;
-							tr.insertCell(-1).innerHTML = "<img src='<%=resource%>/icons/edit.png' onClick='view_details("+i+")'>"
+                            if( i == 1 )
+							tr.insertCell(-1).innerHTML = "<img src='<%=resource%>/icons/edit.png' onClick='view_details("+j+")'>"
+                            else
+							tr.insertCell(-1).innerHTML = "-"
 							rowstyle = (rowstyle == 1) ? 2 : 1;
 						}
 					}

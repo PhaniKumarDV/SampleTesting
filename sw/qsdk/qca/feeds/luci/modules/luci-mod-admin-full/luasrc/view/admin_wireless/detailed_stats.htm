@@ -109,7 +109,7 @@
 			if (st)
 			{
 
-				i = ind;
+				i = 1;
 				{
 					var iw = st[i];
 					{
@@ -121,7 +121,8 @@
 						}
 
 						assoclist.sort(function(a, b) { a.bssid < b.bssid });
-						for( var j = 0; j < assoclist.length; j++ )
+                        j = ind;
+						//for( var j = 0; j < assoclist.length; j++ )
 						{
 							mac = assoclist[j].bssid;
 							document.getElementById("rem_mac").innerHTML = assoclist[j].bssid;
