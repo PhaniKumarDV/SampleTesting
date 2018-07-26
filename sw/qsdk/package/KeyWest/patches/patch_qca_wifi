@@ -193,8 +193,16 @@ diff -urN qca-wifi-org/offload/os/linux/ol_ath_iw_handler.c qca-wifi-mod/offload
      { OL_ATH_PARAM_BEST_UL_HYST | OL_ATH_PARAM_SHIFT,
 diff -urN qca-wifi-org/offload/wlan/include/ol_if_athvar.h qca-wifi-mod/offload/wlan/include/ol_if_athvar.h
 --- qca-wifi-org/offload/wlan/include/ol_if_athvar.h	2018-06-08 11:00:45.000000000 +0530
-+++ qca-wifi-mod/offload/wlan/include/ol_if_athvar.h	2018-07-03 10:14:42.752979386 +0530
-@@ -1048,6 +1048,9 @@
++++ qca-wifi-mod/offload/wlan/include/ol_if_athvar.h	2018-07-26 13:42:06.492035683 +0530
+@@ -36,6 +36,7 @@
+ #include "ieee80211_wds.h"
+ #include "ieee80211_ique.h"
+ #include "ieee80211_acs.h"
++#include "ieee80211_acs_internal.h"
+ #include "ieee80211_csa.h"
+ #include "asf_amem.h"
+ #include "qdf_types.h"
+@@ -1048,6 +1049,9 @@
  void ol_ath_vap_tx_lock(void *ptr);
  void ol_ath_vap_tx_unlock(void *ptr);
  
@@ -793,7 +801,7 @@ diff -urN qca-wifi-org/offload/wlan/umac_offload_if/ol_if_mgmt.c qca-wifi-mod/of
  
 diff -urN qca-wifi-org/offload/wlan/umac_offload_if/ol_if_scan.c qca-wifi-mod/offload/wlan/umac_offload_if/ol_if_scan.c
 --- qca-wifi-org/offload/wlan/umac_offload_if/ol_if_scan.c	2018-06-08 11:00:45.000000000 +0530
-+++ qca-wifi-mod/offload/wlan/umac_offload_if/ol_if_scan.c	2018-07-22 11:02:03.938646710 +0530
++++ qca-wifi-mod/offload/wlan/umac_offload_if/ol_if_scan.c	2018-07-26 13:42:16.388036155 +0530
 @@ -975,7 +975,7 @@
      return EINVAL;
  
@@ -841,7 +849,7 @@ diff -urN qca-wifi-org/offload/wlan/umac_offload_if/ol_if_scan.c qca-wifi-mod/of
  /*
   * get all the channels to scan .
   * can be called whenever the set of supported channels are changed.
-@@ -1021,7 +1050,8 @@
+@@ -1021,8 +1050,10 @@
      struct ol_ath_softc_net80211 *scn = OL_ATH_SOFTC_NET80211(ic);
      u_int16_t *scan_order = (u_int16_t *)default_scan_order;
      u_int32_t scan_order_size = IEEE80211_N(default_scan_order);
@@ -849,9 +857,11 @@ diff -urN qca-wifi-org/offload/wlan/umac_offload_if/ol_if_scan.c qca-wifi-mod/of
 +    int i = 0, j =0;
 +    int fixed_chan;
      struct scan_chan_list_params *param;
++    struct ieee80211_acs *acs = ic->ic_acs;
  
      param = (struct scan_chan_list_params *)
-@@ -1035,6 +1065,28 @@
+         kmalloc((sizeof(struct scan_chan_list_params) +
+@@ -1035,6 +1066,31 @@
  
      ss->ss_nallchans = 0;
      ss->ss_nchans = 0;
@@ -863,11 +873,14 @@ diff -urN qca-wifi-org/offload/wlan/umac_offload_if/ol_if_scan.c qca-wifi-mod/of
 +    else {
 +        /* In case of ACS, Sending 40 channels for scanning to firmware in one iteration */
 +        for( i=ic->kwn_curr_freq; i<=ic->kwn_end_freq; i+=5 ) {
-+        if( j > 40 )
-+             break;
-+        scan_order[j] = i;
-+        j++;
-+    }
++            if( j > 40 )
++                break;
++            scan_order[j] = i;
++            acs->acs_ieee_chan[j] = ieee80211_mhz2ieee(ic, i, 0);
++            printk("acs channel %d \n",acs->acs_ieee_chan[j]);
++            j++;
++        }
++        acs->acs_nchans_scan = j;
 +	    scan_order_size = j;
 +            /* Moving current freq to next iteration first freq,
 +	       if current freq > end freq, move current freq to start freq */
@@ -880,7 +893,7 @@ diff -urN qca-wifi-org/offload/wlan/umac_offload_if/ol_if_scan.c qca-wifi-mod/of
  
      if (ic->ic_custom_scan_order_size > 0) {
          QDF_PRINT_INFO(QDF_PRINT_IDX_SHARED, QDF_MODULE_ID_ANY, QDF_TRACE_LEVEL_INFO, "Using custom scan order\n"),
-@@ -1045,7 +1097,12 @@
+@@ -1045,7 +1101,12 @@
      spin_lock(&ss->ss_lock);
  
      for (i = 0; i < scan_order_size; ++i) {
@@ -894,7 +907,7 @@ diff -urN qca-wifi-org/offload/wlan/umac_offload_if/ol_if_scan.c qca-wifi-mod/of
  
  #if ATH_SUPPORT_DFS && ATH_SUPPORT_STA_DFS
          if (c != NULL && !IEEE80211_IS_CHAN_RADAR(c)) {
-@@ -1060,12 +1117,18 @@
+@@ -1060,12 +1121,18 @@
      /* Iterate again adding half-rate and quarter-rate channels */
      for (i = 0; i < scan_order_size; ++i) {
  
@@ -916,7 +929,7 @@ diff -urN qca-wifi-org/offload/wlan/umac_offload_if/ol_if_scan.c qca-wifi-mod/of
  #if ATH_SUPPORT_DFS && ATH_SUPPORT_STA_DFS
          if (c != NULL && !IEEE80211_IS_CHAN_RADAR(c)) {
  #else
-@@ -1075,8 +1138,14 @@
+@@ -1075,8 +1142,14 @@
          }
  
          c = NULL;
@@ -933,7 +946,7 @@ diff -urN qca-wifi-org/offload/wlan/umac_offload_if/ol_if_scan.c qca-wifi-mod/of
  
  #if ATH_SUPPORT_DFS && ATH_SUPPORT_STA_DFS
          if (c != NULL && !IEEE80211_IS_CHAN_RADAR(c)) {
-@@ -1087,16 +1156,21 @@
+@@ -1087,16 +1160,21 @@
          }
      }
  
@@ -959,7 +972,7 @@ diff -urN qca-wifi-org/offload/wlan/umac_offload_if/ol_if_scan.c qca-wifi-mod/of
              }
  
  #if ATH_SUPPORT_DFS && ATH_SUPPORT_STA_DFS
-@@ -1109,7 +1183,12 @@
+@@ -1109,7 +1187,12 @@
  
              if (IEEE80211_SUPPORT_PHY_MODE(ic, IEEE80211_MODE_11AC_VHT80)) {
                  c = NULL;
@@ -973,7 +986,7 @@ diff -urN qca-wifi-org/offload/wlan/umac_offload_if/ol_if_scan.c qca-wifi-mod/of
              }
  #if ATH_SUPPORT_DFS && ATH_SUPPORT_STA_DFS
              if (c != NULL && !IEEE80211_IS_CHAN_RADAR(c)) {
-@@ -1121,7 +1200,12 @@
+@@ -1121,7 +1204,12 @@
  
              if (IEEE80211_SUPPORT_PHY_MODE(ic, IEEE80211_MODE_11AC_VHT160)) {
                  c = NULL;
@@ -987,7 +1000,7 @@ diff -urN qca-wifi-org/offload/wlan/umac_offload_if/ol_if_scan.c qca-wifi-mod/of
              }
              if (c != NULL) {
                  ss->ss_all_chans[ss->ss_nallchans++] = c;
-@@ -1129,7 +1213,12 @@
+@@ -1129,7 +1217,12 @@
  
              if (IEEE80211_SUPPORT_PHY_MODE(ic, IEEE80211_MODE_11AC_VHT80_80)) {
                  c = NULL;
