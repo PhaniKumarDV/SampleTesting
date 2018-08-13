@@ -1,6 +1,6 @@
-diff -urN linux-3.14/drivers/sifydrv/sifydrv.c linux-3.14_mod/drivers/sifydrv/sifydrv.c
---- linux-3.14/drivers/sifydrv/sifydrv.c	2018-05-22 15:00:57.886913970 +0530
-+++ linux-3.14_mod/drivers/sifydrv/sifydrv.c	2018-05-22 16:09:09.807925280 +0530
+diff -urN linux-3.14-org/drivers/sifydrv/sifydrv.c linux-3.14-mod/drivers/sifydrv/sifydrv.c
+--- linux-3.14-org/drivers/sifydrv/sifydrv.c	2018-08-13 14:08:28.116589000 +0530
++++ linux-3.14-mod/drivers/sifydrv/sifydrv.c	2018-08-13 15:34:28.040418211 +0530
 @@ -37,6 +37,9 @@
  static struct class *devone_class = NULL;
  static dev_t devone_dev;
@@ -36,9 +36,9 @@ diff -urN linux-3.14/drivers/sifydrv/sifydrv.c linux-3.14_mod/drivers/sifydrv/si
  		break;
  	case GET_LOW_POWER_STATE:	    
  		 copy_to_user((unsigned int *)arg,&nlost_power_flg,sizeof(nlost_power_flg));
-diff -urN linux-3.14/include/asm-generic/param.h linux-3.14_mod/include/asm-generic/param.h
---- linux-3.14/include/asm-generic/param.h	2018-05-22 15:02:22.065695937 +0530
-+++ linux-3.14_mod/include/asm-generic/param.h	2018-05-22 16:08:04.527318866 +0530
+diff -urN linux-3.14-org/include/asm-generic/param.h linux-3.14-mod/include/asm-generic/param.h
+--- linux-3.14-org/include/asm-generic/param.h	2018-08-13 14:08:30.608588000 +0530
++++ linux-3.14-mod/include/asm-generic/param.h	2018-08-13 15:34:28.040418211 +0530
 @@ -4,7 +4,7 @@
  #include <uapi/asm-generic/param.h>
  
@@ -48,9 +48,9 @@ diff -urN linux-3.14/include/asm-generic/param.h linux-3.14_mod/include/asm-gene
  # define USER_HZ	100		/* some user interfaces are */
  # define CLOCKS_PER_SEC	(USER_HZ)       /* in "ticks" like times() */
  #endif /* __ASM_GENERIC_PARAM_H */
-diff -urN linux-3.14/include/uapi/linux/if_bridge.h linux-3.14_mod/include/uapi/linux/if_bridge.h
---- linux-3.14/include/uapi/linux/if_bridge.h	2018-05-22 15:03:01.989066799 +0530
-+++ linux-3.14_mod/include/uapi/linux/if_bridge.h	2018-05-22 16:08:04.527318866 +0530
+diff -urN linux-3.14-org/include/uapi/linux/if_bridge.h linux-3.14-mod/include/uapi/linux/if_bridge.h
+--- linux-3.14-org/include/uapi/linux/if_bridge.h	2018-08-13 14:08:30.864588000 +0530
++++ linux-3.14-mod/include/uapi/linux/if_bridge.h	2018-08-13 15:34:28.040418211 +0530
 @@ -43,6 +43,7 @@
  #define BRCTL_SET_PORT_PRIORITY 16
  #define BRCTL_SET_PATH_COST 17
@@ -59,9 +59,9 @@ diff -urN linux-3.14/include/uapi/linux/if_bridge.h linux-3.14_mod/include/uapi/
  
  #define BR_STATE_DISABLED 0
  #define BR_STATE_LISTENING 1
-diff -urN linux-3.14/kernel/timeconst.bc linux-3.14_mod/kernel/timeconst.bc
---- linux-3.14/kernel/timeconst.bc	2018-05-22 15:03:04.223087552 +0530
-+++ linux-3.14_mod/kernel/timeconst.bc	2018-05-22 16:08:04.527318866 +0530
+diff -urN linux-3.14-org/kernel/timeconst.bc linux-3.14-mod/kernel/timeconst.bc
+--- linux-3.14-org/kernel/timeconst.bc	2018-08-13 14:08:30.916588000 +0530
++++ linux-3.14-mod/kernel/timeconst.bc	2018-08-13 15:34:28.040418211 +0530
 @@ -49,9 +49,9 @@
  	print "#include <linux/param.h>\n"
  	print "#include <linux/types.h>\n\n"
@@ -75,9 +75,9 @@ diff -urN linux-3.14/kernel/timeconst.bc linux-3.14_mod/kernel/timeconst.bc
  
  	if (hz < 2) {
  		print "#error Totally bogus HZ value!\n"
-diff -urN linux-3.14/net/bridge/br_fdb.c linux-3.14_mod/net/bridge/br_fdb.c
---- linux-3.14/net/bridge/br_fdb.c	2018-05-22 15:03:09.880140102 +0530
-+++ linux-3.14_mod/net/bridge/br_fdb.c	2018-05-22 16:08:04.528318875 +0530
+diff -urN linux-3.14-org/net/bridge/br_fdb.c linux-3.14-mod/net/bridge/br_fdb.c
+--- linux-3.14-org/net/bridge/br_fdb.c	2018-08-13 14:08:30.960588000 +0530
++++ linux-3.14-mod/net/bridge/br_fdb.c	2018-08-13 15:34:28.040418211 +0530
 @@ -296,6 +296,21 @@
  	spin_unlock_bh(&br->hash_lock);
  }
@@ -100,9 +100,9 @@ diff -urN linux-3.14/net/bridge/br_fdb.c linux-3.14_mod/net/bridge/br_fdb.c
  /* Flush all entries referring to a specific port.
   * if do_all is set also flush static entries
   */
-diff -urN linux-3.14/net/bridge/br_ioctl.c linux-3.14_mod/net/bridge/br_ioctl.c
---- linux-3.14/net/bridge/br_ioctl.c	2018-05-22 15:03:09.881140111 +0530
-+++ linux-3.14_mod/net/bridge/br_ioctl.c	2018-05-22 16:08:04.528318875 +0530
+diff -urN linux-3.14-org/net/bridge/br_ioctl.c linux-3.14-mod/net/bridge/br_ioctl.c
+--- linux-3.14-org/net/bridge/br_ioctl.c	2018-08-13 14:08:30.960588000 +0530
++++ linux-3.14-mod/net/bridge/br_ioctl.c	2018-08-13 15:34:28.044418211 +0530
 @@ -289,6 +289,10 @@
  	case BRCTL_GET_FDB_ENTRIES:
  		return get_fdb_entries(br, (void __user *)args[1],
@@ -114,9 +114,9 @@ diff -urN linux-3.14/net/bridge/br_ioctl.c linux-3.14_mod/net/bridge/br_ioctl.c
  	}
  
  	return -EOPNOTSUPP;
-diff -urN linux-3.14/net/bridge/br_private.h linux-3.14_mod/net/bridge/br_private.h
---- linux-3.14/net/bridge/br_private.h	2018-05-22 15:03:09.883140130 +0530
-+++ linux-3.14_mod/net/bridge/br_private.h	2018-05-22 16:08:04.528318875 +0530
+diff -urN linux-3.14-org/net/bridge/br_private.h linux-3.14-mod/net/bridge/br_private.h
+--- linux-3.14-org/net/bridge/br_private.h	2018-08-13 14:08:30.960588000 +0530
++++ linux-3.14-mod/net/bridge/br_private.h	2018-08-13 15:34:28.044418211 +0530
 @@ -369,6 +369,8 @@
  int br_fdb_init(void);
  void br_fdb_fini(void);
@@ -126,9 +126,30 @@ diff -urN linux-3.14/net/bridge/br_private.h linux-3.14_mod/net/bridge/br_privat
  void br_fdb_find_delete_local(struct net_bridge *br,
  			      const struct net_bridge_port *p,
  			      const unsigned char *addr, u16 vid);
-diff -urN linux-3.14/net/netfilter/nfnetlink.c linux-3.14_mod/net/netfilter/nfnetlink.c
---- linux-3.14/net/netfilter/nfnetlink.c	2018-05-22 15:03:25.501285212 +0530
-+++ linux-3.14_mod/net/netfilter/nfnetlink.c	2018-05-22 16:08:04.529318884 +0530
+diff -urN linux-3.14-org/net/core/dev.c linux-3.14-mod/net/core/dev.c
+--- linux-3.14-org/net/core/dev.c	2018-08-13 14:08:30.968588000 +0530
++++ linux-3.14-mod/net/core/dev.c	2018-08-13 15:33:32.020420066 +0530
+@@ -2582,6 +2582,17 @@
+ 			skb->vlan_tci = 0;
+ 		}
+ 
++		/* KWN: VLAN Support */
++		if (vlan_tx_tag_present(skb) &&
++				((strncmp(dev->name, "ath1", 4) == 0 ))) {
++			skb = __vlan_put_tag(skb, skb->vlan_proto,
++					vlan_tx_tag_get(skb));
++			if (unlikely(!skb))
++				goto out;
++
++			skb->vlan_tci = 0;
++			
++		}
+ 		/* If encapsulation offload request, verify we are testing
+ 		 * hardware encapsulation features instead of standard
+ 		 * features for the netdev
+diff -urN linux-3.14-org/net/netfilter/nfnetlink.c linux-3.14-mod/net/netfilter/nfnetlink.c
+--- linux-3.14-org/net/netfilter/nfnetlink.c	2018-08-13 14:08:31.320588000 +0530
++++ linux-3.14-mod/net/netfilter/nfnetlink.c	2018-08-13 15:34:28.044418211 +0530
 @@ -268,7 +268,7 @@
  		if (nlh->nlmsg_len < NLMSG_HDRLEN ||
  		    skb->len < nlh->nlmsg_len ||
