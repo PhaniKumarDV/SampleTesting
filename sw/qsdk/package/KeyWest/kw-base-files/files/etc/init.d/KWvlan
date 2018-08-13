@@ -19,8 +19,8 @@ start_service() {
     svlanethertype=$(uci get vlan.vlan.svlanethertype)
 
 
-    if [ $status -ne "2" ]; then
-        $mode="-1"
+    if [ $status -eq "2" ]; then
+        mode=-1
     fi
     iwpriv ath1 kwn_vlan_mode $mode
     iwpriv ath1 kwn_mgmt_vid $mgmtvlan
