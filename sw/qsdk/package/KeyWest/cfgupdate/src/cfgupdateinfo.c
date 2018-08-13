@@ -47,8 +47,8 @@
 #include "ieee80211.h"
 #include "ieee80211_ioctl.h"
 
-#define GET_CFG_FILE "/lib/getcfgfile.txt"
-#define SET_CFG_FILE "/lib/setcfgfile.txt"
+#define GET_CFG_FILE "/tmp/getcfgfile.txt"
+#define SET_CFG_FILE "/tmp/setcfgfile.txt"
 
 void set_cfgtxtfile();
 void set_linktest();
@@ -56,30 +56,347 @@ void get_assoclist();
 
 int main()
 {
-	get_assoclist();
+//	get_assoclist();
 	set_cfgtxtfile();
-	set_linktest();
+//	set_linktest();
 	return 0;
+}
+
+void cfg_set( char *type, char *value )
+{
+    char cmd[500];
+    char cmd1[500];
+    int type2 = atoi( type );
+
+    memset(cmd, '\0', sizeof(cmd) );
+    memset(cmd1, '\0', sizeof(cmd1) );
+    printf("Type %s Value %s \n",type, value);
+
+    switch( type2 )
+    {
+        case UCI_ID_RADIO1_MODE:
+            sprintf(cmd,"uci set wireless.@wifi-iface[1].mode='%s'",value);
+            break;
+        case UCI_ID_RADIO1_SSID:
+            sprintf(cmd,"uci set wireless.@wifi-iface[1].ssid='%s'",value);
+            break;
+        case UCI_ID_RADIO1_COUNTRY:
+            sprintf(cmd,"uci set wireless.wifi1.country='%s'",value);
+            break;
+        case UCI_ID_RADIO1_OPMODE:
+            sprintf(cmd,"uci set wireless.wifi1.hwmode='%s'",value);
+            break;
+        case UCI_ID_RADIO1_BANDWIDTH:
+            sprintf(cmd,"uci set wireless.wifi1.htmode='%s'",value);
+            break;
+        case UCI_ID_RADIO1_CHANNEL:
+            sprintf(cmd,"uci set wireless.wifi1.channel='%s'",value);
+            break;
+        case UCI_ID_RADIO1_RATE:
+            sprintf(cmd,"uci set wireless.wifi1.rate='%s'",value);
+            break;
+        case UCI_ID_RADIO1_POWER:
+            sprintf(cmd,"uci set wireless.wifi1.txpower='%s'",value);
+            break;
+        case UCI_ID_RADIO1_AMSDU:
+            sprintf(cmd,"uci set wireless.@wifi-iface[1].kwnamsdu='%s'",value);
+            break;
+        case UCI_ID_RADIO1_UPLINK_LMT:
+            sprintf(cmd,"uci set wireless.@wifi-iface[1].ullmt='%s'",value);
+            break;
+        case UCI_ID_RADIO1_DOWNLINK_LMT:
+            sprintf(cmd,"uci set wireless.@wifi-iface[1].dllmt='%s'",value);
+            break;
+        case UCI_ID_RADIO1_HIDE_ESSID:
+            {
+                int val = atoi(value);
+                if( val == 0 )
+                    sprintf(cmd,"uci delete wireless.@wifi-iface[1].hidden");
+                else
+                    sprintf(cmd,"uci set wireless.@wifi-iface[1].hidden='%s'",value);
+            }
+            break;
+        case UCI_ID_RADIO1_CUSTOMER_NAME:
+            sprintf(cmd,"uci set system.customer.name='%s'",value);
+            break;
+        case UCI_ID_RADIO1_LINK_ID:
+            sprintf(cmd,"uci set system.customer.linkid='%s'",value);
+            break;
+        case UCI_ID_RADIO2_MODE:
+            sprintf(cmd,"uci set wireless.@wifi-iface[0].mode='%s'",value);
+            break;
+        case UCI_ID_RADIO2_SSID:
+            sprintf(cmd,"uci set wireless.@wifi-iface[0].ssid='%s'",value);
+            break;
+        case UCI_ID_RADIO2_COUNTRY:
+            sprintf(cmd,"uci set wireless.wifi0.country='%s'",value);
+            break;
+        case UCI_ID_RADIO2_OPMODE:
+            sprintf(cmd,"uci set wireless.wifi0.hwmode='%s'",value);
+            break;
+        case UCI_ID_RADIO2_BANDWIDTH:
+            sprintf(cmd,"uci set wireless.wifi0.htmode='%s'",value);
+            break;
+        case UCI_ID_RADIO2_CHANNEL:
+            sprintf(cmd,"uci set wireless.wifi0.channel='%s'",value);
+            break;
+        case UCI_ID_RADIO2_POWER:
+            sprintf(cmd,"uci set wireless.wifi0.txpower='%s'",value);
+            break;
+        case UCI_ID_RADIO2_HIDE_ESSID:
+            {
+                int val = atoi(value);
+                if( val == 0 )
+                    sprintf(cmd,"uci delete wireless.@wifi-iface[0].hidden");
+                else
+                    sprintf(cmd,"uci set wireless.@wifi-iface[0].hidden='%s'",value);
+            }
+            break;
+        case UCI_ID_IP:
+            sprintf(cmd,"uci set network.lan.ipaddr='%s'",value);
+            break;
+        case UCI_ID_ADDR_TYPE:
+            sprintf(cmd,"uci set network.lan.proto='%s'",value);
+            break;
+        case UCI_ID_MASK:
+            sprintf(cmd,"uci set network.lan.netmask='%s'",value);
+            break;
+        case UCI_ID_GATEWAY:
+            sprintf(cmd,"uci set network.lan.gateway='%s'",value);
+            break;
+        case UCI_ID_DNS_IP:
+            sprintf(cmd,"uci set network.lan.dns='%s'",value);
+            break;
+        case UCI_ID_RADIO1_SECURITY_ENC:
+            sprintf(cmd,"uci set wireless.@wifi-iface[1].encryption='%s'",value);
+            break;
+        case UCI_ID_RADIO1_SECURITY_KEY:
+            sprintf(cmd,"uci set wireless.@wifi-iface[1].key='%s'",value);
+            break;
+        case UCI_ID_RADIO2_SECURITY_ENC:
+            sprintf(cmd,"uci set wireless.@wifi-iface[0].encryption='%s'",value);
+            break;
+        case UCI_ID_RADIO2_SECURITY_KEY:
+            sprintf(cmd,"uci set wireless.@wifi-iface[0].key='%s'",value);
+            break;
+        case UCI_ID_RADIUS_STATUS:
+            {
+                int val = atoi(value);
+                if( val == 0 )
+                    sprintf(cmd,"uci delete wrt-radauth.sys.enableRadAuth");
+                else
+                    sprintf(cmd,"uci set wrt-radauth.sys.enableRadAuth='%s'",value);
+            }
+            break;
+        case UCI_ID_RADIUS_PRI_SERVER:
+            sprintf(cmd,"uci set wrt-radauth.sys.primaryServer='%s'",value);
+            break;
+        case UCI_ID_RADIUS_PRI_PORT:
+            sprintf(cmd,"uci set wrt-radauth.sys.primaryPort='%s'",value);
+            break;
+        case UCI_ID_RADIUS_PRI_SECRET:
+            sprintf(cmd,"uci set wrt-radauth.sys.primarySecret='%s'",value);
+            break;
+        case UCI_ID_RADIUS_SEC_SERVER:
+            sprintf(cmd,"uci set wrt-radauth.sys.secondaryServer='%s'",value);
+            break;
+        case UCI_ID_RADIUS_SEC_PORT:
+            sprintf(cmd,"uci set wrt-radauth.sys.secondaryPort='%s'",value);
+            break;
+        case UCI_ID_RADIUS_SEC_SECRET:
+            sprintf(cmd,"uci set wrt-radauth.sys.secondarySecret='%s'",value);
+            break;
+        case UCI_ID_RADIUS_REAUTH_TIME:
+            sprintf(cmd,"uci set wrt-radauth.sys.reauthTime='%s'",value);
+            break;
+        case UCI_ID_RADIUS_RETRY_TIME:
+            sprintf(cmd,"uci set wrt-radauth.sys.retryTime='%s'",value);
+            break;
+        case UCI_ID_RADIUS_RETRY_COUNT:
+            sprintf(cmd,"uci set wrt-radauth.sys.requestRetries='%s'",value);
+            break;
+        case UCI_ID_RADIUS_RETRY_COUNT_PERIOD:
+            sprintf(cmd,"uci set wrt-radauth.sys.requestTimeout='%s'",value);
+            break;
+        case UCI_ID_ETHERNET_SPEED:
+            sprintf(cmd,"uci set ethernet.ethernet.mode='%s'",value);
+            break;
+        case UCI_ID_DHCP_SERVER:
+            {
+                int val = atoi(value);
+                if( val == 0 ) {
+                    sprintf(cmd,"uci delete dhcp.lan");
+                }
+                else {
+                    sprintf(cmd,"uci set dhcp.lan=dhcp");
+                    system( cmd );
+                    sprintf(cmd,"uci set dhcp.lan.interface='lan'");
+                    system( cmd );
+                    sprintf(cmd,"uci set dhcp.lan.start='100'");
+                    system( cmd );
+                    sprintf(cmd,"uci set dhcp.lan.limit='150'");
+                    system( cmd );
+                    sprintf(cmd,"uci set dhcp.lan.leasetime='12h'");
+                    system( cmd );
+                    sprintf(cmd,"uci set dhcp.lan.dhcpv6='server'");
+                    system( cmd );
+                    sprintf(cmd,"uci set dhcp.lan.ra='server'");
+                }
+            }
+            break;
+        case UCI_ID_DHCP_START:
+            sprintf(cmd,"uci set dhcp.lan.start='%s'",value);
+            break;
+        case UCI_ID_DHCP_LIMIT:
+            sprintf(cmd,"uci set dhcp.lan.limit='%s'",value);
+            break;
+        case UCI_ID_DHCP_LEASE_TIME:
+            sprintf(cmd,"uci set dhcp.lan.leasetime='%s'",value);
+            break;
+        case UCI_ID_RADIO1_MACFILTER:
+            {
+                if( !strcmp( value, "disable" ) ) {
+                    sprintf(cmd,"uci delete wireless.@wifi-iface[1].macfilter");
+                    system( cmd );
+                    sprintf(cmd,"uci delete wireless.@wifi-iface[1].maclist");
+                }
+                else {
+                    sprintf(cmd,"uci set wireless.@wifi-iface[1].macfilter='%s'",value);
+                }
+            }
+            break;
+        case UCI_ID_RADIO1_MACLIST:
+            sprintf(cmd,"uci set wireless.@wifi-iface[1].maclist='%s'",value);
+            break;
+        case UCI_ID_RADIO2_MACFILTER:
+            {
+                if( !strcmp( value, "disable" ) ) {
+                    sprintf(cmd,"uci delete wireless.@wifi-iface[0].macfilter");
+                    system( cmd );
+                    sprintf(cmd,"uci delete wireless.@wifi-iface[0].maclist");
+                }
+                else {
+                    sprintf(cmd,"uci set wireless.@wifi-iface[0].macfilter='%s'",value);
+                }
+            }
+            break;
+        case UCI_ID_RADIO2_MACLIST:
+            sprintf(cmd,"uci set wireless.@wifi-iface[0].maclist='%s'",value);
+            break;
+        case UCI_ID_VLAN_STATUS:
+            sprintf(cmd,"uci set vlan.vlan.status='%s'",value);
+            break;
+        case UCI_ID_VLAN_MODE:
+            sprintf(cmd,"uci set vlan.vlan.mode='%s'",value);
+            break;
+        case UCI_ID_VLAN_MGMT_VLAN:
+            sprintf(cmd,"uci set vlan.vlan.mgmtvlan='%s'",value);
+            break;
+        case UCI_ID_VLAN_ACCESS_VLAN:
+            sprintf(cmd,"uci set vlan.vlan.accessvlan='%s'",value);
+            break;
+        case UCI_ID_VLAN_TRUNK_OPTION:
+            sprintf(cmd,"uci set vlan.vlan.trunkoption='%s'",value);
+            break;
+        case UCI_ID_VLAN_TRUNK_VLAN:
+            sprintf(cmd,"uci set vlan.vlan.trunkvlan='%s'",value);
+            break;
+        case UCI_ID_VLAN_SVLAN:
+            sprintf(cmd,"uci set vlan.vlan.svlan='%s'",value);
+            break;
+        case UCI_ID_VLAN_SVLAN_ETHER_TYPE:
+            sprintf(cmd,"uci set vlan.vlan.svlanethertype='%s'",value);
+            break;
+        case UCI_ID_HOSTNAME:
+            sprintf(cmd,"uci set system.@system[0].hostname='%s'",value);
+            break;
+        case UCI_ID_TIMEZONE:
+            sprintf(cmd,"uci set system.@system[0].timezone='%s'",value);
+            break;
+        case UCI_ID_GPS:
+            sprintf(cmd,"uci set system.gps.status='%s'",value);
+            break;
+        case UCI_ID_GPS_INT:
+            sprintf(cmd,"uci set system.gps.interval='%s'",value);
+            break;
+        case UCI_ID_DYING_GASP:
+            sprintf(cmd,"uci set wireless.@wifi-iface[1].dyinggasp='%s'",value);
+            break;
+        case UCI_ID_LEDS:
+            sprintf(cmd,"uci set system.led.status='%s'",value);
+            break;
+        case UCI_ID_SYSLOG_SERVER:
+            sprintf(cmd,"uci set system.@system[0].log_ip='%s'",value);
+            break;
+        case UCI_ID_SYSLOG_SERVER_PORT:
+            sprintf(cmd,"uci set system.@system[0].log_port='%s'",value);
+            break;
+        case UCI_ID_TEMP_LOG:
+            sprintf(cmd,"uci set system.@system[0].templogstatus='%s'",value);
+            break;
+        case UCI_ID_TEMP_LOG_INT:
+            sprintf(cmd,"uci set system.@system[0].temploginterval='%s'",value);
+            break;
+        default:
+            break;
+    }
+    sprintf(cmd1,"echo %s >> /tmp/cmds.txt",cmd);
+    system( cmd1 );
+    printf("cmd = %s\n",cmd);
+    system( cmd );
 }
 
 void set_cfgtxtfile()
 {
-	FILE* fp;
-	char buffer[255];
-	char cmd[255];
+    char str[255];
+    char *ptr;
+    char *end_str;
+    FILE* fp;
 
-	if( access( SET_CFG_FILE, F_OK ) != -1 ) {
-		fp = fopen(SET_CFG_FILE, "r");
+    fp = fopen( SET_CFG_FILE, "r" );
 
-		while(fgets(buffer, 255, (FILE*) fp)) {
-			printf("%s", buffer);
-			sprintf(cmd, "uci set %s", buffer);
-			system(cmd);
-		}
+    while( fgets( str, 255, (FILE*) fp ) ) {
+    }
+    fclose( fp );
 
-		system("reload_config");
-		fclose(fp);
-	}
+    ptr = strtok_r( str, "~", &end_str );
+
+    system("echo ############################################## >> /tmp/cmds.txt");
+    while( ptr != NULL )
+    {
+        char *end_token;
+        char *type, *value;
+        char *ptr2;
+        int len , x = 0;
+
+        if( strlen(ptr) < 2 )
+        {
+            ptr = strtok_r( NULL, "~", &end_str );
+            continue;
+        }
+        ptr2 = strtok_r( ptr, "=", &end_token );
+
+        len = strlen( ptr2 );
+        type = malloc( len );
+        memset( type,'\0', sizeof( type ) );
+        strncpy( type, ptr2, len );
+        while( ptr2 != NULL )
+        {
+            len = strlen( ptr2 );
+            value = malloc( len );
+            memset( value,'\0',sizeof( value ) );
+            if( x == 1 ) {
+                strncpy( value, ptr2, len );
+                value[len] = '\0';
+            }
+            ptr2 = strtok_r( NULL, "=", &end_token );
+            x++;
+        }
+        cfg_set( type, value );
+        free( type );
+        free( value );
+        ptr = strtok_r( NULL, "~", &end_str );
+    }
 }
 
 void set_linktest()
@@ -153,7 +470,7 @@ void get_assoclist()
 		list.sta[num].local_snr_a2 = si->isi_local_snr_a2;
 		list.sta[num].remote_snr_a2 = si->isi_remote_snr_a2;
 		list.sta[num].ip = si->isi_ip_addr;
-#if 0
+#if 1
 		printf(" station mac = %2.2X:%2.2X:%2.2X:%2.2X:%2.2X:%2.2X\n",
                            list.sta[num].mac[0],
                            list.sta[num].mac[1],
@@ -174,5 +491,6 @@ void get_assoclist()
 	} while( len >= sizeof( struct ieee80211req_sta_info ) );
 	close( sk_fd );
 	list.no_of_links = num;
+    printf("Number of links %d \n",num);
 }
 
