@@ -1,0 +1,29 @@
+#!/bin/sh /etc/rc.common
+START=92
+USE_PROCD=1
+
+start_service() {
+
+    procd_open_instance
+
+        uci set network.lan._orig_ifname='eth0 eth1 ath0 ath1'
+        uci set network.lan._orig_bridge='true'
+        uci set network.kwlan=interface
+        uci set network.kwlan.type='bridge'
+        uci set network.kwlan.proto='static'
+        uci set network.kwlan.ipaddr='192.168.5.1'
+        uci set network.kwlan.netmask='255.255.255.0'
+        uci set network.kwlan.gateway='192.168.5.1'
+
+        uci set dhcp.kwlan=dhcp
+        uci set dhcp.kwlan.start='100'
+        uci set dhcp.kwlan.leasetime='12h'
+        uci set dhcp.kwlan.limit='150'
+        uci set dhcp.kwlan.interface='kwlan'
+
+        uci set wireless.@wifi-iface[0].network='kwlan'
+        uci commit
+        reload_config
+
+        procd_close_instance
+}

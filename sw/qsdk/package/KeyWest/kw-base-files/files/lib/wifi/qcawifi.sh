@@ -642,8 +642,8 @@ enable_qcawifi() {
 	config_get kwnamsdu "$vif" kwnamsdu
 	[ -n "$kwnamsdu" ] && iwpriv "$phy" kwn_amsdu $kwnamsdu
 
-	local id=$(uci get system.customer.linkid)
-	[ -n "$id" ] && iwpriv "$phy" linkid $id
+    config_get linkid "$device" linkid
+	[ -n "$linkid" ] && iwpriv "$phy" linkid $linkid
 
 	config_get dyinggasp "$vif" dyinggasp
 	[ -n "$dyinggasp" ] && iwpriv "$phy" dying_gasp $dyinggasp
@@ -1151,7 +1151,7 @@ enable_qcawifi() {
 		config_get_bool countryie "$vif" countryie
 		[ -n "$countryie" ] && iwpriv "$ifname" countryie "$countryie"
 
-		local name=$(uci get system.customer.name)
+        config_get name "$device" customername
 		iwpriv "$phy" str_type 1
 		[ -n "$name" ] && iwconfig $ifname nickname $name
 
@@ -2274,12 +2274,16 @@ detect_qcawifi() {
 		dying_gasp=2
 		ul_limit="409600"
 		dl_limit="409600"
+        ssid_d="Sify"
+        encrypt="none"
 		case "${hwcaps}" in
 			*11bgn)
 				ht_mode="HT20"
 				country_code="643"
 				wds_mode="0"
-				mode_11=ng;;
+				mode_11=ng
+                ssid_d="Sify_AP"
+                encrypt="psk2+ccmp";;
 			*11abgn)
 				ht_mode="HT20"
 				country_code="643"
@@ -2337,18 +2341,21 @@ config wifi-device  wifi$devidx
 	option htmode   $ht_mode
 	option country  $country_code
 	option rate     auto
+    option customername CustomerName
+    option linkid   0
 
 config wifi-iface
 	option device	wifi$devidx
 	option network	lan
 	option mode	ap
-	option ssid	Sify
-	option encryption none
-	option wds	$wds_mode
-	option dyinggasp $dying_gasp
-	option ullmt    $ul_limit
-	option dllmt    $dl_limit
-	option kwnamsdu 1
+	option ssid	      $ssid_d
+	option encryption $encrypt 
+    option key        12345678
+	option wds	      $wds_mode
+	option dyinggasp  $dying_gasp
+	option ullmt      $ul_limit
+	option dllmt      $dl_limit
+	option kwnamsdu   1
 
 EOF
 	devidx=$(($devidx + 1))

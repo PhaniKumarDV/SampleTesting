@@ -22,8 +22,7 @@ start_service() {
     iwpriv ath1 kwn_tput_size $size
     iwpriv ath1 kwn_tput_dir $dir                              
     iwpriv ath1 addmac $mac                              
-
-                              
+ 
  procd_close_instance
 }
 
