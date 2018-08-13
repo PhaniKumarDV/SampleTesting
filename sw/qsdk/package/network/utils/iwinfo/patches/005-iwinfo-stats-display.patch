@@ -1,16 +1,16 @@
 diff -urN libiwinfo-2015-06-01_org/include/iwinfo.h libiwinfo-2015-06-01_mod/include/iwinfo.h
 --- libiwinfo-2015-06-01_org/include/iwinfo.h	2018-07-09 13:57:34.289239779 +0530
-+++ libiwinfo-2015-06-01_mod/include/iwinfo.h	2018-07-24 14:05:13.987462446 +0530
++++ libiwinfo-2015-06-01_mod/include/iwinfo.h	2018-08-13 16:05:10.388357207 +0530
 @@ -102,6 +102,23 @@
      char local_long[32];
      char remote_lat[32];
      char remote_long[32];
 +	uint64_t tx_tput;
 +	uint64_t rx_tput;
-+	uint32_t local_snr_a1;
-+	uint32_t local_snr_a2;
-+	uint32_t remote_snr_a1;
-+	uint32_t remote_snr_a2;
++	uint8_t local_snr_a1;
++	uint8_t local_snr_a2;
++	uint8_t remote_snr_a1;
++	uint8_t remote_snr_a2;
 +	uint32_t ip_addr;
 +	uint32_t local_phy_err;
 +	uint32_t remote_phy_err;
