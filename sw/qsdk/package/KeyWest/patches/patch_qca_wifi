@@ -48,7 +48,7 @@ diff -urN qca-wifi-org/include/_ieee80211.h qca-wifi-mod/include/_ieee80211.h
          ((struct ieee80211_channel *) IEEE80211_CHAN_ANY)
 diff -urN qca-wifi-org/include/ieee80211.h qca-wifi-mod/include/ieee80211.h
 --- qca-wifi-org/include/ieee80211.h	2018-06-08 11:00:50.000000000 +0530
-+++ qca-wifi-mod/include/ieee80211.h	2018-07-24 14:11:28.407480300 +0530
++++ qca-wifi-mod/include/ieee80211.h	2018-08-13 15:59:58.708367528 +0530
 @@ -768,6 +768,9 @@
  #define IEEE80211_ACTION_TPC_REQUEST        2   /* Transmit Power control */
  #define IEEE80211_ACTION_TPC_REPORT         3
@@ -68,8 +68,8 @@ diff -urN qca-wifi-org/include/ieee80211.h qca-wifi-mod/include/ieee80211.h
 +
 +struct ieee80211_node_stats {
 +    u_int32_t  	ipv4;
-+    u_int32_t  	snr_a1; 
-+    u_int32_t  	snr_a2; 
++    u_int8_t  	snr_a1; 
++    u_int8_t  	snr_a2; 
 +    u_int64_t   rx_tput_mbps;
 +    u_int32_t  	phy_err; 
 +    u_int32_t  	mpdu_err; 
@@ -139,10 +139,10 @@ diff -urN qca-wifi-org/include/ieee80211.h qca-wifi-mod/include/ieee80211.h
 +        u_int8_t isi_l_longitude[32];
 +        u_int64_t isi_tx_tput;             /* Tx Thput */
 +        u_int64_t isi_rx_tput;             /* Rx Thput */
-+        u_int32_t isi_local_snr_a1;        /* Local SNR A1 */
-+        u_int32_t isi_local_snr_a2;        /* Local SNR A2 */
-+        u_int32_t isi_remote_snr_a1;        /* Remote SNR A1 */
-+        u_int32_t isi_remote_snr_a2;        /* Remote SNR A2 */
++        u_int8_t isi_local_snr_a1;        /* Local SNR A1 */
++        u_int8_t isi_local_snr_a2;        /* Local SNR A2 */
++        u_int8_t isi_remote_snr_a1;        /* Remote SNR A1 */
++        u_int8_t isi_remote_snr_a2;        /* Remote SNR A2 */
 +        u_int32_t  isi_ip_addr;
 +        u_int32_t isi_local_phy_err;        /* Local Phy Err */
 +        u_int32_t isi_remote_phy_err;       /* Remote Phy Err */
@@ -1825,7 +1825,7 @@ diff -urN qca-wifi-org/umac/include/ieee80211_mlme.h qca-wifi-mod/umac/include/i
                             u_int32_t                            beacon_frame_length,
 diff -urN qca-wifi-org/umac/include/ieee80211_node.h qca-wifi-mod/umac/include/ieee80211_node.h
 --- qca-wifi-org/umac/include/ieee80211_node.h	2018-06-08 11:00:49.000000000 +0530
-+++ qca-wifi-mod/umac/include/ieee80211_node.h	2018-07-24 14:15:24.879491576 +0530
++++ qca-wifi-mod/umac/include/ieee80211_node.h	2018-08-13 15:59:01.320369428 +0530
 @@ -585,6 +585,18 @@
      bool        is_ft_reassoc;
      ni_mgmt_stats_t ni_mgmt_stats;
@@ -1833,8 +1833,8 @@ diff -urN qca-wifi-org/umac/include/ieee80211_node.h qca-wifi-mod/umac/include/i
 +    u_int32_t   dg_count;
 +    char	ni_latitude[32];
 +    char	ni_longitude[32];
-+    u_int32_t   remote_snr_a1;
-+    u_int32_t   remote_snr_a2;
++    u_int8_t    remote_snr_a1;
++    u_int8_t    remote_snr_a2;
 +    uint32_t    ip_addr;
 +    u_int64_t   tx_tput_mbps;
 +    u_int32_t   remote_phy_err;
@@ -1869,7 +1869,7 @@ diff -urN qca-wifi-org/umac/include/ieee80211_vap.h qca-wifi-mod/umac/include/ie
  #endif
 diff -urN qca-wifi-org/umac/include/ieee80211_var.h qca-wifi-mod/umac/include/ieee80211_var.h
 --- qca-wifi-org/umac/include/ieee80211_var.h	2018-06-08 11:00:49.000000000 +0530
-+++ qca-wifi-mod/umac/include/ieee80211_var.h	2018-07-22 11:04:04.678251943 +0530
++++ qca-wifi-mod/umac/include/ieee80211_var.h	2018-08-13 15:58:43.080370032 +0530
 @@ -1886,6 +1886,20 @@
      u_int32_t                           ic_whc_scaling_factor; /* scaling factor for WHC best uplink algorithm */
      u_int32_t                           device_id;   /* Device id from probe */
@@ -1897,8 +1897,8 @@ diff -urN qca-wifi-org/umac/include/ieee80211_var.h qca-wifi-mod/umac/include/ie
      u_int8_t                   iv_filter_ssid[IEEE80211_NWID_LEN+1]; /* Filter SSID from scan results */
 +    u_int32_t                  kwn_ul_limit;
 +    u_int32_t                  kwn_dl_limit;
-+    u_int32_t                  kwn_local_snr_a1;
-+    u_int32_t                  kwn_local_snr_a2;
++    u_int8_t                   kwn_local_snr_a1;
++    u_int8_t                   kwn_local_snr_a2;
 +    struct tasklet_struct      kwn_tput_tq;             /* Holds a hrtimer to send broadcast probe response from a vap */
 +    u_int64_t                  kwn_tput_test_start_time;
 +    u_int32_t                  kwn_tput_test_duration;
