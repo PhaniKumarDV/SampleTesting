@@ -1,0 +1,42 @@
+diff -urN qca-ssdk-org/src/ref/ref_vlan.c qca-ssdk-mod/src/ref/ref_vlan.c
+--- qca-ssdk-org/src/ref/ref_vlan.c	2018-08-13 14:08:33.896588000 +0530
++++ qca-ssdk-mod/src/ref/ref_vlan.c	2018-08-13 15:28:59.428429092 +0530
+@@ -288,7 +288,7 @@
+     portmask = aos_mem_alloc(sizeof(fal_pbmp_t) * dev->ports);
+ 
+     memset(portmask, 0, sizeof(portmask));
+-    if (!priv->init) {
++    if (priv->vlan) {
+         /*Handle VLAN 0 entry*/
+         if (priv->vlan_id[0] == 0 && priv->vlan_table[0] == 0) {
+             qca_ar8327_sw_enable_vlan0(priv->device_id, A_FALSE, 0);
+@@ -309,8 +309,8 @@
+             for (i = 0; i < dev->ports; i++) {
+                 u8 mask = (1 << i);
+                 if (vp & mask) {
+-                    fal_vlan_member_add(priv->device_id, priv->vlan_id[j], i,
+-                           (mask & priv->vlan_tagged[j])? FAL_EG_TAGGED : FAL_EG_UNTAGGED);
++			fal_vlan_member_add(priv->device_id, priv->vlan_id[j], i, FAL_EG_UNMODIFIED);
++                           //(mask & priv->vlan_tagged[j])? FAL_EG_TAGGED : FAL_EG_UNTAGGED);
+                     portmask[i] |= vp & ~mask;
+                 }
+             }
+@@ -342,8 +342,8 @@
+         fal_pt_1q_egmode_t egressMode;
+ 
+         if (priv->vlan) {
+-            pvid = priv->vlan_id[priv->pvid[i]];
+-            ingressMode = FAL_1Q_SECURE;
++		pvid = priv->vlan_id[priv->pvid[i]];
++            ingressMode = FAL_1Q_FALLBACK;
+         } else {
+             pvid = 0;
+             ingressMode = FAL_1Q_DISABLE;
+@@ -353,6 +353,7 @@
+         fal_port_1qmode_set(priv->device_id, i, ingressMode);
+         fal_port_egvlanmode_set(priv->device_id, i, egressMode);
+         fal_port_default_cvid_set(priv->device_id, i, pvid);
++        fal_port_default_svid_set(priv->device_id, i, pvid);
+         fal_portvlan_member_update(priv->device_id, i, portmask[i]);
+     }
+ 
