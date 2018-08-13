@@ -1,0 +1,21 @@
+#!/bin/sh /etc/rc.common
+
+CFG_BIN="/usr/bin/socketevent"
+
+START=77
+USE_PROCD=1
+
+
+service_triggers() {
+        procd_add_reload_trigger "system"
+}
+
+start_service() {
+   echo "Starting socketevent"
+   procd_open_instance
+   procd_set_param respawn
+   procd_set_param command "$CFG_BIN"
+
+ procd_close_instance
+}
+
