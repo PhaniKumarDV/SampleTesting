@@ -1,0 +1,39 @@
+#!/bin/sh /etc/rc.common
+START=93
+USE_PROCD=1
+
+service_triggers() {
+        procd_add_reload_trigger "vlan"
+}
+
+start_service() {
+
+    procd_open_instance
+    status=$(uci get vlan.vlan.status)
+    mode=$(uci get vlan.vlan.mode)
+    mgmtvlan=$(uci get vlan.vlan.mgmtvlan)
+    accvlan=$(uci get vlan.vlan.accessvlan)
+    trunkopt=$(uci get vlan.vlan.trunkoption)
+    trunkvlan=$(uci get vlan.vlan.trunkvlan)
+    svlan=$(uci get vlan.vlan.svlan)
+    svlanethertype=$(uci get vlan.vlan.svlanethertype)
+
+
+    if [ $status -ne "2" ]; then
+        $mode="-1"
+    fi
+    iwpriv ath1 kwn_vlan_mode $mode
+    iwpriv ath1 kwn_mgmt_vid $mgmtvlan
+    iwpriv ath1 kwn_acc_vid $accvlan
+    iwpriv ath1 kwn_allowuntag $trunkopt
+    iwpriv ath1 kwn_vid_del "-1"
+    [ -n "$trunkvlan" ] && {
+            for id in $trunkvlan; do
+            iwpriv ath1 kwn_vid_add "$id"
+            done
+    }
+
+    procd_close_instance
+}
+
+

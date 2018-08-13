@@ -1,0 +1,9 @@
+config vlan 'vlan'
+    option status '2'
+    option mode '0'
+    option mgmtvlan '1'
+    option accessvlan '-1'
+    option trunkoption '2'
+    option svlan '-1'
+    option svlanethertype '0x8100'
+
