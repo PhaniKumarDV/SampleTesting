@@ -1,7 +1,7 @@
 diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
 --- qca-edma-org/edma.c	2018-07-09 14:25:58.833210000 +0530
-+++ qca-edma-mod/edma.c	2018-08-13 14:45:32.336515418 +0530
-@@ -26,6 +26,147 @@
++++ qca-edma-mod/edma.c	2018-08-13 15:17:57.484451011 +0530
+@@ -26,6 +26,153 @@
  extern u8 edma_per_prec_stats_enable;
  extern u32 edma_iad_stats_enable;
  
@@ -88,8 +88,14 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
 +{
 +	struct edma_adapter *adapter = netdev_priv(dev);
 +	struct edma_common_info *edma_cinfo = adapter->edma_cinfo;
-+	clear_bit(vid, edma_cinfo->vlan_bitmap);
-+	printk(":@@@@@@@@@@ clear_vid: %d\n",vid);
++	if ( vid == -1 ) {
++		bitmap_zero(edma_cinfo->vlan_bitmap, 4096);
++		printk(":@@@@@@@@@@ clear_all_vids: %d\n",vid);
++	}
++	else {
++		clear_bit(vid, edma_cinfo->vlan_bitmap);
++		printk(":@@@@@@@@@@ clear_vid: %d\n",vid);
++	}
 +	return 0;
 +}
 +
@@ -149,7 +155,106 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
  /* edma_skb_priority_offset()
   *	get edma skb priority
   */
-@@ -1535,6 +1676,40 @@
+@@ -777,15 +924,83 @@
+ #endif
+ 			edma_receive_checksum(rd, skb);
+ 
+-			/* Process VLAN HW acceleration indication provided by HW */
+-			if (adapter->default_vlan_tag != rd->rrd4) {
+-				vlan = rd->rrd4;
+-				if (likely(rd->rrd7 & EDMA_RRD_CVLAN))
++#if 0
++			printk("RRD Dump\n rrd0:%x rrd1: %x rrd2: %x rrd3: %x rrd4: %x rrd5: %x rrd6: %x rrd7: %x",
++					rd->rrd0, rd->rrd1, rd->rrd2, rd->rrd3, rd->rrd4, rd->rrd5, rd->rrd6, rd->rrd7);
++			printk("Num_rfds: %d, src_port: %d, pkt_size: %d, cvlan_tag: %d svlan_tag: %d protocol: %x\n",
++					num_rfds, rd->rrd1 & EDMA_RRD_SRC_PORT_NUM_MASK,
++					rd->rrd6 & EDMA_RRD_PKT_SIZE_MASK, rd->rrd7 & EDMA_RRD_CVLAN, rd->rrd1 & EDMA_RRD_SVLAN, skb->protocol);
++#endif
++
++			/* KWN: Vlan Ingress Path */
++			switch( edma_cinfo->vlan_mode ) 
++			{
++				case EDMA_VLAN_MODE_TRANSPARENT:
++					/* Allow Traffic */
++					if (adapter->default_vlan_tag != rd->rrd4) {
++						vlan = rd->rrd4;
++						if ( vlan != edma_cinfo->mgmt_vlan_id ) {
++							__vlan_hwaccel_put_tag(skb, htons(ETH_P_8021Q), vlan);
++						}
++					} 
++					break;
++				case EDMA_VLAN_MODE_TRUNK:
++					/* Tagged Traffic */
++					if (adapter->default_vlan_tag != rd->rrd4) {
++						vlan = rd->rrd4;
++						if ( vlan == edma_cinfo->mgmt_vlan_id ) { ; } else {
++							if ( test_bit(vlan, edma_cinfo->vlan_bitmap) || edma_cinfo->allow_all_tagged_trunk ) {
++								__vlan_hwaccel_put_tag(skb, htons(ETH_P_8021Q), vlan);
++							} else {
++								/*printk(":(RX): Trunk Mode: Skb vlan(%d) != Trunk Vlan Table: Result: Drop \n", 
++										vlan);*/
++								dev_kfree_skb_any( skb );
++								continue;
++							}
++						}
++					} else { /* UnTagged Traffic */
++						if ( edma_cinfo->allow_untagged ) {
++							if ( edma_cinfo->native_vlan_id > 0 ) {
++								__vlan_hwaccel_put_tag(skb, htons(ETH_P_8021Q), edma_cinfo->native_vlan_id);
++							} else {  /* Allow UnTagged packets when native vlanid is not set */; }
++						} else {
++							/*printk(": (RX): Trunk Mode: !AllowUntagged:  Skb UnTagged : Result: Drop \n");*/
++							dev_kfree_skb_any( skb );
++							continue;
++						}
++					} 
++					break;
++				case EDMA_VLAN_MODE_ACCESS:
++					if( adapter->default_vlan_tag != rd->rrd4 ) {
++						vlan = rd->rrd4;
++						if ( vlan == edma_cinfo->mgmt_vlan_id ) { ; } 
++						else if ( edma_cinfo->access_vlan_id > 0 && 
++								edma_cinfo->access_vlan_id == vlan  ) {
++							__vlan_hwaccel_put_tag(skb, htons(ETH_P_8021Q), edma_cinfo->access_vlan_id);
++						} else { 
++							/*printk(": (RX): Access Mode: Skb vlan(%d) != Access/Mgmt VlanID(%d/%d) : Result: Drop \n",
++									rd->rrd4, edma_cinfo->access_vlan_id, edma_cinfo->mgmt_vlan_id);*/
++							dev_kfree_skb_any( skb );
++							continue;
++						}
++					} else {
++						/*printk(": (RX): Access Mode: Skb vlan(%d) != AccessVlanID(%d) : Result: Drop \n",
++								edma_cinfo->access_vlan_id, rd->rrd4);*/
++						dev_kfree_skb_any( skb );
++						continue;
++					}
++					break;
++				default:
++					break;
++			}
++#if 0
++				if (likely(rd->rrd7 & EDMA_RRD_CVLAN)) {
+ 					__vlan_hwaccel_put_tag(skb, htons(ETH_P_8021Q), vlan);
+-				else if (rd->rrd1 & EDMA_RRD_SVLAN)
++				}
++				else if (rd->rrd1 & EDMA_RRD_SVLAN) {
+ 					__vlan_hwaccel_put_tag(skb, htons(ETH_P_8021AD), vlan);
+-			}
+-
++				}
++#endif
+ 			/* Update rx statistics */
+ 			adapter->stats.rx_packets++;
+ 			adapter->stats.rx_bytes += length;
+@@ -1324,7 +1539,6 @@
+ 		word3 |= (1 << EDMA_TX_INS_CVLAN);
+ 		word3 |= (adapter->default_vlan_tag) << EDMA_TX_CVLAN_TAG_SHIFT;
+ 	}
+-
+ 	if (packet_is_rstp) {
+ 		word3 |= dp_bitmap << EDMA_TPD_PORT_BITMAP_SHIFT;
+ 		word3 |= from_cpu << EDMA_TPD_FROM_CPU_SHIFT;
+@@ -1535,6 +1749,40 @@
  	return __EDMA_LINKDOWN;
  }
  
@@ -190,7 +295,7 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
  /* edma_adjust_link()
   *	check for edma link status
   */
-@@ -1551,12 +1726,14 @@
+@@ -1551,12 +1799,14 @@
  
  	if (status == __EDMA_LINKUP && adapter->link_state == __EDMA_LINKDOWN) {
  		dev_info(&adapter->pdev->dev, "%s: GMAC Link is up with phy_speed=%d\n", netdev->name, phydev->speed);
@@ -205,6 +310,124 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
  		adapter->link_state = __EDMA_LINKDOWN;
  		netif_carrier_off(netdev);
  		netif_tx_stop_all_queues(netdev);
+@@ -1590,6 +1840,7 @@
+ 	unsigned int flags_transmit = 0;
+ 	bool packet_is_rstp = false;
+ 	struct netdev_queue *nq = NULL;
++	u16 vlan = 0;
+ 
+ 	if (skb_shinfo(skb)->nr_frags) {
+ 		nr_frags_first = skb_shinfo(skb)->nr_frags;
+@@ -1652,12 +1903,93 @@
+ 		return NETDEV_TX_BUSY;
+ 	}
+ 
++	/* KWN: Vlan Egress Path */
++	switch( edma_cinfo->vlan_mode ) 
++	{
++		case EDMA_VLAN_MODE_TRANSPARENT:
++			/* Allow All Traffic */
++			if ( memcmp( net_dev->dev_addr, eth_hdr(skb)->h_source, 6) == 0 ) {
++				/*printk(": Transparent Mode: Mgmt Packet\n");*/
++				__vlan_hwaccel_put_tag(skb, htons(ETH_P_8021Q), edma_cinfo->mgmt_vlan_id);
++			}
++			break;
++		case EDMA_VLAN_MODE_TRUNK:
++			/* Tagged Traffic */
++			if ( vlan_tx_tag_present( skb ) ) {
++				vlan = vlan_tx_tag_get( skb );
++				if( edma_cinfo->allow_untagged && 
++						vlan == edma_cinfo->native_vlan_id ) {
++					skb = skb_vlan_untag( skb );
++					if ( unlikely(!skb) ) { 
++						/*printk(": (TX): Trunk Mode: SKB Untag Failed: Result: Drop\n");*/
++						goto drop;
++					}
++				} else if ( !edma_cinfo->allow_all_tagged_trunk &&
++						!test_bit(vlan, edma_cinfo->vlan_bitmap) ) {
++					/*printk(": (TX): Trunk Mode: SKB Vlan(%d) != VLan Trunk Table: Result: Drop\n",
++							vlan);*/
++					goto drop1;
++
++				} 
++			} else { /* UnTagged Traffic */
++				if ( memcmp( net_dev->dev_addr, eth_hdr(skb)->h_source, 6) == 0 ) {
++					/*printk(": (TX): Trunk Mode: Mgmt Packet\n");*/
++					__vlan_hwaccel_put_tag(skb, htons(ETH_P_8021Q), edma_cinfo->mgmt_vlan_id);
++				} else if ( (!edma_cinfo->allow_untagged) ||
++						(edma_cinfo->allow_untagged &&
++						 edma_cinfo->native_vlan_id > 0) ) {
++					/*printk(":(TX): Trunk Mode: SKB UnTagged: Native VlanID(%d) Set: Result: Drop\n",
++							edma_cinfo->native_vlan_id);*/
++					goto drop1;
++				}
++			}
++			break;
++		case EDMA_VLAN_MODE_ACCESS:
++			/* Tagged Traffic */
++			if ( vlan_tx_tag_present( skb ) ) {
++				vlan = vlan_tx_tag_get( skb );
++				if( edma_cinfo->access_vlan_id > 0 && 
++						vlan == edma_cinfo->access_vlan_id ) {
++					skb = skb_vlan_untag( skb );
++					if ( unlikely(!skb) ) { 
++						/*printk(":(TX): Access Mode: SKB Untag Failed: Result: Drop\n");*/
++						goto drop;
++					}
++				} else {
++					/*printk(":(TX): Access Mode: Skb Tagged Pkt(%d) != Access VlanId(%d): Result: Drop\n",
++							vlan, edma_cinfo->access_vlan_id);*/
++					goto drop1;
++				}	
++			} else {
++				if ( memcmp( net_dev->dev_addr, eth_hdr(skb)->h_source, 6) == 0 ) {
++					/*printk(":(TX): Access Mode: Mgmt Packet\n");*/
++					__vlan_hwaccel_put_tag(skb, htons(ETH_P_8021Q), edma_cinfo->mgmt_vlan_id);
++				} else {
++					/*printk(":(TX): Access Mode: UnTagged Packet in Egress Path : Result: Drop\n");*/
++					goto drop1;
++				}
++			} 
++			break;
++		default:
++			break;
++	}
++
++	/* KWN: Vlan SW Tagging in XMIT Path */
++	if ( vlan_tx_tag_present( skb ) ) {
++		vlan = vlan_tx_tag_get( skb );
++		skb = __vlan_put_tag( skb, skb->vlan_proto, vlan );
++		if (unlikely(!skb)) {
++			goto drop;
++		}
++		skb->vlan_tci = 0;
++	}
++
+ 	/* Check and mark VLAN tag offload */
+ #if (LINUX_VERSION_CODE <= KERNEL_VERSION(3, 18, 21))
+-	if (vlan_tx_tag_present(skb))
++	if (vlan_tx_tag_present(skb)) 
+ #else
+-	if (skb_vlan_tag_present(skb))
+-#endif
++	if (skb_vlan_tag_present(skb)) 
++#endif 
+ 		flags_transmit |= EDMA_VLAN_TX_TAG_INSERT_FLAG;
+ 	else if (adapter->default_vlan_tag)
+ 		flags_transmit |= EDMA_VLAN_TX_TAG_INSERT_DEFAULT_FLAG;
+@@ -1683,6 +2015,12 @@
+ 	adapter->stats.tx_packets++;
+ 	adapter->stats.tx_bytes += skb->len;
+ 
++drop1:
++	dev_kfree_skb_any(skb);
++drop:
++	adapter->stats.tx_errors++;
++	goto netdev_okay;
++	
+ netdev_okay:
+ 	local_bh_enable();
+ 	return NETDEV_TX_OK;
 diff -urN qca-edma-org/edma.h qca-edma-mod/edma.h
 --- qca-edma-org/edma.h	2018-07-09 14:25:58.833210000 +0530
 +++ qca-edma-mod/edma.h	2018-08-13 14:46:04.052514368 +0530
