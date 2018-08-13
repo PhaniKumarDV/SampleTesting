@@ -1,0 +1,56 @@
+<%#
+ Copyright 2008 Steven Barth <steven@midlink.org>
+ Copyright 2008 Jo-Philipp Wich <jow@openwrt.org>
+ Licensed to the public under the Apache License 2.0.
+-%>
+<%+header%>
+
+<script type="text/javascript">
+function get_results()
+{
+    var id = document.getElementById("logtype").value;
+    var x = document.getElementById("s3");
+    if( id == 3 )
+        x.style.visibility = "visible";
+    else
+        x.style.visibility = "hidden";
+    XHR.get('<%=luci.dispatcher.build_url("admin", "monitor")%>/log_type' + '/' + id, null,
+	function(x, data) {
+		if (data) { 
+			document.getElementById("result").innerHTML=data;
+		}
+	}
+    );
+}
+function clear_log()
+{
+    var id = 1;
+    XHR.get('<%=luci.dispatcher.build_url("admin", "monitor")%>/clr_templog' + '/' + id, null,
+	function(x, data) {
+		if (data) { 
+			document.getElementById("result").innerHTML=data;
+		}
+	}
+    );
+}
+</script>
+<div class="page-content">
+<h2><a id="content" name="content"><%:Logs%></a></h2>
+<div class="cbi-page-actions right">
+        Show log type
+        <select id="logtype">
+             <option value=1>System log</option>
+             <option value=2>Kernel Log</option>
+             <option value=3>Temperature Log</option>
+             <option value=4>Configuration Log</option>
+        </select>
+        <input type="button" id="s1" class="cbi-button" value="<%:Submit%>" onclick="get_results()" />
+        <input type="button" id="s2" class="cbi-button" value="<%:Refresh%>" onclick="get_results()" />
+        <input type="button" id="s3" class="cbi-button" style="visibility:hidden" value="<%:Clear%>" onclick="clear_log()" />
+</div>
+<div>&nbsp;</div>
+<div id="content_syslog">
+<textarea readonly="readonly" wrap="off" style="width:100%; height:500px;" rows="<%=syslog:cmatch("\n")+2%>" id="result"><%=syslog:pcdata()%></textarea>
+</div>
+</div>
+<%+footer%>

@@ -1,0 +1,20 @@
+<%#
+ Copyright 2008 Steven Barth <steven@midlink.org>
+ Copyright 2008 Jo-Philipp Wich <jow@openwrt.org>
+ Licensed to the public under the Apache License 2.0.
+-%>
+
+<%+header%>
+<div class="page-content system">
+<h2><a id="content" name="content"><%:Apply%></a></h2>
+<p><%:Apply the configuration to device%></p>
+<%-
+if not apply then 
+-%>
+<p><a class="btn" href="<%=controller%>/admin/apply?apply=1"><%:Apply%></a>
+</p>
+<%- else -%>
+<p><%:Please wait while applying configuration...%></p>
+<script type="text/javascript">setTimeout("location='<%=controller%>/admin'", 20000)</script>
+<%- end -%>
+<%+footer%>

@@ -11,9 +11,17 @@ function index()
 	page = node("admin", "network")
 	page.target = firstchild()
 	page.title  = _("Network")
-	page.order  = 50
+	page.order  = 40
 	page.index  = true
 
+	page = entry({"admin", "network", "ip"}, template("admin_network/ipconfig"), _("IP Configuration"), 1)
+	page.leaf = true
+	page = entry({"admin", "network", "vlan"}, template("admin_network/vlan"), _("VLAN"), 2)
+	page.leaf = true
+	page = entry({"admin", "network", "ethernet"}, template("admin_network/ethernet"), _("Ethernet"), 3)
+	page.leaf = true
+	page = entry({"admin", "network", "dhcp"}, template("admin_network/dhcp"), _("DHCP Server"), 4)
+	page.leaf = true
 --	if page.inreq then
 		local has_switch = false
 
@@ -24,10 +32,10 @@ function index()
 			end)
 
 		if has_switch then
-			page  = node("admin", "network", "vlan")
-			page.target = cbi("admin_network/vlan")
-			page.title  = _("VLAN")
-			page.order  = 20
+			--page  = node("admin", "network", "vlan")
+			--page.target = cbi("admin_network/vlan")
+			--page.title  = _("VLAN")
+			--page.order  = 20
 
 			page = entry({"admin", "network", "switch_status"}, call("switch_status"), nil)
 			page.leaf = true
@@ -97,9 +105,9 @@ function index()
 		page = entry({"admin", "network", "iface_shutdown"}, call("iface_shutdown"), nil)
 		page.leaf = true
 
-		page = entry({"admin", "network", "network"}, arcombine(cbi("admin_network/network"), cbi("admin_network/ifaces")), _("Interfaces"), 10)
-		page.leaf   = true
-		page.subindex = true
+		--page = entry({"admin", "network", "network"}, arcombine(cbi("admin_network/network"), cbi("admin_network/ifaces")), _("Interfaces"), 10)
+		--page.leaf   = true
+		--page.subindex = true
 
 		if page.inreq then
 			uci:foreach("network", "interface",
@@ -114,10 +122,10 @@ function index()
 
 
 		if nixio.fs.access("/etc/config/dhcp") then
-			page = node("admin", "network", "dhcp")
-			page.target = cbi("admin_network/dhcp")
-			page.title  = _("DHCP and DNS")
-			page.order  = 30
+			--page = node("admin", "network", "dhcp")
+			--page.target = cbi("admin_network/dhcp")
+			--page.title  = _("DHCP and DNS")
+			--page.order  = 30
 
 			page = entry({"admin", "network", "dhcplease_status"}, call("lease_status"), nil)
 			page.leaf = true
@@ -129,20 +137,20 @@ function index()
 		end
 
 
-        	page = node("admin", "network", "eth_settings")
-			page.target = cbi("admin_network/eth_settings")
-			page.title  = _("Ethernet Settings")
-			page.order  = 40
+        	--page = node("admin", "network", "eth_settings")
+			--page.target = cbi("admin_network/eth_settings")
+			--page.title  = _("Ethernet Settings")
+			--page.order  = 40
 
-		page  = node("admin", "network", "routes")
-		page.target = cbi("admin_network/routes")
-		page.title  = _("Static Routes")
-		page.order  = 50
+		--page  = node("admin", "network", "routes")
+		--page.target = cbi("admin_network/routes")
+		--page.title  = _("Static Routes")
+		--page.order  = 50
 
-		page = node("admin", "network", "diagnostics")
-		page.target = template("admin_network/diagnostics")
-		page.title  = _("Diagnostics")
-		page.order  = 60
+		--page = node("admin", "network", "diagnostics")
+		--page.target = template("admin_network/diagnostics")
+		--page.title  = _("Diagnostics")
+		--page.order  = 60
 
 		page = entry({"admin", "network", "diag_ping"}, call("diag_ping"), nil)
 		page.leaf = true

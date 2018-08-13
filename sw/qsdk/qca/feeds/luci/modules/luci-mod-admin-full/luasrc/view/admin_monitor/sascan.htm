@@ -15,16 +15,20 @@ function start_scan()
     document.getElementById("s1").disabled=true;
     setTimeout("enable()",30000);
     document.getElementById("syslog").innerHTML="Scan is in progress....Wait for 30 Seconds";
-    location.href='<%=luci.dispatcher.build_url("admin/monitor/saresult")%>';
+    location.href='<%=luci.dispatcher.build_url("admin/monitor/tools/saresult")%>';
 }
 </script>
 <div class="page-content">
-<h2><a id="content" name="content"><%:Spectrum Analyzer%></a></h2>
+<h2><a id="content" name="content"><%:Tools%></a></h2>
+    <ul class="cbi-tabmenu">
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=luci.dispatcher.build_url("admin/monitor/tools")%>"><%:Diagnostics%></a></li>
+        <li style="margin-right:4px" class="cbi-tab"><a href="#"><%:Spectrum Analyzer%></a></li>
+    </ul>
 <div class="cbi-page-actions right">
 <input type="button" id="s1" class="cbi-button" value="<%:Scan%>" onclick="start_scan()" />
 </div>
 <div id="content_saresult">
-<textarea readonly="readonly" wrap="off" rows="<%=saresult:cmatch("\n")+2%>" id="syslog"><%=saresult:pcdata()%></textarea>
+<textarea readonly="readonly" wrap="off" style="width:100%; height:470px;" rows="<%=saresult:cmatch("\n")+2%>" id="syslog"><%=saresult:pcdata()%></textarea>
 </div>
 </div>
 <%+footer%>

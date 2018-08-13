@@ -1,0 +1,109 @@
+<%#
+ Copyright 2008-2009 Steven Barth <steven@midlink.org>
+ Copyright 2008-2015 Jo-Philipp Wich <jow@openwrt.org>
+ Licensed to the public under the Apache License 2.0.
+-%>
+
+<%-
+        function uciget(cmd)
+                local res = luci.util.exec(cmd)
+                local str = string.gsub(res, "\n", "")
+                return str
+        end
+-%>
+<%+header%>
+<div class="page-content">
+<script type="text/javascript" src="<%=resource%>/cbi.js"></script>
+<script type="text/javascript">
+var def = new Array(8);
+function save_def_value()
+{
+    var f = document.formTable;
+    for (i=0; i<f.elements.length; i++)
+    {
+        def[i] = f.elements[i].value;
+    }
+}
+
+function disable_spin()
+{
+    document.getElementById("spin").innerHTML = "";
+}
+
+function save_value()
+{
+    document.getElementById("spin").innerHTML = "<i class='fa fa-spinner fa-pulse'></i>";
+    setTimeout("disable_spin()",1000);
+    var setdata = "";
+    var f = document.formTable;
+    for( i=0; i<f.elements.length; i++)
+    {
+        if( def[i] != f.elements[i].value ) {
+            def[i] = f.elements[i].value;
+            setdata += f.elements[i].name + "=" + f.elements[i].value + "~";
+        }
+    }
+    XHR.get('<%=luci.dispatcher.build_url("admin")%>/cfg_set' + '/' + setdata, null,
+	    function(x, data) {
+		    if (data) { 
+                location.href='<%=luci.dispatcher.build_url("admin/network/dhcp")%>';
+		    }
+	    }
+    );
+}
+</script>
+<h2><a id="content" name="content"><%: DHCP Configuration%></a></h2>
+<div class="cbi-map">
+    <fieldset class="cbi-section">
+       <form name="formTable">
+          <div class="cbi-value">
+            <label class="cbi-value-title">DHCP Server</label>
+            <div class="cbi-value-field">
+              <select class="cbi-input-select" name="44">
+                 <script type="text/javascript">
+                 var stat = 1;
+                 var start = "<%=uciget('uci get dhcp.lan.start')%>";
+                 if( start == "" )
+                     stat = 0;
+                 document.write("<option value='0' ");
+                 if( stat == "0" )
+                     document.write(" selected");
+                 document.write(">Disable</option>");
+                 document.write("<option value='1' ");
+                 if( stat == "1" )
+                     document.write(" selected");
+                 document.write(">Enable</option>");
+                 </script>
+              </select>
+            </div>
+          </div>
+          <div class="cbi-value">
+            <label class="cbi-value-title">Start</label>
+            <div class="cbi-value-field">
+              <input type="text" name="45" class="cbi-input-select" value="<%=uciget('uci get dhcp.lan.start')%>" >
+            </div>
+          </div>
+          <div class="cbi-value">
+            <label class="cbi-value-title">Limit</label>
+            <div class="cbi-value-field">
+              <input type="text" name="46" class="cbi-input-select" value="<%=uciget('uci get dhcp.lan.limit')%>" >
+            </div>
+          </div>
+          <div class="cbi-value">
+            <label class="cbi-value-title">Lease Time</label>
+            <div class="cbi-value-field">
+              <input type="text" name="47" class="cbi-input-select" value="<%=uciget('uci get dhcp.lan.leasetime')%>" >
+            </div>
+          </div>
+    </form>
+    </fieldset>
+</div>
+<div class="cbi-page-actions right">
+<div id="spin"></div>
+<input type="button" class="cbi-button" value="<%:Save%>" onclick="save_value()" />
+</div>
+<script type="text/javascript">
+save_def_value();
+</script>
+</div>
+<%+footer%>

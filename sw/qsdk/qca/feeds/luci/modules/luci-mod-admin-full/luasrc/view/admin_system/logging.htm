@@ -1,0 +1,113 @@
+<%#
+ Copyright 2008-2009 Steven Barth <steven@midlink.org>
+ Copyright 2008-2015 Jo-Philipp Wich <jow@openwrt.org>
+ Licensed to the public under the Apache License 2.0.
+-%>
+
+<%-
+        function uciget(cmd)
+                local res = luci.util.exec(cmd)
+                local str = string.gsub(res, "\n", "")
+                return str
+        end
+-%>
+<%+header%>
+<div class="page-content">
+<script type="text/javascript" src="<%=resource%>/cbi.js"></script>
+<script type="text/javascript">
+var def = new Array(8);
+function save_def_value()
+{
+    var f = document.formTable;
+    for (i=0; i<f.elements.length; i++)
+    {
+        def[i] = f.elements[i].value;
+    }
+}
+
+function disable_spin()
+{
+    document.getElementById("spin").innerHTML = "";
+}
+
+function save_value()
+{
+    document.getElementById("spin").innerHTML = "<i class='fa fa-spinner fa-pulse'></i>";
+    setTimeout("disable_spin()",1000);
+    var setdata = "";
+    var f = document.formTable;
+    for( i=0; i<f.elements.length; i++)
+    {
+        if( def[i] != f.elements[i].value ) {
+            def[i] = f.elements[i].value;
+            setdata += f.elements[i].name + "=" + f.elements[i].value + "~";
+        }
+    }
+    XHR.get('<%=luci.dispatcher.build_url("admin")%>/cfg_set' + '/' + setdata, null,
+	    function(x, data) {
+		    if (data) { 
+		    }
+	    }
+    );
+}
+function updateint()
+{
+    if( document.getElementById("int2").checked == "1" )
+        document.getElementById("int1").value = 1;
+    else
+        document.getElementById("int1").value = 0;
+}
+</script>
+<h2><a id="content" name="content"><%: System Configuration%></a></h2>
+<div class="cbi-map">
+    <ul class="cbi-tabmenu">
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=luci.dispatcher.build_url("admin/system/system")%>"><%:General%></a></li>
+        <li style="margin-right:4px" class="cbi-tab"><a href="#"><%:Logging%></a></li>
+    </ul>
+        <h2><a id="content" name="content"><%:System Log%></a></h2>
+    <fieldset class="cbi-section">
+       <form name="formTable">
+          <div class="cbi-value">
+            <label class="cbi-value-title">Log Server</label>
+            <div class="cbi-value-field">
+              <input type="text" name="66" class="cbi-input-select" value="<%=uciget('uci get system.@system[0].log_ip')%>" >
+            </div>
+          </div>
+          <div class="cbi-value">
+            <label class="cbi-value-title">Log Server Port</label>
+            <div class="cbi-value-field">
+              <input type="text" name="67" class="cbi-input-select" value="<%=uciget('uci get system.@system[0].log_port')%>" >
+            </div>
+          </div>
+             <h2><a id="content" name="content"><%:Temperature Log%></a></h2>
+          <div class="cbi-value">
+            <label class="cbi-value-title">Enable Temperature Log</label>
+            <div style="display:none"><input type="text" id="int1" name="68" value="<%=uciget('uci get system.@system[0].templogstatus')%>"></div>
+            <div class="cbi-value-field">
+                 <script type="text/javascript">
+                 var interval = "<%=uciget('uci get system.@system[0].templogstatus')%>";
+                 document.write("<input type='checkbox' ");
+                 if( interval == 1 )
+                     document.write(" checked");
+                 document.write(" id='int2' class='cibi-input-select' onchange='updateint()' >");
+              </script>
+            </div>
+          </div>
+          <div class="cbi-value">
+            <label class="cbi-value-title">Temperature Log Interval</label>
+            <div class="cbi-value-field">
+              <input type="text" name="69" class="cbi-input-select" value="<%=uciget('uci get system.@system[0].temploginterval')%>" >
+            </div>
+          </div>
+        </form>
+        </fieldset>
+</div>
+<div class="cbi-page-actions right">
+<div id="spin"></div>
+<input type="button" class="cbi-button" value="<%:Save%>" onclick="save_value()" />
+</div>
+<script type="text/javascript">
+save_def_value();
+</script>
+</div>
+<%+footer%>

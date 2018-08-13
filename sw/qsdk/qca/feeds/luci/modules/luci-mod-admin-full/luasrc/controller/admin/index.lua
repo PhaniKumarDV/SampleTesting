@@ -23,7 +23,75 @@ function index()
 	-- Empty services menu to be populated by addons
 	-- entry({"admin", "services"}, firstchild(), _("Services"), 40).index = true
 
+	entry({"admin", "home"}, call("action_index"), _("Home"), 10)
+    page = entry({"admin", "eventlog"}, call("action_eventlog"), nil)
+    page.leaf = true
+    page = entry({"admin", "no_of_links"}, call("action_links"), nil)
+    page.leaf = true
+	entry({"admin", "apply"}, call("action_apply"), _("Apply"), 88)
+	entry({"admin", "reboot"}, call("action_reboot"), _("Reboot"), 89)
 	entry({"admin", "logout"}, call("action_logout"), _("Logout"), 90)
+	entry({"admin", "config"}, template("admin_status/basic_config1"), _("Quick Start"), 20)
+    entry({"admin", "config", "config2"}, template("admin_status/basic_config2"))
+    entry({"admin", "config", "system"}, template("admin_status/system"))
+    page = entry({"admin", "cfg_set"}, call("action_cfg_set"), nil)
+	page.leaf = true
+end
+
+function action_links()
+	local data = {}
+
+    data = luci.sys.exec("wlanconfig ath1 list sta | wc -l")
+	luci.http.prepare_content("application/json")
+	luci.http.write_json(data)
+end
+
+function action_eventlog()
+	local data = {}
+
+    if string.len(string.sub(luci.util.exec("cat /tmp/wifi_packet_logs"),1,-2) ) > 20 then
+        data = luci.util.exec("cat /tmp/wifi_packet_logs")
+    else
+        data = "Wireless Log file is empty."
+    end
+	luci.http.prepare_content("application/json")
+	luci.http.write_json(data)
+end
+
+function action_index()
+    local eventlog = {}
+
+    if string.len(string.sub(luci.util.exec("cat /tmp/wifi_packet_logs"),1,-2) ) > 20 then
+        eventlog = luci.util.exec("cat /tmp/wifi_packet_logs")
+    else
+        eventlog = "Wireless Log file is empty."
+    end
+	luci.template.render("admin_status/index", {eventlog=eventlog})
+end
+
+function action_cfg_set( setdata )
+	local data = "1"
+    luci.util.exec("echo "..setdata.." > /tmp/setcfgfile.txt")
+    luci.util.exec("cfgupdate")
+	luci.http.prepare_content("application/json")
+	luci.http.write_json(data)
+end
+
+function action_apply()
+	local apply = luci.http.formvalue("apply")
+	luci.template.render("admin_system/apply", {apply=apply})
+	if apply then
+		luci.util.exec("uci commit")
+		luci.util.exec("reload_config")
+	end
+end
+
+function action_reboot()
+	local reboot = luci.http.formvalue("reboot")
+	luci.template.render("admin_system/reboot", {reboot=reboot})
+	if reboot then
+		luci.sys.reboot()
+	end
 end
 
 function action_logout()

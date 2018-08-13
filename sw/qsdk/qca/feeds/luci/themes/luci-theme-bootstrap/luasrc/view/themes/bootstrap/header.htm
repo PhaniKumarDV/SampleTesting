@@ -121,7 +121,7 @@
   <header>
    <div class="fill">
     <div class="container">
-     <a class="brand" href="#">                                                                                                          
+     <a class="brand" href="<%=pcdata(luci.dispatcher.build_url("admin/home"))%>">                                                                                                          
 	 <img src="<%=media%>/logo-img.png " alt=logo""/>                                                                
      <%=boardinfo.hostname or "?"%>                                                                                                                 
     </a>
@@ -163,8 +163,12 @@
             <a class="menu" href="#"><%=pcdata(striptags(translate(nnode.title)))%></a>
             <%- submenu("/" .. category .. "/" .. r .. "/", nnode) %>
         </li>
-	<%          else %>
+	<%          else 
+                if nnode.title == "Quick Start" then
+    %>
+                <li class="Quick"><a href="<%=pcdata(href)%>">Quick Start</a></li>  
     <%
+                end
                 end
 			end
 		end
@@ -185,18 +189,7 @@
 			end
 	%>
 	<div class="pull-right">
-	<% if ucichanges > 0 then %>
-	  <a class="label notice" href="<%=controller%>/<%=category%>/uci/changes"><%:Unsaved Changes%>: <%=ucichanges%></a>
-	<% end %>
-	<div class="switch-btn">
-     	    <span id="xhr_poll_status" style="display:none" onclick="XHR.running() ? XHR.halt() : XHR.run()">
-       		<span class="label success" id="xhr_poll_status_on"><%:Auto Refresh%> <%:on%></span>
-       		<span class="label" id="xhr_poll_status_off" style="display:none"><%:Auto Refresh%> <%:off%></span>
-      	   </span>
-	  <label class="switch">
-	   <input type="checkbox" checked>
-	   <span class="slider round"></span>
-	  </label>
+	<div>
           <span class="logout">
 		<ul class="nav">                                                                                                                          
          <%-                                                                                                                            
@@ -235,11 +228,31 @@
             <a class="menu" href="#"><%=pcdata(striptags(translate(nnode.title)))%></a>                                                   
             <%- submenu("/" .. category .. "/" .. r .. "/", nnode) %>                                            
         </li>                                                                                                                                  
-        <%          else %>
-        <li>                                                                                                                             
-                <a href="<%=pcdata(href)%>"> <i class="fa fa-sign-out" aria-hidden="true"></i> <%=pcdata(striptags(translate(nnode.title)))%></a>                   
-        </li>                                                                                                                                  
-             <%                                                                                                                                  
+        <%-          else 
+                if nnode.title == "Home" then
+        %>
+                <li title="Home"><a href="<%=pcdata(href)%>"> <i class="fa fa-home fa-2x" aria-hidden="true"></i> </a></li>  
+        <%- 
+                end
+         %>
+        <%- 
+                if nnode.title == "Apply" then                                                                   
+         %>
+                <li title="Apply"><a href="<%=pcdata(href)%>"> <i class="fa fa-external-link fa-2x" aria-hidden="true"></i></a></li>  
+        <%-
+                 end
+                if nnode.title == "Reboot" then                                                                   
+         %>
+                <li title="Reboot"><a href="<%=pcdata(href)%>"> <i class="fa fa-power-off fa-2x" aria-hidden="true"></i> </a></li>  
+        <%-
+                 end
+                if nnode.title == "Logout" then                                                                  
+         %>
+                <li title="Logout"><a href="<%=pcdata(href)%>"> <i class="fa fa-sign-out fa-2x" aria-hidden="true"></i></a></li>  
+        <%-
+                end
+
+
                 end                                                                                                                       
                         end                                                                                      
                 end                                                                                                                            
@@ -247,7 +260,6 @@
         </ul>
 	</span>
 	</div>
-	<div class="content-btm"><p>There are many variations.</p></div>
      </div>
 	<% end %>
     </div>

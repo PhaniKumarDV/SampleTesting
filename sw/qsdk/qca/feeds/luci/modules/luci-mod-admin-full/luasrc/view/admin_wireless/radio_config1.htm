@@ -1,0 +1,288 @@
+<%#
+ Copyright 2008-2009 Steven Barth <steven@midlink.org>
+ Copyright 2008-2015 Jo-Philipp Wich <jow@openwrt.org>
+ Licensed to the public under the Apache License 2.0.
+-%>
+
+<%-
+
+	local ip = require "luci.ip"
+	local fs = require "nixio.fs"
+	local utl = require "luci.util"
+	local uci = require "luci.model.uci".cursor()
+	local ntm = require "luci.model.network"
+
+	local has_iwinfo = pcall(require, "iwinfo")
+
+	ntm.init(uci)
+
+	local devices  = ntm:get_wifidevs()
+	local arpcache = { }
+	ip.neighbors({ family = 4 }, function(n)
+		if n.mac and n.dest then arpcache[n.mac:upper()] = n.dest:string() end
+	end)
+
+    local iw = luci.sys.wifi.getiwinfo("wifi1.network1")
+    local freqlist = iw.freqlist
+	local netlist = { }
+	local netdevs = { }
+
+	local dev
+	for _, dev in ipairs(devices) do
+		local net
+		for _, net in ipairs(dev:get_wifinets()) do
+			netlist[#netlist+1] = net:id()
+			netdevs[net:id()] = dev:name()
+		end
+	end
+
+        function uciget(cmd)
+                local res = luci.util.exec(cmd)
+                local str = string.gsub(res, "\n", "")
+                return str
+        end
+-%>
+
+<%+header%>
+<div class="page-content">
+<% if not has_iwinfo then %>
+	<div class="errorbox">
+		<strong><%:Package libiwinfo required!%></strong><br />
+		<%_The <em>libiwinfo-lua</em> package is not installed. You must install this component for working wireless configuration!%>
+	</div>
+<% end %>
+
+<script type="text/javascript" src="<%=resource%>/cbi.js"></script>
+<script type="text/javascript">
+	var freqlist = <%= luci.http.write_json(freqlist) %>;
+    var modelist = [ "ap=Outdoor Base", "sta=Outdoor Subscriber" ];
+    var hwlist = [ "11a=Legacy", "11na=11NA", "11ac=11AC" ];
+    var bwlist = [ "HT20=20MHz", "HT40+=40MHz", "HT80=80MHz" ];
+    var counlist = [ "5011=RUSSIA", "5016=INDIA_UL", "5017=INDIA L" ];
+    var ratelist = ["auto=auto", "0=MCS0", "1=MCS1", "2=MCS2","3=MCS3","4=MCS4","5=MCS5","6=MCS6","7=MCS7","8=MCS8","9=MCS9","10=MCS10","11=MCS11","12=MCS12","13=MCS13","14=MCS14","15=MCS15","16=MCS16","17=MCS17","18=MCS18","19=MCS19"];
+    var pwrlist = ["0=0dBm (1mW)", "8=8dBm (6mW)", "11=11dBm (12mW)", "14=14dBm (25mW)", "17=17dBm (50mW)", "20=20dBm (100mW)", "23=23dBm (199mW)", "26=26dBm (398mW)"];
+    var chanlist = [ "auto=auto" ];
+	for (var i = 0; i < freqlist.length; i++)
+		chanlist.push(
+			'%d=%d (%d MHz)'.format(freqlist[i].channel, freqlist[i].channel, freqlist[i].mhz)
+		);
+var def = new Array(8);
+function save_def_value()
+{
+    var f = document.formTable;
+    for (i=0; i<f.elements.length; i++)
+    {
+        def[i] = f.elements[i].value;
+    }
+}
+
+function disable_spin()
+{
+    document.getElementById("spin").innerHTML = "";
+}
+
+function save_value()
+{
+    document.getElementById("spin").innerHTML = "<i class='fa fa-spinner fa-pulse'></i>";
+    setTimeout("disable_spin()",1000);
+    var setdata = "";
+    var f = document.formTable;
+    for( i=0; i<f.elements.length; i++)
+    {
+        if( def[i] != f.elements[i].value ) {
+            def[i] = f.elements[i].value;
+            setdata += f.elements[i].name + "=" + f.elements[i].value + "~";
+        }
+    }
+    XHR.get('<%=luci.dispatcher.build_url("admin")%>/cfg_set' + '/' + setdata, null,
+	    function(x, data) {
+		    if (data) { 
+		    }
+	    }
+    );
+}
+
+function getoptions( list, value )
+{
+    for( i = 0; i < list.length; i++ )
+    {
+        var a = list[i].split("=");
+        document.write("<option value=");
+        document.write(a[0]);
+        if( value == a[0] )
+           document.write(" selected");
+        document.write(">");
+        document.write(a[1]);
+        document.write("</option>");
+    }
+}
+function updatehidessid()
+{
+    if( document.getElementById("hidessid2").checked == "1" )
+        document.getElementById("hidessid1").value = 1;
+    else
+        document.getElementById("hidessid1").value = 0;
+}
+</script>
+<h2><a id="content" name="content"><%: 5GHz Radio Configuration%></a></h2>
+<div class="cbi-map">
+    <ul class="cbi-tabmenu">
+        <li style="margin-right:4px" class="cbi-tab"><a href="#"><%:Configuration%></a></li>
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=REQUEST_URI%>/security1"><%:Security%></a></li>
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=REQUEST_URI%>/macacl1"><%:MAC ACL%></a></li>
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=REQUEST_URI%>/radius1"><%:RADIUS%></a></li>
+    </ul>
+    <fieldset class="cbi-section">
+       <form name="formTable">
+          <div class="cbi-value">
+            <label class="cbi-value-title">Mode</label>
+            <div class="cbi-value-field">
+              <select class="cbi-input-select" name="1">
+                 <script type="text/javascript">
+                 var mode = "<%=uciget('uci get wireless.@wifi-iface[1].mode')%>";
+                 getoptions( modelist, mode );
+                 </script>
+              </select>
+            </div>
+          </div>
+          <div class="cbi-value">
+            <label class="cbi-value-title">SSID</label>
+            <div class="cbi-value-field">
+              <input type="text" name="2" class="cbi-input-select" value="<%=uciget('uci get wireless.@wifi-iface[1].ssid')%>" >
+            </div>
+          </div>
+          <div class="cbi-value">
+            <label class="cbi-value-title">Country</label>
+            <div class="cbi-value-field">
+              <select class="cbi-input-select" name="3">
+                <script type="text/javascript">
+                var coun = "<%=uciget('uci get wireless.wifi1.country')%>";
+                getoptions( counlist, coun );
+                </script>
+              </select>
+            </div>
+          </div>
+          <div class="cbi-value">
+            <label class="cbi-value-title">Operational Mode</label>
+            <div class="cbi-value-field">
+              <select class="cbi-input-select" name="4">
+                <script type="text/javascript">
+                  var hw = "<%=uciget('uci get wireless.wifi1.hwmode')%>";
+                  getoptions( hwlist, hw );
+                </script>
+              </select>
+            </div>
+          </div>
+          <div class="cbi-value">
+            <label class="cbi-value-title">Bandwidth</label>
+            <div class="cbi-value-field">
+              <select class="cbi-input-select" name="5">
+                <script type="text/javascript">
+                  var bw = "<%=uciget('uci get wireless.wifi1.htmode')%>";
+                  getoptions( bwlist, bw );
+                </script>
+              </select>
+            </div>
+          </div>
+          <div class="cbi-value">
+            <label class="cbi-value-title">Channel</label>
+            <div class="cbi-value-field">
+              <select class="cbi-input-select" name="6">
+                 <script type="text/javascript">
+                 var channel = "<%=uciget('uci get wireless.wifi1.channel')%>";
+                 getoptions( chanlist, channel );
+                 </script>
+             </select>
+           </div>
+         </div>
+          <div class="cbi-value">
+            <label class="cbi-value-title">Rate</label>
+            <div class="cbi-value-field">
+              <select class="cbi-input-select" name="7">
+                 <script type="text/javascript">
+                 var rate = "<%=uciget('uci get wireless.wifi1.rate')%>";
+                 getoptions( ratelist, rate );
+                 </script>
+             </select>
+           </div>
+         </div>
+          <div class="cbi-value">
+            <label class="cbi-value-title">Transmit Power</label>
+            <div class="cbi-value-field">
+              <select class="cbi-input-select" name="8">
+                 <script type="text/javascript">
+                 var pwr = "<%=uciget('uci get wireless.wifi1.txpower')%>";
+                 if( pwr == "" )
+                     pwr = 26;
+                 getoptions( pwrlist, pwr );
+                 </script>
+             </select>
+           </div>
+         </div>
+          <div class="cbi-value">
+            <label class="cbi-value-title">AMSDU</label>
+            <div class="cbi-value-field">
+              <select class="cbi-input-select" name="9">
+                 <script type="text/javascript">
+                 var amsdu = "<%=uciget('uci get wireless.@wifi-iface[1].kwnamsdu')%>";
+                 document.write("<option value='1' ");
+                 if( amsdu == "1" )
+                     document.write(" selected");
+                 document.write(">Enable</option>");
+                 document.write("<option value='2' ");
+                 if( amsdu == "2" )
+                     document.write(" selected");
+                 document.write(">Disable</option>");
+                 </script>
+             </select>
+           </div>
+         </div>
+          <div class="cbi-value">
+            <label class="cbi-value-title">Uplink Limit</label>
+            <div class="cbi-value-field">
+              <input type="text" name="10" class="cbi-input-select" value="<%=uciget('uci get wireless.@wifi-iface[1].ullmt')%>" >
+            </div>
+          </div>
+          <div class="cbi-value">
+            <label class="cbi-value-title">Downlink Limit</label>
+            <div class="cbi-value-field">
+              <input type="text" name="11" class="cbi-input-select" value="<%=uciget('uci get wireless.@wifi-iface[1].dllmt')%>" >
+            </div>
+          </div>
+          <div class="cbi-value">
+            <label class="cbi-value-title">Hide ESSID</label>
+            <div style="display:none"><input type="text" id="hidessid1" name="12" value="<%=uciget('uci get wireless.@wifi-iface[1].hidden')%>"></div>
+            <div class="cbi-value-field">
+                 <script type="text/javascript">
+                 var hide = "<%=uciget('uci get wireless.@wifi-iface[1].hidden')%>";
+                 document.write("<input type='checkbox' ");
+                 if( hide == 1 )
+                     document.write(" checked");
+                 document.write(" id='hidessid2' class='cibi-input-select' onchange='updatehidessid()' >");
+              </script>
+            </div>
+          </div>
+          <div class="cbi-value">
+            <label class="cbi-value-title">Customer Name</label>
+            <div class="cbi-value-field">
+              <input type="text" name="13" class="cbi-input-select" value="<%=uciget('uci get system.customer.name')%>" >
+            </div>
+          </div>
+          <div class="cbi-value">
+            <label class="cbi-value-title">Link Id</label>
+            <div class="cbi-value-field">
+              <input type="text" name="14" class="cbi-input-select" value="<%=uciget('uci get system.customer.linkid')%>" >
+            </div>
+          </div>
+    </form>
+    </fieldset>
+</div>
+<div class="cbi-page-actions right">
+<div id="spin"></div>
+<input type="button" class="cbi-button" value="<%:Save%>" onclick="save_value()" />
+</div>
+<script type="text/javascript">
+save_def_value();
+</script>
+</div>
+<%+footer%>

@@ -1,0 +1,109 @@
+<%#
+ Copyright 2008-2009 Steven Barth <steven@midlink.org>
+ Copyright 2008-2015 Jo-Philipp Wich <jow@openwrt.org>
+ Licensed to the public under the Apache License 2.0.
+-%>
+<%-
+        function execute(cmd)
+                local res = luci.util.exec(cmd)
+                local str = string.gsub(res, "\n", "")
+                return str
+        end
+-%>
+<%+header%>
+<script type="text/javascript">
+	XHR.poll(5, '<%=REQUEST_URI%>', { status: 1 },
+		function(x, info)
+        {
+            var id = 6;
+            XHR.get('<%=luci.dispatcher.build_url("admin", "monitor", "nwkstats")%>/ethrefresh/' + id, null,
+            function(x, data) {
+              if (data) { 
+                     var a = data.split(",");
+                     for(i=0; i<a.length; i++)
+                        a[i].replace(" ","");
+                     document.getElementById("txpkt").innerHTML = a[0];
+                     document.getElementById("txbyte").innerHTML = a[1];
+                     document.getElementById("txerr").innerHTML = a[2];
+                     document.getElementById("rxpkt").innerHTML = a[3];
+                     document.getElementById("rxbyte").innerHTML = a[4];
+                     document.getElementById("rxerr").innerHTML = a[5];
+               }
+            }
+            );
+        }
+    );
+            </script>
+<script type="text/javascript" src="<%=resource%>/cbi.js"></script>
+<div class="page-content">
+   <h2><a id="content" name="content"><%:Network Statistics%></a></h2>
+    <ul class="cbi-tabmenu">
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=luci.dispatcher.build_url("admin/monitor/nwkstats")%>"><%:5GHz Radio%></a></li>
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="radio2nwkstats"><%:2.4GHz Radio%></a></li>
+        <li style="margin-right:4px" class="cbi-tab"><a href="#"><%:Ethernet%></a></li>
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="arptbl"><%:ARP%></a></li>
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="learntbl"><%:Bridge%></a></li>
+    </ul>
+   <h2><a id="content" name="content"><%:Ethernet Statistics%></a></h2>
+	<fieldset class="cbi-section">
+		<table class="cbi-section-table" style="margin:10px; width:400px;">
+			<tr class="cbi-section-table-titles">
+				<th class="cbi-section-table-cell"></th>
+				<th class="cbi-section-table-cell">Tx</th>
+				<th class="cbi-section-table-cell">Rx</th>
+			</tr>
+			<tr>
+				<td>Total Packets</td>
+				<td id="txpkt">
+                   <script type="text/javascript">
+                      var txpkt = "<%=execute("iwpriv ath1 g_kwn_ethtxpkt | sed 's/ath1      g_kwn_ethtxpkt://'")%>";
+                      txpkt.replace(" ","");
+                      document.write(txpkt);
+                    </script>
+                </td>
+				<td id="rxpkt">
+                    <script type="text/javascript">
+                       var rxpkt = "<%=execute("iwpriv ath1 g_kwn_ethrxpkt | sed 's/ath1      g_kwn_ethrxpkt://'")%>";
+                       rxpkt.replace(" ","");
+                       document.write(rxpkt);
+                    </script>
+                </td>
+			</tr>
+			<tr>
+				<td>Total Bytes</td>
+				<td id="txbyte">
+                    <script type="text/javascript">
+                       var txbyte = "<%=execute("iwpriv ath1 g_kwn_ethtxbyt | sed 's/ath1      g_kwn_ethtxbyt://'")%>";
+                       txbyte.replace(" ","");
+                       document.write(txbyte);
+                    </script>
+                </td>
+				<td id="rxbyte">
+                    <script type="text/javascript">
+                       var rxbyte = "<%=execute("iwpriv ath1 g_kwn_ethrxbyt   | sed 's/ath1      g_kwn_ethrxbyt://'")%>";
+                       rxbyte.replace(" ","");
+                       document.write(rxbyte);
+                    </script>
+                </td>
+			</tr>
+			<tr>
+				<td>Errors</td>
+				<td id="txerr">
+                    <script type="text/javascript">
+                       var txerr = "<%=execute("iwpriv ath1 g_kwn_ethtxerr | sed 's/ath1      g_kwn_ethtxerr://'")%>";
+                       txerr.replace(" ","");
+                       document.write(txerr);
+                    </script>
+                </td>
+				<td id="rxerr">
+                    <script type="text/javascript">
+                       var rxerr = "<%=execute("iwpriv ath1 g_kwn_ethrxerr | sed 's/ath1      g_kwn_ethrxerr://'")%>";
+                       rxerr.replace(" ","");
+                       document.write(rxerr);
+                    </script>
+                </td>
+			</tr>
+		</table>
+	</fieldset>
+</div>
+<%+footer%>

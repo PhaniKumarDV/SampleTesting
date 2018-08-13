@@ -1,0 +1,91 @@
+<%#
+ Copyright 2008-2009 Steven Barth <steven@midlink.org>
+ Copyright 2008-2015 Jo-Philipp Wich <jow@openwrt.org>
+ Licensed to the public under the Apache License 2.0.
+-%>
+<%-
+        function execute(cmd)
+                local res = luci.util.exec(cmd)
+                local str = string.gsub(res, "\n", "")
+                return str
+        end
+-%>
+<%+header%>
+<script type="text/javascript">
+	XHR.poll(5, '<%=REQUEST_URI%>', { status: 1 },
+		function(x, info)
+        {
+            var id = 6;
+            XHR.get('<%=luci.dispatcher.build_url("admin", "monitor", "nwkstats")%>/wifi2refresh/' + id, null,
+            function(x, data) {
+              if (data) { 
+                     var a = data.split(",");
+                     for(i=0; i<a.length; i++)
+                        a[i].replace(" ","");
+                     document.getElementById("txpkt").innerHTML = a[0];
+                     document.getElementById("rxpkt").innerHTML = a[1];
+                     document.getElementById("mpdu").innerHTML = a[2];
+                     document.getElementById("phy").innerHTML = a[3];
+               }
+            }
+            );
+        }
+    );
+            </script>
+<script type="text/javascript" src="<%=resource%>/cbi.js"></script>
+<div class="page-content">
+   <h2><a id="content" name="content"><%:Network Statistics%></a></h2>
+    <ul class="cbi-tabmenu">
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=luci.dispatcher.build_url("admin/monitor/nwkstats")%>"><%:5GHz Radio%></a></li>
+        <li style="margin-right:4px" class="cbi-tab"><a href="#"><%:2.4GHz Radio%></a></li>
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="ethnwkstats"><%:Ethernet%></a></li>
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="arptbl"><%:ARP%></a></li>
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="learntbl"><%:Bridge%></a></li>
+    </ul>
+   <h2><a id="content" name="content"><%:Wireless Statistics%></a></h2>
+	<fieldset class="cbi-section">
+		<table class="cbi-section-table" style="margin:10px; width:400px;">
+			<tr>
+				<td>Tx Packets</td>
+				<td id="txpkt">
+                   <script type="text/javascript">
+                      var txpkt = "<%=execute("athstats -i wifi0 | grep tx_packets | sed 's/ast_tx_packets://'")%>";
+                      txpkt.replace(" ","");
+                      document.write(txpkt);
+                    </script>
+                </td>
+			</tr>
+			<tr>
+				<td>Rx Packets</td>
+				<td id="rxpkt">
+                   <script type="text/javascript">
+                      var txpkt = "<%=execute("athstats -i wifi0 | grep rx_packets | sed 's/ast_rx_packets://'")%>";
+                      txpkt.replace(" ","");
+                      document.write(txpkt);
+                    </script>
+                </td>
+			</tr>
+			<tr>
+				<td>MPDU Errors</td>
+				<td id="mpdu">
+                   <script type="text/javascript">
+                      var txpkt = "<%=execute("athstats -i wifi0 | grep mpdu_errs | sed 's/mpdu_errs://'")%>";
+                      txpkt.replace(" ","");
+                      document.write(txpkt);
+                    </script>
+                </td>
+			</tr>
+			<tr>
+				<td>Phy Errors</td>
+				<td id="phy">
+                   <script type="text/javascript">
+                      var txpkt = "<%=execute("athstats -i wifi0 | grep phy_errors | sed 's/phy_errors://'")%>";
+                      txpkt.replace(" ","");
+                      document.write(txpkt);
+                    </script>
+                </td>
+			</tr>
+		</table>
+	</fieldset>
+</div>
+<%+footer%>

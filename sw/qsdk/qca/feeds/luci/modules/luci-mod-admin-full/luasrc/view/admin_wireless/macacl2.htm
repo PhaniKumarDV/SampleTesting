@@ -1,0 +1,179 @@
+<%#
+ Copyright 2008-2009 Steven Barth <steven@midlink.org>
+ Copyright 2008-2015 Jo-Philipp Wich <jow@openwrt.org>
+ Licensed to the public under the Apache License 2.0.
+-%>
+
+<%-
+        function uciget(cmd)
+                local res = luci.util.exec(cmd)
+                local str = string.gsub(res, "\n", "")
+                return str
+        end
+-%>
+<%+header%>
+<div class="page-content">
+<script type="text/javascript" src="<%=resource%>/cbi.js"></script>
+<script type="text/javascript">
+var def = new Array(8);
+function save_def_value()
+{
+    var f = document.formTable;
+    for (i=0; i<f.elements.length; i++)
+    {
+        def[i] = f.elements[i].value;
+    }
+}
+
+function disable_spin()
+{
+    document.getElementById("spin").innerHTML = "";
+}
+
+function save_value()
+{
+    document.getElementById("spin").innerHTML = "<i class='fa fa-spinner fa-pulse'></i>";
+    setTimeout("disable_spin()",1000);
+    var setdata = "";
+    var f = document.formTable;
+    for( i=0; i<f.elements.length; i++)
+    {
+        if( def[i] != f.elements[i].value ) {
+            def[i] = f.elements[i].value;
+            setdata += f.elements[i].name + "=" + f.elements[i].value + "~";
+        }
+    }
+    XHR.get('<%=luci.dispatcher.build_url("admin")%>/cfg_set' + '/' + setdata, null,
+	    function(x, data) {
+		    if (data) { 
+		    }
+	    }
+    );
+}
+
+function delete_mac(ind)
+{
+    var maclist = "<%=uciget('uci get wireless.@wifi-iface[1].maclist')%>";
+    var res = "51=";
+    var mac = maclist.split(" ");
+    for(i=0; i<mac.length; i++ )
+    {
+        if( i != ind ) {
+            res = res.concat(mac[i]);
+            if( i == (mac.length-1) || 
+                (i == (mac.length -2) && ind == (mac.length - 1) ) )
+            {
+            }
+            else {
+               res = res.concat(" ");
+            }
+        }
+    }
+    res = res.concat("~");
+    XHR.get('<%=luci.dispatcher.build_url("admin")%>/cfg_set' + '/' + res, null,
+	    function(x, data) {
+		    if (data) { 
+                location.href = "<%=luci.dispatcher.build_url("admin/wireless/radio1/macacl1")%>";
+		    }
+	    }
+    );
+}
+function add_mac()
+{
+    var newmac = document.getElementById("newmac").value;
+    var maclist = "<%=uciget('uci get wireless.@wifi-iface[1].maclist')%>";
+    var res;
+    if( maclist != "" ) {
+       res = maclist.concat(" ");
+       res = res.concat(newmac);
+    }
+    else {
+        res = newmac;
+    }
+    res = "51="+res+"~";
+    XHR.get('<%=luci.dispatcher.build_url("admin")%>/cfg_set' + '/' + res, null,
+	    function(x, data) {
+		    if (data) { 
+                location.href = "<%=luci.dispatcher.build_url("admin/wireless/radio1/macacl1")%>";
+		    }
+	    }
+    );
+}
+
+</script>
+<h2><a id="content" name="content"><%: 2.4GHz Radio Configuration%></a></h2>
+<div class="cbi-map">
+    <ul class="cbi-tabmenu">
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=luci.dispatcher.build_url("admin/wireless/radio2")%>"><%:Configuration%></a></li>
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="security2"><%:Security%></a></li>
+        <li style="margin-right:4px" class="cbi-tab"><a href="#"><%:MAC ACL%></a></li>
+    </ul>
+    <fieldset class="cbi-section">
+       <form name="formTable">
+          <div class="cbi-value">
+            <label class="cbi-value-title">MAC ACL Status</label>
+            <div class="cbi-value-field">
+              <select class="cbi-input-select" name="50">
+                 <script type="text/javascript">
+                 var stat = "<%=uciget('uci get wireless.@wifi-iface[0].macfilter')%>";
+                 document.write("<option value='disable' ");
+                 if( stat == "" )
+                     document.write(" selected");
+                 document.write(">Disable</option>");
+                 document.write("<option value='allow' ");
+                 if( stat == "allow" )
+                     document.write(" selected");
+                 document.write(">Allow</option>");
+                 document.write("<option value='deny' ");
+                 if( stat == "deny" )
+                     document.write(" selected");
+                 document.write(">Deny</option>");
+                 </script>
+              </select>
+            </div>
+          </div>
+    </form>
+    </fieldset>
+    <h2><a id="content" name="content"><%: MAC ACL Table%></a></h2>
+    <fieldset class="cbi-section">
+          <div class="cbi-value">
+            <div class="cbi-value-field">
+            <label class="cbi-value-title">MAC Address</label>&nbsp;&nbsp;
+              <input type="text" id="newmac" class="cbi-input-select" style="width:150px;" value="" >
+              <input type="button" class="cbi-input-select" style="width:50px;" value="Add" onclick="add_mac()">
+            </div>
+          </div>
+    </fieldset><br>
+    <fieldset class="cbi-section">
+	<table class="cbi-section-table" style="width:350px;">
+        <script type="text/javascript">
+           var maclist = "<%=uciget('uci get wireless.@wifi-iface[0].maclist')%>";
+           if( maclist != "" )
+           {
+               var mac = maclist.split(" ");
+               for(i=0; i<mac.length; i++ )
+               {
+                   document.write("<tr>");
+                     document.write("<td>");
+                     document.write(mac[i]);
+                     document.write("</td>");
+                     document.write("<td>");
+                     var del = "<input type='button' value='Delete' onclick='delete_mac("+i+")'>"
+                     document.write(del);
+                     document.write("</td>");
+                   document.write("</tr>");
+               }
+           }
+        </script>
+	</table>
+</fieldset>
+</div><br>
+<div class="cbi-page-actions right">
+<div id="spin"></div>
+<input type="button" class="cbi-button" value="<%:Save%>" onclick="save_value()" />
+</div>
+<script type="text/javascript">
+save_def_value();
+</script>
+</div>
+<%+footer%>

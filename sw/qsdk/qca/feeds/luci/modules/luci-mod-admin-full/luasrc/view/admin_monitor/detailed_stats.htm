@@ -1,0 +1,229 @@
+<%#
+ Copyright 2008-2009 Steven Barth <steven@midlink.org>
+ Copyright 2008-2015 Jo-Philipp Wich <jow@openwrt.org>
+ Licensed to the public under the Apache License 2.0.
+-%>
+
+<%-
+
+	local ip = require "luci.ip"
+	local fs = require "nixio.fs"
+	local uci = require "luci.model.uci".cursor()
+	local ntm = require "luci.model.network"
+
+	local has_iwinfo = pcall(require, "iwinfo")
+
+	ntm.init(uci)
+
+	local devices  = ntm:get_wifidevs()
+
+	local netlist = { }
+	local netdevs = { }
+
+	local dev
+	for _, dev in ipairs(devices) do
+		local net
+		for _, net in ipairs(dev:get_wifinets()) do
+			netlist[#netlist+1] = net:id()
+			netdevs[net:id()] = dev:name()
+		end
+	end
+        function uciget(cmd)
+                local res = luci.util.exec(cmd)
+                return res
+        end
+-%>
+
+<%+header%>
+<div class="page-content">
+<% if not has_iwinfo then %>
+	<div class="errorbox">
+		<strong><%:Package libiwinfo required!%></strong><br />
+		<%_The <em>libiwinfo-lua</em> package is not installed. You must install this component for working wireless configuration!%>
+	</div>
+<% end %>
+
+<script type="text/javascript" src="<%=resource%>/cbi.js"></script>
+<script type="text/javascript">
+	var ind = <%=luci.http.write_json(entryind)%>;
+        var mac, timer;
+
+	function nowrap(s) {
+		return s.replace(/ /g, '&#160;');
+	}
+
+	function back() {
+		location.href='<%=luci.dispatcher.build_url("admin/monitor/stats")%>';
+	}
+        function enable() {
+		document.getElementById("s1").innerHTML="<input type='button' class='cbi-button' value='<%:Start Performance%>' onclick='starttool()' />";
+		document.getElementById("msg").innerHTML="";
+	}
+	function stoptool() {
+		document.getElementById("s1").innerHTML="<input type='button' class='cbi-button' value='<%:Start Performance%>' onclick='starttool()' />";
+		clearTimeout( timer );
+    		XHR.get('<%=luci.dispatcher.build_url("admin", "monitor", "stats")%>/stoptool' + '/' + mac, null,
+			function(x, data) {
+				if (data) { 
+					document.getElementById("msg").innerHTML = "";
+				}
+			}
+    		);
+	}
+	function starttool() {
+		document.getElementById("s1").innerHTML="<input type='button' class='cbi-button' value='<%:Stop Performance%>' onclick='stoptool()' />";
+    		timer = setTimeout("enable()",120000);
+    		XHR.get('<%=luci.dispatcher.build_url("admin", "monitor","stats")%>/starttool' + '/' + mac, null,
+			function(x, data) {
+				if (data) { 
+					document.getElementById("msg").innerHTML = data;
+				}
+			}
+    		);
+	}
+	function disconnect() {
+		location.href='<%=luci.dispatcher.build_url("admin/monitor/stats")%>/disconnect' + '/' + mac;
+	}
+    function degreesToRadians(degrees) {
+        return degrees * Math.PI / 180;
+    }
+
+    function distanceInKmBetweenEarthCoordinates(lat1, lon1, lat2, lon2) {
+        var earthRadiusKm = 6371;
+
+        var dLat = degreesToRadians(lat2-lat1);
+        var dLon = degreesToRadians(lon2-lon1);
+
+        lat1 = degreesToRadians(lat1);
+        lat2 = degreesToRadians(lat2);
+
+        var a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+        Math.sin(dLon/2) * Math.sin(dLon/2) * Math.cos(lat1) * Math.cos(lat2); 
+        var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+        return earthRadiusKm * c;
+    }
+
+	XHR.poll(5, '<%=luci.dispatcher.build_url("admin", "wireless", "wireless_status", table.concat(netlist, ","))%>', null,
+		function(x, st)
+		{
+			if (st)
+			{
+
+				i = ind;
+				{
+					var iw = st[i];
+					{
+						var assoclist = [ ];
+						for( var bssid in iw.assoclist )
+						{
+							assoclist.push(iw.assoclist[bssid]);
+							assoclist[assoclist.length-1].bssid = bssid;
+						}
+
+						assoclist.sort(function(a, b) { a.bssid < b.bssid });
+						for( var j = 0; j < assoclist.length; j++ )
+						{
+							mac = assoclist[j].bssid;
+							document.getElementById("rem_mac").innerHTML = assoclist[j].bssid;
+							document.getElementById("loc_gps").innerHTML = assoclist[j].local_lat != "" ? ( assoclist[j].local_lat + "&deg" + assoclist[j].local_long + "'") : 0;
+							document.getElementById("rem_gps").innerHTML = assoclist[j].local_lat != "" ? ( assoclist[j].remote_lat + "&deg" + assoclist[j].remote_long + "'") : 0;
+							document.getElementById("loc_a1").innerHTML = assoclist[j].local_snr_a1;
+							document.getElementById("rem_a1").innerHTML = assoclist[j].remote_snr_a1;
+							document.getElementById("loc_a2").innerHTML = assoclist[j].local_snr_a2;
+							document.getElementById("rem_a2").innerHTML = assoclist[j].remote_snr_a2;
+							document.getElementById("loc_rate").innerHTML = assoclist[j].tx_rate / 1000;
+							document.getElementById("rem_rate").innerHTML = assoclist[j].rx_rate / 1000;
+							document.getElementById("loc_tput").innerHTML = assoclist[j].tx_tput > (1000 * 1000) ? (assoclist[j].tx_tput / ( 1000 * 1000 )).toFixed(2) : 0;
+							document.getElementById("rem_tput").innerHTML = assoclist[j].rx_tput > (1000 * 1000) ? (assoclist[j].rx_tput / ( 1000 * 1000 )).toFixed(2) : 0;
+							document.getElementById("loc_phy").innerHTML = assoclist[j].local_phy_err;
+							document.getElementById("rem_phy").innerHTML = assoclist[j].remote_phy_err;
+							document.getElementById("loc_mpdu").innerHTML = assoclist[j].local_mpdu_err;
+							document.getElementById("rem_mpdu").innerHTML = assoclist[j].remote_mpdu_err;
+							document.getElementById("loc_retry").innerHTML = assoclist[j].local_retries;
+							document.getElementById("rem_retry").innerHTML = assoclist[j].remote_retries;
+							document.getElementById("loc_cusname").innerHTML = assoclist[j].l_customer_name;
+							document.getElementById("rem_cusname").innerHTML = assoclist[j].r_customer_name;
+							document.getElementById("loc_id").innerHTML = assoclist[j].l_link_id;
+							document.getElementById("rem_id").innerHTML = assoclist[j].r_link_id;
+						}
+					}
+				}
+			}
+		}
+	);
+</script>
+<h2><a id="content" name="content"><%:Detailed Statistics%></a></h2>
+<div class="cbi-page-actions right">
+<input type="button" class="cbi-button" value="<%:Back%>" onclick="back()" />
+<span id="s1"><input type="button" class="cbi-button" value="<%:Start Performance%>" onclick="starttool()" /></span>
+<input type="button" class="cbi-button" value="<%:Disconnect%>" onclick="disconnect()" />
+</div>
+<div id="msg"></div>
+<div class="cbi-map">
+	<fieldset class="cbi-section">
+		<table class="cbi-section-table" style="margin:10px">
+			<tr class="cbi-section-table-titles">
+				<th class="cbi-section-table-cell"></th>
+				<th class="cbi-section-table-cell">Local</th>
+				<th class="cbi-section-table-cell">Remote</th>
+			</tr>
+			<tr>
+				<td>MAC Address</td>
+				<td id="loc_mac"><%=uciget("uci get wireless.wifi1.macaddr")%></td>
+				<td id="rem_mac"></td>
+			</tr>
+			<tr>
+				<td>GPS</td>
+				<td id="loc_gps"></td>
+				<td id="rem_gps"></td>
+			</tr>
+			<tr>
+				<td>SNR A1 (dB)</td>
+				<td id="loc_a1"></td>
+				<td id="rem_a1"></td>
+			</tr>
+			<tr>
+				<td>SNR A2 (dB)</td>
+				<td id="loc_a2"></td>
+				<td id="rem_a2"></td>
+			</tr>
+			<tr>
+				<td>Rate (Mbps)</td>
+				<td id="loc_rate"></td>
+				<td id="rem_rate"></td>
+			</tr>
+			<tr>
+				<td>Throughput (Mbps)</td>
+				<td id="loc_tput"></td>
+				<td id="rem_tput"></td>
+			</tr>
+			<tr>
+				<td>Phy Errors</td>
+				<td id="loc_phy"></td>
+				<td id="rem_phy"></td>
+			</tr>
+			<tr>
+				<td>MPDU Errors</td>
+				<td id="loc_mpdu"></td>
+				<td id="rem_mpdu"></td>
+			</tr>
+			<tr>
+				<td>Retries</td>
+				<td id="loc_retry"></td>
+				<td id="rem_retry"></td>
+			</tr>
+			<tr>
+				<td>Customer Name</td>
+				<td id="loc_cusname"></td>
+				<td id="rem_cusname"></td>
+			</tr>
+			<tr>
+				<td>Link Id</td>
+				<td id="loc_id"></td>
+				<td id="rem_id"></td>
+			</tr>
+		</table>
+	</fieldset>
+</div>
+</div>
+<%+footer%>

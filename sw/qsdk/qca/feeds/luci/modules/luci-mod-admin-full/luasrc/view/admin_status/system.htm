@@ -1,0 +1,125 @@
+<%#
+ Copyright 2008-2009 Steven Barth <steven@midlink.org>
+ Copyright 2008-2015 Jo-Philipp Wich <jow@openwrt.org>
+ Licensed to the public under the Apache License 2.0.
+-%>
+
+<%-
+        function uciget(cmd)
+                local res = luci.util.exec(cmd)
+                local str = string.gsub(res, "\n", "")
+                return str
+        end
+-%>
+<%+header%>
+<div class="page-content">
+<script type="text/javascript" src="<%=resource%>/cbi.js"></script>
+<script type="text/javascript">
+var def = new Array(8);
+function save_def_value()
+{
+    var f = document.formTable;
+    for (i=0; i<f.elements.length; i++)
+    {
+        def[i] = f.elements[i].value;
+    }
+}
+
+function disable_spin()
+{
+    document.getElementById("spin").innerHTML = "";
+}
+
+function save_value()
+{
+    document.getElementById("spin").innerHTML = "<i class='fa fa-spinner fa-pulse'></i>";
+    setTimeout("disable_spin()",1000);
+    var setdata = "";
+    var f = document.formTable;
+    for( i=0; i<f.elements.length; i++)
+    {
+        if( def[i] != f.elements[i].value ) {
+            def[i] = f.elements[i].value;
+            setdata += f.elements[i].name + "=" + f.elements[i].value + "~";
+        }
+    }
+    XHR.get('<%=luci.dispatcher.build_url("admin")%>/cfg_set' + '/' + setdata, null,
+	    function(x, data) {
+		    if (data) { 
+		    }
+	    }
+    );
+}
+
+</script>
+<h2><a id="content" name="content"><%:Quick Start%></a></h2>
+<div class="cbi-map">
+    <ul class="cbi-tabmenu">
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=luci.dispatcher.build_url("admin/config")%>"><%:5GHz Radio%></a></li>
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="config2"><%:2.4GHz Radio%></a></li>
+        <li style="margin-right:4px" class="cbi-tab"><a href="#"><%:System%></a></li>
+    </ul>
+    <fieldset class="cbi-section">
+       <form name="formTable">
+        <h2><a id="content" name="content"><%:IP Configuration%></a></h2>
+          <div class="cbi-value">
+            <label class="cbi-value-title">Address Type</label>
+            <div class="cbi-value-field">
+              <select class="cbi-input-select" name="24">
+                 <script type="text/javascript">
+                 var type = "<%=uciget('uci get network.lan.proto')%>";
+                 document.write("<option value='static' ");
+                 if( type == "static" )
+                     document.write(" selected");
+                 document.write(">Static</option>");
+                 document.write("<option value='dhcp' ");
+                 if( type == "dhcp" )
+                     document.write(" selected");
+                 document.write(">Dynamic</option>");
+                 </script>
+             </select>
+           </div>
+         </div>
+          <div class="cbi-value">
+            <label class="cbi-value-title">IP Address</label>
+            <div class="cbi-value-field">
+              <input type="text" name="23" class="cbi-input-select" value="<%=uciget('uci get network.lan.ipaddr')%>" >
+            </div>
+          </div>
+          <div class="cbi-value">
+            <label class="cbi-value-title">Subnet Mask</label>
+            <div class="cbi-value-field">
+              <input type="text" name="25" class="cbi-input-select" value="<%=uciget('uci get network.lan.netmask')%>" >
+            </div>
+          </div>
+          <div class="cbi-value">
+            <label class="cbi-value-title">Gateway IP</label>
+            <div class="cbi-value-field">
+              <input type="text" name="26" class="cbi-input-select" value="<%=uciget('uci get network.lan.gateway')%>" >
+            </div>
+          </div>
+        <h2><a id="content" name="content"><%:System%></a></h2>
+          <div class="cbi-value">
+            <label class="cbi-value-title">Customer Name</label>
+            <div class="cbi-value-field">
+              <input type="text" name="13" class="cbi-input-select" value="<%=uciget('uci get system.customer.name')%>" >
+            </div>
+          </div>
+          <div class="cbi-value">
+            <label class="cbi-value-title">Link Id</label>
+            <div class="cbi-value-field">
+              <input type="text" name="14" class="cbi-input-select" value="<%=uciget('uci get system.customer.linkid')%>" >
+            </div>
+          </div>
+    </form>
+    </fieldset>
+</div>
+<div class="cbi-page-actions right">
+<div id="spin"></div>
+<input type="button" class="cbi-button" value="<%:Save%>" onclick="save_value()" />
+</div>
+<script type="text/javascript">
+save_def_value();
+</script>
+</div>
+<%+footer%>

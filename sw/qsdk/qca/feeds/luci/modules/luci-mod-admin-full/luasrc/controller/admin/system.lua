@@ -7,11 +7,13 @@ module("luci.controller.admin.system", package.seeall)
 function index()
 	local fs = require "nixio.fs"
 
-	entry({"admin", "system"}, alias("admin", "system", "system"), _("System"), 30).index = true
-	entry({"admin", "system", "system"}, cbi("admin_system/system"), _("System"), 1)
+	entry({"admin", "system"}, alias("admin", "system", "system"), _("Management"), 50).index = true
+	--entry({"admin", "system", "system"}, cbi("admin_system/system"), _("System"), 1)
 	entry({"admin", "system", "clock_status"}, call("action_clock_status"))
 
+	entry({"admin", "system", "system"}, template("admin_system/system"), _("System"), 1)
 	entry({"admin", "system", "admin"}, cbi("admin_system/admin"), _("Administration"), 2)
+	entry({"admin", "system", "system", "logging"}, template("admin_system/logging"))
 
 	--if fs.access("/bin/opkg") then
 	--	entry({"admin", "system", "packages"}, call("action_packages"), _("Software"), 10)
@@ -34,7 +36,7 @@ function index()
 	entry({"admin", "system", "flashops"}, call("action_flashops"), _("Backup / Flash Firmware"), 70)
 	entry({"admin", "system", "flashops", "backupfiles"}, form("admin_system/backupfiles"))
 
-	entry({"admin", "system", "reboot"}, call("action_reboot"), _("Reboot"), 90)
+	--entry({"admin", "system", "reboot"}, call("action_reboot"), _("Reboot"), 90)
 end
 
 function action_clock_status()
