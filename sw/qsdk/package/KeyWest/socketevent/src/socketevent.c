@@ -13,6 +13,7 @@
 #include <linux/if_arp.h>
 #include <string.h>
 #include <uci.h>
+#include <errno.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -745,7 +746,7 @@ void kwn_set_link_test( kwn_pkt *buf )
                     uint8_t mac[KWN_MAC_ADDR_LEN];
                     memcpy(&mac,buf->data+len,llen);
                     printf("MAC = %2.2X:%2.2X:%2.2X:%2.2X:%2.2X:%2.2X\n",mac[0],mac[1],mac[2],mac[3],mac[4],mac[5]);
-                    sprintf( cmd, "uci set tool.tool.mac=%2.2X:%2.2X:%2.2X:%2.2X:%2.2X:%2.2X",mac[0],mac[1],mac[2],mac[3],mac[4],mac[5] );
+                    sprintf( cmd, "iwpriv ath1 addmac %2.2X:%2.2X:%2.2X:%2.2X:%2.2X:%2.2X",mac[0],mac[1],mac[2],mac[3],mac[4],mac[5] );
                     system( cmd );
                     break;
                 }
@@ -754,7 +755,7 @@ void kwn_set_link_test( kwn_pkt *buf )
                     uint8_t dir;
                     memcpy(&dir,buf->data+len,llen);
                     printf("Direction: %d\n",dir);
-                    sprintf( cmd, "uci set tool.tool.dir=%d", dir );
+                    sprintf( cmd, "iwpriv ath1 kwn_tput_dir %d", dir );
                     system(cmd);
                     break;
                 }
@@ -763,7 +764,7 @@ void kwn_set_link_test( kwn_pkt *buf )
                     uint8_t dur;
                     memcpy(&dur,buf->data+len,llen);
                     printf("Duration: %d\n",dur);
-                    sprintf( cmd, "uci set tool.tool.dur=%d", dur );
+                    sprintf( cmd, "iwpriv ath1 kwn_tput_dur %d", dur );
                     system(cmd);
                     break;
                 }
@@ -798,7 +799,8 @@ void kwn_set_link_test( kwn_pkt *buf )
     buf->hdr.length = len;
     printf("Data length: %d\n",buf->hdr.length);
     
-    system("/etc/init.d/KWtool start");
+    system("iwpriv ath1 kwn_tput_cnt 1");
+    system("iwpriv ath1 kwn_tput_size 1400");
     
     if( start_stop == 1 ) 
     {
@@ -810,30 +812,6 @@ void kwn_set_link_test( kwn_pkt *buf )
     }
     
     return;
-    
-    /*kwn_link_test test;
-    char cmd[255];
-
-    test.direction = 1;
-    test.duration = 120;
-    test.start_stop = 1;
-    memcpy( test.mac, "00:D0:41:E0:1C:10",  sizeof(test.mac) );
-
-    sprintf( cmd, "uci set tool.tool.mac=%s", test.mac );
-    system( cmd );
-    sprintf( cmd, "uci set tool.tool.dur=%d", test.duration );
-    system( cmd );
-    sprintf( cmd, "uci set tool.tool.dir=%d", test.direction );
-    system( cmd );
-    system("/etc/init.d/KWtool start");
-
-    if( test.start_stop == 1 ) {
-        system("iwpriv ath1 kwn_tput_test 1");
-    }
-    else {
-        system("iwpriv ath1 kwn_tput_test 0");
-    }
-    return;*/
 }
 
 void kwn_get_assoclist( kwn_wireless_stats *list )
@@ -1284,23 +1262,13 @@ int main()
     struct sockaddr_in      server_addr;
     struct sockaddr_in      peer_addr;
     kwn_pkt kwn_server_recv_buf;
-    /*int opt = 1 ;*/
 
     /* Create server socket */
     server_socket = socket(AF_INET, SOCK_DGRAM, 0);
     if (server_socket == -1)
     {
-        //fprintf(stderr, "Error creating socket --> %s", strerror(errno));
-        exit(EXIT_FAILURE);
+        fprintf(stderr, "Error creating socket --> %s", strerror(errno));
     }
-
-    /* set socket options to reuse port */
-    /*if ( setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, (char *)&opt, sizeof(opt)) == -1)
-    {
-        //fprintf(stderr, "Error on bind --> %s", strerror(errno));
-        close(server_socket);
-        exit(EXIT_FAILURE);
-    }*/
 
     /* Zeroing server_addr struct */
     memset(&server_addr, 0, sizeof(server_addr));
@@ -1312,18 +1280,17 @@ int main()
     /* Bind */
     if ((bind(server_socket, (struct sockaddr *)&server_addr, sizeof(struct sockaddr))) == -1)
     {
-        //fprintf(stderr, "Error on bind --> %s", strerror(errno));
-        close(server_socket);
-        exit(EXIT_FAILURE);
+        fprintf(stderr, "Error on bind --> %s", strerror(errno));
     }
+    
     sock_len = sizeof(peer_addr);
     while(1)
     {
 
         if( ( len = recvfrom( server_socket, &kwn_server_recv_buf, sizeof(kwn_pkt), 0, (struct sockaddr*)&peer_addr, &sock_len) ) < 0 )
         {
-            //fprintf(stderr, "Error on recv --> %s", strerror(errno));
-            exit(EXIT_FAILURE);
+            fprintf(stderr, "Error on recv --> %s", strerror(errno));
+            continue;
         }
         /*printf("Received ID:%d, Intf type:%d, Type:%d, Subtype:%d\n",
                 kwn_server_recv_buf.hdr.id, kwn_server_recv_buf.hdr.interface_type,
