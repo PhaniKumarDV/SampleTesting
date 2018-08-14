@@ -2282,7 +2282,7 @@ detect_qcawifi() {
 				country_code="643"
 				wds_mode="0"
 				mode_11=ng
-                ssid_d="Sify_AP"
+                ssid_d="Sify_24_AP"
                 encrypt="psk2+ccmp";;
 			*11abgn)
 				ht_mode="HT20"
@@ -2350,7 +2350,7 @@ config wifi-iface
 	option mode	ap
 	option ssid	      $ssid_d
 	option encryption $encrypt 
-    option key        12345678
+    option key        sify1234#
 	option wds	      $wds_mode
 	option dyinggasp  $dying_gasp
 	option ullmt      $ul_limit
