@@ -18,6 +18,8 @@ char prev_mac[25]={0};
 int ifd,isock_fd;
 int se_daemon = -1;
 #define IEEE80211_EV_DYING_GASP 45
+#define IEEE80211_EV_DISASSOC_IND_AP 20
+#define IEEE80211_EV_DISASSOC_COMPLETE_AP 33
 #define PRINTF(fmt, ...)\
 do\
 {\
@@ -44,7 +46,7 @@ void sify_file_write(char *sify_buf,int status, int reason)
 	}
 
 	/*Open file for writting */
-	sify_fp = fopen("/tmp/wifi_packet_logs", "a+");
+	sify_fp = fopen("/etc/wifi_packet_logs", "a+");
 
 	if (sify_fp == NULL) {
 		PRINTF("File opening error\n");
@@ -59,18 +61,27 @@ void sify_file_write(char *sify_buf,int status, int reason)
                 //int rc=system("/usr/sbin/sify_senddata.sh '1'"); 
 	}
 	else
-	{
-        if( reason == IEEE80211_EV_DYING_GASP )
+    {
+        switch( reason )
         {
-		fprintf(sify_fp, "%s: Reason: Power Off, Disassociated on %s",sify_buf,asctime(timeinfo));
-		syslog(LOG_INFO, "%s: Reason: Power Off, Disassociated on %s",sify_buf,asctime(timeinfo));		       
+            case IEEE80211_EV_DYING_GASP:
+                fprintf(sify_fp, "%s: Reason: Power Off, Disassociated on %s",sify_buf,asctime(timeinfo));
+                syslog(LOG_INFO, "%s: Reason: Power Off, Disassociated on %s",sify_buf,asctime(timeinfo));		       
+                break;
+            case IEEE80211_EV_DISASSOC_IND_AP:
+                fprintf(sify_fp, "%s: Reason: Remote Terminated, Disassociated on %s",sify_buf,asctime(timeinfo));
+                syslog(LOG_INFO, "%s: Reason: Remote Terminated, Disassociated on %s",sify_buf,asctime(timeinfo));		       
+                break;
+            case IEEE80211_EV_DISASSOC_COMPLETE_AP:
+                fprintf(sify_fp, "%s: Reason: Local Terminated, Disassociated on %s",sify_buf,asctime(timeinfo));
+                syslog(LOG_INFO, "%s: Reason: Local Terminated, Disassociated on %s",sify_buf,asctime(timeinfo));		       
+                break;
+            default:
+                fprintf(sify_fp, "%s: Disassociated on %s",sify_buf,asctime(timeinfo));
+                syslog(LOG_INFO, "%s: Disassociated on %s",sify_buf,asctime(timeinfo));		       
+                break;
         }
-        else
-        {
-		fprintf(sify_fp, "%s: Disassociated on %s",sify_buf,asctime(timeinfo));
-		syslog(LOG_INFO, "%s: Disassociated on %s",sify_buf,asctime(timeinfo));		       
-        }
-	}
+    }
 	fclose(sify_fp); /* close file */
 }
 /*end of sify */
