@@ -26,7 +26,3 @@ start_service() {
  procd_close_instance
 }
 
-
-reload_service() {
-    iwpriv ath1 kwn_tput_test 1
-}
