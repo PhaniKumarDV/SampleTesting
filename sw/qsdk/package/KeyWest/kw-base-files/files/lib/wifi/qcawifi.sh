@@ -2350,7 +2350,7 @@ config wifi-iface
 	option mode	ap
 	option ssid	      $ssid_d
 	option encryption $encrypt 
-    option key        sify1234#
+    option key        'sify1234#'
 	option wds	      $wds_mode
 	option dyinggasp  $dying_gasp
 	option ullmt      $ul_limit
