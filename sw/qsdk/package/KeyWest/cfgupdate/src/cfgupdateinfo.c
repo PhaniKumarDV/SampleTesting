@@ -117,10 +117,10 @@ void cfg_set( char *type, char *value )
             }
             break;
         case UCI_ID_RADIO1_CUSTOMER_NAME:
-            sprintf(cmd,"uci set system.customer.name='%s'",value);
+            sprintf(cmd,"uci set wireless.wifi1.customername='%s'",value);
             break;
         case UCI_ID_RADIO1_LINK_ID:
-            sprintf(cmd,"uci set system.customer.linkid='%s'",value);
+            sprintf(cmd,"uci set wireless.wifi1.linkid='%s'",value);
             break;
         case UCI_ID_RADIO2_MODE:
             sprintf(cmd,"uci set wireless.@wifi-iface[0].mode='%s'",value);
