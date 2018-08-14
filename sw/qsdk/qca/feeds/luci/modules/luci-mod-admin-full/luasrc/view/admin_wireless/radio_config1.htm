@@ -159,6 +159,13 @@ function getoptions( list, value )
         document.write("</option>");
     }
 }
+function updatelinkid( val )
+{
+    if( val == "ap" )
+       document.getElementById("linkid").style.display = "none";
+    else 
+       document.getElementById("linkid").style.display = "block";
+}
 function updatehidessid()
 {
     if( document.getElementById("hidessid2").checked == "1" )
@@ -179,7 +186,7 @@ function updatehidessid()
           <div class="cbi-value">
             <label class="cbi-value-title">Mode</label>
             <div class="cbi-value-field">
-              <select class="cbi-input-select" name="1">
+              <select class="cbi-input-select" name="1" onchange="updatelinkid(this.value)">
                  <script type="text/javascript">
                  var mode = "<%=uciget('uci get wireless.@wifi-iface[1].mode')%>";
                  getoptions( modelist, mode );
@@ -298,7 +305,7 @@ function updatehidessid()
               <input type="text" name="13" class="cbi-input-select" value="<%=uciget('uci get wireless.wifi1.customername')%>" >
             </div>
           </div>
-          <div class="cbi-value">
+          <div class="cbi-value" id="linkid">
             <label class="cbi-value-title">Link Id</label>
             <div class="cbi-value-field">
               <input type="text" name="14" class="cbi-input-select" value="<%=uciget('uci get wireless.wifi1.linkid')%>" >
@@ -315,6 +322,8 @@ function updatehidessid()
 var hw = "<%=uciget('uci get wireless.wifi1.hwmode')%>";
 updateparam(hw);
 save_def_value();
+var mode = "<%=uciget('uci get wireless.@wifi-iface[1].mode')%>";
+updatelinkid( mode );
 </script>
 </div>
 <%+footer%>

@@ -129,7 +129,7 @@ function updateparam(value)
               <input type="text" name="13" class="cbi-input-select" value="<%=uciget('uci get system.customer.name')%>" >
             </div>
           </div>
-          <div class="cbi-value">
+          <div class="cbi-value" id="linkid">
             <label class="cbi-value-title">Link Id</label>
             <div class="cbi-value-field">
               <input type="text" name="14" class="cbi-input-select" value="<%=uciget('uci get system.customer.linkid')%>" >
@@ -146,6 +146,11 @@ function updateparam(value)
 var type = "<%=uciget('uci get network.lan.proto')%>";
 updateparam(type);
 save_def_value();
+var mode = "<%=uciget('uci get wireless.@wifi-iface[1].mode')%>";
+if( mode == "ap" )
+    document.getElementById("linkid").style.display = "none";
+else
+    document.getElementById("linkid").style.display = "block";
 </script>
 </div>
 <%+footer%>
