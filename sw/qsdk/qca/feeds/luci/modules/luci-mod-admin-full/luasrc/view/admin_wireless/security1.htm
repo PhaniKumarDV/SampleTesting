@@ -65,6 +65,13 @@ function getoptions( list, value )
         document.write("</option>");
     }
 }
+function hidekey(value)
+{
+    if( value == "none" )
+        document.getElementById("keyid").style.display = "none";
+    else
+        document.getElementById("keyid").style.display = "block";
+}
 </script>
 <h2><a id="content" name="content"><%: 5GHz Radio Configuration%></a></h2>
 <div class="cbi-map">
@@ -72,14 +79,13 @@ function getoptions( list, value )
         <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=luci.dispatcher.build_url("admin/wireless/radio1")%>"><%:Configuration%></a></li>
         <li style="margin-right:4px" class="cbi-tab"><a href="#"><%:Security%></a></li>
         <li style="margin-right:4px" class="cbi-tab-disabled"><a href="macacl1"><%:MAC ACL%></a></li>
-        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="radius1"><%:RADIUS%></a></li>
     </ul>
     <fieldset class="cbi-section">
        <form name="formTable">
           <div class="cbi-value">
             <label class="cbi-value-title">Encryption</label>
             <div class="cbi-value-field">
-              <select class="cbi-input-select" name="28">
+              <select class="cbi-input-select" name="28" onchange="hidekey(this.value)">
                  <script type="text/javascript">
                  var enc = "<%=uciget('uci get wireless.@wifi-iface[1].encryption')%>";
                  document.write("<option value='none' ");
@@ -94,7 +100,7 @@ function getoptions( list, value )
               </select>
             </div>
           </div>
-          <div class="cbi-value">
+          <div class="cbi-value" id="keyid">
             <label class="cbi-value-title">Key</label>
             <div class="cbi-value-field">
               <input type="password" name="29" class="cbi-input-select" value="<%=uciget('uci get wireless.@wifi-iface[1].key')%>" >
@@ -103,11 +109,13 @@ function getoptions( list, value )
     </form>
     </fieldset>
 </div>
-<div class="cbi-page-actions right">
+<div class="cbi-page-actions left">
 <div id="spin"></div>
 <input type="button" class="cbi-button" value="<%:Save%>" onclick="save_value()" />
 </div>
 <script type="text/javascript">
+var enc = "<%=uciget('uci get wireless.@wifi-iface[1].encryption')%>";
+hidekey(enc);
 save_def_value();
 </script>
 </div>

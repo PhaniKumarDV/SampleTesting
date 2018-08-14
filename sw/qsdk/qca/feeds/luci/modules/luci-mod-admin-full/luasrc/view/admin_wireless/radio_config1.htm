@@ -57,11 +57,15 @@
 	var freqlist = <%= luci.http.write_json(freqlist) %>;
     var modelist = [ "ap=Outdoor Base", "sta=Outdoor Subscriber" ];
     var hwlist = [ "11a=Legacy", "11na=11NA", "11ac=11AC" ];
-    var bwlist = [ "HT20=20MHz", "HT40+=40MHz", "HT80=80MHz" ];
+    var acbwlist = [ "HT20=20MHz", "HT40+=40MHz", "HT80=80MHz" ];
+    var nbwlist = [ "HT20=20MHz", "HT40+=40MHz" ];
+    var abwlist = [ "HT20=20MHz" ];
     var counlist = [ "5011=RUSSIA", "5016=INDIA_UL", "5017=INDIA L" ];
-    var ratelist = ["auto=auto", "0=MCS0", "1=MCS1", "2=MCS2","3=MCS3","4=MCS4","5=MCS5","6=MCS6","7=MCS7","8=MCS8","9=MCS9","10=MCS10","11=MCS11","12=MCS12","13=MCS13","14=MCS14","15=MCS15","16=MCS16","17=MCS17","18=MCS18","19=MCS19"];
+    var acratelist = ["auto=Auto", "0=MCS0", "1=MCS1", "2=MCS2","3=MCS3","4=MCS4","5=MCS5","6=MCS6","7=MCS7","8=MCS8","9=MCS9","10=MCS10","11=MCS11","12=MCS12","13=MCS13","14=MCS14","15=MCS15","16=MCS16","17=MCS17","18=MCS18","19=MCS19"];
+    var nratelist = ["auto=Auto", "0=MCS0", "1=MCS1", "2=MCS2","3=MCS3","4=MCS4","5=MCS5","6=MCS6","7=MCS7","8=MCS8","9=MCS9","10=MCS10","11=MCS11","12=MCS12","13=MCS13","14=MCS14","15=MCS15"];
+    var aratelist = ["auto=Auto", "0=MCS0", "1=MCS1", "2=MCS2","3=MCS3","4=MCS4","5=MCS5","6=MCS6","7=MCS7"];
     var pwrlist = ["0=0dBm (1mW)", "8=8dBm (6mW)", "11=11dBm (12mW)", "14=14dBm (25mW)", "17=17dBm (50mW)", "20=20dBm (100mW)", "23=23dBm (199mW)", "26=26dBm (398mW)"];
-    var chanlist = [ "auto=auto" ];
+    var chanlist = [ "auto=Auto" ];
 	for (var i = 0; i < freqlist.length; i++)
 		chanlist.push(
 			'%d=%d (%d MHz)'.format(freqlist[i].channel, freqlist[i].channel, freqlist[i].mhz)
@@ -102,6 +106,45 @@ function save_value()
     );
 }
 
+function returnoptions( list, value )
+{
+    var opt = "";
+    for( i = 0; i < list.length; i++ )
+    {
+        var a = list[i].split("=");
+        opt += "<option value=";
+        opt += a[0];
+        if( value == a[0] )
+           opt += " selected";
+        opt += ">" + a[1] + "</option>";
+    }
+    return opt;
+}
+
+function updateparam( hwvalue )
+{
+    var bw = "<%=uciget('uci get wireless.wifi1.htmode')%>";
+    var rate = "<%=uciget('uci get wireless.wifi1.rate')%>";
+    var bwlist = acbwlist;
+    var ratelist = acratelist;
+    if( hwvalue == "11na" ) {
+        bwlist = nbwlist;
+        ratelist = nratelist;
+    }
+    if( hwvalue == "11a" ) {
+        bwlist = abwlist;
+        ratelist = aratelist;
+    }
+    var str ="<select class='cbi-input-select' name='5'>";
+    str += returnoptions( bwlist, bw );
+    str += "</select>";
+    document.getElementById("bwid").innerHTML = str;
+    var str ="<select class='cbi-input-select' name='7'>";
+    str += returnoptions( ratelist, rate );
+    str += "</select>";
+    document.getElementById("rateid").innerHTML = str;
+}
+
 function getoptions( list, value )
 {
     for( i = 0; i < list.length; i++ )
@@ -130,7 +173,6 @@ function updatehidessid()
         <li style="margin-right:4px" class="cbi-tab"><a href="#"><%:Configuration%></a></li>
         <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=REQUEST_URI%>/security1"><%:Security%></a></li>
         <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=REQUEST_URI%>/macacl1"><%:MAC ACL%></a></li>
-        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=REQUEST_URI%>/radius1"><%:RADIUS%></a></li>
     </ul>
     <fieldset class="cbi-section">
        <form name="formTable">
@@ -165,7 +207,7 @@ function updatehidessid()
           <div class="cbi-value">
             <label class="cbi-value-title">Operational Mode</label>
             <div class="cbi-value-field">
-              <select class="cbi-input-select" name="4">
+              <select class="cbi-input-select" name="4" onchange="updateparam(this.value)">
                 <script type="text/javascript">
                   var hw = "<%=uciget('uci get wireless.wifi1.hwmode')%>";
                   getoptions( hwlist, hw );
@@ -175,13 +217,7 @@ function updatehidessid()
           </div>
           <div class="cbi-value">
             <label class="cbi-value-title">Bandwidth</label>
-            <div class="cbi-value-field">
-              <select class="cbi-input-select" name="5">
-                <script type="text/javascript">
-                  var bw = "<%=uciget('uci get wireless.wifi1.htmode')%>";
-                  getoptions( bwlist, bw );
-                </script>
-              </select>
+            <div class="cbi-value-field" id="bwid">
             </div>
           </div>
           <div class="cbi-value">
@@ -197,13 +233,7 @@ function updatehidessid()
          </div>
           <div class="cbi-value">
             <label class="cbi-value-title">Rate</label>
-            <div class="cbi-value-field">
-              <select class="cbi-input-select" name="7">
-                 <script type="text/javascript">
-                 var rate = "<%=uciget('uci get wireless.wifi1.rate')%>";
-                 getoptions( ratelist, rate );
-                 </script>
-             </select>
+            <div class="cbi-value-field" id="rateid">
            </div>
          </div>
           <div class="cbi-value">
@@ -265,23 +295,25 @@ function updatehidessid()
           <div class="cbi-value">
             <label class="cbi-value-title">Customer Name</label>
             <div class="cbi-value-field">
-              <input type="text" name="13" class="cbi-input-select" value="<%=uciget('uci get system.customer.name')%>" >
+              <input type="text" name="13" class="cbi-input-select" value="<%=uciget('uci get wireless.wifi1.customername')%>" >
             </div>
           </div>
           <div class="cbi-value">
             <label class="cbi-value-title">Link Id</label>
             <div class="cbi-value-field">
-              <input type="text" name="14" class="cbi-input-select" value="<%=uciget('uci get system.customer.linkid')%>" >
+              <input type="text" name="14" class="cbi-input-select" value="<%=uciget('uci get wireless.wifi1.linkid')%>" >
             </div>
           </div>
     </form>
     </fieldset>
 </div>
-<div class="cbi-page-actions right">
+<div class="cbi-page-actions left">
 <div id="spin"></div>
 <input type="button" class="cbi-button" value="<%:Save%>" onclick="save_value()" />
 </div>
 <script type="text/javascript">
+var hw = "<%=uciget('uci get wireless.wifi1.hwmode')%>";
+updateparam(hw);
 save_def_value();
 </script>
 </div>

@@ -33,7 +33,7 @@ function index()
 	--	entry({"admin", "system", "leds"}, cbi("admin_system/leds"), _("<abbr title=\"Light Emitting Diode\">LED</abbr> Configuration"), 60)
 	--end
 
-	entry({"admin", "system", "flashops"}, call("action_flashops"), _("Backup / Flash Firmware"), 70)
+	entry({"admin", "system", "flashops"}, call("action_flashops"), _("Upgrade / Reset"), 70)
 	entry({"admin", "system", "flashops", "backupfiles"}, form("admin_system/backupfiles"))
 
 	--entry({"admin", "system", "reboot"}, call("action_reboot"), _("Reboot"), 90)

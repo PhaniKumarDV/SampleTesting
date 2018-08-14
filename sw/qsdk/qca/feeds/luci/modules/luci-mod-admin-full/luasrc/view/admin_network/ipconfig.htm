@@ -65,6 +65,33 @@ function getoptions( list, value )
         document.write("</option>");
     }
 }
+function updateparam(value)
+{
+    if( value == "static" )
+    {
+        document.getElementById("ip").innerHTML = "<input type='text' name='23' class='cbi-input-select' value='<%=uciget('uci get network.lan.ipaddr')%>' >";
+        document.getElementById("mask").innerHTML = "<input type='text' name='25' class='cbi-input-select' value='<%=uciget('uci get network.lan.netmask')%>' >"
+        document.getElementById("gateway").innerHTML = "<input type='text' name='26' class='cbi-input-select' value='<%=uciget('uci get network.lan.gateway')%>' >"
+    }
+    else
+    {
+        var dyn_val = "<%=uciget("ifconfig br-lan | grep 'inet addr' | sed 's/          //'")%>";
+        var val = dyn_val.split(" ");
+        var ip = "0.0.0.0", mask = "0.0.0.0", gw = "0.0.0.0";
+        if( val != "" )
+        {
+            ip = val[1].split(":");
+            ip = ip[1];
+            mask = val[3].split(":");
+            mask = mask[1];
+            gw = val[5].split(":");
+            gw = gw[1]
+        }
+        document.getElementById("ip").innerHTML = ip;
+        document.getElementById("mask").innerHTML = mask;
+        document.getElementById("gateway").innerHTML = gw;
+    }
+}
 </script>
 <h2><a id="content" name="content"><%: IP Configuration%></a></h2>
 <div class="cbi-map">
@@ -73,14 +100,14 @@ function getoptions( list, value )
           <div class="cbi-value">
             <label class="cbi-value-title">Address Type</label>
             <div class="cbi-value-field">
-              <select class="cbi-input-select" name="24">
+              <select class="cbi-input-select" name="24" onchange="updateparam(this.value)">
                  <script type="text/javascript">
                  var type = "<%=uciget('uci get network.lan.proto')%>";
-                 document.write("<option value='none' ");
+                 document.write("<option value='static' ");
                  if( type == "static" )
                      document.write(" selected");
                  document.write(">Static</option>");
-                 document.write("<option value='psk2+ccmp' ");
+                 document.write("<option value='dhcp' ");
                  if( type == "dhcp" )
                      document.write(" selected");
                  document.write(">Dynamic</option>");
@@ -90,23 +117,20 @@ function getoptions( list, value )
           </div>
           <div class="cbi-value">
             <label class="cbi-value-title">IP Address</label>
-            <div class="cbi-value-field">
-              <input type="text" name="23" class="cbi-input-select" value="<%=uciget('uci get network.lan.ipaddr')%>" >
+            <div class="cbi-value-field" id="ip">
             </div>
           </div>
           <div class="cbi-value">
             <label class="cbi-value-title">Subnet Mask</label>
-            <div class="cbi-value-field">
-              <input type="text" name="25" class="cbi-input-select" value="<%=uciget('uci get network.lan.netmask')%>" >
+            <div class="cbi-value-field" id="mask">
             </div>
           </div>
           <div class="cbi-value">
             <label class="cbi-value-title">Gateway</label>
-            <div class="cbi-value-field">
-              <input type="text" name="26" class="cbi-input-select" value="<%=uciget('uci get network.lan.gateway')%>" >
+            <div class="cbi-value-field" id="gateway">
             </div>
           </div>
-          <div class="cbi-value">
+          <div class="cbi-value" id="dns">
             <label class="cbi-value-title">DNS Server IP Address</label>
             <div class="cbi-value-field">
               <input type="text" name="27" class="cbi-input-select" value="<%=uciget('uci get network.lan.dns')%>" >
@@ -115,11 +139,13 @@ function getoptions( list, value )
     </form>
     </fieldset>
 </div>
-<div class="cbi-page-actions right">
+<div class="cbi-page-actions left">
 <div id="spin"></div>
 <input type="button" class="cbi-button" value="<%:Save%>" onclick="save_value()" />
 </div>
 <script type="text/javascript">
+var type = "<%=uciget('uci get network.lan.proto')%>";
+updateparam(type);
 save_def_value();
 </script>
 </div>

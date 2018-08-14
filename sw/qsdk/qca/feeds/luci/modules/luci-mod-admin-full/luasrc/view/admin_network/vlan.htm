@@ -130,7 +130,27 @@ function add_id()
 	    }
     );
 }
-
+function updateparam()
+{
+    var stat  = document.getElementById("vlanstat").value;
+    if( stat == 2 )
+    {
+        document.getElementById("modeid").style.display = "none";
+        document.getElementById("mgmtvlan").style.display = "none";
+        document.getElementById("accessvlan").style.display = "none";
+        document.getElementById("trunkoption").style.display = "none";
+        document.getElementById("trunkvlan1").style.display = "none";
+        document.getElementById("trunkvlan2").style.display = "none";
+        document.getElementById("qinq").style.display = "none";
+        document.getElementById("ethertype").style.display = "none";
+    }
+    else
+    {
+        document.getElementById("modeid").style.display = "block";
+        document.getElementById("mgmtvlan").style.display = "block";
+        hideparam();
+    }
+}
 
 function hideparam()
 {
@@ -187,7 +207,7 @@ function hideparam()
           <div class="cbi-value">
             <label class="cbi-value-title">VLAN Status</label>
             <div class="cbi-value-field">
-              <select class="cbi-input-select" name="52">
+              <select class="cbi-input-select" name="52" id="vlanstat" onchange="updateparam()">
                  <script type="text/javascript">
                  var stat = "<%=uciget('uci get vlan.vlan.status')%>";
                  document.write("<option value='1' ");
@@ -202,7 +222,7 @@ function hideparam()
               </select>
             </div>
           </div>
-          <div class="cbi-value">
+          <div class="cbi-value" id="modeid">
             <label class="cbi-value-title">VLAN Mode</label>
             <div class="cbi-value-field">
               <select class="cbi-input-select" name="53" id="vlanmode" onchange="hideparam()">
@@ -228,7 +248,7 @@ function hideparam()
               </select>
             </div>
           </div>
-          <div class="cbi-value">
+          <div class="cbi-value" id="mgmtvlan">
             <label class="cbi-value-title">Mgmt VLAN ID</label>
             <div class="cbi-value-field">
               <input type="text" name="54" class="cbi-input-select" value="<%=uciget('uci get vlan.vlan.mgmtvlan')%>">
@@ -327,13 +347,13 @@ function hideparam()
 
 
 </div>
-<div class="cbi-page-actions right">
+<div class="cbi-page-actions left">
 <div id="spin"></div>
 <input type="button" class="cbi-button" value="<%:Save%>" onclick="save_value()" />
 </div>
 <script type="text/javascript">
 save_def_value();
-hideparam();
+updateparam();
 </script>
 </div>
 <%+footer%>

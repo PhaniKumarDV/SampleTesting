@@ -58,7 +58,7 @@
     var modelist = [ "ap=Access Point", "sta=Client" ];
     var hwlist = [ "11g=Legacy", "11ng=11NG" ];
     var bwlist = [ "HT20=20MHz", "HT40+=40MHz" ];
-    var chanlist = [ "auto=auto" ];
+    var chanlist = [ "auto=Auto" ];
 	for (var i = 0; i < freqlist.length; i++)
 		chanlist.push(
 			'%d=%d (%d MHz)'.format(freqlist[i].channel, freqlist[i].channel, freqlist[i].mhz)
@@ -182,7 +182,7 @@ function getoptions( list, value )
     </form>
     </fieldset>
 </div>
-<div class="cbi-page-actions right">
+<div class="cbi-page-actions left">
 <div id="spin"></div>
 <input type="button" class="cbi-button" value="<%:Save%>" onclick="save_value()" />
 </div>

@@ -4,9 +4,10 @@
 
 local fs = require "nixio.fs"
 
-m = Map("system", translate("Router Password"),
-	translate("Changes the administrator password for accessing the device"))
+m = Map("system", translate("Device Access"))
 
+--m = Map("system", translate("Router Password"),
+--	translate("Changes the administrator password for accessing the device"))
 s = m:section(TypedSection, "_dummy", "")
 s.addremove = false
 s.anonymous = true

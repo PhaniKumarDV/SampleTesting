@@ -49,8 +49,8 @@ end
 function action_eventlog()
 	local data = {}
 
-    if string.len(string.sub(luci.util.exec("cat /tmp/wifi_packet_logs"),1,-2) ) > 20 then
-        data = luci.util.exec("cat /tmp/wifi_packet_logs")
+    if string.len(string.sub(luci.util.exec("cat /etc/wifi_packet_logs"),1,-2) ) > 20 then
+        data = luci.util.exec("cat /etc/wifi_packet_logs")
     else
         data = "Wireless Log file is empty."
     end
@@ -61,8 +61,8 @@ end
 function action_index()
     local eventlog = {}
 
-    if string.len(string.sub(luci.util.exec("cat /tmp/wifi_packet_logs"),1,-2) ) > 20 then
-        eventlog = luci.util.exec("cat /tmp/wifi_packet_logs")
+    if string.len(string.sub(luci.util.exec("cat /etc/wifi_packet_logs"),1,-2) ) > 20 then
+        eventlog = luci.util.exec("cat /etc/wifi_packet_logs")
     else
         eventlog = "Wireless Log file is empty."
     end

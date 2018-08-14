@@ -65,15 +65,24 @@ function getoptions( list, value )
         document.write("</option>");
     }
 }
+function updateparam(value)
+{
+    if( value == 0 )
+    {
+        document.getElementById("rad1").style.display = "none";
+        document.getElementById("rad2").style.display = "none";
+        document.getElementById("rad3").style.display = "none";
+    }
+    else
+    {
+        document.getElementById("rad1").style.display = "block";
+        document.getElementById("rad2").style.display = "block";
+        document.getElementById("rad3").style.display = "block";
+    }
+}
 </script>
-<h2><a id="content" name="content"><%: 5GHz Radio Configuration%></a></h2>
+<h2><a id="content" name="content"><%: RADIUS Configuration%></a></h2>
 <div class="cbi-map">
-    <ul class="cbi-tabmenu">
-        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=luci.dispatcher.build_url("admin/wireless/radio1")%>"><%:Configuration%></a></li>
-        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="security1"><%:Security%></a></li>
-        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="macacl1"><%:MAC ACL%></a></li>
-        <li style="margin-right:4px" class="cbi-tab"><a href="#"><%:RADIUS%></a></li>
-    </ul>
        <form name="formTable">
           <fieldset class="cbi-section">
           <div class="cbi-section-descr"></div>
@@ -81,7 +90,7 @@ function getoptions( list, value )
           <div class="cbi-value">
             <label class="cbi-value-title">Status</label>
             <div class="cbi-value-field">
-              <select class="cbi-input-select" name="32">
+              <select class="cbi-input-select" name="32" onchange="updateparam(this.value)">
                  <script type="text/javascript">
                  var stat = "<%=uciget('uci get wrt-radauth.sys.enableRadAuth')%>";
                  document.write("<option value='0' ");
@@ -97,9 +106,9 @@ function getoptions( list, value )
             </div>
           </div>
           </fieldset>
-          <br>
           </fieldset>
-          <fieldset class="cbi-section">
+          <fieldset class="cbi-section" id="rad1">
+          <br>
           <legend style="width:96%; padding:10px 0px 10px 0px; border-bottom:1px solid #e5e5e5;">Primary Server</legend><br><br>
           <div class="cbi-section-descr"></div>
           <fieldset class="cbi-section-node">
@@ -121,10 +130,10 @@ function getoptions( list, value )
               <input type="password" name="35" class="cbi-input-select" value="<%=uciget('uci get wrt-radauth.sys.primarySecret')%>" >
             </div>
           </div>
-          </fieldset>
           <br>
           </fieldset>
-          <fieldset class="cbi-section">
+          </fieldset>
+          <fieldset class="cbi-section" id="rad2">
           <legend style="width:96%; padding:10px 0px 10px 0px; border-bottom:1px solid #e5e5e5;">Secondary Server</legend><br><br>
           <div class="cbi-section-descr"></div>
           <fieldset class="cbi-section-node">
@@ -146,23 +155,23 @@ function getoptions( list, value )
               <input type="password" name="38" class="cbi-input-select" value="<%=uciget('uci get wrt-radauth.sys.secondarySecret')%>" >
             </div>
           </div>
-          </fieldset>
           <br>
           </fieldset>
-          <fieldset class="cbi-section">
+          </fieldset>
+          <fieldset class="cbi-section" id="rad3">
           <legend style="width:96%; padding:10px 0px 10px 0px; border-bottom:1px solid #e5e5e5;">RADIUS Parameters</legend><br><br>
           <div class="cbi-section-descr"></div>
           <fieldset class="cbi-section-node">
           <div class="cbi-value">
             <label class="cbi-value-title">Reauthentication Time</label>
             <div class="cbi-value-field">
-              <input type="text" name="39" class="cbi-input-select" value="<%=uciget('uci get wrt-radauth.sys.reauthTime')%>" >
+              <input type="text" name="39" class="cbi-input-select" value="<%=uciget('uci get wrt-radauth.sys.reauthTime')%>" >&nbsp;sec
             </div>
           </div>
           <div class="cbi-value">
             <label class="cbi-value-title">Retry Time</label>
             <div class="cbi-value-field">
-              <input type="text" name="40" class="cbi-input-select" value="<%=uciget('uci get wrt-radauth.sys.retryTime')%>" >
+              <input type="text" name="40" class="cbi-input-select" value="<%=uciget('uci get wrt-radauth.sys.retryTime')%>" >&nbsp;sec
             </div>
           </div>
           <div class="cbi-value">
@@ -174,19 +183,20 @@ function getoptions( list, value )
           <div class="cbi-value">
             <label class="cbi-value-title">Retry Count Period</label>
             <div class="cbi-value-field">
-              <input type="text" name="42" class="cbi-input-select" value="<%=uciget('uci get wrt-radauth.sys.requestTimeout')%>" >
+              <input type="text" name="42" class="cbi-input-select" value="<%=uciget('uci get wrt-radauth.sys.requestTimeout')%>" >&nbsp;sec
             </div>
           </div>
           </fieldset>
-          <br>
           </fieldset>
     </form>
 </div>
-<div class="cbi-page-actions right">
+<div class="cbi-page-actions left">
 <div id="spin"></div>
 <input type="button" class="cbi-button" value="<%:Save%>" onclick="save_value()" />
 </div>
 <script type="text/javascript">
+var stat = "<%=uciget('uci get wrt-radauth.sys.enableRadAuth')%>";
+updateparam( stat );
 save_def_value();
 </script>
 </div>

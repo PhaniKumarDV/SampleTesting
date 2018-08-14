@@ -13,6 +13,7 @@
         <li style="margin-right:4px" class="cbi-tab-disabled"><a href="ethnwkstats"><%:Ethernet%></a></li>
         <li style="margin-right:4px" class="cbi-tab-disabled"><a href="arptbl"><%:ARP%></a></li>
         <li style="margin-right:4px" class="cbi-tab"><a href="#"><%:Bridge%></a></li>
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="dhcplease"><%:DHCP Lease%></a></li>
     </ul>
    <h2><a id="content" name="content"><%:Learn Table%></a></h2>
    <fieldset>
@@ -21,7 +22,7 @@
    </div>
    </fieldset>
    <div>&nbsp;</div>
-   <div class="cbi-page-actions right">
+   <div class="cbi-page-actions left">
     <input type="button" class="cbi-button" value="<%:Refresh%>" onclick="location.href='<%=luci.dispatcher.build_url("admin/monitor/nwkstats/learntbl")%>'" />
     <input type="button" class="cbi-button" value="<%:Clear%>" onclick="location.href='<%=luci.dispatcher.build_url("admin/monitor/nwkstats/clr_learntbl")%>'" />
    </div>

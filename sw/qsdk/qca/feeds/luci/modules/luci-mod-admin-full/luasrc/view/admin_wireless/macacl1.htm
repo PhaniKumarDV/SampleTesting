@@ -107,7 +107,6 @@ function add_mac()
         <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=luci.dispatcher.build_url("admin/wireless/radio1")%>"><%:Configuration%></a></li>
         <li style="margin-right:4px" class="cbi-tab-disabled"><a href="security1"><%:Security%></a></li>
         <li style="margin-right:4px" class="cbi-tab"><a href="#"><%:MAC ACL%></a></li>
-        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="radius1"><%:RADIUS%></a></li>
     </ul>
     <fieldset class="cbi-section">
        <form name="formTable">
@@ -169,7 +168,7 @@ function add_mac()
 	</table>
 </fieldset>
 </div><br>
-<div class="cbi-page-actions right">
+<div class="cbi-page-actions left">
 <div id="spin"></div>
 <input type="button" class="cbi-button" value="<%:Save%>" onclick="save_value()" />
 </div>

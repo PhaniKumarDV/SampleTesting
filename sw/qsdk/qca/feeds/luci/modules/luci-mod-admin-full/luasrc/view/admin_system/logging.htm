@@ -96,13 +96,13 @@ function updateint()
           <div class="cbi-value">
             <label class="cbi-value-title">Temperature Log Interval</label>
             <div class="cbi-value-field">
-              <input type="text" name="69" class="cbi-input-select" value="<%=uciget('uci get system.@system[0].temploginterval')%>" >
+              <input type="text" name="69" class="cbi-input-select" value="<%=uciget('uci get system.@system[0].temploginterval')%>" >&nbsp;sec
             </div>
           </div>
         </form>
         </fieldset>
 </div>
-<div class="cbi-page-actions right">
+<div class="cbi-page-actions left">
 <div id="spin"></div>
 <input type="button" class="cbi-button" value="<%:Save%>" onclick="save_value()" />
 </div>

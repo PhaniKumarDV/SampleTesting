@@ -21,12 +21,16 @@ function index()
 		entry({"admin", "wireless", "radio1"}, template("admin_wireless/radio_config1"), _("5GHz Radio"), 1)
 		entry({"admin", "wireless", "radio1", "security1"}, template("admin_wireless/security1"))
 		entry({"admin", "wireless", "radio1", "macacl1"}, template("admin_wireless/macacl1"))
-		entry({"admin", "wireless", "radio1", "radius1"}, template("admin_wireless/radius1"))
 
 		entry({"admin", "wireless", "radio2"}, template("admin_wireless/radio_config2"), _("2.4GHz Radio"), 2)
 		entry({"admin", "wireless", "radio2", "security2"}, template("admin_wireless/security2"))
 		entry({"admin", "wireless", "radio2", "macacl2"}, template("admin_wireless/macacl2"))
 
+        local mode = luci.sys.exec("uci get wireless.@wifi-iface[1].mode")
+        local wds = luci.sys.exec("uci get wireless.@wifi-iface[1].wds")
+        if (string.match(mode,"ap") and string.match(wds,"1") ) then
+		      entry({"admin", "wireless", "radius1"}, template("admin_wireless/radius1"), _("RADIUS"), 3)
+        end
 	if has_wifi then
 		page = entry({"admin", "wireless", "wireless_join"}, call("wifi_join"), nil)
 		page.leaf = true
@@ -60,8 +64,8 @@ function index()
 		--page.leaf = true
 		--page.subindex = true
 
-		local mode = luci.sys.exec("uci get wireless.@wifi-iface[1].mode")
-		local wds = luci.sys.exec("uci get wireless.@wifi-iface[1].wds")
+		--local mode = luci.sys.exec("uci get wireless.@wifi-iface[1].mode")
+		--local wds = luci.sys.exec("uci get wireless.@wifi-iface[1].wds")
 		--if (string.match(mode,"ap") and string.match(wds,"1") ) then
 		--	entry({"admin", "wireless", "radauth"}, cbi("admin_wireless/radauth"), _("RADIUS"), 16)
 		--end

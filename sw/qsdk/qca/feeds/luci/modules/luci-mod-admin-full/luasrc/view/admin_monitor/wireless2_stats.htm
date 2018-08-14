@@ -41,6 +41,7 @@
         <li style="margin-right:4px" class="cbi-tab-disabled"><a href="ethnwkstats"><%:Ethernet%></a></li>
         <li style="margin-right:4px" class="cbi-tab-disabled"><a href="arptbl"><%:ARP%></a></li>
         <li style="margin-right:4px" class="cbi-tab-disabled"><a href="learntbl"><%:Bridge%></a></li>
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="dhcplease"><%:DHCP Lease%></a></li>
     </ul>
    <h2><a id="content" name="content"><%:Wireless Statistics%></a></h2>
 	<fieldset class="cbi-section">
@@ -49,7 +50,7 @@
 				<td>Tx Packets</td>
 				<td id="txpkt">
                    <script type="text/javascript">
-                      var txpkt = "<%=execute("athstats -i wifi0 | grep tx_packets | sed 's/ast_tx_packets://'")%>";
+                      var txpkt = "<%=execute("athstats -i wifi0 | grep tx: | sed 's/tx://'")%>";
                       txpkt.replace(" ","");
                       document.write(txpkt);
                     </script>
@@ -59,7 +60,7 @@
 				<td>Rx Packets</td>
 				<td id="rxpkt">
                    <script type="text/javascript">
-                      var txpkt = "<%=execute("athstats -i wifi0 | grep rx_packets | sed 's/ast_rx_packets://'")%>";
+                      var txpkt = "<%=execute("athstats -i wifi0 | rx: | sed 's/rx://'")%>";
                       txpkt.replace(" ","");
                       document.write(txpkt);
                     </script>

@@ -65,6 +65,13 @@ function getoptions( list, value )
         document.write("</option>");
     }
 }
+function hidekey(value)
+{
+    if( value == "none" )
+        document.getElementById("keyid").style.display = "none";
+    else
+        document.getElementById("keyid").style.display = "block";
+}
 </script>
 <h2><a id="content" name="content"><%: 2.4GHz Radio Configuration%></a></h2>
 <div class="cbi-map">
@@ -93,7 +100,7 @@ function getoptions( list, value )
               </select>
             </div>
           </div>
-          <div class="cbi-value">
+          <div class="cbi-value" id="keyid">
             <label class="cbi-value-title">Key</label>
             <div class="cbi-value-field">
               <input type="password" name="31" class="cbi-input-select" value="<%=uciget('uci get wireless.@wifi-iface[0].key')%>" >
@@ -102,11 +109,13 @@ function getoptions( list, value )
     </form>
     </fieldset>
 </div>
-<div class="cbi-page-actions right">
+<div class="cbi-page-actions left">
 <div id="spin"></div>
 <input type="button" class="cbi-button" value="<%:Save%>" onclick="save_value()" />
 </div>
 <script type="text/javascript">
+var enc = "<%=uciget('uci get wireless.@wifi-iface[0].encryption')%>";
+hidekey(enc);
 save_def_value();
 </script>
 </div>

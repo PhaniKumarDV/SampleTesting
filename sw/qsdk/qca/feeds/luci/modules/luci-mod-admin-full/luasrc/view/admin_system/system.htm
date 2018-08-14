@@ -150,7 +150,7 @@ function updategps()
           <div class="cbi-value">
             <label class="cbi-value-title">GPS Interval</label>
             <div class="cbi-value-field">
-              <input type="text" name="63" class="cbi-input-select" value="<%=uciget('uci get system.gps.interval')%>" >
+              <input type="text" name="63" class="cbi-input-select" value="<%=uciget('uci get system.gps.interval')%>" >&nbsp;sec
             </div>
           </div>
           <h2><a id="content" name="content"><%:Dying Gasp%></a></h2>
@@ -189,7 +189,7 @@ function updategps()
           </form>
         </fieldset>
 </div>
-<div class="cbi-page-actions right">
+<div class="cbi-page-actions left">
 <div id="spin"></div>
 <input type="button" class="cbi-button cbi-button-apply" value="<%:Sync with browser%>" onclick="return sync_clock(this)" />
 <input type="button" class="cbi-button" value="<%:Save%>" onclick="save_value()" />
