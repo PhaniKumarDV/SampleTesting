@@ -1193,7 +1193,7 @@ diff -urN qca-wifi-org/os/linux/src/ieee80211_wireless.c qca-wifi-mod/os/linux/s
      (iw_handler) NULL,              /* -- hole -- */
 diff -urN qca-wifi-org/os/linux/src/osif_umac.c qca-wifi-mod/os/linux/src/osif_umac.c
 --- qca-wifi-org/os/linux/src/osif_umac.c	2018-06-08 11:00:41.000000000 +0530
-+++ qca-wifi-mod/os/linux/src/osif_umac.c	2018-07-24 14:13:18.203485535 +0530
++++ qca-wifi-mod/os/linux/src/osif_umac.c	2018-08-14 17:29:25.045491751 +0530
 @@ -2425,7 +2425,7 @@
      struct ev_msg msg;
  
@@ -1203,6 +1203,38 @@ diff -urN qca-wifi-org/os/linux/src/osif_umac.c qca-wifi-mod/os/linux/src/osif_u
          {
          	OS_MEMSET(&wreq, 0, sizeof(wreq));
  	        IEEE80211_ADDR_COPY(wreq.addr.sa_data, macaddr);
+@@ -2508,6 +2508,7 @@
+     memset(&wreq, 0, sizeof(wreq));
+     IEEE80211_ADDR_COPY(wreq.addr.sa_data, macaddr);
+     wreq.addr.sa_family = ARPHRD_ETHER;
++    wreq.addr.sa_data[6] = IEEE80211_EV_DEAUTH_IND_AP;
+     WIRELESS_SEND_EVENT(dev, IWEVEXPIRED, &wreq, NULL);
+     ald_assoc_notify(((osif_dev *)osif)->os_if, macaddr, ALD_ACTION_DISASSOC);
+ #if ATH_SUPPORT_WAPI
+@@ -2641,6 +2642,7 @@
+     memset(&wrqu, 0, sizeof(wrqu));
+     IEEE80211_ADDR_COPY(wrqu.addr.sa_data, macaddr);
+     wrqu.addr.sa_family = ARPHRD_ETHER;
++    wrqu.addr.sa_data[6] = IEEE80211_EV_DEAUTH_COMPLETE_STA;
+     WIRELESS_SEND_EVENT(dev, IWEVEXPIRED, &wrqu, NULL);
+ 
+ #if UMAC_SUPPORT_ACFG
+@@ -3089,6 +3091,7 @@
+     memset(&wreq, 0, sizeof(wreq));
+     IEEE80211_ADDR_COPY(wreq.addr.sa_data, macaddr);
+     wreq.addr.sa_family = ARPHRD_ETHER;
++    wreq.addr.sa_data[6] = IEEE80211_EV_DISASSOC_IND_AP;
+     WIRELESS_SEND_EVENT(dev, IWEVEXPIRED, &wreq, NULL);
+     ald_assoc_notify(((osif_dev *)osif)->os_if, macaddr, ALD_ACTION_DISASSOC);
+ #if ATH_SUPPORT_WAPI
+@@ -3160,6 +3163,7 @@
+     memset(&wreq, 0, sizeof(wreq));
+     IEEE80211_ADDR_COPY(wreq.addr.sa_data, macaddr);
+     wreq.addr.sa_family = ARPHRD_ETHER;
++    wreq.addr.sa_data[6] = IEEE80211_EV_DISASSOC_COMPLETE_AP;
+     WIRELESS_SEND_EVENT(dev, IWEVEXPIRED, &wreq, NULL);
+ 
+     IEEE80211_ADDR_COPY(msg.addr, macaddr);
 diff -urN qca-wifi-org/os/linux/src/umac_exports.c qca-wifi-mod/os/linux/src/umac_exports.c
 --- qca-wifi-org/os/linux/src/umac_exports.c	2018-06-08 11:00:41.000000000 +0530
 +++ qca-wifi-mod/os/linux/src/umac_exports.c	2018-07-03 10:15:42.428976528 +0530
@@ -1217,8 +1249,37 @@ diff -urN qca-wifi-org/os/linux/src/umac_exports.c qca-wifi-mod/os/linux/src/uma
  #if ATH_SUPPORT_DFS && ATH_SUPPORT_STA_DFS
 diff -urN qca-wifi-org/os/linux/tools/athstats.c qca-wifi-mod/os/linux/tools/athstats.c
 --- qca-wifi-org/os/linux/tools/athstats.c	2018-06-08 11:00:40.000000000 +0530
-+++ qca-wifi-mod/os/linux/tools/athstats.c	2018-08-13 14:52:31.568501537 +0530
-@@ -727,11 +727,11 @@
++++ qca-wifi-mod/os/linux/tools/athstats.c	2018-08-14 17:29:07.369492336 +0530
+@@ -633,9 +633,11 @@
+ {
+     fprintf(fd, "txrx stats:\n");
+     if (stats_level == TXRX_STATS_LEVEL_BASIC) {
+-        fprintf(fd,"  tx: %u msdus (%u B)\n",
++        fprintf(fd,"tx:%u\n",
++            stats->tx.delivered.pkts);
++        /* fprintf(fd,"  tx: %u msdus (%u B)\n",
+             stats->tx.delivered.pkts,
+-            stats->tx.delivered.bytes);
++            stats->tx.delivered.bytes); */
+     } else { /* full */
+         fprintf(fd,
+             "  tx: sent %u msdus (%u B), "
+@@ -661,10 +663,12 @@
+             stats->tx.dropped.no_ack.pkts,
+             stats->tx.dropped.no_ack.bytes);
+     }
+-    fprintf(fd,
++    fprintf(fd,"rx:%u\n",
++        stats->rx.delivered.pkts);
++    /*fprintf(fd,
+         "  rx: %u msdus, %u bytes\n",
+         stats->rx.delivered.pkts,
+-        stats->rx.delivered.bytes);
++        stats->rx.delivered.bytes);*/
+     if (stats_level == TXRX_STATS_LEVEL_FULL) {
+         fprintf(fd,
+             "    forwarded %u msdus, %u bytes\n",
+@@ -727,11 +731,11 @@
      /* AMSDUs that have more MSDUs than the status ring size */
      fprintf(fd,"oversize_amsdu    :\t%d\n",rx->oversize_amsdu);
      /* Number of PHY errors */
@@ -1232,7 +1293,7 @@ diff -urN qca-wifi-org/os/linux/tools/athstats.c qca-wifi-mod/os/linux/tools/ath
  
  }
  
-@@ -744,8 +744,8 @@
+@@ -744,8 +748,8 @@
      fprintf(fd,"ast_be_xmit         :\t%llu\n",radio_stats->tx_beacon);
      fprintf(fd,"ast_be_nobuf        :\t%d\n",radio_stats->be_nobuf);
      fprintf(fd,"ast_tx_buf_count    :\t%u\n",radio_stats->tx_buf_count);
