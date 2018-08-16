@@ -372,8 +372,12 @@ function get_log()
                     <tr><td width="33%"><%:Ethernet status%></td><td><img src="<%=resource%>/icons/ethernet_disabled.png" /> Link is <%=eth1_status %> </td></tr>
         <% end %>
 		<tr><td width="33%"><%:IP Address%></td><td><%=uciget('uci get network.lan.ipaddr')%></td></tr>
-		<tr><td width="33%"><%:Customer Name%></td><td><%=uciget('uci get system.customer.name')%></td></tr>
-		<tr><td width="33%"><%:Link Id%></td><td><%=uciget('uci get system.customer.linkid')%></td></tr>
+		<tr><td width="33%"><%:Customer Name%></td><td><%=uciget('uci get wireless.wifi1.customername')%></td></tr>
+        <script type="text/javascript">
+          var mode = "<%=uciget('uci get wireless.@wifi-iface[1].mode')%>";
+          if( mode == "sta" )
+		     document.write("<tr><td width='33%'><%:Link Id%></td><td><%=uciget('uci get wireless.wifi1.linkid')%></td></tr>");
+        </script>
 		<tr><td width="33%"><%:GPS Coordinates%></td><td><%=uciget('uci get system.gps.latitude')%>' <%=uciget('uci get system.gps.longitude')%>''</td></tr>
 		<tr><td width="33%"><%:Remote Partners%></td><td id="links_id"><script type="text/javascript">document.write(no_of_links)</script></td></tr>
 	</table>
