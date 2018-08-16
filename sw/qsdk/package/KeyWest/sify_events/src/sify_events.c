@@ -34,10 +34,15 @@ void sify_file_write(char *sify_buf,int status, int reason)
 	time_t rawtime;
 	struct tm *timeinfo;
 	FILE *sify_fp;
+    int len;
+    char t[50];
 
 	/* Get current time */
-	time(&rawtime);
-	timeinfo=localtime(&rawtime);
+	time( &rawtime );
+    timeinfo = localtime( &rawtime );
+    len = strlen( asctime( timeinfo ) ) - 1;
+    memcpy( t, asctime( timeinfo ), len );
+    t[len] = '\0';
 
 	if (sify_buf == NULL)
 	{
@@ -56,8 +61,8 @@ void sify_file_write(char *sify_buf,int status, int reason)
 
 	if(status)
 	{
-		fprintf(sify_fp, "%s: Associated on %s",sify_buf,asctime(timeinfo));
-		syslog(LOG_INFO, "%s: Associated on %s",sify_buf,asctime(timeinfo));		       
+		fprintf(sify_fp, "%s: Associated ( MAC: %s )\n",t,sify_buf);
+		syslog(LOG_INFO, " Associated ( MAC: %s )\n",sify_buf);		       
                 //int rc=system("/usr/sbin/sify_senddata.sh '1'"); 
 	}
 	else
@@ -65,20 +70,20 @@ void sify_file_write(char *sify_buf,int status, int reason)
         switch( reason )
         {
             case IEEE80211_EV_DYING_GASP:
-                fprintf(sify_fp, "%s: Reason: Power Off, Disassociated on %s",sify_buf,asctime(timeinfo));
-                syslog(LOG_INFO, "%s: Reason: Power Off, Disassociated on %s",sify_buf,asctime(timeinfo));		       
+                fprintf(sify_fp, "%s: Disassociated ( MAC : %s, Reason: Power Off )\n",t,sify_buf);
+                syslog(LOG_INFO, " Disassociated ( MAC : %s, Reason: Power Off )\n",sify_buf);		       
                 break;
             case IEEE80211_EV_DISASSOC_IND_AP:
-                fprintf(sify_fp, "%s: Reason: Remote Terminated, Disassociated on %s",sify_buf,asctime(timeinfo));
-                syslog(LOG_INFO, "%s: Reason: Remote Terminated, Disassociated on %s",sify_buf,asctime(timeinfo));		       
+                fprintf(sify_fp, "%s: Disassociated ( MAC: %s, Reason: Remote Terminated )\n",t,sify_buf);
+                syslog(LOG_INFO, " Disassociated ( MAC: %s, Reason: Remote Terminated )\n",sify_buf);		       
                 break;
             case IEEE80211_EV_DISASSOC_COMPLETE_AP:
-                fprintf(sify_fp, "%s: Reason: Local Terminated, Disassociated on %s",sify_buf,asctime(timeinfo));
-                syslog(LOG_INFO, "%s: Reason: Local Terminated, Disassociated on %s",sify_buf,asctime(timeinfo));		       
+                fprintf(sify_fp, "%s: Disassociated ( MAC: %s, Reason: Local Terminated )\n",t,sify_buf);
+                syslog(LOG_INFO, " Disassociated ( MAC: %s, Reason: Local Terminated )\n",sify_buf);		       
                 break;
             default:
-                fprintf(sify_fp, "%s: Disassociated on %s",sify_buf,asctime(timeinfo));
-                syslog(LOG_INFO, "%s: Disassociated on %s",sify_buf,asctime(timeinfo));		       
+                fprintf(sify_fp, "%s: Disassociated ( MAC: %s )",t,sify_buf);
+                syslog(LOG_INFO, " Disassociated ( MAC: %s )",sify_buf);		       
                 break;
         }
     }

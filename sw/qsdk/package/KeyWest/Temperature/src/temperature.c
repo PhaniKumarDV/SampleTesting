@@ -9,10 +9,10 @@
 #define TEMP_LOG_FILE "/tmp/temp-log"
 
 float Temperature() {
-    short v;
-    short swapV;
+    //short v;
+    //short swapV;
     int v1 = 0;
-    unsigned char *p = (unsigned char *)&swapV;
+    //unsigned char *p = (unsigned char *)&swapV;
     FILE *fp;
     float finalValue;
     char val[10];
@@ -23,7 +23,7 @@ float Temperature() {
         v1 = atoi(val);
     }
     pclose(fp);
-
+/*
     v = (short)v1;
     *p = *((unsigned char *)&v + 1);
     *(p + 1) = *(unsigned char*)&v;
@@ -38,7 +38,8 @@ float Temperature() {
     } else {
         finalValue = (float)swapV*  0.125;
     }
-
+*/
+    finalValue = v1 / 1000;
     printf("Read Temp: %f\n", finalValue);
     return finalValue;
 }
