@@ -24,8 +24,10 @@
                         a[i].replace(" ","");
                      document.getElementById("txpkt").innerHTML = a[0];
                      document.getElementById("rxpkt").innerHTML = a[1];
-                     document.getElementById("mpdu").innerHTML = a[2];
-                     document.getElementById("phy").innerHTML = a[3];
+                     document.getElementById("mtxpkt").innerHTML = a[2];
+                     document.getElementById("mrxpkt").innerHTML = a[3];
+                     document.getElementById("mpdu").innerHTML = a[4];
+                     document.getElementById("phy").innerHTML = a[5];
                }
             }
             );
@@ -47,7 +49,7 @@
 	<fieldset class="cbi-section">
 		<table class="cbi-section-table" style="margin:10px; width:400px;">
 			<tr>
-				<td>Tx Packets</td>
+				<td>Tx Data Packets</td>
 				<td id="txpkt">
                    <script type="text/javascript">
                       var txpkt = "<%=execute("athstats -i wifi0 | grep tx: | sed 's/tx://'")%>";
@@ -57,10 +59,30 @@
                 </td>
 			</tr>
 			<tr>
-				<td>Rx Packets</td>
+				<td>Rx Data Packets</td>
 				<td id="rxpkt">
                    <script type="text/javascript">
-                      var txpkt = "<%=execute("athstats -i wifi0 | rx: | sed 's/rx://'")%>";
+                      var txpkt = "<%=execute("athstats -i wifi0 | grep rx: | sed 's/rx://'")%>";
+                      txpkt.replace(" ","");
+                      document.write(txpkt);
+                    </script>
+                </td>
+			</tr>
+			<tr>
+				<td>Tx Management Packets</td>
+				<td id="mtxpkt">
+                   <script type="text/javascript">
+                      var txpkt = "<%=execute("athstats -i wifi0 | grep ast_tx_packets: | sed 's/ast_tx_packets://'")%>";
+                      txpkt.replace(" ","");
+                      document.write(txpkt);
+                    </script>
+                </td>
+			</tr>
+			<tr>
+				<td>Rx Management Packets</td>
+				<td id="mrxpkt">
+                   <script type="text/javascript">
+                      var txpkt = "<%=execute("athstats -i wifi0 | grep ast_rx_packets: | sed 's/ast_rx_packets://'")%>";
                       txpkt.replace(" ","");
                       document.write(txpkt);
                     </script>

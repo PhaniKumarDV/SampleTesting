@@ -31,9 +31,9 @@ function index()
 	entry({"admin", "apply"}, call("action_apply"), _("Apply"), 88)
 	entry({"admin", "reboot"}, call("action_reboot"), _("Reboot"), 89)
 	entry({"admin", "logout"}, call("action_logout"), _("Logout"), 90)
-	entry({"admin", "config"}, template("admin_status/basic_config1"), _("Quick Start"), 20)
+	entry({"admin", "config"}, template("admin_status/system"), _("Quick Start"), 20)
+    entry({"admin", "config", "config1"}, template("admin_status/basic_config1"))
     entry({"admin", "config", "config2"}, template("admin_status/basic_config2"))
-    entry({"admin", "config", "system"}, template("admin_status/system"))
     page = entry({"admin", "cfg_set"}, call("action_cfg_set"), nil)
 	page.leaf = true
 end

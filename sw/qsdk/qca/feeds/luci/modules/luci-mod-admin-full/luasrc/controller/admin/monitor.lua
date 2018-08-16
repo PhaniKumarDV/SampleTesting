@@ -151,11 +151,15 @@ function action_wireless1()
     local txpkt = string.gsub(res, "\n", "")
     res = luci.util.exec("athstats -i wifi1 | grep rx: | sed 's/rx://'")
     local rxpkt = string.gsub(res, "\n", "")
+    res = luci.util.exec("athstats -i wifi1 | grep ast_tx_packets | sed 's/ast_tx_packets://'")
+    local mtxpkt = string.gsub(res, "\n", "")
+    res = luci.util.exec("athstats -i wifi1 | grep ast_rx_packets: | sed 's/ast_rx_packets://'")
+    local mrxpkt = string.gsub(res, "\n", "")
     res = luci.util.exec("athstats -i wifi1 | grep mpdu_errs | sed 's/mpdu_errs://'")
     local mpduerr = string.gsub(res, "\n", "")
     res = luci.util.exec("athstats -i wifi1 | grep phy_errors | sed 's/phy_errors://'")
     local phyerr = string.gsub(res, "\n", "")
-    local data = txpkt..","..rxpkt..","..mpduerr..","..phyerr
+    local data = txpkt..","..rxpkt..","..mtxpkt..","..mrxpkt..","..mpduerr..","..phyerr
 	luci.http.prepare_content("application/json")
 	luci.http.write_json(data)
 end
@@ -165,11 +169,15 @@ function action_wireless2()
     local txpkt = string.gsub(res, "\n", "")
     res = luci.util.exec("athstats -i wifi0 | grep rx: | sed 's/rx://'")
     local rxpkt = string.gsub(res, "\n", "")
+    res = luci.util.exec("athstats -i wifi0 | grep ast_tx_packets | sed 's/ast_tx_packets://'")
+    local mtxpkt = string.gsub(res, "\n", "")
+    res = luci.util.exec("athstats -i wifi0 | grep ast_rx_packets: | sed 's/ast_rx_packets://'")
+    local mrxpkt = string.gsub(res, "\n", "")
     res = luci.util.exec("athstats -i wifi0 | grep mpdu_errs | sed 's/mpdu_errs://'")
     local mpduerr = string.gsub(res, "\n", "")
     res = luci.util.exec("athstats -i wifi0 | grep phy_errors | sed 's/phy_errors://'")
     local phyerr = string.gsub(res, "\n", "")
-    local data = txpkt..","..rxpkt..","..mpduerr..","..phyerr
+    local data = txpkt..","..rxpkt..","..mtxpkt..","..mrxpkt..","..mpduerr..","..phyerr
 	luci.http.prepare_content("application/json")
 	luci.http.write_json(data)
 end

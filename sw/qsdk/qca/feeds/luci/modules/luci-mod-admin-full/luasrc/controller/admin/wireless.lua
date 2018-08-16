@@ -26,11 +26,6 @@ function index()
 		entry({"admin", "wireless", "radio2", "security2"}, template("admin_wireless/security2"))
 		entry({"admin", "wireless", "radio2", "macacl2"}, template("admin_wireless/macacl2"))
 
-        local mode = luci.sys.exec("uci get wireless.@wifi-iface[1].mode")
-        local wds = luci.sys.exec("uci get wireless.@wifi-iface[1].wds")
-        if (string.match(mode,"ap") and string.match(wds,"1") ) then
-		      entry({"admin", "wireless", "radius1"}, template("admin_wireless/radius1"), _("RADIUS"), 3)
-        end
 	if has_wifi then
 		page = entry({"admin", "wireless", "wireless_join"}, call("wifi_join"), nil)
 		page.leaf = true

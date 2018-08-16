@@ -493,7 +493,7 @@ width: -moz-calc(100% - 275px); width: -ms-calc(100% - 275px); margin-bottom: 1p
     font-size: inherit;  text-rendering: auto;  -webkit-font-smoothing: antialiased; text-indent:inherit;
     -moz-osx-font-smoothing: grayscale; width:16px; height:17px; margin: 0!important;
     padding: 0!important;  border: 0!important;  position: absolute; top: 23px; left: 0px; }
-    .sidebar #Wireless .RADIUS a:after {  content: "\f0c1";  display: inline-block; font: normal normal normal 14px/1 FontAwesome;
+    .sidebar #Network .RADIUS a:after {  content: "\f0c1";  display: inline-block; font: normal normal normal 14px/1 FontAwesome;
     font-size: inherit;  text-rendering: auto;  -webkit-font-smoothing: antialiased; text-indent:inherit;
     -moz-osx-font-smoothing: grayscale; width:16px; height:17px; margin: 0!important;
     padding: 0!important;  border: 0!important;  position: absolute; top: 23px; left: 0px; }
