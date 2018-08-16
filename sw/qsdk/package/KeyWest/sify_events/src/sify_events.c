@@ -82,8 +82,8 @@ void sify_file_write(char *sify_buf,int status, int reason)
                 syslog(LOG_INFO, " Disassociated ( MAC: %s, Reason: Local Terminated )\n",sify_buf);		       
                 break;
             default:
-                fprintf(sify_fp, "%s: Disassociated ( MAC: %s )",t,sify_buf);
-                syslog(LOG_INFO, " Disassociated ( MAC: %s )",sify_buf);		       
+                fprintf(sify_fp, "%s: Disassociated ( MAC: %s )\n",t,sify_buf);
+                syslog(LOG_INFO, " Disassociated ( MAC: %s )\n",sify_buf);		       
                 break;
         }
     }
