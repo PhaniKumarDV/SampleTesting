@@ -22,6 +22,14 @@ start_service() {
     if [ $status -eq "2" ]; then
         mode=-1
     fi
+#Setting Mode to Trunk if QinQ configured
+#Setting svlan and svlanethertype to -1 if not QinQ
+    if [ $mode -eq "3" ]; then
+        mode=2
+    else
+        svlan=-1
+        svlanethertype=-1
+    fi
     iwpriv ath1 kwn_vlan_mode $mode
     iwpriv ath1 kwn_mgmt_vid $mgmtvlan
     iwpriv ath1 kwn_acc_vid $accvlan
@@ -32,6 +40,8 @@ start_service() {
             iwpriv ath1 kwn_vid_add "$id"
             done
     }
+    iwpriv ath1 kwn_svlan_id $svlan
+    iwpriv ath1 kwn_setherType $svlanethertype
 
     procd_close_instance
 }
