@@ -166,7 +166,7 @@
 	<%          else 
                 if nnode.title == "Quick Start" then
     %>
-                <li class="Quick"><a href="<%=pcdata(href)%>">Quick Start</a></li>  
+                <li class="Quick<%=v%><%- if nnode._menu_selected or (node.leaf and v == leaf) then %> active<% end %>"><a href="<%=pcdata(href)%>">Quick Start</a></li>  
     <%
                 end
                 end

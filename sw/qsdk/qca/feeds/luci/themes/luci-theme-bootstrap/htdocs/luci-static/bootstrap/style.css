@@ -269,6 +269,11 @@ form.authorize {  width: 100%;  float: none!important;    box-shadow: 0px 5px 24
 form.authorize .cbi-section { margin-bottom: 20px!important;}
 form.authorize .cbi-section-node { overflow: hidden;  padding-bottom: 10px;  border-bottom: 1px solid rgba(153, 153, 153, 0.5);}
 .sidebar ul.nav li .dropdown-menu li.active {    background: #bfd630;}
+li.Quick.active {    background: #bfd630;}
+.sidebar ul.nav li.active a {    color: #fff;}
+.sidebar ul.nav li.active a:hover:after {color:#fff;}
+.sidebar ul.nav li.active a:hover {color:#fff!important;}
+.sidebar ul.nav li.active a:after {color:#fff!important;}
 .sidebar ul.nav li .dropdown-menu li.active a {color:#fff;}
 .sidebar ul.nav li .dropdown-menu li.active a:hover:after {color:#fff;}
 .sidebar ul.nav li .dropdown-menu li.active a:hover {color:#fff!important;}
@@ -442,6 +447,8 @@ width: -moz-calc(100% - 275px); width: -ms-calc(100% - 275px); margin-bottom: 1p
 .nav .dropdown .menu:hover:before { color: #0b5258!important;}
     .sidebar ul.nav > li > a:after { color: #111; opacity: 1;}
      .sidebar ul.nav > li > a:hover:after { opacity: 1; color: #0b5258;}
+    .sidebar ul.nav li a:hover { color: #c0d731!important; opacity:1; text-shadow: none;}
+ .sidebar ul.nav li a:hover:after {    color: #c0d731; background: transparent; box-shadow: none;}
     .sidebar ul.nav li .dropdown-menu li a:hover { color: #c0d731!important; opacity:1; text-shadow: none;}
  .sidebar ul.nav li .dropdown-menu li a:hover:after {    color: #c0d731; background: transparent; box-shadow: none;}
     .nav .dropdown .menu:before {    transform: rotate(90deg);
