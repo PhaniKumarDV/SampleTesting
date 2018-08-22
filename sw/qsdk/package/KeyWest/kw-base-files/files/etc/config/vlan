@@ -5,5 +5,5 @@ config vlan 'vlan'
     option accessvlan '-1'
     option trunkoption '2'
     option svlan '-1'
-    option svlanethertype '0x8100'
+    option svlanethertype '0x0081'
 

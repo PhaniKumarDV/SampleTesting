@@ -276,20 +276,20 @@ function hideparam()
               <select class="cbi-input-select" name="59">
                  <script type="text/javascript">
                  var opt = "<%=uciget('uci get vlan.vlan.svlanethertype')%>";
-                 document.write("<option value='0x8100' ");
-                 if( opt == "0x8100" )
+                 document.write("<option value='0x0081' ");
+                 if( opt == "0x0081" )
                      document.write(" selected");
                  document.write(">0x8100</option>");
-                 document.write("<option value='0x88a8' ");
-                 if( opt == "0x88a8" )
+                 document.write("<option value='0xa888' ");
+                 if( opt == "0xa888" )
                      document.write(" selected");
                  document.write(">0x88a8</option>");
-                 document.write("<option value='0x9100' ");
-                 if( opt == "0x9100" )
+                 document.write("<option value='0x0091' ");
+                 if( opt == "0x0091" )
                      document.write(" selected");
                  document.write(">0x9100</option>");
-                 document.write("<option value='0x9200' ");
-                 if( opt == "0x9200" )
+                 document.write("<option value='0x0092' ");
+                 if( opt == "0x0092" )
                      document.write(" selected");
                  document.write(">0x9200</option>");
                  </script>
@@ -302,8 +302,8 @@ function hideparam()
               <select class="cbi-input-select" name="56" onchange="hideparam()" id="trunkopt">
                  <script type="text/javascript">
                  var opt = "<%=uciget('uci get vlan.vlan.trunkoption')%>";
-                 document.write("<option value='3' ");
-                 if( opt == "3" )
+                 document.write("<option value='1' ");
+                 if( opt == "1" )
                      document.write(" selected");
                  document.write(">List</option>");
                  document.write("<option value='2' ");
