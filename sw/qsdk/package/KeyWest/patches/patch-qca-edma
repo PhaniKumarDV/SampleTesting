@@ -1,6 +1,6 @@
 diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
 --- qca-edma-org/edma.c	2018-07-09 14:25:58.833210000 +0530
-+++ qca-edma-mod/edma.c	2018-08-17 17:24:46.983983218 +0530
++++ qca-edma-mod/edma.c	2018-08-22 15:45:05.113003460 +0530
 @@ -26,6 +26,171 @@
  extern u8 edma_per_prec_stats_enable;
  extern u32 edma_iad_stats_enable;
@@ -173,7 +173,7 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
  /* edma_skb_priority_offset()
   *	get edma skb priority
   */
-@@ -777,15 +942,83 @@
+@@ -777,15 +942,91 @@
  #endif
  			edma_receive_checksum(rd, skb);
  
@@ -189,6 +189,9 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
 +					rd->rrd6 & EDMA_RRD_PKT_SIZE_MASK, rd->rrd7 & EDMA_RRD_CVLAN, rd->rrd1 & EDMA_RRD_SVLAN, skb->protocol);
 +#endif
 +
++			skb->vlan_proto_kwn = 0;
++			skb->vlan_tci_kwn = 0;
++			
 +			/* KWN: Vlan Ingress Path */
 +			switch( edma_cinfo->vlan_mode ) 
 +			{
@@ -208,6 +211,11 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
 +						if ( vlan == edma_cinfo->mgmt_vlan_id ) { ; } else {
 +							if ( test_bit(vlan, edma_cinfo->vlan_bitmap) || edma_cinfo->allow_all_tagged_trunk ) {
 +								__vlan_hwaccel_put_tag(skb, htons(ETH_P_8021Q), vlan);
++								/* Configure the SVLAN Parameters in skb parameters if enabled */
++								if (  edma_cinfo->svlan_id > 0 ) {
++									skb->vlan_proto_kwn = edma_cinfo->svlan_etherType;
++									skb->vlan_tci_kwn = edma_cinfo->svlan_id;
++								} 
 +							} else {
 +								/*printk(":(RX): Trunk Mode: Skb vlan(%d) != Trunk Vlan Table: Result: Drop \n", 
 +										vlan);*/
@@ -264,7 +272,7 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
  			/* Update rx statistics */
  			adapter->stats.rx_packets++;
  			adapter->stats.rx_bytes += length;
-@@ -1324,7 +1557,6 @@
+@@ -1324,7 +1565,6 @@
  		word3 |= (1 << EDMA_TX_INS_CVLAN);
  		word3 |= (adapter->default_vlan_tag) << EDMA_TX_CVLAN_TAG_SHIFT;
  	}
@@ -272,7 +280,7 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
  	if (packet_is_rstp) {
  		word3 |= dp_bitmap << EDMA_TPD_PORT_BITMAP_SHIFT;
  		word3 |= from_cpu << EDMA_TPD_FROM_CPU_SHIFT;
-@@ -1535,6 +1767,40 @@
+@@ -1535,6 +1775,40 @@
  	return __EDMA_LINKDOWN;
  }
  
@@ -313,7 +321,7 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
  /* edma_adjust_link()
   *	check for edma link status
   */
-@@ -1551,12 +1817,14 @@
+@@ -1551,12 +1825,14 @@
  
  	if (status == __EDMA_LINKUP && adapter->link_state == __EDMA_LINKDOWN) {
  		dev_info(&adapter->pdev->dev, "%s: GMAC Link is up with phy_speed=%d\n", netdev->name, phydev->speed);
@@ -328,7 +336,7 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
  		adapter->link_state = __EDMA_LINKDOWN;
  		netif_carrier_off(netdev);
  		netif_tx_stop_all_queues(netdev);
-@@ -1590,6 +1858,7 @@
+@@ -1590,6 +1866,7 @@
  	unsigned int flags_transmit = 0;
  	bool packet_is_rstp = false;
  	struct netdev_queue *nq = NULL;
@@ -336,7 +344,7 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
  
  	if (skb_shinfo(skb)->nr_frags) {
  		nr_frags_first = skb_shinfo(skb)->nr_frags;
-@@ -1652,12 +1921,93 @@
+@@ -1652,12 +1929,115 @@
  		return NETDEV_TX_BUSY;
  	}
  
@@ -351,7 +359,29 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
 +			}
 +			break;
 +		case EDMA_VLAN_MODE_TRUNK:
-+			/* Tagged Traffic */
++			/* QinQ Enabled - Tagged Traffic */
++			if ( edma_cinfo->svlan_id > 0 ) {
++				if ( skb->protocol == cpu_to_be16(ETH_P_8021Q) ||
++						skb->protocol == cpu_to_be16(ETH_P_8021AD) ||
++						skb->protocol == cpu_to_be16(ETH_P_8021AH) ) {
++					uint8_t *var;
++					struct vlan_ethhdr *vhdr;
++					var = ( uint8_t *)skb->data;
++					memmove( var + 4, var, 12 );
++					skb_pull( skb, 4 );
++					vhdr = (struct vlan_ethhdr *)skb->data;
++					vlan = ntohs(vhdr->h_vlan_TCI);
++					if ( !edma_cinfo->allow_all_tagged_trunk &&
++							!test_bit(vlan, edma_cinfo->vlan_bitmap) ) {
++						/*printk(": (SVLAN: TX): Trunk Mode: SKB Vlan(%d) != VLan Trunk" 
++								"Table: Result: Drop\n",
++								vlan);*/
++						goto drop1;
++					} 
++					break;
++				}
++			}
++			/* 802.1Q Enabled - Tagged Traffic */
 +			if ( vlan_tx_tag_present( skb ) ) {
 +				vlan = vlan_tx_tag_get( skb );
 +				if( edma_cinfo->allow_untagged && 
@@ -433,7 +463,7 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
  		flags_transmit |= EDMA_VLAN_TX_TAG_INSERT_FLAG;
  	else if (adapter->default_vlan_tag)
  		flags_transmit |= EDMA_VLAN_TX_TAG_INSERT_DEFAULT_FLAG;
-@@ -1682,7 +2032,14 @@
+@@ -1682,7 +2062,14 @@
  	/* update tx statistics */
  	adapter->stats.tx_packets++;
  	adapter->stats.tx_bytes += skb->len;
