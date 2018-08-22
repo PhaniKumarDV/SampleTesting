@@ -18,8 +18,49 @@ diff -urN qca-wifi-org/cmn_dev/dp/inc/cdp_txrx_stats_struct.h qca-wifi-mod/cmn_d
  /*
 diff -urN qca-wifi-org/include/ieee80211_defines.h qca-wifi-mod/include/ieee80211_defines.h
 --- qca-wifi-org/include/ieee80211_defines.h	2018-06-08 11:00:51.000000000 +0530
-+++ qca-wifi-mod/include/ieee80211_defines.h	2018-07-03 10:12:53.952984596 +0530
-@@ -2075,6 +2075,12 @@
++++ qca-wifi-mod/include/ieee80211_defines.h	2018-08-22 16:27:35.711878984 +0530
+@@ -14,6 +14,7 @@
+ #ifndef _IEEE80211_DEFINES_H_
+ #define _IEEE80211_DEFINES_H_
+ 
++#define SIFY_MGMT_STATS
+ #include <ieee80211.h>
+ #ifndef EXTERNAL_USE_ONLY
+ #include <_ieee80211.h>        /* IEEE80211_ADDR_LEN, iee80211_phymode */
+@@ -1913,6 +1914,32 @@
+     u_int32_t   chan_tx_power_range;     /* EEPROM Tx power value for Maximum range*/
+ };
+ 
++#ifdef SIFY_MGMT_STATS
++struct ieee80211_mgmt_stats
++{
++	u_int64_t                         bcn_recv;
++	u_int64_t                         assoc_xmit;
++	u_int64_t                         assoc_recv;
++	u_int64_t                         assoc_reject_recv;
++	u_int64_t                         assoc_reject_xmit;    
++	u_int64_t                         assoc_confirm_recv;  
++	u_int64_t                         assoc_confirm_xmit;
++	u_int64_t                         disassoc_xmit;
++	u_int64_t                         disassoc_recv;                                      
++	u_int64_t                         aut_xmit;
++	u_int64_t                         aut_recv;
++	u_int64_t                         aut_confirm_recv;
++	u_int64_t                         aut_confirm_xmit;    
++	u_int64_t                         aut_reject_recv;
++	u_int64_t                         aut_reject_xmit;        
++	u_int64_t                         deaut_xmit;
++	u_int64_t                         deaut_recv;
++	u_int64_t                         reg_fail_last_reason;
++    u_int32_t                         assoc_reason;
++	u_int32_t                         auth_reason;    
++	u_int64_t                         iv_opmode;
++};
++#endif
+ struct ieee80211_mac_stats {
+     u_int64_t   ims_tx_packets; /* frames successfully transmitted */
+     u_int64_t   ims_rx_packets; /* frames successfully received */
+@@ -2075,6 +2102,12 @@
      u_int64_t   mlme_auth_success;         /* no of 802.11 MLME Auth Success */
      u_int64_t   authorize_attempt;         /* no of Authorization Attempt */
      u_int64_t   authorize_success;         /* no of Authorization successful */
@@ -1059,7 +1100,7 @@ diff -urN qca-wifi-org/os/linux/include/ieee80211_ioctl.h qca-wifi-mod/os/linux/
  #define WOW_SYNC_PATTERN 0xFF
 diff -urN qca-wifi-org/os/linux/src/ieee80211_wireless.c qca-wifi-mod/os/linux/src/ieee80211_wireless.c
 --- qca-wifi-org/os/linux/src/ieee80211_wireless.c	2018-06-08 11:00:40.000000000 +0530
-+++ qca-wifi-mod/os/linux/src/ieee80211_wireless.c	2018-08-17 17:28:18.667972400 +0530
++++ qca-wifi-mod/os/linux/src/ieee80211_wireless.c	2018-08-22 16:27:49.131879467 +0530
 @@ -524,6 +524,7 @@
  {
      osif_dev *osnetdev = ath_netdev_priv(dev);
@@ -1209,6 +1250,38 @@ diff -urN qca-wifi-org/os/linux/src/ieee80211_wireless.c qca-wifi-mod/os/linux/s
      (iw_handler) NULL,      /* SIOCGIWNICKN */
      (iw_handler) NULL,              /* -- hole -- */
      (iw_handler) NULL,              /* -- hole -- */
+@@ -15309,11 +15414,26 @@
+     {
+ 
+     case SIOCG80211STATS:
+-        return _copy_to_user(ifr->ifr_data, &vap->iv_stats,
+-            sizeof (vap->iv_stats) +
+-            sizeof(vap->iv_unicast_stats) +
+-            sizeof(vap->iv_multicast_stats)) ? -EFAULT : 0;
+-
++        if (*((char*)ifr->ifr_data))
++        {
++            memset (&(vap->iv_stats), 0x00, sizeof(struct ieee80211_stats));
++            memset (&(vap->iv_unicast_stats), 0x00, sizeof(struct ieee80211_mac_stats));
++            memset (&(vap->iv_multicast_stats), 0x00, sizeof(struct ieee80211_mac_stats));
++            memset (&(vap->iv_mgmt_stats), 0x00, sizeof(struct ieee80211_mgmt_stats));
++            return 0;
++        }
++        else
++        {
++            vap->iv_mgmt_stats.iv_opmode = vap->iv_opmode;
++            return _copy_to_user(ifr->ifr_data, &vap->iv_stats,
++                    sizeof (vap->iv_stats) +
++                    sizeof(vap->iv_unicast_stats) +
++                    sizeof(vap->iv_multicast_stats)
++#ifdef SIFY_MGMT_STATS                               
++                    + sizeof (vap->iv_mgmt_stats)
++#endif
++                    ) ? -EFAULT : 0;
++        }
+     case SIOC80211IFDESTROY:
+         if (!capable(CAP_NET_ADMIN))
+             return -EPERM;
 diff -urN qca-wifi-org/os/linux/src/osif_umac.c qca-wifi-mod/os/linux/src/osif_umac.c
 --- qca-wifi-org/os/linux/src/osif_umac.c	2018-06-08 11:00:41.000000000 +0530
 +++ qca-wifi-mod/os/linux/src/osif_umac.c	2018-08-14 17:29:25.045491751 +0530
@@ -1265,9 +1338,251 @@ diff -urN qca-wifi-org/os/linux/src/umac_exports.c qca-wifi-mod/os/linux/src/uma
  EXPORT_SYMBOL(ieee80211_dfs_cac_cancel);
  EXPORT_SYMBOL(ieee80211_update_dfs_next_channel);
  #if ATH_SUPPORT_DFS && ATH_SUPPORT_STA_DFS
+diff -urN qca-wifi-org/os/linux/tools/80211stats.c qca-wifi-mod/os/linux/tools/80211stats.c
+--- qca-wifi-org/os/linux/tools/80211stats.c	2018-06-08 11:00:39.000000000 +0530
++++ qca-wifi-mod/os/linux/tools/80211stats.c	2018-08-22 16:30:44.607885776 +0530
+@@ -68,6 +68,70 @@
+ #ifndef SIOCG80211STATS
+ #define	SIOCG80211STATS	(SIOCDEVPRIVATE+2)
+ #endif
++typedef struct 
++{
++	int code;
++	char *str;
++}ieee80211_reason_t;
++ieee80211_reason_t ieee80211_reason[] =
++{
++	{1,"unspecified"},
++	{2,"auth expire"},
++	{3,"auth leave"},
++	{4,"assoc expire"},
++	{5,"assoc toomany"},
++	{6,"not authed"},
++	{7,"not assoced"},
++	{8,"assoc leave"},
++	{9,"assoc not authed"},
++	{11,"rsn required"},
++	{12,"rsn inconsistent"},
++	{13,"ie invalid"},
++	{14,"mic failure"},
++	{32,"qos"},
++	{33,"qos bandwitdh"},
++	{34,"qos ch conditions"},
++	{35,"qos txop"},
++	{36,"qos leave"},
++	{37,"qos declined"},
++	{38,"qos setup required"},
++	{39,"qos timeout"},
++	{45,"qos cipher"},
++	{0,"success"},
++	{1,"unspecified"},
++	{10,"capinfo"},
++	{11,"not assoced"},
++	{12,"other"},
++	{13,"alg"},
++	{14,"sequence"},
++	{15,"challenge"},
++	{16,"timeout"},
++	{17,"toomany"},
++	{18,"basic rate"},
++	{19,"sp required"},
++	{20,"pbcc required"},
++	{21,"ca required"},
++	{22,"too many stations"},
++	{23,"rates"},
++	{25,"shortslot required"},
++	{26,"dsssofdm required"},
++	{27,"no ht"},
++	{37,"refused"},
++	{38,"invalid param"}
++};
++
++static char *ieee80211_reason_get (int code)
++{
++	int  i = 0;
++	for (i = 0; i< sizeof(ieee80211_reason);i++)
++	{
++		if (ieee80211_reason[i].code == code)
++		{
++			return ieee80211_reason[i].str;
++		}
++	}
++	return "none";
++}
+ 
+ static void
+ printstats(FILE *fd, const struct ieee80211_stats *stats)
+@@ -295,15 +359,159 @@
+ int
+ main(int argc, char *argv[])
+ {
+-	int c, len;
++    const char *ifname = "ath0";
++	int c = 0 , len, index;
+ 	struct ieee80211req_sta_info *si;
+ 	u_int8_t buf[24*1024], *cp;
+ 	struct iwreq iwr;
+-	int allnodes = 0;
++	int allnodes = 0,mgmtstats = 0;
++    int clear = 0;
+ 
+ 	s = socket(AF_INET, SOCK_DGRAM, 0);
+ 	if (s < 0)
+ 		err(1, "socket");
++#if 1
++    while ((c = getopt(argc, argv, "e:i:")) != -1)
++        switch (c)
++        { 
++            case 'i':
++                ifname = optarg; 
++                break; 
++            case 'e':
++                clear = atoi(optarg);
++                break;
++            case '?':
++                if (optopt == 'i')
++                    fprintf(stderr, "Option -%c requires an argument.\n", optopt);
++                close(s);
++                return -1;
++            default:
++                abort();
++        }
++	strlcpy(ifr.ifr_name, ifname, sizeof (ifr.ifr_name));
++	if (clear == 1)
++	{
++		char data[2] = {1};
++		ifr.ifr_data = data;
++
++		if (ioctl(s, SIOCG80211STATS, &ifr) < 0)
++		{
++			printf("error opening socket");
++			err(1, ifr.ifr_name);
++		}
++		return 0;
++	}
++	{
++		struct ieee80211_stats      *stats = NULL;
++		struct ieee80211_mac_stats  *unicast_stats = NULL;
++		struct ieee80211_mac_stats  *multicast_stats = NULL;
++		struct ieee80211_mgmt_stats *mgmt_stats = NULL;
++
++		/* no args, just show global stats */
++        /* fetch both ieee80211_stats, and mac_stats, including multicast and unicast stats */
++        stats = malloc(sizeof(struct ieee80211_stats)+ 2* sizeof(struct ieee80211_mac_stats) + sizeof (struct ieee80211_mgmt_stats));
++        if (!stats) {
++            fprintf (stderr, "Unable to allocate memory for stats\n");
++            return -1;
++        }
++		ifr.ifr_data = (caddr_t) stats;
++		if (ioctl(s, SIOCG80211STATS, &ifr) < 0)
++			err(1, ifr.ifr_name);
++		unicast_stats = (struct ieee80211_mac_stats*)(((unsigned char*)stats)+sizeof(struct ieee80211_stats));
++		multicast_stats = (struct ieee80211_mac_stats *)(((unsigned char*)stats)+sizeof(struct ieee80211_stats)+ sizeof(struct ieee80211_mac_stats));
++		mgmt_stats = (struct ieee80211_mgmt_stats*)(((unsigned char*)stats)+sizeof(struct ieee80211_stats)+2*sizeof(struct ieee80211_mac_stats));
++		
++		/* AP */
++		if (mgmt_stats->iv_opmode != 1)
++		{
++			printf(" Authentication requests received:   %llu\n",mgmt_stats->aut_recv);
++			printf(" Authentication confirms:            %llu\n",mgmt_stats->aut_confirm_xmit);
++			printf(" Authentication rejects:             %llu\n",mgmt_stats->aut_reject_xmit);
++			printf(" Deauthentication requests sent:     %llu\n",mgmt_stats->deaut_xmit);
++#if 0			
++			printf(" Deauthentication requests received: %llu\n",mgmt_stats->deaut_recv);
++#endif			
++			if (mgmt_stats->aut_recv > 0)
++			{
++				printf(" Authentication result last:         %s\n",ieee80211_reason_get(mgmt_stats->auth_reason));
++			}
++			else
++			{
++				printf(" Authentication result last:         %s\n","not available");
++			}
++#if 1	
++			printf(" Association requests received:      %llu\n",mgmt_stats->assoc_recv);
++			printf(" Association rejects:                %llu\n",mgmt_stats->assoc_reject_xmit);
++			printf(" Association confirms:               %llu\n",mgmt_stats->assoc_confirm_xmit);
++			printf(" Disassociation requests received:   %llu\n",mgmt_stats->disassoc_recv);
++			if (mgmt_stats->assoc_recv > 0)
++			{
++				printf(" Association result last:            %s\n",ieee80211_reason_get(mgmt_stats->assoc_reason));
++			}
++			else
++			{
++				printf(" Association result last:            %s\n","not available");
++			}
++#endif			
++
++		}
++		else
++		{
++
++			/* SU */
++			
++			printf(" Beacons received:                   %llu\n",mgmt_stats->bcn_recv);
++			printf(" Authentication requests sent:       %llu\n",mgmt_stats->aut_xmit);
++			printf(" Authentication confirms:            %llu\n",mgmt_stats->aut_confirm_recv);
++			printf(" Authentication rejects:             %llu\n",mgmt_stats->aut_reject_recv);
++			printf(" Deauthentication requests received: %llu\n",mgmt_stats->deaut_recv);
++			if (mgmt_stats->aut_confirm_recv || mgmt_stats->aut_reject_recv)
++			{
++				printf(" Authentication result last:         %s\n",ieee80211_reason_get(mgmt_stats->auth_reason));
++			}
++			else
++			{
++				printf(" Authentication result last:         %s\n","not available");
++			}
++#if 1
++			printf(" Association requests sent:          %llu\n",mgmt_stats->assoc_xmit);
++			printf(" Association rejects:                %llu\n",mgmt_stats->assoc_reject_recv);
++			printf(" Association confirms:               %llu\n",mgmt_stats->assoc_confirm_recv);
++			printf(" Disassociation requests sent:       %llu\n",mgmt_stats->disassoc_xmit);
++			if (mgmt_stats->assoc_reject_recv || mgmt_stats->assoc_confirm_recv)
++			{
++				printf(" Association result last:            %s\n",ieee80211_reason_get(mgmt_stats->assoc_reason));
++
++			}
++			else
++			{
++				printf(" Association result last:            %s\n","not available");
++			}
++#endif			
++
++		}
++		printf("----------------------------\r\n");
++		printf(" Multicast packets sent:             %llu\n",multicast_stats->ims_tx_packets);
++		printf(" Multicast packets received:         %llu\n",multicast_stats->ims_rx_packets);
++		printf(" Multicast data packets sent:        %llu\n",multicast_stats->ims_tx_data_packets);
++		printf(" Multicast data packets received:    %llu\n",multicast_stats->ims_rx_data_packets);
++		printf(" Multicast data bytes sent:          %llu\n",multicast_stats->ims_tx_data_bytes);
++		printf(" Multicast data bytes received:      %llu\n",multicast_stats->ims_rx_data_bytes);
++		printf(" Broadcast data packets sent:        %llu\n",multicast_stats->ims_tx_bcast_data_packets);
++		printf(" Broadcast data packets received:    %llu\n",multicast_stats->ims_rx_bcast_data_packets);
++		printf(" Unicast packets sent:               %llu\n",unicast_stats->ims_tx_packets);
++		printf(" Unicast packets received:           %llu\n",unicast_stats->ims_rx_packets);
++		printf(" Unicast data packets sent:          %llu\n",unicast_stats->ims_tx_data_packets);
++		printf(" Unicast data packets received:      %llu\n",unicast_stats->ims_rx_data_packets);
++		printf(" Unicast data bytes sent:            %llu\n",unicast_stats->ims_tx_data_bytes);
++		printf(" Unicast data bytes received:        %llu\n",unicast_stats->ims_rx_data_bytes);
++		printf(" Broadcast data packets sent:        %llu\n",unicast_stats->ims_tx_bcast_data_packets);
++		printf(" Broadcast data packets received:    %llu\n",unicast_stats->ims_rx_bcast_data_packets);
++
++		free(stats);
++		return 0;
++	}
++#else
+ 	strlcpy(ifr.ifr_name, "ath0", sizeof (ifr.ifr_name));
+ 	while ((c = getopt(argc, argv, "ai:")) != -1)
+ 		switch (c) {
+@@ -376,4 +584,5 @@
+ 		}
+ 	}
+         return 0;       	
++#endif
+ }
 diff -urN qca-wifi-org/os/linux/tools/athstats.c qca-wifi-mod/os/linux/tools/athstats.c
 --- qca-wifi-org/os/linux/tools/athstats.c	2018-06-08 11:00:40.000000000 +0530
-+++ qca-wifi-mod/os/linux/tools/athstats.c	2018-08-14 17:29:07.369492336 +0530
++++ qca-wifi-mod/os/linux/tools/athstats.c	2018-08-22 16:30:50.671885994 +0530
 @@ -633,9 +633,11 @@
  {
      fprintf(fd, "txrx stats:\n");
@@ -1311,8 +1626,12 @@ diff -urN qca-wifi-org/os/linux/tools/athstats.c qca-wifi-mod/os/linux/tools/ath
  
  }
  
-@@ -744,8 +748,8 @@
-     fprintf(fd,"ast_be_xmit         :\t%llu\n",radio_stats->tx_beacon);
+@@ -741,11 +745,11 @@
+     const struct wlan_dbg_tx_stats *tx = &wlan_pdev_stats->tx;
+     int   i;
+ 
+-    fprintf(fd,"ast_be_xmit         :\t%llu\n",radio_stats->tx_beacon);
++    fprintf(fd,"ast_be_xmit:%llu\n",radio_stats->tx_beacon);
      fprintf(fd,"ast_be_nobuf        :\t%d\n",radio_stats->be_nobuf);
      fprintf(fd,"ast_tx_buf_count    :\t%u\n",radio_stats->tx_buf_count);
 -    fprintf(fd,"ast_tx_packets      :\t%u\n",radio_stats->tx_mgmt + radio_stats->tx_num_data);
@@ -1984,7 +2303,7 @@ diff -urN qca-wifi-org/umac/include/ieee80211_vap.h qca-wifi-mod/umac/include/ie
  #endif
 diff -urN qca-wifi-org/umac/include/ieee80211_var.h qca-wifi-mod/umac/include/ieee80211_var.h
 --- qca-wifi-org/umac/include/ieee80211_var.h	2018-06-08 11:00:49.000000000 +0530
-+++ qca-wifi-mod/umac/include/ieee80211_var.h	2018-08-13 15:58:43.080370032 +0530
++++ qca-wifi-mod/umac/include/ieee80211_var.h	2018-08-22 16:31:07.463886598 +0530
 @@ -1886,6 +1886,20 @@
      u_int32_t                           ic_whc_scaling_factor; /* scaling factor for WHC best uplink algorithm */
      u_int32_t                           device_id;   /* Device id from probe */
@@ -2006,7 +2325,17 @@ diff -urN qca-wifi-org/umac/include/ieee80211_var.h qca-wifi-mod/umac/include/ie
  } IEEE80211COM, *PIEEE80211COM;
  
  #define BEST_UL_HYST_DEF        10
-@@ -2908,6 +2922,22 @@
+@@ -2283,6 +2297,9 @@
+     struct ieee80211_stats            iv_stats; /* for backward compatibility */
+     struct ieee80211_mac_stats        iv_unicast_stats;   /* mac statistics for unicast frames */
+     struct ieee80211_mac_stats        iv_multicast_stats; /* mac statistics for multicast frames */
++#ifdef SIFY_MGMT_STATS
++	struct ieee80211_mgmt_stats       iv_mgmt_stats;
++#endif	
+     struct tkip_countermeasure        iv_unicast_counterm;  /* unicast tkip countermeasure */
+     struct tkip_countermeasure        iv_multicast_counterm;  /* unicast tkip countermeasure */
+ 
+@@ -2908,6 +2925,22 @@
      bool                       iv_wps_session;
      csa_deauth_type            iv_csa_deauth_mode; /* if set, sends deauth to all stations after CSA */
      u_int8_t                   iv_filter_ssid[IEEE80211_NWID_LEN+1]; /* Filter SSID from scan results */
@@ -2092,7 +2421,7 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt_ap.c qca-wifi-mod/umac/mlme/ieee
              if (iswpaoui(frm)) {
 diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee80211_mgmt.c
 --- qca-wifi-org/umac/mlme/ieee80211_mgmt.c	2018-06-08 11:00:48.000000000 +0530
-+++ qca-wifi-mod/umac/mlme/ieee80211_mgmt.c	2018-08-14 17:40:07.801470468 +0530
++++ qca-wifi-mod/umac/mlme/ieee80211_mgmt.c	2018-08-22 16:31:32.003887480 +0530
 @@ -22,10 +22,17 @@
  #include "ieee80211_wifipos_pvt.h"
  #endif
@@ -2111,7 +2440,40 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee802
  /*
   * Set the direction field and address fields of an outgoing
   * non-QoS frame.  Note this should be called early on in
-@@ -921,6 +928,141 @@
+@@ -597,7 +604,9 @@
+     if (status == IEEE80211_STATUS_SUCCESS) {
+         vap->iv_stats.mlme_auth_success++;
+     }
+-
++#ifdef SIFY_MGMT_STATS
++        vap->iv_mgmt_stats.aut_xmit++;
++#endif
+     return ieee80211_send_mgmt(vap,ni, wbuf,false);
+ }
+ 
+@@ -692,7 +701,9 @@
+         ieee80211_vap_set_complete_buf_handler(wbuf, handler, (void *)ni);
+     }
+ #endif
+-
++#ifdef SIFY_MGMT_STATS
++        vap->iv_mgmt_stats.deaut_xmit++;
++#endif
+     if (vap->iv_vap_is_down)
+         return ieee80211_send_mgmt(vap, ni, wbuf, true);
+     else
+@@ -884,7 +895,9 @@
+             frm = res;
+         }
+     }
+-
++#ifdef SIFY_MGMT_STATS
++        vap->iv_mgmt_stats.disassoc_xmit++;
++#endif
+     if (vap->iv_mesh_mgmt_txsend_config == 0)
+     {
+         wbuf_set_pktlen(wbuf, (frm - (u_int8_t *)wbuf_header(wbuf)));
+@@ -921,6 +934,141 @@
              return 0;
      }
  }
@@ -2253,7 +2615,7 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee802
  
  int
  ieee80211_send_action(
-@@ -1183,21 +1325,103 @@
+@@ -1183,21 +1331,103 @@
      break;
  
      case IEEE80211_ACTION_CAT_VHT: {
@@ -2371,7 +2733,7 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee802
      }
      break;
  
-@@ -2241,6 +2465,7 @@
+@@ -2241,6 +2471,7 @@
  }
  int
  ieee80211_parse_beacon(struct ieee80211vap                  *vap,
@@ -2379,7 +2741,7 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee802
                         struct ieee80211_beacon_frame        *beacon_frame,
                         const struct ieee80211_frame         *wh,
                         u_int32_t                            beacon_frame_length,
-@@ -2404,6 +2629,9 @@
+@@ -2404,6 +2635,9 @@
              scan_entry_parameters->ie_list.htcap = (u_int8_t *) &(((struct ieee80211_ie_htcap *) info_element)->hc_ie);
              break;
          case IEEE80211_ELEMID_RESERVED_47:
@@ -2389,7 +2751,7 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee802
              break;
          case IEEE80211_ELEMID_RSN:
              scan_entry_parameters->ie_list.rsn = (u_int8_t *) info_element;
-@@ -2435,6 +2663,9 @@
+@@ -2435,6 +2669,9 @@
              scan_entry_parameters->ie_list.extcaps = (u_int8_t *) info_element;
              break;
          case IEEE80211_ELEMID_RESERVED_133:
@@ -2399,7 +2761,7 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee802
              break;
          case IEEE80211_ELEMID_TPC:
              break;
-@@ -2864,6 +3095,7 @@
+@@ -2864,6 +3101,7 @@
      }
  
      scan_entry = ieee80211_scan_table_update(ni->ni_vap,
@@ -2407,7 +2769,7 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee802
                                               wh,
                                               wbuf_get_pktlen(wbuf),
                                               subtype,
-@@ -3825,13 +4057,114 @@
+@@ -3825,13 +4063,114 @@
  
                      ieee80211_parse_opmode(ni, (u_int8_t *)&ia_opmode->at_op_mode, subtype);
                  }
@@ -2523,9 +2885,57 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee802
          break;
      }
  
+@@ -4002,6 +4341,10 @@
+     switch (subtype) {
+     case IEEE80211_FC0_SUBTYPE_PROBE_RESP:
+     case IEEE80211_FC0_SUBTYPE_BEACON:
++#ifdef SIFY_MGMT_STATS
++        if( subtype == IEEE80211_FC0_SUBTYPE_BEACON )
++            vap->iv_mgmt_stats.bcn_recv++;
++#endif
+         ieee80211_recv_beacon(ni, wbuf, subtype, rs);
+         /*store all received beacon info*/
+         if(vap->iv_beacon_info_count>=100)
+@@ -4092,6 +4435,9 @@
+         break;
+ 
+     case IEEE80211_FC0_SUBTYPE_AUTH:
++#ifdef SIFY_MGMT_STATS
++                vap->iv_mgmt_stats.aut_recv++;
++#endif
+ #if ATH_NON_BEACON_AP
+         if(IEEE80211_VAP_IS_NON_BEACON_ENABLED(vap)){
+             /*Don't response to auth for non-beaconing AP VAP*/
+@@ -4111,6 +4457,9 @@
+ 
+     case IEEE80211_FC0_SUBTYPE_ASSOC_REQ:
+     case IEEE80211_FC0_SUBTYPE_REASSOC_REQ:
++#ifdef SIFY_MGMT_STATS
++                vap->iv_mgmt_stats.assoc_recv++;
++#endif
+ #if ATH_NON_BEACON_AP
+         if(IEEE80211_VAP_IS_NON_BEACON_ENABLED(vap)){
+             /*Don't response to auth for non-beaconing AP VAP*/
+@@ -4161,10 +4510,16 @@
+         break;
+ 
+     case IEEE80211_FC0_SUBTYPE_DEAUTH:
++#ifdef SIFY_MGMT_STATS
++                vap->iv_mgmt_stats.deaut_recv++;
++#endif
+         ieee80211_recv_deauth(ni, wbuf, subtype);
+         break;
+ 
+     case IEEE80211_FC0_SUBTYPE_DISASSOC:
++#ifdef SIFY_MGMT_STATS
++                vap->iv_mgmt_stats.disassoc_recv++;
++#endif
+         ret = ieee80211_recv_disassoc(ni, wbuf, subtype);
+         if(ret){
+             /*Something wrong, don't fwd to filter*/
 diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt_sta.c qca-wifi-mod/umac/mlme/ieee80211_mgmt_sta.c
 --- qca-wifi-org/umac/mlme/ieee80211_mgmt_sta.c	2018-06-08 11:00:48.000000000 +0530
-+++ qca-wifi-mod/umac/mlme/ieee80211_mgmt_sta.c	2018-07-03 10:12:53.968984596 +0530
++++ qca-wifi-mod/umac/mlme/ieee80211_mgmt_sta.c	2018-08-22 16:31:38.123887700 +0530
 @@ -1074,6 +1074,17 @@
  	frm = ieee80211_add_extender_ie(vap, IEEE80211_FRAME_TYPE_ASSOCREQ, frm);
      }
@@ -2544,10 +2954,78 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt_sta.c qca-wifi-mod/umac/mlme/iee
  
      return (frm - (u_int8_t *)wh);
  }
+@@ -1094,6 +1105,9 @@
+     if (wbuf == NULL)
+         return -ENOMEM;
+ 
++#ifdef SIFY_MGMT_STATS
++        vap->iv_mgmt_stats.assoc_xmit++;
++#endif
+     length = ieee80211_setup_assoc(ni, (struct ieee80211_frame *)wbuf_header(wbuf),
+                                    reassoc, prev_bssid);
+ 
+diff -urN qca-wifi-org/umac/mlme/ieee80211_mlme_ap.c qca-wifi-mod/umac/mlme/ieee80211_mlme_ap.c
+--- qca-wifi-org/umac/mlme/ieee80211_mlme_ap.c	2018-06-08 11:00:48.000000000 +0530
++++ qca-wifi-mod/umac/mlme/ieee80211_mlme_ap.c	2018-08-22 16:31:47.219888027 +0530
+@@ -251,6 +251,17 @@
+     }
+ 
+ end:
++#ifdef SIFY_MGMT_STATS  
++    if (assocstatus != IEEE80211_STATUS_SUCCESS)
++    {
++        vap->iv_mgmt_stats.assoc_reject_xmit++;
++    }
++    else
++    {
++        vap->iv_mgmt_stats.assoc_confirm_xmit++;
++    }
++    vap->iv_mgmt_stats.assoc_reason = assocstatus;
++#endif
+     /* Now send the notification and remove the node if needed */
+     if (reassoc) {
+         IEEE80211_DELIVER_EVENT_MLME_REASSOC_INDICATION(vap, ni->ni_macaddr,
+@@ -960,7 +971,17 @@
+         if (indication_status != IEEE80211_STATUS_SUCCESS ){
+             /* auth is not success, remove the node from node table*/
+             IEEE80211_NODE_LEAVE(ni);
++#ifdef SIFY_MGMT_STATS
++            vap->iv_mgmt_stats.aut_reject_xmit++;
++#endif
+         }
++#ifdef SIFY_MGMT_STATS
++        else
++        {
++            vap->iv_mgmt_stats.aut_confirm_xmit++;
++        }
++        vap->iv_mgmt_stats.auth_reason = indication_status;
++#endif
+     }
+ 
+ #if UMAC_SUPPORT_ACL
 diff -urN qca-wifi-org/umac/mlme/ieee80211_mlme_sta.c qca-wifi-mod/umac/mlme/ieee80211_mlme_sta.c
 --- qca-wifi-org/umac/mlme/ieee80211_mlme_sta.c	2018-06-08 11:00:48.000000000 +0530
-+++ qca-wifi-mod/umac/mlme/ieee80211_mlme_sta.c	2018-07-03 10:12:53.968984596 +0530
-@@ -672,6 +672,8 @@
++++ qca-wifi-mod/umac/mlme/ieee80211_mlme_sta.c	2018-08-22 16:31:54.999888307 +0530
+@@ -655,6 +655,18 @@
+         error = mlme_process_timeout_interval_elements(ni, ie_data, ie_length);
+     }
+ 
++#ifdef SIFY_MGMT_STATS
++    if (status_code != IEEE80211_STATUS_SUCCESS)
++    {
++        vap->iv_mgmt_stats.assoc_reject_recv++;
++    }
++    else
++    {
++        vap->iv_mgmt_stats.assoc_confirm_recv++;
++    }
++    vap->iv_mgmt_stats.assoc_reason = status_code;
++#endif
++
+     /* indicate linkspeed */
+      mlme_get_linkrate(ni, &rxlinkspeed, &txlinkspeed);
+      IEEE80211_DELIVER_EVENT_LINK_SPEED(vap, rxlinkspeed, txlinkspeed);
+@@ -672,6 +684,8 @@
      default:
          break;
      }
@@ -2556,6 +3034,24 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mlme_sta.c qca-wifi-mod/umac/mlme/iee
  }
  
  /* Send association or reassociation request */
+@@ -1295,6 +1309,17 @@
+     }
+ 
+     IEEE80211_DPRINTF(vap, IEEE80211_MSG_MLME, "%s: mlme_auth_complete\n", __func__);
++#ifdef SIFY_MGMT_STATS
++    if (status_code == IEEE80211_STATUS_SUCCESS)
++    {
++        vap->iv_mgmt_stats.aut_confirm_recv++;
++    }
++    else
++    {
++        vap->iv_mgmt_stats.aut_reject_recv++;
++    }
++    vap->iv_mgmt_stats.auth_reason = status_code;
++#endif
+ 
+     /* Request complete */
+     mlme_priv->im_request_type = MLME_REQ_NONE;
 diff -urN qca-wifi-org/umac/scan/ieee80211_scanentry.c qca-wifi-mod/umac/scan/ieee80211_scanentry.c
 --- qca-wifi-org/umac/scan/ieee80211_scanentry.c	2018-06-08 11:00:48.000000000 +0530
 +++ qca-wifi-mod/umac/scan/ieee80211_scanentry.c	2018-07-03 10:12:53.972984595 +0530
