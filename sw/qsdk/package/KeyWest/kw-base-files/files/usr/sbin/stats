@@ -16,13 +16,13 @@ athstats -i wifi1 | grep tx: | sed 's/tx://' >> $LOG5_FILE
 echo ',' >> $LOG5_FILE
 athstats -i wifi1 | grep rx: | sed 's/rx://' >> $LOG5_FILE
 echo ',' >> $LOG5_FILE
-80211stats -i ath1 | grep 'Multicast packets sent:' | sed 's/ Multicast packets sent:            //' >> $LOG5_FILE
+80211stats -i ath1 | grep 'Multicast packets sent:' | sed 's/ Multicast packets sent:             //' >> $LOG5_FILE
 echo ',' >> $LOG5_FILE
 80211stats -i ath1 | grep 'Multicast packets received:' | sed 's/ Multicast packets received:         //' >> $LOG5_FILE
 echo ',' >> $LOG5_FILE
 80211stats -i ath1 | grep 'Unicast packets sent:' | sed 's/ Unicast packets sent:               //' >> $LOG5_FILE
 echo ',' >> $LOG5_FILE
-80211stats -i ath1 | grep 'Unicast packets received:' | sed 's/ Unicast packets received:          //' >> $LOG5_FILE
+80211stats -i ath1 | grep 'Unicast packets received:' | sed 's/ Unicast packets received:           //' >> $LOG5_FILE
 #Management
 echo ',' >> $LOG5_FILE
 athstats -i wifi1 | grep ast_tx_packets: | sed 's/ast_tx_packets://' >> $LOG5_FILE
@@ -31,7 +31,11 @@ athstats -i wifi1 | grep ast_rx_packets: | sed 's/ast_rx_packets://' >> $LOG5_FI
 echo ',' >> $LOG5_FILE
 athstats -i wifi1 | grep ast_be_xmit: | sed 's/ast_be_xmit://' >> $LOG5_FILE
 echo ',' >> $LOG5_FILE
+80211stats -i ath1 | grep  'Beacons received:' | sed 's/ Beacons received:                   //' >> $LOG5_FILE
+echo ',' >> $LOG5_FILE
 80211stats -i ath1 | grep  'Authentication requests received:' | sed 's/ Authentication requests received:   //' >> $LOG5_FILE
+echo ',' >> $LOG5_FILE
+80211stats -i ath1 | grep  'Authentication requests sent:' | sed 's/ Authentication requests sent:       //' >> $LOG5_FILE
 echo ',' >> $LOG5_FILE
 80211stats -i ath1 | grep  'Authentication confirms:' | sed 's/ Authentication confirms:            //' >> $LOG5_FILE
 echo ',' >> $LOG5_FILE
@@ -39,15 +43,21 @@ echo ',' >> $LOG5_FILE
 echo ',' >> $LOG5_FILE
 80211stats -i ath1 | grep  'Deauthentication requests sent:' | sed 's/ Deauthentication requests sent:     //' >> $LOG5_FILE
 echo ',' >> $LOG5_FILE
+80211stats -i ath1 | grep  'Deauthentication requests received:' | sed 's/ Deauthentication requests received: //' >> $LOG5_FILE
+echo ',' >> $LOG5_FILE
 80211stats -i ath1 | grep  'Authentication result last:' | sed 's/ Authentication result last:         //' >> $LOG5_FILE
 echo ',' >> $LOG5_FILE
 80211stats -i ath1 | grep  'Association requests received:' | sed 's/ Association requests received:      //' >> $LOG5_FILE
+echo ',' >> $LOG5_FILE
+80211stats -i ath1 | grep  'Association requests sent:' | sed 's/ Association requests sent:          //' >> $LOG5_FILE
 echo ',' >> $LOG5_FILE
 80211stats -i ath1 | grep  'Association rejects:' | sed 's/ Association rejects:                //' >> $LOG5_FILE
 echo ',' >> $LOG5_FILE
 80211stats -i ath1 | grep  'Association confirms' | sed 's/ Association confirms:               //' >> $LOG5_FILE
 echo ',' >> $LOG5_FILE
 80211stats -i ath1 | grep  'Disassociation requests received:' | sed 's/ Disassociation requests received:   //' >> $LOG5_FILE
+echo ',' >> $LOG5_FILE
+80211stats -i ath1 | grep  'Disassociation requests sent:' | sed 's/ Disassociation requests sent:       //' >> $LOG5_FILE
 echo ',' >> $LOG5_FILE
 80211stats -i ath1 | grep  'Association result last:' | sed 's/ Association result last:            //' >> $LOG5_FILE
 #Errors
@@ -64,13 +74,13 @@ athstats -i wifi0 | grep tx: | sed 's/tx://' >> $LOG24_FILE
 echo ',' >> $LOG24_FILE
 athstats -i wifi0 | grep rx: | sed 's/rx://' >> $LOG24_FILE
 echo ',' >> $LOG24_FILE
-80211stats -i ath0 | grep 'Multicast packets sent:' | sed 's/ Multicast packets sent:            //' >> $LOG24_FILE
+80211stats -i ath0 | grep 'Multicast packets sent:' | sed 's/ Multicast packets sent:             //' >> $LOG24_FILE
 echo ',' >> $LOG24_FILE
 80211stats -i ath0 | grep 'Multicast packets received:' | sed 's/ Multicast packets received:         //' >> $LOG24_FILE
 echo ',' >> $LOG24_FILE
 80211stats -i ath0 | grep 'Unicast packets sent:' | sed 's/ Unicast packets sent:               //' >> $LOG24_FILE
 echo ',' >> $LOG24_FILE
-80211stats -i ath0 | grep 'Unicast packets received:' | sed 's/ Unicast packets received:          //' >> $LOG24_FILE
+80211stats -i ath0 | grep 'Unicast packets received:' | sed 's/ Unicast packets received:           //' >> $LOG24_FILE
 #Management
 echo ',' >> $LOG24_FILE
 athstats -i wifi0 | grep ast_tx_packets: | sed 's/ast_tx_packets://' >> $LOG24_FILE
@@ -79,7 +89,11 @@ athstats -i wifi0 | grep ast_rx_packets: | sed 's/ast_rx_packets://' >> $LOG24_F
 echo ',' >> $LOG24_FILE
 athstats -i wifi0 | grep ast_be_xmit: | sed 's/ast_be_xmit://' >> $LOG24_FILE
 echo ',' >> $LOG24_FILE
+80211stats -i ath0 | grep  'Beacons received:' | sed 's/ Beacons received:                   //' >> $LOG24_FILE
+echo ',' >> $LOG24_FILE
 80211stats -i ath0 | grep  'Authentication requests received:' | sed 's/ Authentication requests received:   //' >> $LOG24_FILE
+echo ',' >> $LOG24_FILE
+80211stats -i ath0 | grep  'Authentication requests sent:' | sed 's/ Authentication requests sent:       //' >> $LOG24_FILE
 echo ',' >> $LOG24_FILE
 80211stats -i ath0 | grep  'Authentication confirms:' | sed 's/ Authentication confirms:            //' >> $LOG24_FILE
 echo ',' >> $LOG24_FILE
@@ -87,15 +101,21 @@ echo ',' >> $LOG24_FILE
 echo ',' >> $LOG24_FILE
 80211stats -i ath0 | grep  'Deauthentication requests sent:' | sed 's/ Deauthentication requests sent:     //' >> $LOG24_FILE
 echo ',' >> $LOG24_FILE
+80211stats -i ath0 | grep  'Deauthentication requests received:' | sed 's/ Deauthentication requests received: //' >> $LOG24_FILE
+echo ',' >> $LOG24_FILE
 80211stats -i ath0 | grep  'Authentication result last:' | sed 's/ Authentication result last:         //' >> $LOG24_FILE
 echo ',' >> $LOG24_FILE
 80211stats -i ath0 | grep  'Association requests received:' | sed 's/ Association requests received:      //' >> $LOG24_FILE
+echo ',' >> $LOG24_FILE
+80211stats -i ath0 | grep  'Association requests sent:' | sed 's/ Association requests sent:          //' >> $LOG24_FILE
 echo ',' >> $LOG24_FILE
 80211stats -i ath0 | grep  'Association rejects:' | sed 's/ Association rejects:                //' >> $LOG24_FILE
 echo ',' >> $LOG24_FILE
 80211stats -i ath0 | grep  'Association confirms' | sed 's/ Association confirms:               //' >> $LOG24_FILE
 echo ',' >> $LOG24_FILE
 80211stats -i ath0 | grep  'Disassociation requests received:' | sed 's/ Disassociation requests received:   //' >> $LOG24_FILE
+echo ',' >> $LOG24_FILE
+80211stats -i ath0 | grep  'Disassociation requests sent:' | sed 's/ Disassociation requests sent:       //' >> $LOG24_FILE
 echo ',' >> $LOG24_FILE
 80211stats -i ath0 | grep  'Association result last:' | sed 's/ Association result last:            //' >> $LOG24_FILE
 #Errors
