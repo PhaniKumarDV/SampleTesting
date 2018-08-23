@@ -37,9 +37,15 @@ start_service() {
 }
 
 reload_service() {
-	init_switch
-	ubus call network reload
-	/sbin/wifi reload_legacy
+	ifdown -a
+	sleep 1
+	trap '' TERM
+	stop "$@"
+	network_cleanup
+	start "$@"
+	#init_switch
+	#ubus call network reload
+	#/sbin/wifi reload_legacy
 }
 
 stop() {
