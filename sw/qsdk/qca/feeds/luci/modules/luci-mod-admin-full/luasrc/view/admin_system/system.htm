@@ -16,6 +16,7 @@
 <div class="page-content">
 <script type="text/javascript" src="<%=resource%>/cbi.js"></script>
 <script type="text/javascript">
+	var zoneval = <%=luci.http.write_json(zoneval)%>;
 	XHR.poll(5, '<%=luci.dispatcher.build_url("admin", "system", "clock_status")%>', null,
 		function(x, rv)
 		{
@@ -27,20 +28,28 @@
 		}
 	);
 
-function zoneoptions()
-{
-    var val = "todo"
-   var x = val.split("@");
-   for(i=0; i<(x.length - 1); i++)
-   {
-      var y = x[i].split("=");
-      document.write("<option value='");
-      document.write(y[0]);
-      document.write("'>");
-      document.write(y[0]);
-      document.write("</option>");
-   }
+
+function getoptions(value)                                         
+{                                                                  
+    var a = zoneval.split("@");                                
+    for( i = 0; i < a.length; i++ )                                
+    {                                    
+        var val = a[i].split("=");       
+        document.write("<option value=");
+        document.write(val[0]);          
+        if( value == val[0] )            
+            document.write(" selected");  
+        document.write(">");             
+        document.write(val[1]);          
+        document.write("</option>");     
+    }                                    
 }
+
+function updatezonename(id)
+{
+//    document.getElementById("zonename").value = id.options[id.selectedIndex].text;
+}
+
 var def = new Array(8);
 function save_def_value()
 {
@@ -75,6 +84,13 @@ function save_value()
 		    }
 	    }
     );
+}
+function updatentp()
+{
+    if( document.getElementById("ntp2").checked == "1" )
+        document.getElementById("ntp1").value = 1;
+    else
+        document.getElementById("ntp1").value = 0;
 }
 function updateled()
 {
@@ -116,23 +132,54 @@ function updategps()
     <fieldset class="cbi-section">
        <form name="formTable">
           <div class="cbi-value">
-            <label class="cbi-value-title">Local Time</label>
-            <div class="cbi-value-field" id="clock">
-            </div>
-          </div>
-          <div class="cbi-value">
-            <label class="cbi-value-title">Hostname</label>
+            <label class="cbi-value-title">Host Name</label>
             <div class="cbi-value-field">
               <input type="text" name="60" class="cbi-input-select" value="<%=uciget('uci get system.@system[0].hostname')%>" >
             </div>
           </div>
+        <h2><a id="content" name="content"><%:NTP%></a></h2>
+          <div class="cbi-value">
+            <label class="cbi-value-title">Enable NTP</label>
+            <div style="display:none"><input type="text" id="ntp1" name="72" value="<%=uciget('uci get system.ntp.enabled')%>"></div>
+            <div class="cbi-value-field">
+                 <script type="text/javascript">
+                 var ntp = "<%=uciget('uci get system.ntp.enabled')%>";
+                 document.write("<input type='checkbox' ");
+                 if( ntp == 1 )
+                     document.write(" checked");
+                 document.write(" id='ntp2' class='cibi-input-select' onchange='updatentp()' >");
+              </script>
+            </div>
+          </div>
+          <div class="cbi-value">
+            <label class="cbi-value-title">NTP Server</label>
+            <div class="cbi-value-field">
+              <input type="text" name="71" class="cbi-input-select" value="<%=uciget('uci get system.ntp.server')%>" >
+            </div>
+          </div>
+          <!--
           <div class="cbi-value" style="display:none">
+            <label class="cbi-value-title">Zone Name</label>
+            <div class="cbi-value-field">
+              <input type="text" name="70" id="zonename" class="cbi-input-select" value="<%=uciget('uci get system.@system[0].zonename')%>" >
+            </div>
+          </div>-->
+          <div class="cbi-value">
             <label class="cbi-value-title">Timezone</label>
             <div class="cbi-value-field">
-              <select class="cbi-input-select" name="61">
+              <select class="cbi-input-select" name="61" onchange="updatezonename(this)">
+              <script type="text/javascript">
+              var tz = "<%=uciget('uci get system.@system[0].timezone')%>";
+              getoptions(tz);
+              </script>
               </select>
             </div>
-        </div>
+          </div>
+          <div class="cbi-value">
+            <label class="cbi-value-title" style="padding-top:2px;">Local Time</label>
+            <div class="cbi-value-field" id="clock">
+            </div>
+          </div>
         <h2><a id="content" name="content"><%:GPS%></a></h2>
           <div class="cbi-value">
             <label class="cbi-value-title">Enable GPS</label>

@@ -337,6 +337,15 @@ void cfg_set( char *type, char *value )
         case UCI_ID_TEMP_LOG_INT:
             sprintf(cmd,"uci set system.@system[0].temploginterval='%s'",value);
             break;
+        case UCI_ID_ZONENAME:
+            sprintf(cmd,"uci set system.@system[0].zonename='%s'",value);
+            break;
+        case UCI_ID_NTP_SERVER:
+            sprintf(cmd,"uci set system.ntp.server='%s'",value);
+            break;
+        case UCI_ID_NTP:
+            sprintf(cmd,"uci set system.ntp.enabled='%s'",value);
+            break;
         default:
             break;
     }
