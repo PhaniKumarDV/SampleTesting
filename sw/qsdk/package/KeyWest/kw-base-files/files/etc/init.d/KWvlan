@@ -21,20 +21,22 @@ start_service() {
 
     if [ $status -eq "2" ]; then
         mode=-1
+        mgmtvlan=0
+        accvlan=0
     fi
 #Setting Mode to Trunk if QinQ configured
 #Setting svlan and svlanethertype to -1 if not QinQ
     if [ $mode -eq "3" ]; then
         mode=2
     else
-        svlan=-1
-        svlanethertype=-1
+        svlan=0
+        svlanethertype=0
     fi
     iwpriv ath1 kwn_vlan_mode $mode
     iwpriv ath1 kwn_mgmt_vid $mgmtvlan
     iwpriv ath1 kwn_acc_vid $accvlan
     iwpriv ath1 kwn_allowuntag $trunkopt
-    iwpriv ath1 kwn_vid_del "-1"
+    iwpriv ath1 kwn_vid_del "0"
     [ -n "$trunkvlan" ] && {
             for id in $trunkvlan; do
             iwpriv ath1 kwn_vid_add "$id"
