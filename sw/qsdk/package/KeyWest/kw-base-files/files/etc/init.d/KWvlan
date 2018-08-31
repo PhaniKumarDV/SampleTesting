@@ -24,11 +24,7 @@ start_service() {
         mgmtvlan=0
         accvlan=0
     fi
-#Setting Mode to Trunk if QinQ configured
-#Setting svlan and svlanethertype to -1 if not QinQ
-    if [ $mode -eq "3" ]; then
-        mode=2
-    else
+    if [ $mode -ne "3" ]; then
         svlan=0
         svlanethertype=0
     fi
