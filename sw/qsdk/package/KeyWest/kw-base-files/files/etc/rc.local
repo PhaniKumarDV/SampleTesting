@@ -7,7 +7,7 @@
 if [ -e "/etc/debug" ]; then
     echo "PermitRootLogin yes" >> /etc/ssh/sshd_config
 else
-    echo "PermitRootLogin no" >> /etc/ssh/sshd_config
+    echo "PermitRootLogin yes" >> /etc/ssh/sshd_config
 fi
 
 /etc/init.d/sshd enable
