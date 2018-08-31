@@ -98,6 +98,7 @@ SNMP_MIB_MODULES_INCLUDED = \
 	host/hr_storage \
 	host/hr_system \
 	ieee802dot11 \
+	kwnmib \
 	if-mib/ifXTable \
 	mibII/at \
 	mibII/icmp \
