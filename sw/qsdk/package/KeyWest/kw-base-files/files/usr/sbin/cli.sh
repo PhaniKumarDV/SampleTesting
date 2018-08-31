@@ -15,6 +15,10 @@ while [ 1 ] ; do
 		exit
 	elif [ "$CMD" == "reload_config" ]; then
 		reload_config
+	elif [ "$CMD" == "reboot" ]; then
+		reboot
+	elif [ "$CMD" == "reset" ]; then
+		firstboot
 	else
 		a=`echo "$CMD" | cut -d' ' -f 1`
 		if [ "$a" != "uci" ]; then
