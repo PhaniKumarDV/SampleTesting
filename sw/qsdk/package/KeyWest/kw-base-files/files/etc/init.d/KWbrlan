@@ -13,7 +13,6 @@ start_service() {
         uci set network.kwlan.proto='static'
         uci set network.kwlan.ipaddr='192.168.5.1'
         uci set network.kwlan.netmask='255.255.255.0'
-        uci set network.kwlan.gateway='192.168.5.1'
 
         uci set dhcp.kwlan=dhcp
         uci set dhcp.kwlan.start='100'
