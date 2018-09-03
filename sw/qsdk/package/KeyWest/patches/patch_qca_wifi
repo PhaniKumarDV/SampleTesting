@@ -1849,7 +1849,7 @@ diff -urN qca-wifi-org/umac/base/ieee80211_config.c qca-wifi-mod/umac/base/ieee8
                   vap->iv_fixed_rate.mode   = IEEE80211_FIXED_RATE_LEGACY;
 diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.c qca-wifi-mod/umac/base/ieee80211_ucfg.c
 --- qca-wifi-org/umac/base/ieee80211_ucfg.c	2018-06-08 11:00:49.000000000 +0530
-+++ qca-wifi-mod/umac/base/ieee80211_ucfg.c	2018-08-31 19:08:14.285500455 +0530
++++ qca-wifi-mod/umac/base/ieee80211_ucfg.c	2018-09-03 15:52:22.295724755 +0530
 @@ -50,6 +50,26 @@
  #define HIGHEST_BASIC_RATE 24000
  #define THREE_HUNDRED_FIFTY_MBPS 350000
@@ -1865,12 +1865,12 @@ diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.c qca-wifi-mod/umac/base/ieee802
 +extern int edma_set_mgmt_vlan_id( struct net_device *dev, int16_t vlan_id );
 +extern int edma_set_svlan_id( struct net_device *dev, int16_t vlan_id );
 +extern int edma_set_svlan_etherType( struct net_device *dev, uint16_t etherType );
-+extern uint32_t edma_get_tx_pkts( struct net_device *dev );
-+extern uint32_t edma_get_tx_errors( struct net_device *dev );
-+extern uint32_t edma_get_tx_bytes( struct net_device *dev );
-+extern uint32_t edma_get_rx_pkts( struct net_device *dev );
-+extern uint32_t edma_get_rx_errors( struct net_device *dev );
-+extern uint32_t edma_get_rx_bytes( struct net_device *dev );
++extern uint64_t edma_get_tx_pkts( struct net_device *dev );
++extern uint64_t edma_get_tx_errors( struct net_device *dev );
++extern uint64_t edma_get_tx_bytes( struct net_device *dev );
++extern uint64_t edma_get_rx_pkts( struct net_device *dev );
++extern uint64_t edma_get_rx_errors( struct net_device *dev );
++extern uint64_t edma_get_rx_bytes( struct net_device *dev );
 +extern int edma_get_mgmt_vlan_id( struct net_device *dev );
 +
 +
