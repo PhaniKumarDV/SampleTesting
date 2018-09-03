@@ -378,6 +378,9 @@ static void handle_ifla_wireless ( char *data, int len)
 						//syslog(LOG_ALERT,"Wireless Device Registered Successfully:%s",mac);
 						sify_file_write(mac,1,0);
 						registered = 1;
+                        system("iwpriv ath1 kwn_tput_dur 5");
+                        system("iwpriv ath1 kwn_tput_dir 3");
+                        system("iwpriv ath1 kwn_tput_test 1");
 					}
 				}
 				break;

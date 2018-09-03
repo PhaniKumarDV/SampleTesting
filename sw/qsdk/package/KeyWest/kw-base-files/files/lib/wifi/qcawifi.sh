@@ -1923,20 +1923,19 @@ enable_qcawifi() {
 				acrate="9";;
 		esac
 
+
+		if [ "$rate" == "auto" ]; then
+			rate=21;
+        fi
 		config_get opmode "$device" hwmode
 		case $opmode in
 			11a)
 				iwconfig "$ifname" rate $arate ;;
 			11na)
-				iwpriv "$ifname" set11NRates "$nrate" ;;
+				iwpriv "$ifname" set11NRates "$rate" ;;
 			11ac)
-				iwpriv "$ifname" nss "$nss"
-				iwpriv "$ifname" vhtmcs "$acrate" ;;
+				iwpriv "$ifname" vhtmcs "$rate" ;;
 		esac
-
-		if [ $rate -ne "auto" ]; then
-			iwconfig "$ifname" rate $rate
-		fi
 
 		#config_get set11NRates "$vif" set11NRates
 		#[ -n "$set11NRates" ] && iwpriv "$ifname" set11NRates "$set11NRates"
