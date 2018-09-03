@@ -346,6 +346,9 @@ void cfg_set( char *type, char *value )
         case UCI_ID_NTP:
             sprintf(cmd,"uci set system.ntp.enabled='%s'",value);
             break;
+        case UCI_ID_DISTANCE:
+            sprintf(cmd,"uci set wireless.wifi1.distance='%s'",value);
+            break;
         default:
             break;
     }

@@ -88,7 +88,8 @@ enum uci_cfg_id {
     UCI_ID_TEMP_LOG_INT =69,
     UCI_ID_ZONENAME =70,
     UCI_ID_NTP_SERVER =71,
-    UCI_ID_NTP =72
+    UCI_ID_NTP =72,
+    UCI_ID_DISTANCE =73
 };
 
 typedef struct

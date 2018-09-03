@@ -275,6 +275,12 @@ function updatehidessid()
            </div>
          </div>
           <div class="cbi-value">
+            <label class="cbi-value-title">Distance</label>
+            <div class="cbi-value-field">
+              <input type="text" name="73" class="cbi-input-select" value="<%=uciget('uci get wireless.wifi1.distance')%>" > &nbsp; Km
+            </div>
+          </div>
+          <div class="cbi-value">
             <label class="cbi-value-title">Uplink Limit</label>
             <div class="cbi-value-field">
               <input type="text" name="10" class="cbi-input-select" value="<%=uciget('uci get wireless.@wifi-iface[1].ullmt')%>" > &nbsp; Kbps
