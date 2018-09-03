@@ -332,9 +332,7 @@
 							tr.insertCell(-1).innerHTML = assoclist[j].bssid;
 							tr.insertCell(-1).innerHTML = nowrap(String.format('%h', iw.ssid ? iw.ssid : '?'));
 
-							//tr.insertCell(-1).innerHTML = arptable[assoclist[j].bssid]
-							//	? arptable[assoclist[j].bssid] : '?';
-							tr.insertCell(-1).innerHTML = assoclist[j].ip_addr;
+							tr.insertCell(-1).innerHTML = "<a href='http://"+ assoclist[j].ip_addr +"' target='_blank'>"+assoclist[j].ip_addr+"</a>";
 
                             var d = distanceInKmBetweenEarthCoordinates(assoclist[j].local_lat,assoclist[j].local_long,assoclist[j].remote_lat,assoclist[j].remote_long);
                             d = d.toFixed(2);

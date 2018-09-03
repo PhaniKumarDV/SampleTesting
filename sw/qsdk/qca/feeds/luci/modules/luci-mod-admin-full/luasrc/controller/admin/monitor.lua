@@ -239,9 +239,17 @@ function action_logtype( logtype )
 	if( string.match(logtype,"3") ) then
 		data = luci.sys.exec("cat /tmp/temp-log")
 	end
-    -- Config LOg
+    -- Config Log
 	if( string.match(logtype,"4") ) then
 		data = luci.sys.exec("cat /etc/uci_delta")
+	end
+    -- Wireless Events
+	if( string.match(logtype,"5") ) then
+        if string.len(string.sub(luci.util.exec("cat /etc/wifi_packet_logs"),1,-2) ) > 5 then
+            data = luci.sys.exec("cat /etc/wifi_packet_logs")
+        else
+            data = "Wireless Log file is empty."
+        end
 	end
 	luci.http.prepare_content("application/json")
 	luci.http.write_json(data)
