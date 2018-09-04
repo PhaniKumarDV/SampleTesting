@@ -61,10 +61,6 @@
     var nbwlist = [ "HT20=20MHz", "HT40+=40MHz" ];
     var abwlist = [ "HT20=20MHz" ];
     var counlist = [ "5011=RUSSIA", "5016=INDIA_UL", "5017=INDIA L" ];
-    var acratelist = ["auto=Auto", "0=MCS0", "1=MCS1", "2=MCS2","3=MCS3","4=MCS4","5=MCS5","6=MCS6","7=MCS7","8=MCS8","9=MCS9","10=MCS10","11=MCS11","12=MCS12","13=MCS13","14=MCS14","15=MCS15","16=MCS16","17=MCS17","18=MCS18","19=MCS19"];
-    var nratelist = ["auto=Auto", "0=MCS0", "1=MCS1", "2=MCS2","3=MCS3","4=MCS4","5=MCS5","6=MCS6","7=MCS7","8=MCS8","9=MCS9","10=MCS10","11=MCS11","12=MCS12","13=MCS13","14=MCS14","15=MCS15"];
-    var aratelist = ["auto=Auto", "0=MCS0", "1=MCS1", "2=MCS2","3=MCS3","4=MCS4","5=MCS5","6=MCS6","7=MCS7"];
-    var pwrlist = ["0=0dBm (1mW)", "8=8dBm (6mW)", "11=11dBm (12mW)", "14=14dBm (25mW)", "17=17dBm (50mW)", "20=20dBm (100mW)", "23=23dBm (199mW)", "26=26dBm (398mW)"];
     var chanlist = [ "auto=Auto" ];
 	for (var i = 0; i < freqlist.length; i++)
 		chanlist.push(
@@ -126,23 +122,16 @@ function updateparam( hwvalue )
     var bw = "<%=uciget('uci get wireless.wifi1.htmode')%>";
     var rate = "<%=uciget('uci get wireless.wifi1.rate')%>";
     var bwlist = acbwlist;
-    var ratelist = acratelist;
     if( hwvalue == "11na" ) {
         bwlist = nbwlist;
-        ratelist = nratelist;
     }
     if( hwvalue == "11a" ) {
         bwlist = abwlist;
-        ratelist = aratelist;
     }
     var str ="<select class='cbi-input-select' name='5'>";
     str += returnoptions( bwlist, bw );
     str += "</select>";
     document.getElementById("bwid").innerHTML = str;
-    var str ="<select class='cbi-input-select' name='7'>";
-    str += returnoptions( ratelist, rate );
-    str += "</select>";
-    document.getElementById("rateid").innerHTML = str;
 }
 
 function getoptions( list, value )
@@ -177,7 +166,8 @@ function updatehidessid()
 <h2><a id="content" name="content"><%: 5GHz Radio Configuration%></a></h2>
 <div class="cbi-map">
     <ul class="cbi-tabmenu">
-        <li style="margin-right:4px" class="cbi-tab"><a href="#"><%:Configuration%></a></li>
+        <li style="margin-right:4px" class="cbi-tab"><a href="#"><%:Properties%></a></li>
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=REQUEST_URI%>/mimo1"><%:MIMO%></a></li>
         <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=REQUEST_URI%>/security1"><%:Security%></a></li>
         <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=REQUEST_URI%>/macacl1"><%:MAC ACL%></a></li>
     </ul>
@@ -238,43 +228,7 @@ function updatehidessid()
              </select>
            </div>
          </div>
-          <div class="cbi-value">
-            <label class="cbi-value-title">Rate</label>
-            <div class="cbi-value-field" id="rateid">
-           </div>
-         </div>
-          <div class="cbi-value">
-            <label class="cbi-value-title">Transmit Power</label>
-            <div class="cbi-value-field">
-              <select class="cbi-input-select" name="8">
-                 <script type="text/javascript">
-                 var pwr = "<%=uciget('uci get wireless.wifi1.txpower')%>";
-                 if( pwr == "" )
-                     pwr = 26;
-                 getoptions( pwrlist, pwr );
-                 </script>
-             </select>
-           </div>
-         </div>
-          <div class="cbi-value">
-            <label class="cbi-value-title">AMSDU</label>
-            <div class="cbi-value-field">
-              <select class="cbi-input-select" name="9">
-                 <script type="text/javascript">
-                 var amsdu = "<%=uciget('uci get wireless.@wifi-iface[1].kwnamsdu')%>";
-                 document.write("<option value='1' ");
-                 if( amsdu == "1" )
-                     document.write(" selected");
-                 document.write(">Enable</option>");
-                 document.write("<option value='2' ");
-                 if( amsdu == "2" )
-                     document.write(" selected");
-                 document.write(">Disable</option>");
-                 </script>
-             </select>
-           </div>
-         </div>
-          <div class="cbi-value">
+                <div class="cbi-value">
             <label class="cbi-value-title">Distance</label>
             <div class="cbi-value-field">
               <input type="text" name="73" class="cbi-input-select" value="<%=uciget('uci get wireless.wifi1.distance')%>" > &nbsp; Km

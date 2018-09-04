@@ -53,7 +53,7 @@ function save_value()
 
 function delete_mac(ind)
 {
-    var maclist = "<%=uciget('uci get wireless.@wifi-iface[1].maclist')%>";
+    var maclist = "<%=uciget('uci get wireless.@wifi-iface[0].maclist')%>";
     var res = "51=";
     var mac = maclist.split(" ");
     for(i=0; i<mac.length; i++ )
@@ -73,7 +73,7 @@ function delete_mac(ind)
     XHR.get('<%=luci.dispatcher.build_url("admin")%>/cfg_set' + '/' + res, null,
 	    function(x, data) {
 		    if (data) { 
-                location.href = "<%=luci.dispatcher.build_url("admin/wireless/radio1/macacl1")%>";
+                location.href = "<%=luci.dispatcher.build_url("admin/wireless/radio2/macacl2")%>";
 		    }
 	    }
     );
@@ -81,7 +81,7 @@ function delete_mac(ind)
 function add_mac()
 {
     var newmac = document.getElementById("newmac").value;
-    var maclist = "<%=uciget('uci get wireless.@wifi-iface[1].maclist')%>";
+    var maclist = "<%=uciget('uci get wireless.@wifi-iface[0].maclist')%>";
     var res;
     if( maclist != "" ) {
        res = maclist.concat(" ");
@@ -94,7 +94,7 @@ function add_mac()
     XHR.get('<%=luci.dispatcher.build_url("admin")%>/cfg_set' + '/' + res, null,
 	    function(x, data) {
 		    if (data) { 
-                location.href = "<%=luci.dispatcher.build_url("admin/wireless/radio1/macacl1")%>";
+                location.href = "<%=luci.dispatcher.build_url("admin/wireless/radio2/macacl2")%>";
 		    }
 	    }
     );
@@ -104,7 +104,7 @@ function add_mac()
 <h2><a id="content" name="content"><%: 2.4GHz Radio Configuration%></a></h2>
 <div class="cbi-map">
     <ul class="cbi-tabmenu">
-        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=luci.dispatcher.build_url("admin/wireless/radio2")%>"><%:Configuration%></a></li>
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=luci.dispatcher.build_url("admin/wireless/radio2")%>"><%:Properties%></a></li>
         <li style="margin-right:4px" class="cbi-tab-disabled"><a href="security2"><%:Security%></a></li>
         <li style="margin-right:4px" class="cbi-tab"><a href="#"><%:MAC ACL%></a></li>
     </ul>
@@ -136,7 +136,7 @@ function add_mac()
     </fieldset>
     <h2><a id="content" name="content"><%: MAC ACL Table%></a></h2>
     <fieldset class="cbi-section">
-          <div class="cbi-value">
+          <div class="cbi-value" style="padding-left:98px;">
             <div class="cbi-value-field">
             <label class="cbi-value-title">MAC Address</label>&nbsp;&nbsp;
               <input type="text" id="newmac" class="cbi-input-select" style="width:150px;" value="" >
@@ -145,7 +145,7 @@ function add_mac()
           </div>
     </fieldset><br>
     <fieldset class="cbi-section">
-	<table class="cbi-section-table" style="width:350px;">
+	<table class="cbi-section-table" style="width:350px; margin-left:98px; margin-top:15px;">
         <script type="text/javascript">
            var maclist = "<%=uciget('uci get wireless.@wifi-iface[0].maclist')%>";
            if( maclist != "" )

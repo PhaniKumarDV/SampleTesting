@@ -85,6 +85,8 @@ void cfg_set( char *type, char *value )
             break;
         case UCI_ID_RADIO1_OPMODE:
             sprintf(cmd,"uci set wireless.wifi1.hwmode='%s'",value);
+            system( cmd );
+            sprintf(cmd,"uci set wireless.wifi1.rate='auto'",value);
             break;
         case UCI_ID_RADIO1_BANDWIDTH:
             sprintf(cmd,"uci set wireless.wifi1.htmode='%s'",value);
@@ -348,6 +350,15 @@ void cfg_set( char *type, char *value )
             break;
         case UCI_ID_DISTANCE:
             sprintf(cmd,"uci set wireless.wifi1.distance='%s'",value);
+            break;
+        case UCI_ID_RADIO1_SHORTGI:
+            sprintf(cmd,"uci set wireless.@wifi-iface[1].shortgi='%s'",value);
+            break;
+        case UCI_ID_RADIO1_TXCHAINMASK:
+            sprintf(cmd,"uci set wireless.wifi1.txchainmask='%s'",value);
+            break;
+        case UCI_ID_RADIO1_RXCHAINMASK:
+            sprintf(cmd,"uci set wireless.wifi1.rxchainmask='%s'",value);
             break;
         default:
             break;

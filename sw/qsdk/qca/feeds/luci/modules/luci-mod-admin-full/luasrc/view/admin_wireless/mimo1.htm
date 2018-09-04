@@ -1,0 +1,292 @@
+<%#
+ Copyright 2008-2009 Steven Barth <steven@midlink.org>
+ Copyright 2008-2015 Jo-Philipp Wich <jow@openwrt.org>
+ Licensed to the public under the Apache License 2.0.
+-%>
+
+<%-
+        function uciget(cmd)
+                local res = luci.util.exec(cmd)
+                local str = string.gsub(res, "\n", "")
+                return str
+        end
+-%>
+
+<%+header%>
+<div class="page-content">
+<script type="text/javascript" src="<%=resource%>/cbi.js"></script>
+<script type="text/javascript">
+var def = new Array(8);
+function save_def_value()
+{
+    var f = document.formTable;
+    for (i=0; i<f.elements.length; i++)
+    {
+        def[i] = f.elements[i].value;
+    }
+}
+function disable_spin()
+{
+    document.getElementById("spin").innerHTML = "";
+}
+
+function bin_convert(dec,pos)
+{
+    var value;
+    x = parseInt(dec);
+    var bin = x.toString(2);
+    var arr=bin.split("");
+    arr.reverse();
+    var check=0;
+    for(i=0;i<arr.length;i++)
+    {
+        if(pos==i)
+        {
+            value=arr[i];
+            check=1;
+        }
+    }
+    if(check==0)
+        value=0;
+    return value;
+}
+
+String.prototype.setCharAt = function(index,chr) {
+    if(index > this.length-1) return mask;
+    return this.substr(0,index) + chr + this.substr(index+1);
+}
+
+function setmask(id1, id2, id3)
+{
+    var mask = "00";
+    if( document.getElementById(id1).checked == true ) {
+        mask = mask.setCharAt(1,1);
+    }
+    if( document.getElementById(id2).checked == true ) {
+        mask = mask.setCharAt(0,1);
+    }
+    var dec = parseInt(mask, 2);
+    document.getElementById(id3).value = dec;
+}
+
+function save_value()
+{
+    document.getElementById("spin").innerHTML = "<i class='fa fa-spinner fa-pulse'></i>";
+    setTimeout("disable_spin()",1000);
+    var setdata = "";
+    var f = document.formTable;
+    for( i=0; i<f.elements.length; i++)
+    {
+        if( def[i] != f.elements[i].value ) {
+            def[i] = f.elements[i].value;
+            setdata += f.elements[i].name + "=" + f.elements[i].value + "~";
+        }
+    }
+    XHR.get('<%=luci.dispatcher.build_url("admin")%>/cfg_set' + '/' + setdata, null,
+	    function(x, data) {
+		    if (data) { 
+		    }
+	    }
+    );
+}
+
+function returnoptions( min, total, value )
+{
+    var opt = "";
+    for( i = min; i < (total + min); i++ )
+    {
+        opt += "<option value=";
+        opt += i;
+        if( value == i )
+           opt += " selected";
+        opt += ">MCS" + i + "</option>";
+    }
+    return opt;
+}
+
+var spatial_stream;
+
+function updateparam( stream )
+{
+    if( stream == 3 ) {
+        document.getElementById("mcs_idx").style.display = "none";
+        var str ="<input type='text' class='cbi-input-select' name='7' value='auto'>";
+        document.getElementById("rateid").innerHTML = str;
+        return;
+    }
+    else
+        document.getElementById("mcs_idx").style.display = "block";
+    var hwvalue = "<%=uciget('uci get wireless.wifi1.hwmode')%>";
+    var bw = "<%=uciget('uci get wireless.wifi1.htmode')%>";
+    var rate = "<%=uciget('uci get wireless.wifi1.rate')%>";
+    var min = 0, total = 8;
+    if( hwvalue == "11ac" ) {
+        total = 10;
+        if( stream == 2 )
+            min = 10;
+    }
+    if( hwvalue == "11na" ) {
+        if( stream == 2 ) {
+            min = 8;
+        }
+    }
+    var str ="<select class='cbi-input-select' name='7'>";
+    str += returnoptions( min, total, rate );
+    str += "</select>";
+    document.getElementById("rateid").innerHTML = str;
+}
+
+function getoptions( list, value )
+{
+    for( i = 0; i < list.length; i++ )
+    {
+        var a = list[i].split("=");
+        document.write("<option value=");
+        document.write(a[0]);
+        if( value == a[0] )
+           document.write(" selected");
+        document.write(">");
+        document.write(a[1]);
+        document.write("</option>");
+    }
+}
+</script>
+<h2><a id="content" name="content"><%: 5GHz Radio Configuration%></a></h2>
+<div class="cbi-map">
+    <ul class="cbi-tabmenu">
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=luci.dispatcher.build_url("admin/wireless/radio1")%>"><%:Properties%></a></li>
+        <li style="margin-right:4px" class="cbi-tab"><a href="#"><%:MIMO%></a></li>
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="security1"><%:Security%></a></li>
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="macacl1"><%:MAC ACL%></a></li>
+    </ul>
+    <fieldset class="cbi-section">
+       <form name="formTable">
+          <div class="cbi-value">
+            <label class="cbi-value-title">Spatial Stream</label>
+            <div class="cbi-value-field">
+               <select name="x" class="cbi-input-select" onchange="updateparam(this.value)">
+               <script type="text/javascript">
+                  var hwvalue = "<%=uciget('uci get wireless.wifi1.hwmode')%>";
+                  var rate = "<%=uciget('uci get wireless.wifi1.rate')%>";
+                  document.write("<option value='1' ");
+                  if( ( ( hwvalue == "11na" || hwvalue == "11a" ) && rate < 8 )  || 
+                      ( hwvalue == "11ac" && rate < 10 ) ) {
+                      spatial_stream = 1;
+                      document.write(" selected");
+                  }
+                  document.write(">Single</option>");
+                  if( hwvalue != "11a" )
+                  {
+                      document.write("<option value='2' ");
+                      if( ( hwvalue == "11na" && rate >= 8 ) || ( hwvalue == "11ac" && rate >= 10 ) ) {
+                         spatial_stream = 2;
+                         document.write(" selected");
+                      }
+                      document.write(">Dual</option>");
+                  }
+                  document.write("<option value='3' ");
+                  if( rate == 'auto' ) {
+                      spatial_stream = 3;
+                      document.write(" selected");
+                  }
+                  document.write(">Auto</option>");
+                </script>
+               </select>
+           </div>
+         </div>
+          <div class="cbi-value" id="mcs_idx">
+            <label class="cbi-value-title">Modulation Index</label>
+            <div class="cbi-value-field" id="rateid">
+           </div>
+         </div>
+          <div class="cbi-value">
+            <label class="cbi-value-title">Transmit Power</label>
+            <div class="cbi-value-field">
+              <input type="text" name="8" class="cbi-input-select" value="<%=uciget('uci get wireless.wifi1.txpower')%>" >
+           </div>
+         </div>
+         <div class="cbi-value">
+            <label class="cbi-value-title">Short GI</label>
+            <div class="cbi-value-field">
+              <select class="cbi-input-select" name="74">
+                 <script type="text/javascript">
+                 var gi = "<%=uciget('uci get wireless.@wifi-iface[1].shortgi')%>";
+                 if( gi == "" )
+                     gi = 1;
+                 document.write("<option value='1' ");
+                 if( gi == "1" )
+                     document.write(" selected");
+                 document.write(">Enable</option>");
+                 document.write("<option value='0' ");
+                 if( gi == "0" )
+                     document.write(" selected");
+                 document.write(">Disable</option>");
+                 </script>
+             </select>
+           </div>
+         </div>
+          <div class="cbi-value">
+            <label class="cbi-value-title">AMSDU</label>
+            <div class="cbi-value-field">
+              <select class="cbi-input-select" name="9">
+                 <script type="text/javascript">
+                 var amsdu = "<%=uciget('uci get wireless.@wifi-iface[1].kwnamsdu')%>";
+                 document.write("<option value='1' ");
+                 if( amsdu == "1" )
+                     document.write(" selected");
+                 document.write(">Enable</option>");
+                 document.write("<option value='2' ");
+                 if( amsdu == "2" )
+                     document.write(" selected");
+                 document.write(">Disable</option>");
+                 </script>
+             </select>
+           </div>
+         </div>
+          <div class="cbi-value">
+            <label class="cbi-value-title">Tx. Chainmask</label>
+            <div style="display:none"><input type="text" id="txmask" name="75" value="<%=uciget('uci get wireless.wifi1.txchainmask')%>"></div>
+            <div class="cbi-value-field">
+                 <script type="text/javascript">
+                 var txchainmask = "<%=uciget('uci get wireless.wifi1.txchainmask')%>";
+                 document.write("A1&nbsp;&nbsp;<input type='checkbox' ");
+                 if( bin_convert(txchainmask,"0") == 1 )
+                 document.write(" checked");
+                 document.write(" class='cbi-input-select' style='margin-right:50px;' id='ch1' onchange=setmask('ch1','ch2','txmask')>");
+                 document.write("A2&nbsp;&nbsp;<input type='checkbox' ");
+                 if( bin_convert(txchainmask,"1") == 1 )
+                 document.write(" checked");
+                 document.write(" class='cbi-input-select' style='margin-right:50px;' id='ch2' onchange=setmask('ch1','ch2','txmask')>");
+              </script>
+           </div>
+         </div>
+          <div class="cbi-value">
+            <label class="cbi-value-title">Rx. Chainmask</label>
+            <div style="display:none"><input type="text" id="rxmask" name="76" value="<%=uciget('uci get wireless.wifi1.rxchainmask')%>"></div>
+            <div class="cbi-value-field">
+                 <script type="text/javascript">
+                 var rxchainmask = "<%=uciget('uci get wireless.wifi1.rxchainmask')%>";
+                 document.write("A1&nbsp;&nbsp;<input type='checkbox' ");
+                 if( bin_convert(rxchainmask,"0") == 1 )
+                 document.write(" checked");
+                 document.write(" class='cbi-input-select' style='margin-right:50px;' id='ch3' onchange=setmask('ch3','ch4','rxmask')>");
+                 document.write("A2&nbsp;&nbsp;<input type='checkbox' ");
+                 if( bin_convert(rxchainmask,"1") == 1 )
+                 document.write(" checked");
+                 document.write(" class='cbi-input-select' style='margin-right:50px;' id='ch4' onchange=setmask('ch3','ch4','rxmask')>");
+              </script>
+           </div>
+         </div>
+    </form>
+    </fieldset>
+</div>
+<div class="cbi-page-actions left">
+<div id="spin"></div>
+<input type="button" class="cbi-button" value="<%:Save%>" onclick="save_value()" />
+</div>
+<script type="text/javascript">
+updateparam(spatial_stream);
+save_def_value();
+</script>
+</div>
+<%+footer%>

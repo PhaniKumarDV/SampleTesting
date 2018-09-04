@@ -19,6 +19,7 @@ function index()
 		end)
 
 		entry({"admin", "wireless", "radio1"}, template("admin_wireless/radio_config1"), _("5GHz Radio"), 1)
+		entry({"admin", "wireless", "radio1", "mimo1"}, template("admin_wireless/mimo1"))
 		entry({"admin", "wireless", "radio1", "security1"}, template("admin_wireless/security1"))
 		entry({"admin", "wireless", "radio1", "macacl1"}, template("admin_wireless/macacl1"))
 
