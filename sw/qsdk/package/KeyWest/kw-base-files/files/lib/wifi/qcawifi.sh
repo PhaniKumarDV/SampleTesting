@@ -1815,126 +1815,74 @@ enable_qcawifi() {
 		set_wifi_up "$vif" "$ifname"
 
 		config_get rate "$device" rate
+		acrate=$rate
 		case $rate in
 			0)
 				arate="6M"
-				nrate="0x80808080"
-				nss="1" 
-				acrate="0";;
+				nrate="0x80808080";;
 			1)
 				arate="9M"
-				nrate="0x81818181"
-				nss="1" 
-				acrate="1";;
+				nrate="0x81818181";;
 			2)
 				arate="12M"
-				nrate="0x82828282"
-				nss="1" 
-				acrate="2";;
+				nrate="0x82828282";;
 			3)
 				arate="18M"
-				nrate="0x83838383"
-				nss="1" 
-				acrate="3";;
+				nrate="0x83838383";;
 			4)
 				arate="24M"
-				nrate="0x84848484"
-				nss="1" 
-				acrate="4";;
+				nrate="0x84848484";;
 			5)
 				arate="36M"
-				nrate="0x85858585"
-				nss="1" 
-				acrate="5";;
+				nrate="0x85858585";;
 			6)
 				arate="48M"
-				nrate="0x86868686" 
-				nss="1" 
-				acrate="6";;
+				nrate="0x86868686" ;;
 			7)
 				arate="54M"
-				nrate="0x87878787"
-				nss="1" 
-				acrate="7";;
+				nrate="0x87878787";;
 			8)
 				arate="54M"
-				nrate="0x88888888"
-				nss="1" 
-				acrate="8";;
+				nrate="0x88888888";;
 			9)
 				arate="54M"
-				nrate="0x89898989"
-				nss="1" 
-				acrate="9";;
+				nrate="0x89898989";;
 			10)
 				arate="54M"
-				nrate="0x8A8A8A8A"
-				nss="2" 
-				acrate="0";;
+				nrate="0x8A8A8A8A";;
 			11)
 				arate="54M"
-				nrate="0x8B8B8B8B"
-				nss="2" 
-				acrate="1";;
+				nrate="0x8B8B8B8B";;
 			12)
 				arate="54M"
-				nrate="0x8C8C8C8C"
-				nss="2" 
-				acrate="2";;
+				nrate="0x8C8C8C8C";;
 			13)
 				arate="54M"
-				nrate="0x8D8D8D8D"
-				nss="2" 
-				acrate="3";;
+				nrate="0x8D8D8D8D";;
 			14)
 				arate="54M"
-				nrate="0x8E8E8E8E"
-				nss="2" 
-				acrate="4";;
+				nrate="0x8E8E8E8E";;
 			15)
 				arate="54M"
-				nrate="0x8F8F8F8F"
-				nss="2" 
-				acrate="5";;
-			16)
-				arate="54M"
-				nrate="0x8F8F8F8F"
-				nss="2" 
-				acrate="6";;
-			17)
-				arate="54M"
-				nrate="0x8F8F8F8F"
-				nss="2" 
-				acrate="7";;
-			18)
-				arate="54M"
-				nrate="0x8F8F8F8F"
-				nss="2" 
-				acrate="8";;
-			19)
-				arate="54M"
-				nrate="0x8F8F8F8F"
-				nss="2" 
-				acrate="9";;
+				nrate="0x8F8F8F8F";;
+            16);;
+            17);;
+            18);;
+            19);;
 			*)
-				arate="54M"
-				nrate="0x8F8F8F8F"
-				nss="2" 
-				acrate="9";;
+				arate="auto"
+				nrate="0"
+				acrate="21";;
 		esac
 
-
-		if [ "$rate" == "auto" ]; then
-			rate=21;
-        fi
 		config_get opmode "$device" hwmode
 		case $opmode in
 			11a)
 				iwconfig "$ifname" rate $arate ;;
 			11na)
-				iwpriv "$ifname" set11NRates "$rate" ;;
+				iwpriv "$ifname" set11NRates "$nrate" ;;
 			11ac)
-				iwpriv "$ifname" vhtmcs "$rate" ;;
+				iwpriv "$ifname" vhtmcs "$acrate" ;;
 		esac
 
 		#config_get set11NRates "$vif" set11NRates
