@@ -34,6 +34,10 @@ function index()
 	    entry({"admin", "monitor", "tools", "sascan"}, call("action_sascan"))
 	    entry({"admin", "monitor", "tools", "saresult"}, call("action_saresult"))
     end
+    if (string.match(mode,"sta") and string.match(wds,"1") ) then
+	    entry({"admin", "monitor", "tools", "survey"}, call("action_survey"))
+	    entry({"admin", "monitor", "tools", "surveyrefresh"}, call("action_surveyrefresh"), nil).leaf = true
+    end
 
     --entry({"admin", "monitor", "wifi0stats"}, call("action_wifi0stats"), _("Wifi0 Statistics"), 3).leaf = true
     --entry({"admin", "monitor", "wifi1stats"}, call("action_wifi1stats"), _("Wifi1 Statistics"), 4).leaf = true
@@ -78,6 +82,17 @@ end
 function action_sascan()
 	local saresult = luci.sys.exec("wifitool ath1 acsreport")
 	luci.template.render("admin_monitor/sascan", {saresult=saresult})
+end
+
+function action_survey()
+	local surveyresult = luci.sys.exec("iwlist ath1 ap")
+	luci.template.render("admin_monitor/survey", {surveyresult=surveyresult})
+end
+
+function action_surveyrefresh()
+	local data = luci.sys.exec("iwlist ath1 ap")
+	luci.http.prepare_content("application/json")
+	luci.http.write_json(data)
 end
 
 function action_wifi_logtype( logtype )

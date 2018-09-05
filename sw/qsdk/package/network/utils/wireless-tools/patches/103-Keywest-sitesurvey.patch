@@ -1,0 +1,64 @@
+diff -urN wireless_tools.29_org/iwlist.c wireless_tools.29_mod/iwlist.c
+--- wireless_tools.29_org/iwlist.c	2018-09-05 18:13:54.251115918 +0530
++++ wireless_tools.29_mod/iwlist.c	2018-09-05 19:52:43.444087546 +0530
+@@ -1576,7 +1576,8 @@
+     }
+   return(0);
+ }
+-
++#endif	/* WE_ESSENTIAL */
++#ifdef WE_ESSENTIAL
+ /************************ ACCESS POINT LIST ************************/
+ /*
+  * Note : now that we have scanning support, this is depracted and
+@@ -1596,10 +1597,11 @@
+ {
+   struct iwreq		wrq;
+   char		buffer[(sizeof(struct iw_quality) +
+-			sizeof(struct sockaddr)) * IW_MAX_AP];
++			sizeof(struct sockaddr) + sizeof(struct iw_ssid)) * IW_MAX_AP];
+   char		temp[128];
+   struct sockaddr *	hwa;
+   struct iw_quality *	qual;
++  struct iw_ssid *	ssid;
+   iwrange	range;
+   int		has_range = 0;
+   int		has_qual = 0;
+@@ -1626,6 +1628,7 @@
+   /* The two lists */
+   hwa = (struct sockaddr *) buffer;
+   qual = (struct iw_quality *) (buffer + (sizeof(struct sockaddr) * n));
++  ssid = (struct iw_ssid *) (buffer + (sizeof(struct sockaddr) * n) + (sizeof(struct iw_quality) * n));
+ 
+   /* Check if we have valid mac address type */
+   if(iw_check_mac_addr_type(skfd, ifname) < 0)
+@@ -1649,6 +1652,7 @@
+ 	{
+ 	  /* Print stats for this address */
+ 	  printf("    %s : ", iw_saether_ntop(&hwa[i], temp));
++	  printf("    %s : ", ssid[i].essid);
+ 	  iw_print_stats(temp, sizeof(buffer), &qual[i], &range, has_range);
+ 	  printf("%s\n", temp);
+ 	}
+@@ -1659,7 +1663,8 @@
+   printf("\n");
+   return(0);
+ }
+-
++#endif	/* WE_ESSENTIAL */
++#ifndef WE_ESSENTIAL
+ /******************** WIRELESS EVENT CAPABILITY ********************/
+ 
+ static const char *	event_capa_req[] =
+@@ -2061,7 +2066,11 @@
+   { "txpower",		print_txpower_info,	0, NULL },
+ #ifndef WE_ESSENTIAL
+   { "retry",		print_retry_info,	0, NULL },
++#endif
++#ifdef WE_ESSENTIAL
+   { "ap",		print_ap_info,		0, NULL },
++#endif
++#ifndef WE_ESSENTIAL
+   { "accesspoints",	print_ap_info,		0, NULL },
+   { "peers",		print_ap_info,		0, NULL },
+   { "event",		print_event_capa_info,	0, NULL },

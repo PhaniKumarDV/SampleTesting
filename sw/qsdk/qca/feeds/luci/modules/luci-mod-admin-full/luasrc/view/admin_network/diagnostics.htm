@@ -65,6 +65,8 @@ local has_traceroute6 = fs.access("/usr/bin/traceroute6")
             var mode = "<%=uciget('uci get wireless.@wifi-iface[1].mode')%>";
             if( mode == "ap" )
                document.write("<li style='margin-right:4px' class='cbi-tab-disabled'><a href='<%=REQUEST_URI%>/sascan'><%:Spectrum Analyzer%></a></li>");
+            else
+               document.write("<li style='margin-right:4px' class='cbi-tab-disabled'><a href='<%=REQUEST_URI%>/survey'><%:Site Survey%></a></li>");
         </script>
     </ul>
 <form method="post" action="<%=pcdata(luci.http.getenv("REQUEST_URI"))%>">

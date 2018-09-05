@@ -1,0 +1,33 @@
+<%#
+ Copyright 2008 Steven Barth <steven@midlink.org>
+ Copyright 2008 Jo-Philipp Wich <jow@openwrt.org>
+ Licensed to the public under the Apache License 2.0.
+-%>
+<%+header%>
+
+<script type="text/javascript">
+	XHR.poll(5, '<%=REQUEST_URI%>', { status: 1 },
+		function(x, info)
+        {
+            var id = 6;
+            XHR.get('<%=luci.dispatcher.build_url("admin", "monitor", "tools")%>/surveyrefresh/' + id, null,
+            function(x, data) {
+              if (data) { 
+                     document.getElementById("survey").innerHTML = data;
+               }
+            }
+            );
+        }
+    );
+</script>
+<div class="page-content">
+<h2><a id="content" name="content"><%:Tools%></a></h2>
+    <ul class="cbi-tabmenu">
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=luci.dispatcher.build_url("admin/monitor/tools")%>"><%:Diagnostics%></a></li>
+        <li style="margin-right:4px" class="cbi-tab"><a href="#"><%:SiteSurvey%></a></li>
+    </ul>
+<div id="content_surveyresult">
+<textarea readonly="readonly" wrap="off" style="width:100%; height:470px;" rows="<%=surveyresult:cmatch("\n")+2%>" id="survey"><%=surveyresult:pcdata()%></textarea>
+</div>
+</div>
+<%+footer%>

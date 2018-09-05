@@ -1143,7 +1143,7 @@ diff -urN qca-wifi-org/os/linux/include/ieee80211_ioctl.h qca-wifi-mod/os/linux/
  #define WOW_SYNC_PATTERN 0xFF
 diff -urN qca-wifi-org/os/linux/src/ieee80211_wireless.c qca-wifi-mod/os/linux/src/ieee80211_wireless.c
 --- qca-wifi-org/os/linux/src/ieee80211_wireless.c	2018-06-08 11:00:40.000000000 +0530
-+++ qca-wifi-mod/os/linux/src/ieee80211_wireless.c	2018-08-22 16:27:49.131879467 +0530
++++ qca-wifi-mod/os/linux/src/ieee80211_wireless.c	2018-09-05 18:40:35.975125092 +0530
 @@ -524,6 +524,7 @@
  {
      osif_dev *osnetdev = ath_netdev_priv(dev);
@@ -1205,7 +1205,41 @@ diff -urN qca-wifi-org/os/linux/src/ieee80211_wireless.c qca-wifi-mod/os/linux/s
  ieee80211_ioctl_giwessid(struct net_device *dev,
      struct iw_request_info *info,
      struct iw_point *data, char *essid)
-@@ -10115,6 +10155,15 @@
+@@ -1148,6 +1188,7 @@
+     wlan_if_t vap;
+     struct sockaddr addr[IW_MAX_AP];
+     struct iw_quality qual[IW_MAX_AP];
++    struct iw_ssid ssid[IW_MAX_AP];
+     int i;
+ };
+ 
+@@ -1161,6 +1202,8 @@
+     u_int8_t *se_macaddr = wlan_scan_entry_macaddr(se);
+     u_int8_t *se_bssid = wlan_scan_entry_bssid(se);
+     u_int8_t se_rssi = wlan_scan_entry_rssi(se);
++    u_int8_t se_ssid_len;
++    u_int8_t *se_ssid = wlan_scan_entry_ssid(se, &se_ssid_len);
+ 
+     if (i >= IW_MAX_AP)
+         return 0;
+@@ -1171,6 +1214,7 @@
+         IEEE80211_ADDR_COPY(req->addr[i].sa_data, se_bssid);
+ 
+     set_quality(&req->qual[i], se_rssi);
++    memcpy( req->ssid[i].essid, se_ssid, se_ssid_len);
+ 
+     req->i = i+1;
+ 
+@@ -1199,6 +1243,8 @@
+     data->flags = 1;        /* signal quality present (sort of) */
+     OS_MEMCPY(extra + req->i*sizeof(req->addr[0]), &req->qual,
+         req->i*sizeof(req->qual[0]));
++    OS_MEMCPY(extra + (req->i*sizeof(req->addr[0] )) + ( req->i * sizeof(req->qual[0] ) ), &req->ssid,
++        req->i*sizeof(req->ssid[0]));
+     OS_FREE(req);
+ 
+     return 0;
+@@ -10115,6 +10161,15 @@
  
      debug_print_ioctl(dev->name, IEEE80211_IOCTL_ADDMAC, "addmac") ;
  
@@ -1221,7 +1255,7 @@ diff -urN qca-wifi-org/os/linux/src/ieee80211_wireless.c qca-wifi-mod/os/linux/s
      rc = wlan_set_acl_add(vap, sa->sa_data, IEEE80211_ACL_FLAG_ACL_LIST_1);
      return rc;
  }
-@@ -14947,6 +14996,62 @@
+@@ -14947,6 +15002,62 @@
      IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1, 0, "dfs_notify" },
      { IEEE80211_PARAM_DFS_INFO_NOTIFY_APP,
      0, IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1, "g_dfs_notify" },
@@ -1284,7 +1318,7 @@ diff -urN qca-wifi-org/os/linux/src/ieee80211_wireless.c qca-wifi-mod/os/linux/s
  };
  
  static const iw_handler ieee80211_handlers[] = {
-@@ -14992,7 +15097,7 @@
+@@ -14992,7 +15103,7 @@
  #endif /* SIOCGIWSCAN */
      (iw_handler) ieee80211_ioctl_siwessid,      /* SIOCSIWESSID */
      (iw_handler) ieee80211_ioctl_giwessid,      /* SIOCGIWESSID */
@@ -1293,7 +1327,7 @@ diff -urN qca-wifi-org/os/linux/src/ieee80211_wireless.c qca-wifi-mod/os/linux/s
      (iw_handler) NULL,      /* SIOCGIWNICKN */
      (iw_handler) NULL,              /* -- hole -- */
      (iw_handler) NULL,              /* -- hole -- */
-@@ -15309,11 +15414,26 @@
+@@ -15309,11 +15420,26 @@
      {
  
      case SIOCG80211STATS:
