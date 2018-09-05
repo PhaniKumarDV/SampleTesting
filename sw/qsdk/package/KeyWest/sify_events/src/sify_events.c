@@ -363,7 +363,7 @@ static void handle_ifla_wireless ( char *data, int len)
 				}
 				if(mac_status == 6) // no mac address received
 				{
-					if((registered  == 1) || (registered == -1))
+					//if((registered  == 1) || (registered == -1))
 					{
 						//syslog(LOG_ALERT,"Wireless Device Unegistered Successfully:%s",prev_mac);
 						sify_file_write(prev_mac,0,0);
@@ -372,15 +372,13 @@ static void handle_ifla_wireless ( char *data, int len)
 				}
 				else
 				{
-					if ((registered == 0) || (registered == -1))
+					//if ((registered == 0) || (registered == -1))
 					{
 						strcpy(prev_mac,mac);
 						//syslog(LOG_ALERT,"Wireless Device Registered Successfully:%s",mac);
 						sify_file_write(mac,1,0);
 						registered = 1;
-                        system("iwpriv ath1 kwn_tput_dur 5");
-                        system("iwpriv ath1 kwn_tput_dir 3");
-                        system("iwpriv ath1 kwn_tput_test 1");
+                        system("/usr/sbin/link.sh");
 					}
 				}
 				break;
