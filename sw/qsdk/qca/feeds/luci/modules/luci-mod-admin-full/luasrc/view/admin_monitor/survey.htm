@@ -6,6 +6,30 @@
 <%+header%>
 
 <script type="text/javascript">
+function get_values( val )
+{
+    var surveytable = document.getElementById('survey-list');
+    var b = val.split("@");
+    for( i=0; i<( b.length - 1); i++)
+    {
+        var a1 = b[i].split("SSID=");
+        var mac = a1[0].split("MAC=");
+        mac = mac[1];
+        var a2 = a1[1].split("Quality=");
+        var ssid = a2[0];
+        var a3 = a2[1].split("Signal=");
+        var a4 = a3[1].split("Noise=");
+        var signal = a4[0];
+        var noise = a4[1];
+        var tr = surveytable.insertRow(-1);
+        tr.className = 'cbi-section-table-row cbi-rowstyle-2';
+        tr.insertCell(-1).innerHTML = ssid;
+        tr.insertCell(-1).innerHTML = mac;
+        tr.insertCell(-1).innerHTML = signal;
+        tr.insertCell(-1).innerHTML = noise;
+    }
+}
+
 	XHR.poll(5, '<%=REQUEST_URI%>', { status: 1 },
 		function(x, info)
         {
@@ -13,7 +37,15 @@
             XHR.get('<%=luci.dispatcher.build_url("admin", "monitor", "tools")%>/surveyrefresh/' + id, null,
             function(x, data) {
               if (data) { 
-                     document.getElementById("survey").innerHTML = data;
+                  var surveytable = document.getElementById('survey-list');
+                  if( surveytable ) {
+	                  while (surveytable.rows.length > 1)
+		                  surveytable.rows[1].parentNode.removeChild(surveytable.rows[1]);
+                      if( data.length > 10 )
+                      {
+                          get_values( data );
+                      }
+                  }
                }
             }
             );
@@ -26,8 +58,23 @@
         <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=luci.dispatcher.build_url("admin/monitor/tools")%>"><%:Diagnostics%></a></li>
         <li style="margin-right:4px" class="cbi-tab"><a href="#"><%:Site Survey%></a></li>
     </ul>
-<div id="content_surveyresult">
-<textarea readonly="readonly" wrap="off" style="width:100%; height:470px;" rows="<%=surveyresult:cmatch("\n")+2%>" id="survey"><%=surveyresult:pcdata()%></textarea>
+<div class="cbi-map">
+	<fieldset class="cbi-section">
+		<table class="cbi-section-table" style="width:600px; margin:10px;" id="survey-list">
+			<tr class="cbi-section-table-titles">
+				<th class="cbi-section-table-cell"><%:SSID%></th>
+				<th class="cbi-section-table-cell"><%:MAC Address%></th>
+				<th class="cbi-section-table-cell"><%:RSSI (dBm)%></th>
+				<th class="cbi-section-table-cell"><%:Noise (dBm)%></th>
+            </tr>
+        </table>
+    </fieldset>
 </div>
+<script type="text/javascript">
+var res = <%=luci.http.write_json(surveyresult)%>;
+if( res. length > 10 ) {             
+        get_values( res );
+}
+</script>
 </div>
 <%+footer%>
