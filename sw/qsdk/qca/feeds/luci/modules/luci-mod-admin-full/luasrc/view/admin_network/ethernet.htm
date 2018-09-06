@@ -88,7 +88,13 @@ function save_value()
                  </script>
               </select>
             </div>
+        </div>
+        <div class="cbi-value" id="eth_inactivity">
+          <label class="cbi-value-title">Ethernet Inactivity</label>
+          <div class="cbi-value-field">          
+            <input type="text" name="77" class="cbi-input-select" value="<%=uciget('uci get ethernet.ethernet.ethtimer')%>" > &nbsp; minutes
           </div>
+        </div>
     </form>
     </fieldset>
 </div>

@@ -8,10 +8,10 @@ service_triggers() {
 }
 
 start_service() {
-
    procd_open_instance
 
     speed_duplex=$(uci get ethernet.ethernet.mode)
+    eth_timer=$(uci get ethernet.ethernet.ethtimer)
     eth0_state=$(cat /sys/class/net/eth0/operstate)
     if [ "$eth0_state" = "up" ]
     then
@@ -53,9 +53,18 @@ start_service() {
 
     else
         echo "eth0 state $eth0_state"
-    fi                               
+    fi
+    if [ "$eth_timer" -eq 0 ]                                
+    then                                                     
+        echo "Ethernet inactivity timer functionality is disabled"
+    else                                                                     
+        sh /usr/sbin/eth_timeout.sh                                               
+    fi            
  procd_close_instance
 
 }
 
-
+reload_service() {
+   kill -9  `ps | grep eth_timeout.sh | awk '{print $1}'` 
+   start_service
+}

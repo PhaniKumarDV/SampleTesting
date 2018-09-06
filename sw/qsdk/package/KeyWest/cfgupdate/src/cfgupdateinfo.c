@@ -360,6 +360,9 @@ void cfg_set( char *type, char *value )
         case UCI_ID_RADIO1_RXCHAINMASK:
             sprintf(cmd,"uci set wireless.wifi1.rxchainmask='%s'",value);
             break;
+        case UCI_ID_ETHERNET_INACTIVITY:
+            sprintf(cmd,"uci set ethernet.ethernet.ethtimer='%s'",value);
+            break;
         default:
             break;
     }
