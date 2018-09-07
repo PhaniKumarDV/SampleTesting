@@ -54,11 +54,11 @@ start_service() {
     else
         echo "eth0 state $eth0_state"
     fi
-    if [ "$eth_timer" -eq 0 ]                                
-    then                                                     
+    if [ "$eth_timer" -ge 5 ]
+    then
+        sh /usr/sbin/eth_timeout.sh
+    else
         echo "Ethernet inactivity timer functionality is disabled"
-    else                                                                     
-        sh /usr/sbin/eth_timeout.sh                                               
     fi            
  procd_close_instance
 
