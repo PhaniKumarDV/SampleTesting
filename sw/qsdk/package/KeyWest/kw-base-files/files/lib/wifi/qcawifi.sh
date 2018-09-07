@@ -2223,7 +2223,6 @@ detect_qcawifi() {
 		dl_limit="409600"
         ssid_d="Sify"
         encrypt="none"
-        txpow=""
 		case "${hwcaps}" in
 			*11bgn)
 				ht_mode="HT20"
@@ -2249,7 +2248,6 @@ detect_qcawifi() {
 				ul_limit="887000"
 				dl_limit="887000"
 				mode_11=ac
-                txpow=26
 				dying_gasp=1;;
                         *11abgn/ac)
 				ht_mode="HT80"
@@ -2292,9 +2290,6 @@ config wifi-device  wifi$devidx
 	option rate     auto
     option customername CustomerName
     option linkid   0
-    option txpower       $txpow
-    option txchainmask   3
-    option rxchainmask   3
 
 config wifi-iface
 	option device	wifi$devidx

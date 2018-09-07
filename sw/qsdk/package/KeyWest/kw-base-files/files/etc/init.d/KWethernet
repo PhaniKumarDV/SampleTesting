@@ -13,7 +13,7 @@ start_service() {
     speed_duplex=$(uci get ethernet.ethernet.mode)
     eth_timer=$(uci get ethernet.ethernet.ethtimer)
     eth0_state=$(cat /sys/class/net/eth0/operstate)
-    if [ "$eth0_state" = "up" ]
+    if [ "$eth0_state" == "up" ]
     then
 
         case $speed_duplex in

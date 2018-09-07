@@ -1,0 +1,40 @@
+#!/bin/sh /etc/rc.common
+START=15
+USE_PROCD=1
+
+start_service() {
+    procd_open_instance
+
+    eth_timer=$(uci get ethernet.ethernet.ethtimer)
+    tx_power_radio1=$(uci get wireless.wifi1.txpower)
+    tx_chainmask_radio1=$(uci get wireless.wifi1.txchainmask)
+    rx_chainmask_radio1=$(uci get wireless.wifi1.rxchainmask)
+    shortgi_radio1=$(uci get wireless.@wifi-iface[1].shortgi)
+    distance_radio1=$(uci get wireless.wifi1.distance)
+    
+    if [ "$eth_timer" == "" ]
+    then
+        uci set ethernet.ethernet.ethtimer='0'
+    fi
+    if [ "$tx_power_radio1" == "" ]
+    then
+        uci set wireless.wifi1.txpower='26'
+    fi
+    if [ "$tx_chainmask_radio1" == "" ]
+    then
+        uci set wireless.wifi1.txchainmask='3'
+    fi
+    if [ "$rx_chainmask_radio1" == "" ]
+    then
+        uci set wireless.wifi1.rxchainmask='3'
+    fi
+    if [ "$shortgi_radio1" == "" ]
+    then
+        uci set wireless.@wifi-iface[1].shortgi='1'
+    fi
+    if [ "$distance_radio1" == "" ]
+    then
+        uci set wireless.wifi1.distance='5'
+    fi
+    procd_close_instance
+}
