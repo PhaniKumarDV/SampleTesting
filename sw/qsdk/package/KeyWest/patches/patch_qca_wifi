@@ -249,7 +249,7 @@ diff -urN qca-wifi-org/offload/os/linux/ol_ath_iw_handler.c qca-wifi-mod/offload
      { OL_ATH_PARAM_BEST_UL_HYST | OL_ATH_PARAM_SHIFT,
 diff -urN qca-wifi-org/offload/wlan/include/ol_if_athvar.h qca-wifi-mod/offload/wlan/include/ol_if_athvar.h
 --- qca-wifi-org/offload/wlan/include/ol_if_athvar.h	2018-06-08 11:00:45.000000000 +0530
-+++ qca-wifi-mod/offload/wlan/include/ol_if_athvar.h	2018-09-03 17:21:48.906217317 +0530
++++ qca-wifi-mod/offload/wlan/include/ol_if_athvar.h	2018-09-09 17:09:51.766200231 +0530
 @@ -36,6 +36,7 @@
  #include "ieee80211_wds.h"
  #include "ieee80211_ique.h"
@@ -273,8 +273,8 @@ diff -urN qca-wifi-org/offload/wlan/include/ol_if_athvar.h qca-wifi-mod/offload/
 +/*
 + * Default TX ACK time out value (micro second)
 + */
-+//#define DEFAULT_TX_ACK_TIMEOUT 0x40
-+#define DEFAULT_TX_ACK_TIMEOUT MAX_TX_ACK_TIMEOUT
++#define DEFAULT_TX_ACK_TIMEOUT 0x40
++//#define DEFAULT_TX_ACK_TIMEOUT MAX_TX_ACK_TIMEOUT
  
  struct mute_error_types {
      u_int32_t  pn_errors;
