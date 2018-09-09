@@ -378,7 +378,7 @@ static void handle_ifla_wireless ( char *data, int len)
 						//syslog(LOG_ALERT,"Wireless Device Registered Successfully:%s",mac);
 						sify_file_write(mac,1,0);
 						registered = 1;
-                        system("/usr/sbin/link.sh");
+                        //system("/usr/sbin/link.sh");
 					}
 				}
 				break;
