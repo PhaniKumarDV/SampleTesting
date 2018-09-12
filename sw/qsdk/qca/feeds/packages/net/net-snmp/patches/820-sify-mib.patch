@@ -1,7 +1,7 @@
 diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.c
 --- net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c	1970-01-01 05:30:00.000000000 +0530
-+++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.c	2018-09-10 20:12:15.796773061 +0530
-@@ -0,0 +1,1525 @@
++++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.c	2018-09-12 17:33:26.270074908 +0530
+@@ -0,0 +1,1701 @@
 +/****************************************************************************
 +*                                                                           *
 +*  File Name:           kwnmib.c                                           *
@@ -60,29 +60,20 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +#include "ieee80211_ioctl.h"
 +
 +/****************************************************************************
-+*                                Defines                                    *
-+****************************************************************************/
-+
-+#ifndef UCHAR
-+  typedef unsigned char UCHAR;
-+#endif
++ *                                Global Variables                          *
++ ****************************************************************************/
 +
 +  kwn_wireless_stats kwn_assoc_list;
-+  char            resbuf[256];
-+  long            resval;
-+  uint32_t        resaddr;
-+  uint32_t        resaddr_hl;
-+  char            *ptr;
-+  WriteMethod     wlanwriteSystem;
-+  WriteMethod     nwkwriteSystem;
-+  WriteMethod     radiuswriteSystem;
-+  WriteMethod     vlanwriteSystem;
-+  WriteMethod     ethernetwriteSystem;
-+  WriteMethod     dhcpwriteSystem;
-+  WriteMethod     managementwriteSystem;
-+/****************************************************************************
-+*                            External Functions                             *
-+****************************************************************************/
++  char               res_str[ KWN_UCI_CMD_OUTPUT_LEN_MAX ];
++  long               res_val;
++  uint32_t           res_ip;
++  WriteMethod        wlanwriteMethod;
++  WriteMethod        nwkwriteMethod;
++  WriteMethod        radiuswriteMethod;
++  WriteMethod        vlanwriteMethod;
++  WriteMethod        ethernetwriteMethod;
++  WriteMethod        dhcpwriteMethod;
++  WriteMethod        systemwriteMethod;
 +
 +/****************************************************************************
 +*   kwnmib_variables_oid:                                                  *
@@ -90,203 +81,243 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +*       is essentially a prefix, with the suffix appearing in the           *
 +*       variable below.                                                     *
 +****************************************************************************/
-+oid kwnmib_variables_oid[] = { 1,3,6,1,4,1,52617 };
++oid kwnmib_variables_oid[] = { 1, 3, 6, 1, 4, 1, KWN_PRIVATE_MIB_OID };
 +
 +/****************************************************************************
-+*   variable4 kwnmib_variables:                                            *
++*   variable kwnmib_variables:                                            *
 +*     this variable defines function callbacks and type return information  *
 +*     for the kwnmib mib section                                           *
 +****************************************************************************/
 +struct variable7 kwnmib_variables[] = {
 +/*  magic number        , variable type , ro/rw , callback fn  , L, oidsuffix */
 +  /* Wireless MIBS */
-+  { WLANRADIOINDEX, ASN_INTEGER , RWRITE, var_WlanTable, 5, { 1,1,1,1,1 } },
-+  { WLANRADIOMODE, ASN_OCTET_STR , RWRITE, var_WlanTable, 5, { 1,1,1,1,2 } },
-+  { WLANSSID   , ASN_OCTET_STR , RWRITE, var_WlanTable, 5, { 1,1,1,1,3 } },
-+  { WLANCOUNTRY, ASN_INTEGER , RWRITE, var_WlanTable, 5, { 1,1,1,1,4 } },
-+  { WLANOPMODE, ASN_OCTET_STR , RWRITE, var_WlanTable, 5, { 1,1,1,1,5 } },
-+  { WLANBANDWIDTH, ASN_OCTET_STR , RWRITE, var_WlanTable, 5, { 1,1,1,1,6 } },
-+  { WLANCHANNEL, ASN_OCTET_STR , RWRITE, var_WlanTable, 5, { 1,1,1,1,7 } },
-+  { WLANRATE, ASN_OCTET_STR , RWRITE, var_WlanTable, 5, { 1,1,1,1,8 } },
-+  { WLANTXPOWER, ASN_INTEGER , RWRITE, var_WlanTable, 5, { 1,1,1,1,9 } },
-+  { WLANAMSDU, ASN_INTEGER , RWRITE, var_WlanTable, 5, { 1,1,1,1,10 } },
-+  { WLANUPLINKLIMIT, ASN_INTEGER , RWRITE, var_WlanTable, 5, { 1,1,1,1,11 } },
-+  { WLANDOWNLINKLIMIT, ASN_INTEGER , RWRITE, var_WlanTable, 5, { 1,1,1,1,12 } },
-+  { WLANHIDEESSID, ASN_INTEGER , RWRITE, var_WlanTable, 5, { 1,1,1,1,13 } },
-+  { WLANCUSTOMERNAME, ASN_OCTET_STR , RWRITE, var_WlanTable, 5, { 1,1,1,1,14 } },
-+  { WLANLINKID, ASN_INTEGER , RWRITE, var_WlanTable, 5, { 1,1,1,1,15 } },
-+  { WLANSECENC, ASN_OCTET_STR , RWRITE, var_WlanTable, 5, { 1,1,1,1,16 } },
-+  { WLANSECKEY, ASN_OCTET_STR , RWRITE, var_WlanTable, 5, { 1,1,1,1,17 } },
-+  { WLANMACFILTER, ASN_OCTET_STR , RWRITE, var_WlanTable, 5, { 1,1,1,1,18 } },
-+  { WLANMACLIST, ASN_OCTET_STR , RWRITE, var_WlanTable, 5, { 1,1,1,1,19 } },
-+  { WLANDISTANCE, ASN_OCTET_STR , RWRITE, var_WlanTable, 5, { 1,1,1,1,20 } },
-+  { WLANSHORTGI, ASN_INTEGER , RWRITE, var_WlanTable, 5, { 1,1,1,1,21 } },
-+  { WLANTXCHAINMASK, ASN_INTEGER , RWRITE, var_WlanTable, 5, { 1,1,1,1,22 } },
-+  { WLANRXCHAINMASK, ASN_INTEGER , RWRITE, var_WlanTable, 5, { 1,1,1,1,23 } },
++  { 1   , ASN_INTEGER    , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_INDEX } },
++  { 2   , ASN_OCTET_STR  , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_RADIOMODE } },
++  { 3   , ASN_OCTET_STR  , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_SSID } },
++  { 4   , ASN_INTEGER    , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_COUNTRY } },
++  { 5   , ASN_OCTET_STR  , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_OPMODE } },
++  { 6   , ASN_OCTET_STR  , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_BANDWIDTH } },
++  { 7   , ASN_OCTET_STR  , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_CHANNEL } },
++  { 8   , ASN_OCTET_STR  , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_RATE } },
++  { 9   , ASN_INTEGER    , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_TXPOWER } },
++  { 10  , ASN_INTEGER    , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_AMSDU } },
++  { 11  , ASN_INTEGER    , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_UPLINK_LIMIT } },
++  { 12  , ASN_INTEGER    , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_DOWNLINK_LIMIT } },
++  { 13  , ASN_INTEGER    , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_HIDE_ESSID } },
++  { 14  , ASN_OCTET_STR  , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_CUSTOMER_NAME } },
++  { 15  , ASN_INTEGER    , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_LINKID } },
++  { 16  , ASN_OCTET_STR  , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_SECURITY_ENC } },
++  { 17  , ASN_OCTET_STR  , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_SECURITY_KEY } },
++  { 18  , ASN_OCTET_STR  , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_MACFILTER } },
++  { 19  , ASN_OCTET_STR  , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_MACLIST } },
++  { 20  , ASN_INTEGER    , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_DISTANCE } },   
++  { 21  , ASN_INTEGER    , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_SHORTGI } },
++  { 22  , ASN_INTEGER    , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_TXCHAINMASK } },
++  { 23  , ASN_INTEGER    , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_RXCHAINMASK } },
 +  /* Network MIBS */
-+  { NWKADRSTYPE, ASN_OCTET_STR , RWRITE, var_NwkIPTable, 3, { 1,2,KWN_NWK_ADRSTYPE } },
-+  { NWKIPADRS, ASN_IPADDRESS , RWRITE, var_NwkIPTable, 3, { 1,2,KWN_NWK_IP } },
-+  { NWKMASK, ASN_IPADDRESS , RWRITE, var_NwkIPTable, 3, { 1,2,KWN_NWK_MASK } },
-+  { NWKGATEWAY, ASN_IPADDRESS , RWRITE, var_NwkIPTable, 3, { 1,2,KWN_NWK_GATEWAY } },
-+  { NWKDNSIP, ASN_IPADDRESS , RWRITE, var_NwkIPTable, 3, { 1,2,KWN_NWK_DNS } },
++  { 24  , ASN_OCTET_STR  , RWRITE, var_NwkIPTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_NETWORK, KWN_NWK_ADRSTYPE } },
++  { 25  , ASN_IPADDRESS  , RWRITE, var_NwkIPTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_NETWORK, KWN_NWK_IP } },
++  { 26  , ASN_IPADDRESS  , RWRITE, var_NwkIPTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_NETWORK, KWN_NWK_MASK } },
++  { 27  , ASN_IPADDRESS  , RWRITE, var_NwkIPTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_NETWORK, KWN_NWK_GATEWAY } },
++  { 28  , ASN_IPADDRESS  , RWRITE, var_NwkIPTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_NETWORK, KWN_NWK_DNS } },
 +  /* RADIUS MIBS */
-+  { RADIUSSTATUS, ASN_INTEGER , RWRITE, var_RadiusTable, 3, { 1,3,1 } },
-+  { RADIUSPRISERVER, ASN_IPADDRESS , RWRITE, var_RadiusTable, 3, { 1,3,2 } },
-+  { RADIUSPRIPORT, ASN_INTEGER , RWRITE, var_RadiusTable, 3, { 1,3,3 } },
-+  { RADIUSPRISECRET, ASN_OCTET_STR , RWRITE, var_RadiusTable, 3, { 1,3,4 } },
-+  { RADIUSSECSERVER, ASN_IPADDRESS , RWRITE, var_RadiusTable, 3, { 1,3,5 } },
-+  { RADIUSSECPORT, ASN_INTEGER , RWRITE, var_RadiusTable, 3, { 1,3,6 } },
-+  { RADIUSSECSECRET, ASN_OCTET_STR , RWRITE, var_RadiusTable, 3, { 1,3,7 } },
-+  { RADIUSREAUTHTIME, ASN_INTEGER , RWRITE, var_RadiusTable, 3, { 1,3,8 } },
-+  { RADIUSRETRYTIME, ASN_INTEGER , RWRITE, var_RadiusTable, 3, { 1,3,9 } },
-+  { RADIUSRETRYCOUNT, ASN_INTEGER , RWRITE, var_RadiusTable, 3, { 1,3,10 } },
-+  { RADIUSRETRYCOUNTPERIOD, ASN_INTEGER , RWRITE, var_RadiusTable, 3, { 1,3,11 } },
++  { 29  , ASN_INTEGER    , RWRITE, var_RadiusTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_RADIUS, KWN_RADIUS_STATUS } },
++  { 30  , ASN_IPADDRESS  , RWRITE, var_RadiusTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_RADIUS, KWN_RADIUS_PRISERVER } },
++  { 31  , ASN_INTEGER    , RWRITE, var_RadiusTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_RADIUS, KWN_RADIUS_PRIPORT } },
++  { 32  , ASN_OCTET_STR  , RWRITE, var_RadiusTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_RADIUS, KWN_RADIUS_PRISECRET } },
++  { 33  , ASN_IPADDRESS  , RWRITE, var_RadiusTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_RADIUS, KWN_RADIUS_SECSERVER } },
++  { 34  , ASN_INTEGER    , RWRITE, var_RadiusTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_RADIUS, KWN_RADIUS_SECPORT } },
++  { 35  , ASN_OCTET_STR  , RWRITE, var_RadiusTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_RADIUS, KWN_RADIUS_SECSECRET } },
++  { 36  , ASN_INTEGER    , RWRITE, var_RadiusTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_RADIUS, KWN_RADIUS_REAUTHTIME } },
++  { 37  , ASN_INTEGER    , RWRITE, var_RadiusTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_RADIUS, KWN_RADIUS_RETRYTIME } },
++  { 38  , ASN_INTEGER    , RWRITE, var_RadiusTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_RADIUS, KWN_RADIUS_RETRYCOUNT } },
++  { 39  , ASN_INTEGER    , RWRITE, var_RadiusTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_RADIUS, KWN_RADIUS_RETRYCOUNTPERIOD } },
 +  /* VLAN MIBS */
-+  { VLANSTATUS, ASN_INTEGER , RWRITE, var_VlanTable, 3, { 1,4,1 } },
-+  { VLANMODE, ASN_INTEGER , RWRITE, var_VlanTable, 3, { 1,4,2 } },
-+  { VLANMGMTID, ASN_INTEGER , RWRITE, var_VlanTable, 3, { 1,4,3 } },
-+  { VLANACCESSID, ASN_INTEGER , RWRITE, var_VlanTable, 3, { 1,4,4 } },
-+  { VLANTRUNKOPTION, ASN_INTEGER , RWRITE, var_VlanTable, 3, { 1,4,5 } },
-+  { VLANTRUNKID, ASN_OCTET_STR , RWRITE, var_VlanTable, 3, { 1,4,6 } },
-+  { VLANSVLANID, ASN_INTEGER , RWRITE, var_VlanTable, 3, { 1,4,7 } },
-+  { VLANSVLANETHERTYPE, ASN_OCTET_STR , RWRITE, var_VlanTable, 3, { 1,4,8 } },
++  { 40  , ASN_INTEGER    , RWRITE, var_VlanTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_VLAN, KWN_VLAN_STATUS } },
++  { 41  , ASN_INTEGER    , RWRITE, var_VlanTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_VLAN, KWN_VLAN_MODE } },
++  { 42  , ASN_INTEGER    , RWRITE, var_VlanTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_VLAN, KWN_VLAN_MGMTID } },
++  { 43  , ASN_INTEGER    , RWRITE, var_VlanTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_VLAN, KWN_VLAN_ACCESSID } },
++  { 44  , ASN_INTEGER    , RWRITE, var_VlanTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_VLAN, KWN_VLAN_TRUNKOPTION } },
++  { 45  , ASN_OCTET_STR  , RWRITE, var_VlanTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_VLAN, KWN_VLAN_TRUNKID } },
++  { 46  , ASN_INTEGER    , RWRITE, var_VlanTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_VLAN, KWN_VLAN_SVLAN } },
++  { 47  , ASN_OCTET_STR  , RWRITE, var_VlanTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_VLAN, KWN_VLAN_SVLAN_ETHERTYPE } },
 +  /* Ethernet MIBS */
-+  { ETHERNETSPEED, ASN_INTEGER , RWRITE, var_EthernetTable, 3, { 1,5,1 } },
++  { 48  , ASN_INTEGER    , RWRITE, var_EthernetTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_ETHERNET, KWN_ETHERNET_MODE } },
 +  /* DHCP MIBS */
-+  { DHCPSERVER, ASN_INTEGER , RWRITE, var_DhcpTable, 3, { 1,6,1 } },
-+  { DHCPSTART, ASN_INTEGER , RWRITE, var_DhcpTable, 3, { 1,6,2 } },
-+  { DHCPLIMIT, ASN_INTEGER , RWRITE, var_DhcpTable, 3, { 1,6,3 } },
-+  { DHCPLEASETIME, ASN_INTEGER , RWRITE, var_DhcpTable, 3, { 1,6,4 } },
++  { 49  , ASN_INTEGER    , RWRITE, var_DhcpTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_DHCP, KWN_DHCP_SERVER } },
++  { 50  , ASN_INTEGER    , RWRITE, var_DhcpTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_DHCP, KWN_DHCP_START } },
++  { 51  , ASN_INTEGER    , RWRITE, var_DhcpTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_DHCP, KWN_DHCP_LIMIT } },
++  { 52  , ASN_INTEGER    , RWRITE, var_DhcpTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_DHCP, KWN_DHCP_LEASE_TIME } },
 +  /* Management MIBS */
-+  { APPLY, ASN_INTEGER , RWRITE, var_ManagementTable, 3, { 1,7,1 } },
-+  { RESET, ASN_INTEGER , RWRITE, var_ManagementTable, 3, { 1,7,2 } },
-+  { REBOOT, ASN_INTEGER , RWRITE, var_ManagementTable, 3, { 1,7,3 } },
++  { 53  , ASN_INTEGER    , RWRITE, var_ManagementTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM, KWN_SYS_APPLY } },
++  { 54  , ASN_INTEGER    , RWRITE, var_ManagementTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM, KWN_SYS_RESET } },
++  { 55  , ASN_INTEGER    , RWRITE, var_ManagementTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM, KWN_SYS_REBOOT } },
 +  /* Assoc MIBS */
-+  { ASSOCINDEX, ASN_INTEGER , RONLY, var_AssocTable, 4, { 1,8,1,1 } },
-+  { ASSOCMAC, ASN_OCTET_STR , RONLY, var_AssocTable, 4, { 1,8,1,2 } },
-+  { ASSOCIP, ASN_IPADDRESS , RONLY, var_AssocTable, 4, { 1,8,1,3 } },
-+  { ASSOCREMOTELAT, ASN_OCTET_STR , RONLY, var_AssocTable, 4, { 1,8,1,4 } },
-+  { ASSOCREMOTELONG, ASN_OCTET_STR , RONLY, var_AssocTable, 4, { 1,8,1,5 } },
-+  { ASSOCLOCALLAT, ASN_OCTET_STR , RONLY, var_AssocTable, 4, { 1,8,1,6 } },
-+  { ASSOCLOCALLONG, ASN_OCTET_STR , RONLY, var_AssocTable, 4, { 1,8,1,7 } },
-+  { ASSOCRXRATE, ASN_INTEGER , RONLY, var_AssocTable, 4, { 1,8,1,8 } },
-+  { ASSOCTXRATE, ASN_INTEGER , RONLY, var_AssocTable, 4, { 1,8,1,9 } },
-+  { ASSOCRXTPUT, ASN_INTEGER , RONLY, var_AssocTable, 4, { 1,8,1,10 } },
-+  { ASSOCTXTPUT, ASN_INTEGER , RONLY, var_AssocTable, 4, { 1,8,1,11 } },
-+  { ASSOCLOCALSNRA1, ASN_INTEGER , RONLY, var_AssocTable, 4, { 1,8,1,12 } },
-+  { ASSOCLOCALSNRA2, ASN_INTEGER , RONLY, var_AssocTable, 4, { 1,8,1,13 } },
-+  { ASSOCREMOTESNRA1, ASN_INTEGER , RONLY, var_AssocTable, 4, { 1,8,1,14 } },
-+  { ASSOCREMOTESNRA2, ASN_INTEGER , RONLY, var_AssocTable, 4, { 1,8,1,15 } },
-+  { ASSOCLOCALPHYERR, ASN_INTEGER , RONLY, var_AssocTable, 4, { 1,8,1,16 } },
-+  { ASSOCREMOTEPHYERR, ASN_INTEGER , RONLY, var_AssocTable, 4, { 1,8,1,17 } },
-+  { ASSOCLOCALMPDUERR, ASN_INTEGER , RONLY, var_AssocTable, 4, { 1,8,1,18 } },
-+  { ASSOCREMOTEMPDUERR, ASN_INTEGER , RONLY, var_AssocTable, 4, { 1,8,1,19 } },
-+  { ASSOCLOCALRETRIES, ASN_INTEGER , RONLY, var_AssocTable, 4, { 1,8,1,20 } },
-+  { ASSOCREMOTERETRIES, ASN_INTEGER , RONLY, var_AssocTable, 4, { 1,8,1,21 } },
++  { 56  , ASN_INTEGER    , RONLY, var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_RADIO_INDEX } },
++  { 57  , ASN_INTEGER    , RONLY, var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_SEC_INDEX } },
++  { 58  , ASN_OCTET_STR  , RONLY, var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_MAC } },
++  { 59  , ASN_IPADDRESS  , RONLY, var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_IP } },
++  { 60  , ASN_OCTET_STR  , RONLY, var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_LAT } },
++  { 61  , ASN_OCTET_STR  , RONLY, var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_LONG } },
++  { 62  , ASN_OCTET_STR  , RONLY, var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_LAT } },
++  { 63  , ASN_OCTET_STR  , RONLY, var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_LONG } },
++  { 64  , ASN_INTEGER    , RONLY, var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_RX_RATE } },
++  { 65  , ASN_INTEGER    , RONLY, var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_TX_RATE } },
++  { 66  , ASN_INTEGER    , RONLY, var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_RX_TPUT } },
++  { 67  , ASN_INTEGER    , RONLY, var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_TX_TPUT } },
++  { 68  , ASN_INTEGER    , RONLY, var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_SNR_A1 } },
++  { 69  , ASN_INTEGER    , RONLY, var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_SNR_A2 } },
++  { 70  , ASN_INTEGER    , RONLY, var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_SNR_A1 } },
++  { 71  , ASN_INTEGER    , RONLY, var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_SNR_A2 } },
++  { 72  , ASN_INTEGER    , RONLY, var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_PHY_ERR } },
++  { 73  , ASN_INTEGER    , RONLY, var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_PHY_ERR } },
++  { 74  , ASN_INTEGER    , RONLY, var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_MPDU_ERR } },
++  { 75  , ASN_INTEGER    , RONLY, var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_MPDU_ERR } },
++  { 76  , ASN_INTEGER    , RONLY, var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_RETRIES } },
++  { 77  , ASN_INTEGER    , RONLY, var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_RETRIES } },
 +  /* Ethernet Stats MIBS */
-+  { ETHERNETSTATUS, ASN_OCTET_STR , RONLY, var_EthernetStatsTable, 3, { 1,9,1 } },
-+  { ETHERNETSPEED, ASN_OCTET_STR , RONLY, var_EthernetStatsTable, 3, { 1,9,2 } },
-+  { ETHERNETDUPLEX, ASN_OCTET_STR , RONLY, var_EthernetStatsTable, 3, { 1,9,3 } },
++  { 78  , ASN_OCTET_STR  , RONLY, var_EthernetStatsTable, 4, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHSTATS_STATUS } },
++  { 79  , ASN_OCTET_STR  , RONLY, var_EthernetStatsTable, 4, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHSTATS_SPEED } },
++  { 80  , ASN_OCTET_STR  , RONLY, var_EthernetStatsTable, 4, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHSTATS_DUPLEX } },
 +};
-+// ( L = length of the oidsuffix )
 +
 +/****************************************************************************
 +*                                                                           *
-+*         init_kwnmib() - perform any required initialization         *
++*         init_kwnmib() - perform any required initialization              *
 +*                                                                           *
 +****************************************************************************/
-+void init_kwnmib ( void ) {
-+
++void init_kwnmib ( void ) 
++{
 +  /* register ourselves with the agent to handle our mib tree */
-+  REGISTER_MIB("kwnmib", kwnmib_variables, variable7,
-+               kwnmib_variables_oid);
-+
++  REGISTER_MIB( "kwnmib", kwnmib_variables, variable7, kwnmib_variables_oid );
 +}
 +
-+void shutdown_kwnmib ( void ) {
++void shutdown_kwnmib ( void ) 
++{
 +}
 +
-+void kwn_sys_cmd( const char* cmd, uint8_t* cmd_buf )
++/****************************************************************************
++*                                                                           *
++*         kwn_sys_cmd() - Get System command output                         *
++*                                                                           *
++****************************************************************************/
++void kwn_sys_cmd( const char* cmd, uint8_t* buf )
 +{
 +    FILE *fp = NULL;
-+    uint8_t  a[33]={0};
++    uint8_t  a[ KWN_UCI_CMD_OUTPUT_LEN_MAX ] = { 0 };
 +    uint8_t  *token;
 +    uint16_t len;
 +
-+    fp = popen(cmd,"r");
++    fp = popen( cmd, "r" );
 +    if( fp == NULL )
 +        return;
-+    memset(a, '\0', sizeof(a));
-+    while( fgets(a, sizeof(a), fp) != NULL)
++    memset( a, '\0', sizeof(a) );
++    while( fgets( a, sizeof(a), fp ) != NULL )
 +    {
 +        /*printf("%s",a);*/
 +    }
-+    pclose(fp);
++    pclose( fp );
 +
 +    if( a[0] == '\0' ) {
-+        memcpy(cmd_buf, "-NA-", sizeof(cmd_buf));
++        memcpy( buf, "-NA-", sizeof( buf ) );
 +        return;
 +    }
-+    token = strtok(a,"\n");
-+    len = strlen(token);
-+    memcpy(cmd_buf,token,len);
++    token = strtok( a, "\n" );
++    len = strlen( token );
++    memcpy( buf, token, len );
 +    return;
 +}
 +
++/****************************************************************************
++*                                                                           *
++*         kwn_conv_str_to_ip() - Convert string to Uint32 IP                *
++*                                                                           *
++****************************************************************************/
 +void kwn_conv_str_to_ip( int8_t* conv_ip, uint32_t* ip_addr )
 +{
 +    uint32_t val;
-+    int8_t  *tok,*ptr;
++    int8_t  *tok, *ptr;
 +
-+    tok=strtok(conv_ip,".");
++    tok = strtok( conv_ip, "." );
 +
-+    while( tok != NULL)
++    while( tok != NULL )
 +    {
-+        val=strtoul(tok,&ptr,0);
-+        *ip_addr=(*ip_addr << 8) + val;
-+        tok=strtok(NULL,".");
++        val = strtoul( tok, &ptr, 0 );
++        *ip_addr = ( *ip_addr << 8 ) + val;
++        tok = strtok( NULL, "." );
 +    }
 +    return;
 +}
 +
++/****************************************************************************
++*                                                                           *
++*         kwn_conv_uint32_to_ip() - Convert Uint32 IP to string             *
++*                                                                           *
++****************************************************************************/
++void kwn_conv_uint32_to_ip( u_char *val, size_t len, uint8_t* byte )
++{
++    char cmd[ 100 ];
++    char buf1[ 30 ];
++    char buf2[ 30 ];
++    u_long ip;
++
++    memcpy( buf1, val, (len > 8) ? 8 : len );
++    ip = *( (u_long *) buf1 );
++    buf2[ 0 ] = ( ip & 0xFF );
++    buf2[ 1 ] = ( (ip >>  8) & 0xFF );
++    buf2[ 2 ] = ( (ip >> 16) & 0xFF );
++    buf2[ 3 ] = ( (ip >> 24) & 0xFF );
++
++    sprintf( byte, "%d.%d.%d.%d", buf2[0], buf2[1], buf2[2], buf2[3] );
++    return;
++}
++
++/****************************************************************************
++*                                                                           *
++*         kwn_get_value() - Get value based on type                         *
++*                                                                           *
++****************************************************************************/
 +void kwn_get_value( int type, char* cmd, size_t *var_len )
 +{
-+    kwn_sys_cmd(cmd, &resbuf[0]);
++    uint32_t resaddr = 0;
++    char *ptr;
++
++    kwn_sys_cmd( cmd, &res_str[0] );
 +    switch( type )
 +    {
 +        case KWN_TYPE_INTEGER32:
-+            if( !memcmp( resbuf, "-NA-", 4) )
-+                resval = -1;
++            if( !memcmp( res_str, "-NA-", 4 ) )
++                res_val = -1;
 +            else
-+                resval = strtol(resbuf, &ptr, 10);
++                res_val = strtol( res_str, &ptr, 10 );
 +            *var_len = sizeof ( long );
 +            break;
 +        case KWN_TYPE_DISPLAY_STRING:
-+            resbuf[ sizeof(resbuf)-1 ] = 0;
-+            *var_len = strlen(resbuf);
++            res_str[ sizeof( res_str ) - 1 ] = 0;
++            *var_len = strlen( res_str );
 +            break;
 +        case KWN_TYPE_IP_ADDRESS:
-+            resbuf[ sizeof(resbuf)-1 ] = 0;
-+            kwn_conv_str_to_ip(&resbuf[0], &resaddr);
-+            resaddr_hl = ntohl( resaddr );
++            res_str[ sizeof( res_str ) - 1 ] = 0;
++            kwn_conv_str_to_ip( &res_str[0], &resaddr );
++            res_ip = ntohl( resaddr );
 +            *var_len = sizeof( in_addr_t );
 +            break;
 +    }
 +}
 +
-+int assoclist ()
++int get_assoclist()
 +{
 +    int sk_fd = -1;
 +    struct ieee80211req_sta_info *si;
 +    struct iwreq iwr;
 +    unsigned char *cp = NULL;
-+    unsigned char buf[ 24 * 1024 ]  ={ 0 };
++    unsigned char buf[ 24 * 1024 ]  = { 0 };
 +    int len = 0;
 +    int num = 0;
 +    char cmd[100];
 +
 +    kwn_assoc_list.no_of_links = 0;
-+    (void) memset( &iwr, 0, sizeof(iwr) );
++    (void) memset( &iwr, 0, sizeof( iwr ) );
 +    (void) strncpy( iwr.ifr_name, "ath1", sizeof( iwr.ifr_name ) );
 +    iwr.u.data.pointer = ( void * ) buf;
 +    iwr.u.data.length = sizeof( buf );
@@ -296,7 +327,7 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +        sk_fd = -1;
 +        return -1;
 +    }
-+    if( ioctl( sk_fd, IEEE80211_IOCTL_STA_INFO, &iwr) < 0 ) {
++    if( ioctl( sk_fd, IEEE80211_IOCTL_STA_INFO, &iwr ) < 0 ) {
 +        close( sk_fd );
 +        return -1;
 +    }
@@ -309,25 +340,25 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +    do {
 +        si = ( struct ieee80211req_sta_info * ) cp;
 +        memcpy( kwn_assoc_list.sta[num].mac, &si->isi_macaddr, KWN_MAC_ADDR_LEN );
-+        memcpy( kwn_assoc_list.sta[num].l_latitude, si->isi_l_latitude+5, sizeof(kwn_assoc_list.sta[num].l_latitude) );
-+        memcpy( kwn_assoc_list.sta[num].l_longitude, si->isi_l_longitude+5, sizeof(kwn_assoc_list.sta[num].l_longitude) );
-+        memcpy( kwn_assoc_list.sta[num].r_latitude, si->isi_r_latitude+5, sizeof(kwn_assoc_list.sta[num].r_latitude) );
-+        memcpy( kwn_assoc_list.sta[num].r_longitude, si->isi_r_longitude+5, sizeof(kwn_assoc_list.sta[num].r_longitude) );
-+        kwn_assoc_list.sta[num].tx_rate = (long) ( si->isi_txratekbps / 1000 );
-+        kwn_assoc_list.sta[num].rx_rate = (long) (si->isi_rxratekbps / 1000 );
-+        kwn_assoc_list.sta[num].tx_tput = (long) ( si->isi_tx_tput / 1000 );
-+        kwn_assoc_list.sta[num].rx_tput = (long) (si->isi_rx_tput / 1000 );
-+        kwn_assoc_list.sta[num].local_snr_a1 = (long) si->isi_local_snr_a1;
-+        kwn_assoc_list.sta[num].remote_snr_a1 = (long) si->isi_remote_snr_a1;
-+        kwn_assoc_list.sta[num].local_snr_a2 = (long) si->isi_local_snr_a2;
-+        kwn_assoc_list.sta[num].remote_snr_a2 = (long) si->isi_remote_snr_a2;
-+        kwn_assoc_list.sta[num].local_phy_err = (long) si->isi_local_phy_err;
-+        kwn_assoc_list.sta[num].remote_phy_err = (long) si->isi_remote_phy_err;
-+        kwn_assoc_list.sta[num].local_mpdu_err = (long) si->isi_local_mpdu_err;
-+        kwn_assoc_list.sta[num].remote_mpdu_err = (long) si->isi_remote_mpdu_err;
-+        kwn_assoc_list.sta[num].local_retries = (long) si->isi_local_retries;
-+        kwn_assoc_list.sta[num].remote_retries = (long) si->isi_remote_retries;
-+        kwn_assoc_list.sta[num].ip = si->isi_ip_addr;
++        memcpy( kwn_assoc_list.sta[num].l_latitude, si->isi_l_latitude + 5, sizeof( kwn_assoc_list.sta[num].l_latitude ) );
++        memcpy( kwn_assoc_list.sta[num].l_longitude, si->isi_l_longitude + 5, sizeof( kwn_assoc_list.sta[num].l_longitude ) );
++        memcpy( kwn_assoc_list.sta[num].r_latitude, si->isi_r_latitude + 5, sizeof( kwn_assoc_list.sta[num].r_latitude ) );
++        memcpy( kwn_assoc_list.sta[num].r_longitude, si->isi_r_longitude + 5, sizeof( kwn_assoc_list.sta[num].r_longitude ) );
++        kwn_assoc_list.sta[ num ].tx_rate = ( long ) ( si->isi_txratekbps / 1000 );
++        kwn_assoc_list.sta[ num ].rx_rate = ( long ) ( si->isi_rxratekbps / 1000 );
++        kwn_assoc_list.sta[ num ].tx_tput = ( long ) ( si->isi_tx_tput / 1000 );
++        kwn_assoc_list.sta[ num ].rx_tput = ( long ) ( si->isi_rx_tput / 1000 );
++        kwn_assoc_list.sta[ num ].local_snr_a1 = ( long ) si->isi_local_snr_a1;
++        kwn_assoc_list.sta[ num ].remote_snr_a1 = ( long ) si->isi_remote_snr_a1;
++        kwn_assoc_list.sta[ num ].local_snr_a2 = ( long ) si->isi_local_snr_a2;
++        kwn_assoc_list.sta[ num ].remote_snr_a2 = ( long ) si->isi_remote_snr_a2;
++        kwn_assoc_list.sta[ num ].local_phy_err = ( long ) si->isi_local_phy_err;
++        kwn_assoc_list.sta[ num ].remote_phy_err = ( long ) si->isi_remote_phy_err;
++        kwn_assoc_list.sta[ num ].local_mpdu_err = ( long ) si->isi_local_mpdu_err;
++        kwn_assoc_list.sta[ num ].remote_mpdu_err = ( long ) si->isi_remote_mpdu_err;
++        kwn_assoc_list.sta[ num ].local_retries = ( long ) si->isi_local_retries;
++        kwn_assoc_list.sta[ num ].remote_retries = ( long ) si->isi_remote_retries;
++        kwn_assoc_list.sta[ num ].ip = si->isi_ip_addr;
 +        num ++;
 +        cp += si->isi_len, len -= si->isi_len;
 +    } while( len >= sizeof( struct ieee80211req_sta_info ) );
@@ -340,136 +371,168 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 + *   var_WlanTable() -                                                      *
 + *                                                                          *
 + ****************************************************************************/
-+    unsigned char *
++unsigned char *
 +var_WlanTable ( struct variable *vp, 
 +        oid     *name, 
 +        size_t  *length, 
 +        int     exact, 
 +        size_t  *var_len, 
-+        WriteMethod **write_method)
++        WriteMethod **write_method )
 +{
 +    char cmd[100];
 +    int ind;
 +
-+    ind = (int)name[12];
++    ind = ( int ) name[ 13 ];
 +    if( ind < 1 || ind > 2 )
 +        return NULL;
 +    ind = ind - 1;
 +
-+    memset(resbuf,'\0',sizeof(resbuf));
-+    resval = 0;
-+    ptr = NULL;
++    memset( res_str, '\0', sizeof( res_str ) );
++    res_val = 0;
++    res_ip = 0;
 +    *length = vp->namelen + 1;
-+    switch ( vp->magic ) {
-+        case WLANRADIOMODE:
-+            *write_method = wlanwriteSystem;
-+            sprintf(cmd,"uci get wireless.@wifi-iface[%d].mode",ind);
-+            kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len );
-+            return (u_char *) resbuf;
-+        case WLANSSID:
-+            *write_method = wlanwriteSystem;
-+            sprintf(cmd,"uci get wireless.@wifi-iface[%d].ssid",ind);
-+            kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len );
-+            return (u_char *) resbuf;
-+        case WLANCOUNTRY:
-+            *write_method = wlanwriteSystem;
-+            sprintf(cmd,"uci get wireless.wifi%d.country",ind);
-+            kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len );
-+            return ( UCHAR * ) &resval;
-+        case WLANOPMODE:
-+            *write_method = wlanwriteSystem;
-+            sprintf(cmd,"uci get wireless.wifi%d.hwmode",ind);
-+            kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len );
-+            return (u_char *) resbuf;
-+        case WLANBANDWIDTH:
-+            *write_method = wlanwriteSystem;
-+            sprintf(cmd,"uci get wireless.wifi%d.htmode",ind);
-+            kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len );
-+            return (u_char *) resbuf;
-+        case WLANCHANNEL:
-+            *write_method = wlanwriteSystem;
-+            sprintf(cmd,"uci get wireless.wifi%d.channel",ind);
-+            kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len );
-+            return (u_char *) &resbuf;
-+        case WLANRATE:
-+            *write_method = wlanwriteSystem;
-+            sprintf(cmd,"uci get wireless.wifi%d.rate",ind);
-+            kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len );
-+            return ( UCHAR *) &resbuf;
-+        case WLANTXPOWER:
-+            *write_method = wlanwriteSystem;
-+            sprintf(cmd,"uci get wireless.wifi%d.txpower",ind);
-+            kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len );
-+            return (u_char *) &resval;
-+        case WLANAMSDU:
-+            *write_method = wlanwriteSystem;
-+            sprintf(cmd,"uci get wireless.@wifi-iface[%d].kwnamsdu",ind);
-+            kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len );
-+            return (UCHAR *) &resval;
-+        case WLANUPLINKLIMIT:
-+            sprintf(cmd,"uci get wireless.@wifi-iface[%d].ullmt",ind);
-+            kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len );
-+            return (u_char *) &resval;
-+        case WLANDOWNLINKLIMIT:
-+            *write_method = wlanwriteSystem;
-+            sprintf(cmd,"uci get wireless.@wifi-iface[%d].dllmt",ind);
-+            kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len );
-+            return (u_char *) &resval;
-+        case WLANHIDEESSID:
-+            *write_method = wlanwriteSystem;
-+            sprintf(cmd,"uci get wireless.@wifi-iface[%d].hidden",ind);
-+            kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len );
-+            return (u_char *) &resval;
-+        case WLANCUSTOMERNAME:
-+            *write_method = wlanwriteSystem;
-+            sprintf(cmd,"uci get wireless.wifi%d.customername",ind);
-+            kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len );
-+            return (u_char *) resbuf;
-+        case WLANLINKID:
-+            *write_method = wlanwriteSystem;
-+            sprintf(cmd,"uci get wireless.wifi%d.linkid",ind);
-+            kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len );
-+            return (u_char *) &resval;
-+        case WLANSECENC:
-+            *write_method = wlanwriteSystem;
-+            sprintf(cmd,"uci get wireless.@wifi-iface[%d].encryption",ind);
-+            kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len );
-+            return (u_char *) resbuf;
-+        case WLANSECKEY:
-+            *write_method = wlanwriteSystem;
-+            sprintf(cmd,"uci get wireless.@wifi-iface[%d].key",ind);
-+            kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len );
-+            return (u_char *) resbuf;
-+        case WLANMACFILTER:
-+            *write_method = wlanwriteSystem;
-+            sprintf(cmd,"uci get wireless.@wifi-iface[%d].macfilter",ind);
-+            kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len );
-+            return (u_char *) resbuf;
-+        case WLANMACLIST:
-+            *write_method = wlanwriteSystem;
-+            sprintf(cmd,"uci get wireless.@wifi-iface[%d].maclist",ind);
-+            kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len );
-+            return (u_char *) resbuf;
-+        case WLANDISTANCE:
-+            *write_method = wlanwriteSystem;
-+            sprintf(cmd,"uci get wireless.wifi%d.distance",ind);
-+            kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len );
-+            return (u_char *) resbuf;
-+        case WLANSHORTGI:
-+            *write_method = wlanwriteSystem;
-+            sprintf(cmd,"uci get wireless.@wifi-iface[%d].shortgi",ind);
-+            kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len );
-+            return (u_char *) &resval;
-+        case WLANTXCHAINMASK:
-+            *write_method = wlanwriteSystem;
-+            sprintf(cmd,"uci get wireless.wifi%d.txchainmask",ind);
-+            kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len );
-+            return (u_char *) &resval;
-+        case WLANRXCHAINMASK:
-+            *write_method = wlanwriteSystem;
-+            sprintf(cmd,"uci get wireless.wifi%d.rxchainmask",ind);
-+            kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len );
-+            return (u_char *) &resval;
++    *write_method = wlanwriteMethod;
++
++    switch ( (char) name[12] ) {
++        case KWN_WLAN_INDEX:
++            {
++                *write_method = NULL;
++                res_val = ind + 1;
++                *var_len = sizeof ( long );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_WLAN_RADIOMODE:
++            {
++                sprintf( cmd, "uci get wireless.@wifi-iface[%d].mode", ind );
++                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len );
++                return ( u_char * ) res_str;
++            }
++        case KWN_WLAN_SSID:
++            {
++                sprintf( cmd, "uci get wireless.@wifi-iface[%d].ssid", ind );
++                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len );
++                return ( u_char * ) res_str;
++            }
++        case KWN_WLAN_COUNTRY:
++            {
++                sprintf( cmd, "uci get wireless.wifi%d.country", ind );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_WLAN_OPMODE:
++            {
++                sprintf( cmd, "uci get wireless.wifi%d.hwmode", ind );
++                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len );
++                return ( u_char * ) res_str;
++            }
++        case KWN_WLAN_BANDWIDTH:
++            {
++                sprintf( cmd, "uci get wireless.wifi%d.htmode", ind );
++                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len );
++                return ( u_char *) res_str;
++            }
++        case KWN_WLAN_CHANNEL:
++            {
++                sprintf( cmd, "uci get wireless.wifi%d.channel", ind );
++                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len );
++                return ( u_char * ) &res_str;
++            }
++        case KWN_WLAN_RATE:
++            {
++                sprintf( cmd, "uci get wireless.wifi%d.rate", ind );
++                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len );
++                return ( u_char * ) &res_str;
++            }
++        case KWN_WLAN_TXPOWER:
++            {
++                sprintf( cmd, "uci get wireless.wifi%d.txpower", ind );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_WLAN_AMSDU:
++            {
++                sprintf( cmd, "uci get wireless.@wifi-iface[%d].kwnamsdu", ind );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_WLAN_UPLINK_LIMIT:
++            {
++                sprintf( cmd, "uci get wireless.@wifi-iface[%d].ullmt", ind );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_WLAN_DOWNLINK_LIMIT:
++            {
++                sprintf( cmd, "uci get wireless.@wifi-iface[%d].dllmt", ind );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_WLAN_HIDE_ESSID:
++            {
++                sprintf( cmd, "uci get wireless.@wifi-iface[%d].hidden", ind );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_WLAN_CUSTOMER_NAME:
++            {
++                sprintf( cmd, "uci get wireless.wifi%d.customername", ind );
++                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len );
++                return ( u_char * ) res_str;
++            }
++        case KWN_WLAN_LINKID:
++            {
++                sprintf( cmd, "uci get wireless.wifi%d.linkid", ind );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_WLAN_SECURITY_ENC:
++            {
++                sprintf( cmd, "uci get wireless.@wifi-iface[%d].encryption", ind );
++                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len );
++                return ( u_char * ) res_str;
++            }
++        case KWN_WLAN_SECURITY_KEY:
++            {
++                sprintf( cmd, "uci get wireless.@wifi-iface[%d].key", ind );
++                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len );
++                return ( u_char * ) res_str;
++            }
++        case KWN_WLAN_MACFILTER:
++            {
++                sprintf( cmd, "uci get wireless.@wifi-iface[%d].macfilter", ind );
++                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len );
++                return ( u_char * ) res_str;
++            }
++        case KWN_WLAN_MACLIST:
++            {
++                sprintf( cmd, "uci get wireless.@wifi-iface[%d].maclist", ind );
++                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len );
++                return ( u_char * ) res_str;
++            }
++        case KWN_WLAN_DISTANCE:
++            {
++                sprintf( cmd, "uci get wireless.wifi%d.distance", ind );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len );
++                return (u_char *) &res_val;
++            }
++        case KWN_WLAN_SHORTGI:
++            {
++                sprintf( cmd, "uci get wireless.@wifi-iface[%d].shortgi", ind );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_WLAN_TXCHAINMASK:
++            {
++                sprintf( cmd, "uci get wireless.wifi%d.txchainmask", ind );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_WLAN_RXCHAINMASK:
++            {
++                sprintf( cmd, "uci get wireless.wifi%d.rxchainmask", ind );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len );
++                return ( u_char * ) &res_val;
++            }
 +        default:
 +            ERROR_MSG ( "" );
 +    }
@@ -477,11 +540,11 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +}
 +
 +/****************************************************************************
-+ *                                                                           *
-+ *   var_NwkIPTable() -                                                    *
-+ *                                                                           *
++ *                                                                          *
++ *   var_NwkIPTable() -                                                     *
++ *                                                                          *
 + ****************************************************************************/
-+    unsigned char *
++unsigned char *
 +var_NwkIPTable ( struct variable *vp, 
 +        oid     *name, 
 +        size_t  *length, 
@@ -491,42 +554,46 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +{
 +    char cmd[100];
 +
-+    if ( header_generic ( vp, name, length, exact,var_len,write_method )
++    if ( header_generic ( vp, name, length, exact, var_len, write_method )
 +            == MATCH_FAILED )
 +        return NULL;
 +
-+    memset(resbuf,'\0',sizeof(resbuf));
-+    resval = 0;
-+    resaddr = 0;
-+    resaddr_hl = 0;
-+    ptr = NULL;
++    memset( res_str, '\0', sizeof( res_str ) );
++    res_val = 0;
++    res_ip = 0;
 +    *length = vp->namelen + 1;
-+    switch ( vp->magic ) {
-+        case NWKADRSTYPE:
-+            *write_method = nwkwriteSystem;
-+            sprintf(cmd,"uci get network.lan.proto");
-+            kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len );
-+            return (u_char *) resbuf;
-+        case NWKIPADRS:
-+            *write_method = nwkwriteSystem;
-+            sprintf(cmd,"uci get network.lan.ipaddr");
-+            kwn_get_value( KWN_TYPE_IP_ADDRESS, &cmd[0], var_len );
-+            return (u_char *) &resaddr_hl;
-+        case NWKMASK:
-+            *write_method = nwkwriteSystem;
-+            sprintf(cmd,"uci get network.lan.netmask");
-+            kwn_get_value( KWN_TYPE_IP_ADDRESS, &cmd[0], var_len );
-+            return (u_char *) &resaddr_hl;
-+        case NWKGATEWAY:
-+            *write_method = nwkwriteSystem;
-+            sprintf(cmd,"uci get network.lan.gateway");
-+            kwn_get_value( KWN_TYPE_IP_ADDRESS, &cmd[0], var_len );
-+            return (u_char *) &resaddr_hl;
-+        case NWKDNSIP:
-+            *write_method = nwkwriteSystem;
-+            sprintf(cmd,"uci get network.lan.dns");
-+            kwn_get_value( KWN_TYPE_IP_ADDRESS, &cmd[0], var_len );
-+            return (u_char *) &resaddr_hl;
++    *write_method = nwkwriteMethod;
++    switch ( (char) name[10] ) {
++        case KWN_NWK_ADRSTYPE:
++            {
++                sprintf( cmd, "uci get network.lan.proto" );
++                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len );
++                return ( u_char * ) res_str;
++            }
++        case KWN_NWK_IP:
++            {
++                sprintf( cmd, "uci get network.lan.ipaddr" );
++                kwn_get_value( KWN_TYPE_IP_ADDRESS, &cmd[0], var_len );
++                return ( u_char * ) &res_ip;
++            }
++        case KWN_NWK_MASK: 
++            {
++                sprintf( cmd, "uci get network.lan.netmask" );
++                kwn_get_value( KWN_TYPE_IP_ADDRESS, &cmd[0], var_len );
++                return ( u_char * ) &res_ip;
++            }
++        case KWN_NWK_GATEWAY:
++            {
++                sprintf( cmd, "uci get network.lan.gateway" );
++                kwn_get_value( KWN_TYPE_IP_ADDRESS, &cmd[0], var_len );
++                return ( u_char * ) &res_ip;
++            }
++        case KWN_NWK_DNS:
++            {
++                sprintf( cmd, "uci get network.lan.dns" );
++                kwn_get_value( KWN_TYPE_IP_ADDRESS, &cmd[0], var_len );
++                return ( u_char * ) &res_ip;
++            }
 +        default:
 +            ERROR_MSG ( "" );
 +    }
@@ -535,10 +602,10 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +
 +/****************************************************************************
 + *                                                                           *
-+ *   var_RadiusTable() -                                                    *
++ *   var_RadiusTable() -                                                     *
 + *                                                                           *
 + ****************************************************************************/
-+    unsigned char *
++unsigned char *
 +var_RadiusTable ( struct variable *vp, 
 +        oid     *name, 
 +        size_t  *length, 
@@ -548,72 +615,81 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +{
 +    char cmd[100];
 +
-+    if ( header_generic ( vp, name, length, exact,var_len,write_method )
++    if ( header_generic ( vp, name, length, exact, var_len, write_method )
 +            == MATCH_FAILED )
 +        return NULL;
 +
-+    memset(resbuf,'\0',sizeof(resbuf));
-+    resval = 0;
-+    resaddr = 0;
-+    ptr = NULL;
++    memset( res_str, '\0', sizeof( res_str ) );
++    res_val = 0;
++    res_ip = 0;
 +    *length = vp->namelen + 1;
++    *write_method = radiuswriteMethod;
 +
-+    switch ( vp->magic ) {
-+        case RADIUSSTATUS:
-+            *write_method = radiuswriteSystem;
-+            sprintf(cmd,"uci get wrt-radauth.sys.enableRadAuth");
++    switch ( (char) name[10] ) {
++        case KWN_RADIUS_STATUS:
++            {
++                sprintf( cmd, "uci get wrt-radauth.sys.enableRadAuth" );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_RADIUS_PRISERVER:
++            {
++                sprintf( cmd, "uci get wrt-radauth.sys.primaryServer" );
++                kwn_get_value( KWN_TYPE_IP_ADDRESS, &cmd[0], var_len );
++                return ( u_char * ) &res_ip;
++            }
++        case KWN_RADIUS_PRIPORT:
++            sprintf( cmd, "uci get wrt-radauth.sys.primaryPort" );
 +            kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len );
-+            return (u_char *) &resval;
-+        case RADIUSPRISERVER:
-+            *write_method = radiuswriteSystem;
-+            sprintf(cmd,"uci get wrt-radauth.sys.primaryServer");
-+            kwn_get_value( KWN_TYPE_IP_ADDRESS, &cmd[0], var_len );
-+            return (u_char *) &resaddr_hl;
-+        case RADIUSPRIPORT:
-+            *write_method = radiuswriteSystem;
-+            sprintf(cmd,"uci get wrt-radauth.sys.primaryPort");
-+            kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len );
-+            return (u_char *) &resval;
-+        case RADIUSPRISECRET:
-+            *write_method = radiuswriteSystem;
-+            sprintf(cmd,"uci get wrt-radauth.sys.primarySecret");
-+            kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len );
-+            return (u_char *) resbuf;
-+        case RADIUSSECSERVER:
-+            *write_method = radiuswriteSystem;
-+            sprintf(cmd,"uci get wrt-radauth.sys.secondaryServer");
-+            kwn_get_value( KWN_TYPE_IP_ADDRESS, &cmd[0], var_len );
-+            return (u_char *) &resaddr_hl;
-+        case RADIUSSECPORT:
-+            *write_method = radiuswriteSystem;
-+            sprintf(cmd,"uci get wrt-radauth.sys.secondaryPort");
-+            kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len );
-+            return (u_char *) &resval;
-+        case RADIUSSECSECRET:
-+            *write_method = radiuswriteSystem;
-+            sprintf(cmd,"uci get wrt-radauth.sys.secondarySecret");
-+            kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len );
-+            return (u_char *) resbuf;
-+        case RADIUSREAUTHTIME:
-+            *write_method = radiuswriteSystem;
-+            sprintf(cmd,"uci get wrt-radauth.sys.reauthTime");
-+            kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len );
-+            return (u_char *) &resval;
-+        case RADIUSRETRYTIME:
-+            *write_method = radiuswriteSystem;
-+            sprintf(cmd,"uci get wrt-radauth.sys.retryTime");
-+            kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len );
-+            return (u_char *) &resval;
-+        case RADIUSRETRYCOUNT:
-+            *write_method = radiuswriteSystem;
-+            sprintf(cmd,"uci get wrt-radauth.sys.requestRetries");
-+            kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len );
-+            return (u_char *) &resval;
-+        case RADIUSRETRYCOUNTPERIOD:
-+            *write_method = radiuswriteSystem;
-+            sprintf(cmd,"uci get wrt-radauth.sys.requestTimeout");
-+            kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len );
-+            return (u_char *) &resval;
++            return ( u_char * ) &res_val;
++        case KWN_RADIUS_PRISECRET:
++            {
++                sprintf( cmd, "uci get wrt-radauth.sys.primarySecret" );
++                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len );
++                return ( u_char * ) res_str;
++            }
++        case KWN_RADIUS_SECSERVER:
++            {
++                sprintf( cmd, "uci get wrt-radauth.sys.secondaryServer" );
++                kwn_get_value( KWN_TYPE_IP_ADDRESS, &cmd[0], var_len );
++                return ( u_char * ) &res_ip;
++            }
++        case KWN_RADIUS_SECPORT:
++            {
++                sprintf( cmd, "uci get wrt-radauth.sys.secondaryPort" );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_RADIUS_SECSECRET:
++            {
++                sprintf( cmd, "uci get wrt-radauth.sys.secondarySecret" );
++                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len );
++                return ( u_char * ) res_str;
++            }
++        case KWN_RADIUS_REAUTHTIME:
++            {
++                sprintf( cmd, "uci get wrt-radauth.sys.reauthTime" );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_RADIUS_RETRYTIME:
++            {
++                sprintf( cmd, "uci get wrt-radauth.sys.retryTime" );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_RADIUS_RETRYCOUNT:
++            {
++                sprintf( cmd, "uci get wrt-radauth.sys.requestRetries" );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_RADIUS_RETRYCOUNTPERIOD:
++            {
++                sprintf( cmd, "uci get wrt-radauth.sys.requestTimeout" );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len );
++                return ( u_char * ) &res_val;
++            }
 +        default:
 +            ERROR_MSG ( "" );
 +    }
@@ -622,10 +698,10 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +
 +/****************************************************************************
 + *                                                                           *
-+ *   var_VlanTable() -                                                    *
++ *   var_VlanTable() -                                                       *
 + *                                                                           *
 + ****************************************************************************/
-+    unsigned char *
++unsigned char *
 +var_VlanTable ( struct variable *vp, 
 +        oid     *name, 
 +        size_t  *length, 
@@ -635,56 +711,65 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +{
 +    char cmd[100];
 +
-+    if ( header_generic ( vp, name, length, exact,var_len,write_method )
++    if ( header_generic ( vp, name, length, exact, var_len, write_method )
 +            == MATCH_FAILED )
 +        return NULL;
 +
-+    memset(resbuf,'\0',sizeof(resbuf));
-+    resval = 0;
-+    ptr = NULL;
++    memset( res_str, '\0', sizeof( res_str ) );
++    res_val = 0;
++    res_ip = 0;
 +    *length = vp->namelen + 1;
++    *write_method = vlanwriteMethod;
 +
-+    switch ( vp->magic ) {
-+        case VLANSTATUS:
-+            *write_method = vlanwriteSystem;
-+            sprintf(cmd,"uci get vlan.vlan.status");
-+            kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len );
-+            return (u_char *) &resval;
-+        case VLANMODE:
-+            *write_method = vlanwriteSystem;
-+            sprintf(cmd,"uci get vlan.vlan.mode");
-+            kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len );
-+            return (u_char *) &resval;
-+        case VLANMGMTID:
-+            *write_method = vlanwriteSystem;
-+            sprintf(cmd,"uci get vlan.vlan.mgmtvlan");
-+            kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len );
-+            return (u_char *) &resval;
-+        case VLANACCESSID:
-+            *write_method = vlanwriteSystem;
-+            sprintf(cmd,"uci get vlan.vlan.accessvlan");
-+            kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len );
-+            return (u_char *) &resval;
-+        case VLANTRUNKOPTION:
-+            *write_method = vlanwriteSystem;
-+            sprintf(cmd,"uci get vlan.vlan.trunkoption");
-+            kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len );
-+            return (u_char *) &resval;
-+        case VLANTRUNKID:
-+            *write_method = vlanwriteSystem;
-+            sprintf(cmd,"uci get vlan.vlan.trunkvlan");
-+            kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len );
-+            return (u_char *) resbuf;
-+        case VLANSVLANID:
-+            *write_method = vlanwriteSystem;
-+            sprintf(cmd,"uci get vlan.vlan.svlan");
-+            kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len );
-+            return (u_char *) &resval;
-+        case VLANSVLANETHERTYPE:
-+            *write_method = vlanwriteSystem;
-+            sprintf(cmd,"uci get vlan.vlan.svlanethertype");
-+            kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len );
-+            return (u_char *) resbuf;
++    switch ( (char) name[10] ) {
++        case KWN_VLAN_STATUS:
++            {
++                sprintf( cmd, "uci get vlan.vlan.status" );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_VLAN_MODE:
++            {
++                sprintf( cmd, "uci get vlan.vlan.mode" );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_VLAN_MGMTID:
++            {
++                sprintf( cmd, "uci get vlan.vlan.mgmtvlan" );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_VLAN_ACCESSID:
++            {
++                sprintf( cmd, "uci get vlan.vlan.accessvlan" );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_VLAN_TRUNKOPTION:
++            {
++                sprintf( cmd, "uci get vlan.vlan.trunkoption" );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_VLAN_TRUNKID:
++            {
++                sprintf( cmd, "uci get vlan.vlan.trunkvlan" );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len );
++                return ( u_char * ) res_str;
++            }
++        case KWN_VLAN_SVLAN:
++            {
++                sprintf( cmd, "uci get vlan.vlan.svlan" );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_VLAN_SVLAN_ETHERTYPE:
++            {
++                sprintf( cmd, "uci get vlan.vlan.svlanethertype" );
++                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len );
++                return ( u_char * ) res_str;
++            }
 +        default:
 +            ERROR_MSG ( "" );
 +    }
@@ -693,10 +778,10 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +
 +/****************************************************************************
 + *                                                                           *
-+ *   var_EthernetTable() -                                                    *
++ *   var_EthernetTable() -                                                   *
 + *                                                                           *
 + ****************************************************************************/
-+    unsigned char *
++unsigned char *
 +var_EthernetTable ( struct variable *vp, 
 +        oid     *name, 
 +        size_t  *length, 
@@ -706,21 +791,23 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +{
 +    char cmd[100];
 +
-+    if ( header_generic ( vp, name, length, exact,var_len,write_method )
++    if ( header_generic ( vp, name, length, exact, var_len, write_method )
 +            == MATCH_FAILED )
 +        return NULL;
 +
-+    memset(resbuf,'\0',sizeof(resbuf));
-+    resval = 0;
-+    ptr = NULL;
++    memset( res_str, '\0', sizeof( res_str ) );
++    res_val = 0;
++    res_ip = 0;
 +    *length = vp->namelen + 1;
++    *write_method = ethernetwriteMethod;
 +
-+    switch ( vp->magic ) {
-+        case ETHERNETSPEED:
-+            *write_method = ethernetwriteSystem;
-+            sprintf(cmd,"uci get ethernet.ethernet.mode");
-+            kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len );
-+            return (u_char *) &resval;
++    switch ( (char) name[10] ) {
++        case KWN_ETHERNET_MODE:
++            {
++                sprintf( cmd, "uci get ethernet.ethernet.mode" );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len );
++                return ( u_char * ) &res_val;
++            }
 +        default:
 +            ERROR_MSG ( "" );
 +    }
@@ -729,10 +816,10 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +
 +/****************************************************************************
 + *                                                                           *
-+ *   var_DhcpTable() -                                                    *
++ *   var_DhcpTable() -                                                       *
 + *                                                                           *
 + ****************************************************************************/
-+    unsigned char *
++unsigned char *
 +var_DhcpTable ( struct variable *vp, 
 +        oid     *name, 
 +        size_t  *length, 
@@ -742,42 +829,46 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +{
 +    char cmd[100];
 +
-+    if ( header_generic ( vp, name, length, exact,var_len,write_method )
++    if ( header_generic ( vp, name, length, exact, var_len, write_method )
 +            == MATCH_FAILED )
 +        return NULL;
 +
-+    memset(resbuf,'\0',sizeof(resbuf));
-+    resval = 0;
-+    ptr = NULL;
-+    *length = vp->namelen + 1;
++    memset( res_str, '\0', sizeof( res_str ) );
++    res_val = 0;
++    res_ip = 0;
 +
-+    switch ( vp->magic ) {
-+        case DHCPSERVER:
-+            *write_method = dhcpwriteSystem;
-+            sprintf(cmd,"uci get dhcp.lan.start");
-+            kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len );
-+            sprintf(cmd,"echo %d >> /tmp/sify.txt",resval);
-+            system(cmd);
-+            if( resval == -1 )
-+                resval = 0;
-+            else
-+                resval = 1;
-+            return (u_char *) &resval;
-+        case DHCPSTART:
-+            *write_method = dhcpwriteSystem;
-+            sprintf(cmd,"uci get dhcp.lan.start");
-+            kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len );
-+            return (u_char *) &resval;
-+        case DHCPLIMIT:
-+            *write_method = dhcpwriteSystem;
-+            sprintf(cmd,"uci get dhcp.lan.limit");
-+            kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len );
-+            return (u_char *) &resval;
-+        case DHCPLEASETIME:
-+            *write_method = dhcpwriteSystem;
-+            sprintf(cmd,"uci get dhcp.lan.leasetime");
-+            kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len );
-+            return (u_char *) &resval;
++    *length = vp->namelen + 1;
++    *write_method = dhcpwriteMethod;
++
++    switch ( (char) name[10] ) {
++        case KWN_DHCP_SERVER:
++            {
++                sprintf( cmd, "uci get dhcp.lan.start" );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len );
++                if( res_val == -1 )
++                    res_val = 0;
++                else
++                    res_val = 1;
++                return ( u_char * ) &res_val;
++            }
++        case KWN_DHCP_START:
++            {
++                sprintf( cmd, "uci get dhcp.lan.start" );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_DHCP_LIMIT:
++            {
++                sprintf( cmd, "uci get dhcp.lan.limit" );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_DHCP_LEASE_TIME:
++            {
++                sprintf( cmd, "uci get dhcp.lan.leasetime" );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len );
++                return ( u_char * ) &res_val;
++            }
 +        default:
 +            ERROR_MSG ( "" );
 +    }
@@ -789,7 +880,7 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 + *   var_ManagementTable() -                                                *
 + *                                                                          *
 + ****************************************************************************/
-+    unsigned char *
++unsigned char *
 +var_ManagementTable ( struct variable *vp, 
 +        oid     *name, 
 +        size_t  *length, 
@@ -799,31 +890,35 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +{
 +    char cmd[100];
 +
-+    if ( header_generic ( vp, name, length, exact,var_len,write_method )
++    if ( header_generic ( vp, name, length, exact, var_len, write_method )
 +            == MATCH_FAILED )
 +        return NULL;
 +
-+    memset(resbuf,'\0',sizeof(resbuf));
-+    resval = 0;
-+    ptr = NULL;
++    memset( res_str, '\0', sizeof( res_str ) );
++    res_val = 0;
++    res_ip = 0;
 +    *length = vp->namelen + 1;
++    *write_method = systemwriteMethod;
 +
-+    switch ( vp->magic ) {
-+        case APPLY:
-+            *write_method = managementwriteSystem;
-+            resval = 0;
-+            *var_len = sizeof ( long );
-+            return (u_char *) &resval;
-+        case RESET:
-+            *write_method = managementwriteSystem;
-+            resval = 0;
-+            *var_len = sizeof ( long );
-+            return (u_char *) &resval;
-+        case REBOOT:
-+            *write_method = managementwriteSystem;
-+            resval = 0;
-+            *var_len = sizeof ( long );
-+            return (u_char *) &resval;
++    switch ( (char) name[10] ) {
++        case KWN_SYS_APPLY:
++            {
++                res_val = 0;
++                *var_len = sizeof ( long );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_SYS_RESET:
++            {
++                res_val = 0;
++                *var_len = sizeof ( long );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_SYS_REBOOT:
++            {
++                res_val = 0;
++                *var_len = sizeof ( long );
++                return ( u_char * ) &res_val;
++            }
 +        default:
 +            ERROR_MSG ( "" );
 +    }
@@ -835,7 +930,7 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 + *   var_AssocTable() -                                                     *
 + *                                                                          *
 + ****************************************************************************/
-+    unsigned char *
++unsigned char *
 +var_AssocTable ( struct variable *vp, 
 +        oid     *name, 
 +        size_t  *length, 
@@ -844,94 +939,154 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +        WriteMethod **write_method)
 +{
 +    char cmd[100];
-+    int ind;
++    int radio_ind, sec_ind;
 +
-+    ind = (int)name[11];
-+    memset(resbuf,'\0',sizeof(resbuf));
-+    resval = 0;
-+    resaddr = 0;
-+    ptr = NULL;
-+    *length = vp->namelen + 1;
++    radio_ind = ( int )name[12];
++    sec_ind = ( int )name[13];
++    memset( res_str, '\0', sizeof( res_str ) );
++    res_val = 0;
++    res_ip = 0;
++    *length = vp->namelen + 2;
 +    *write_method = NULL;
 +
-+    if( assoclist() < 0 ) {
++    /* Get Associated list */
++    if( get_assoclist( radio_ind ) < 0 ) {
 +        return SNMP_ERR_GENERR;
 +    }
++    /* If no links, return error */
 +    if( kwn_assoc_list.no_of_links <= 0 ) {
 +        return SNMP_ERR_GENERR;
 +    }
-+    if( ind < 1 || ind > kwn_assoc_list.no_of_links ) {
++    /* TODO: Assoc List for second radio to be supported */
++    if( radio_ind != 1 ) {
 +        return SNMP_ERR_GENERR;
 +    }
-+    ind = ind - 1;
-+    switch ( vp->magic ) {
-+        case ASSOCMAC:
-+            sprintf(resbuf, "%02x:%02x:%02x:%02x:%02x:%02x",
-+                    kwn_assoc_list.sta[ind].mac[0],
-+                    kwn_assoc_list.sta[ind].mac[1],
-+                    kwn_assoc_list.sta[ind].mac[2],
-+                    kwn_assoc_list.sta[ind].mac[3],
-+                    kwn_assoc_list.sta[ind].mac[4],
-+                    kwn_assoc_list.sta[ind].mac[5]);
-+            *var_len = strlen(resbuf);
-+            return (u_char *) resbuf;
-+        case ASSOCIP:
-+            *var_len = sizeof( in_addr_t );
-+            return (u_char *) &kwn_assoc_list.sta[ind].ip;
-+        case ASSOCREMOTELAT:
-+            *var_len = strlen(kwn_assoc_list.sta[ind].r_latitude);
-+            return (u_char *) kwn_assoc_list.sta[ind].r_latitude;
-+        case ASSOCREMOTELONG:
-+            *var_len = strlen(kwn_assoc_list.sta[ind].r_longitude);
-+            return (u_char *) kwn_assoc_list.sta[ind].r_longitude;
-+        case ASSOCLOCALLAT:
-+            *var_len = strlen(kwn_assoc_list.sta[ind].l_latitude);
-+            return (u_char *) kwn_assoc_list.sta[ind].l_latitude;
-+        case ASSOCLOCALLONG:
-+            *var_len = strlen(kwn_assoc_list.sta[ind].l_longitude);
-+            return (u_char *) kwn_assoc_list.sta[ind].l_longitude;
-+        case ASSOCRXRATE:
-+            *var_len = sizeof ( long );
-+            return (u_char *) &kwn_assoc_list.sta[ind].rx_rate;
-+        case ASSOCTXRATE:
-+            *var_len = sizeof ( long );
-+            return (u_char *) &kwn_assoc_list.sta[ind].tx_rate;
-+        case ASSOCRXTPUT:
-+            *var_len = sizeof ( long );
-+            return (u_char *) &kwn_assoc_list.sta[ind].rx_tput;
-+        case ASSOCTXTPUT:
-+            *var_len = sizeof ( long );
-+            return (u_char *) &kwn_assoc_list.sta[ind].tx_tput;
-+        case ASSOCLOCALSNRA1:
-+            *var_len = sizeof ( long );
-+            return (u_char *) &kwn_assoc_list.sta[ind].local_snr_a1;
-+        case ASSOCLOCALSNRA2:
-+            *var_len = sizeof ( long );
-+            return (u_char *) &kwn_assoc_list.sta[ind].local_snr_a2;
-+        case ASSOCREMOTESNRA1:
-+            *var_len = sizeof ( long );
-+            return (u_char *) &kwn_assoc_list.sta[ind].remote_snr_a1;
-+        case ASSOCREMOTESNRA2:
-+            *var_len = sizeof ( long );
-+            return (u_char *) &kwn_assoc_list.sta[ind].remote_snr_a2;
-+        case ASSOCLOCALPHYERR:
-+            *var_len = sizeof ( long );
-+            return (u_char *) &kwn_assoc_list.sta[ind].local_phy_err;
-+        case ASSOCREMOTEPHYERR:
-+            *var_len = sizeof ( long );
-+            return (u_char *) &kwn_assoc_list.sta[ind].remote_phy_err;
-+        case ASSOCLOCALMPDUERR:
-+            *var_len = sizeof ( long );
-+            return (u_char *) &kwn_assoc_list.sta[ind].local_mpdu_err;
-+        case ASSOCREMOTEMPDUERR:
-+            *var_len = sizeof ( long );
-+            return (u_char *) &kwn_assoc_list.sta[ind].remote_mpdu_err;
-+        case ASSOCLOCALRETRIES:
-+            *var_len = sizeof ( long );
-+            return (u_char *) &kwn_assoc_list.sta[ind].local_retries;
-+        case ASSOCREMOTERETRIES:
-+            *var_len = sizeof ( long );
-+            return (u_char *) &kwn_assoc_list.sta[ind].remote_retries;
++
++    /* If req index is <1 or >no.of links, return error */
++    if( sec_ind < 1 || sec_ind > kwn_assoc_list.no_of_links ) {
++        return SNMP_ERR_GENERR;
++    }
++    sec_ind = sec_ind - 1;
++    switch ( (char) name[11] ) {
++        case KWN_ASSOC_RADIO_INDEX:
++            {
++                res_val = 1;
++                *var_len = sizeof ( long );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_ASSOC_SEC_INDEX:
++            {
++                res_val = sec_ind + 1;
++                *var_len = sizeof ( long );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_ASSOC_MAC:
++            {
++                sprintf( res_str, "%02x:%02x:%02x:%02x:%02x:%02x",
++                        kwn_assoc_list.sta[sec_ind].mac[0],
++                        kwn_assoc_list.sta[sec_ind].mac[1],
++                        kwn_assoc_list.sta[sec_ind].mac[2],
++                        kwn_assoc_list.sta[sec_ind].mac[3],
++                        kwn_assoc_list.sta[sec_ind].mac[4],
++                        kwn_assoc_list.sta[sec_ind].mac[5] );
++                *var_len = strlen( res_str );
++                return ( u_char * ) res_str;
++            }
++        case KWN_ASSOC_IP:
++            {
++                *var_len = sizeof( in_addr_t );
++                return ( u_char * ) &kwn_assoc_list.sta[sec_ind].ip;
++            }
++        case KWN_ASSOC_REMOTE_LAT:
++            {
++                *var_len = strlen( kwn_assoc_list.sta[sec_ind].r_latitude );
++                return ( u_char * ) kwn_assoc_list.sta[sec_ind].r_latitude;
++            }
++        case KWN_ASSOC_REMOTE_LONG:
++            {
++                *var_len = strlen( kwn_assoc_list.sta[sec_ind].r_longitude );
++                return ( u_char * ) kwn_assoc_list.sta[sec_ind].r_longitude;
++            }
++        case KWN_ASSOC_LOCAL_LAT:
++            {
++                *var_len = strlen( kwn_assoc_list.sta[sec_ind].l_latitude );
++                return ( u_char * ) kwn_assoc_list.sta[sec_ind].l_latitude;
++            }
++        case KWN_ASSOC_LOCAL_LONG:
++            {
++                *var_len = strlen( kwn_assoc_list.sta[sec_ind].l_longitude );
++                return ( u_char * ) kwn_assoc_list.sta[sec_ind].l_longitude;
++            }
++        case KWN_ASSOC_RX_RATE:
++            {
++                *var_len = sizeof ( long );
++                return ( u_char * ) &kwn_assoc_list.sta[sec_ind].rx_rate;
++            }
++        case KWN_ASSOC_TX_RATE:
++            {
++                *var_len = sizeof ( long );
++                return ( u_char * ) &kwn_assoc_list.sta[sec_ind].tx_rate;
++            }
++        case KWN_ASSOC_RX_TPUT:
++            {
++                *var_len = sizeof ( long );
++                return ( u_char * ) &kwn_assoc_list.sta[sec_ind].rx_tput;
++            }
++        case KWN_ASSOC_TX_TPUT:
++            {
++                *var_len = sizeof ( long );
++                return ( u_char * ) &kwn_assoc_list.sta[sec_ind].tx_tput;
++            }
++        case KWN_ASSOC_LOCAL_SNR_A1:
++            {
++                *var_len = sizeof ( long );
++                return ( u_char * ) &kwn_assoc_list.sta[sec_ind].local_snr_a1;
++            }
++        case KWN_ASSOC_LOCAL_SNR_A2:
++            {
++                *var_len = sizeof ( long );
++                return ( u_char * ) &kwn_assoc_list.sta[sec_ind].local_snr_a2;
++            }
++        case KWN_ASSOC_REMOTE_SNR_A1:
++            {
++                *var_len = sizeof ( long );
++                return ( u_char * ) &kwn_assoc_list.sta[sec_ind].remote_snr_a1;
++            }
++        case KWN_ASSOC_REMOTE_SNR_A2:
++            {
++                *var_len = sizeof ( long );
++                return ( u_char * ) &kwn_assoc_list.sta[sec_ind].remote_snr_a2;
++            }
++        case KWN_ASSOC_LOCAL_PHY_ERR:
++            {
++                *var_len = sizeof ( long );
++                return ( u_char * ) &kwn_assoc_list.sta[sec_ind].local_phy_err;
++            }
++        case KWN_ASSOC_REMOTE_PHY_ERR:
++            {
++                *var_len = sizeof ( long );
++                return ( u_char * ) &kwn_assoc_list.sta[sec_ind].remote_phy_err;
++            }
++        case KWN_ASSOC_LOCAL_MPDU_ERR:
++            {
++                *var_len = sizeof ( long );
++                return ( u_char * ) &kwn_assoc_list.sta[sec_ind].local_mpdu_err;
++            }
++        case KWN_ASSOC_REMOTE_MPDU_ERR:
++            {
++                *var_len = sizeof ( long );
++                return ( u_char * ) &kwn_assoc_list.sta[sec_ind].remote_mpdu_err;
++            }
++        case KWN_ASSOC_LOCAL_RETRIES:
++            {
++                *var_len = sizeof ( long );
++                return ( u_char * ) &kwn_assoc_list.sta[sec_ind].local_retries;
++            }
++        case KWN_ASSOC_REMOTE_RETRIES:
++            {
++                *var_len = sizeof ( long );
++                return (u_char *) &kwn_assoc_list.sta[sec_ind].remote_retries;
++            }
 +        default:
 +            ERROR_MSG ( "" );
 +    }
@@ -953,30 +1108,35 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +{
 +    char cmd[100];
 +
-+    if ( header_generic ( vp, name, length, exact,var_len,write_method )
++    if ( header_generic ( vp, name, length, exact, var_len, write_method )
 +            == MATCH_FAILED )
 +        return NULL;
 +
-+    memset(resbuf,'\0',sizeof(resbuf));
-+    resval = 0;
-+    resaddr = 0;
-+    ptr = NULL;
++    memset( res_str, '\0', sizeof( res_str ) );
++    res_val = 0;
++    res_ip = 0;
 +    *length = vp->namelen + 1;
 +    *write_method = NULL;
 +
-+    switch ( vp->magic ) {
-+        case ETHERNETSTATUS:
-+            sprintf(cmd,"cat /sys/class/net/eth0/operstate");
-+            kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len );
-+            return (u_char *) resbuf;
-+        case ETHERNETSPEED:
-+            sprintf(cmd,"ethtool eth0 | grep 'Speed' | sed 's/\tSpeed: //'");
-+            kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len );
-+            return (u_char *) resbuf;
-+        case ETHERNETDUPLEX:
-+            sprintf(cmd,"ethtool eth0 | grep 'Duplex' | sed 's/\tDuplex: //'");
-+            kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len );
-+            return (u_char *) resbuf;
++    switch ( (char) name[10] ) {
++        case KWN_ETHSTATS_STATUS:
++            {
++                sprintf( cmd, "cat /sys/class/net/eth0/operstate" );
++                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len );
++                return ( u_char * ) res_str;
++            }
++        case KWN_ETHSTATS_SPEED:
++            {
++                sprintf( cmd, "ethtool eth0 | grep 'Speed' | sed 's/\tSpeed: //'" );
++                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len );
++                return ( u_char * ) res_str;
++            }
++        case KWN_ETHSTATS_DUPLEX:
++            {
++                sprintf( cmd, "ethtool eth0 | grep 'Duplex' | sed 's/\tDuplex: //'" );
++                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len );
++                return (u_char *) res_str;
++            }
 +        default:
 +            ERROR_MSG ( "" );
 +    }
@@ -984,132 +1144,137 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +}
 +
 +int
-+wlanwriteSystem(int action,
++wlanwriteMethod( int action,
 +        u_char * var_val,
 +        u_char var_val_type,
 +        size_t var_val_len,
-+        u_char * statP, oid * name, size_t name_len)
++        u_char * statP, oid * name, size_t name_len )
 +{
 +    char cmd[100];
 +    int ind;
-+
-+    var_val[var_val_len] = '\0';
-+    ind = (int) name[12];
++    long long_val;
++    
++    if ( var_val_type == ASN_INTEGER ) {
++        long_val = *( (long *) var_val );
++    }
++    var_val[ var_val_len ] = '\0';
++    ind = (int) name[13];
 +    if( ind < 1 || ind > 2 )
 +        return NULL;
 +    ind = ind - 1;
-+    switch (action) {
++    switch ( action ) {
 +        case RESERVE1:             /* Check values for acceptability */
 +            break;
 +        case RESERVE2:             /* Allocate memory and similar resources */
 +            break;
 +        case ACTION:               /* Perform the SET action (if reversible) */
 +            {
-+                switch ((char) name[11]) {
-+                    case WLANRADIOMODE:
-+                        sprintf(cmd,"uci set wireless.@wifi-iface[%d].mode='%s'",ind,var_val);
-+                        system(cmd);
++                switch ( (char) name[12] ) {
++                    case KWN_WLAN_RADIOMODE:
++                        sprintf( cmd, "uci set wireless.@wifi-iface[%d].mode='%s'", ind, var_val);
++                        system( cmd );
 +                        break;
-+                    case WLANSSID:
-+                        sprintf(cmd,"uci set wireless.@wifi-iface[%d].ssid='%s'",ind,var_val);
-+                        system(cmd);
++                    case KWN_WLAN_SSID:
++                        sprintf( cmd, "uci set wireless.@wifi-iface[%d].ssid='%s'", ind, var_val );
++                        system( cmd );
 +                        break;
-+                    case WLANCOUNTRY:
-+                        sprintf(cmd,"uci set wireless.wifi%d.country='%s'",ind,var_val);
-+                        system(cmd);
++                    case KWN_WLAN_COUNTRY:
++                        sprintf( cmd, "uci set wireless.wifi%d.country='%d'", ind, long_val );
++                        system( cmd );
 +                        break;
-+                    case WLANOPMODE:
-+                        sprintf(cmd,"uci set wireless.wifi%d.hwmode='%s'",ind,var_val);
-+                        system(cmd);
++                    case KWN_WLAN_OPMODE:
++                        sprintf( cmd, "uci set wireless.wifi%d.hwmode='%s'", ind, var_val );
++                        system( cmd );
 +                        break;
-+                    case WLANBANDWIDTH:
-+                        sprintf(cmd,"uci set wireless.wifi%d.htmode='%s'",ind,var_val);
-+                        system(cmd);
++                    case KWN_WLAN_BANDWIDTH:
++                        sprintf( cmd, "uci set wireless.wifi%d.htmode='%s'", ind, var_val );
++                        system( cmd );
 +                        break;
-+                    case WLANCHANNEL:
-+                        sprintf(cmd,"uci set wireless.wifi%d.channel='%s'",ind,var_val);
-+                        system(cmd);
++                    case KWN_WLAN_CHANNEL:
++                        sprintf( cmd, "uci set wireless.wifi%d.channel='%s'", ind, var_val );
++                        system( cmd );
 +                        break;
-+                    case WLANRATE:
-+                        sprintf(cmd,"uci set wireless.wifi%d.rate='%s'",ind,var_val);
-+                        system(cmd);
++                    case KWN_WLAN_RATE:
++                        sprintf( cmd, "uci set wireless.wifi%d.rate='%s'", ind, var_val );
++                        system( cmd );
 +                        /* Updating Rate dynamically for 5GHz Radio */
 +                        if( ind == 1 ) {
 +                            system("/usr/sbin/rate.sh");
 +                        }
 +                        break;
-+                    case WLANTXPOWER:
-+                        sprintf(cmd,"uci set wireless.wifi%d.txpower='%s'",ind,var_val);
-+                        system(cmd);
++                    case KWN_WLAN_TXPOWER:
++                        sprintf( cmd, "uci set wireless.wifi%d.txpower='%d'", ind, long_val );
++                        system( cmd );
 +                        break;
-+                    case WLANAMSDU:
-+                        sprintf(cmd,"uci set wireless.@wifi-iface[%d].kwnamsdu='%s'",ind,var_val);
-+                        system(cmd);
++                    case KWN_WLAN_AMSDU:
++                        sprintf( cmd, "uci set wireless.@wifi-iface[%d].kwnamsdu='%d'", ind, long_val );
++                        system( cmd );
 +                        break;
-+                    case WLANUPLINKLIMIT:
-+                        sprintf(cmd,"uci set wireless.@wifi-iface[%d].ullmt='%s'",ind,var_val);
-+                        system(cmd);
++                    case KWN_WLAN_UPLINK_LIMIT:
++                        sprintf( cmd, "uci set wireless.@wifi-iface[%d].ullmt='%d'", ind, long_val );
++                        system( cmd );
 +                        break;
-+                    case WLANDOWNLINKLIMIT:
-+                        sprintf(cmd,"uci set wireless.@wifi-iface[%d].dllmt='%s'",ind,var_val);
-+                        system(cmd);
++                    case KWN_WLAN_DOWNLINK_LIMIT:
++                        sprintf( cmd, "uci set wireless.@wifi-iface[%d].dllmt='%d'", ind, long_val );
++                        system( cmd );
 +                        break;
-+                    case WLANHIDEESSID:
++                    case KWN_WLAN_HIDE_ESSID:
 +                        {
-+                            int val = (int)var_val;
-+                            if( val == 0 ) {
-+                                sprintf(cmd,"uci delete wireless.@wifi-iface[%d].hidden",ind);
-+                                system(cmd);
++                            if( long_val == 0 ) {
++                                sprintf( cmd, "uci delete wireless.@wifi-iface[%d].hidden", ind );
++                                system( cmd );
 +                            }
 +                            else {
-+                                sprintf(cmd,"uci set wireless.@wifi-iface[%d].hidden='%s'",ind,var_val);
-+                                system(cmd);
++                                sprintf( cmd, "uci set wireless.@wifi-iface[%d].hidden='%d'", ind, long_val );
++                                system( cmd );
 +                            }
 +                        }
 +                        break;
-+                    case WLANCUSTOMERNAME:
-+                        sprintf(cmd,"uci set wireless.wifi%d.customername='%s'",ind,var_val);
-+                        system(cmd);
++                    case KWN_WLAN_CUSTOMER_NAME:
++                        sprintf( cmd, "uci set wireless.wifi%d.customername='%s'", ind, var_val );
++                        system( cmd );
 +                        break;
-+                    case WLANLINKID:
-+                        sprintf(cmd,"uci set wireless.wifi%d.linkid='%s'",ind,var_val);
-+                        system(cmd);
++                    case KWN_WLAN_LINKID:
++                        sprintf( cmd, "uci set wireless.wifi%d.linkid='%d'", ind, long_val );
++                        system( cmd );
 +                        break;
-+                    case WLANSECENC:
-+                        sprintf(cmd,"uci set wireless.@wifi-iface[%d].encryption='%s'",ind,var_val);
-+                        system(cmd);
++                    case KWN_WLAN_SECURITY_ENC:
++                        sprintf( cmd, "uci set wireless.@wifi-iface[%d].encryption='%s'", ind, var_val );
++                        system( cmd );
 +                        break;
-+                    case WLANSECKEY:
-+                        sprintf(cmd,"uci set wireless.@wifi-iface[%d].key='%s'",ind,var_val);
-+                        system(cmd);
++                    case KWN_WLAN_SECURITY_KEY:
++                        sprintf( cmd, "uci set wireless.@wifi-iface[%d].key='%s'", ind, var_val );
++                        system( cmd );
 +                        break;
-+                    case WLANMACFILTER:
-+                        sprintf(cmd,"uci set wireless.@wifi-iface[%d].macfilter='%s'",ind,var_val);
-+                        system(cmd);
++                    case KWN_WLAN_MACFILTER:
++                        sprintf( cmd, "uci set wireless.@wifi-iface[%d].macfilter='%s'", ind, var_val );
++                        system( cmd );
 +                        break;
-+                    case WLANMACLIST:
-+                        sprintf(cmd,"uci set wireless.@wifi-iface[%d].maclist='%s'",ind,var_val);
-+                        system(cmd);
++                    case KWN_WLAN_MACLIST:
++                        sprintf( cmd, "uci set wireless.@wifi-iface[%d].maclist='%s'", ind, var_val );
++                        system( cmd );
 +                        break;
-+                    case WLANDISTANCE:
-+                        sprintf(cmd,"uci set wireless.wifi%d.distance='%s'",ind,var_val);
-+                        system(cmd);
-+                        if( ind == 1 ) {
-+                            sprintf(cmd,"iwpriv wifi1 distance %s",var_val);
-+                            system(cmd);
++                    case KWN_WLAN_DISTANCE:
++                        {
++                            sprintf( cmd, "uci set wireless.wifi%d.distance='%d'", ind, long_val );
++                            system( cmd );
++                            if( ind == 1 ) {
++                                sprintf( cmd, "iwpriv wifi1 distance %d", long_val );
++                                system( cmd );
++                            }
 +                        }
 +                        break;
-+                    case WLANSHORTGI:
-+                        sprintf(cmd,"uci set wireless.@wifi-iface[%d].shortgi='%s'",ind,var_val);
-+                        system(cmd);
++                    case KWN_WLAN_SHORTGI:
++                        sprintf( cmd, "uci set wireless.@wifi-iface[%d].shortgi='%d'", ind, long_val );
++                        system( cmd );
 +                        break;
-+                    case WLANTXCHAINMASK:
-+                        sprintf(cmd,"uci set wireless.wifi%d.txchainmask='%s'",ind,var_val);
-+                        system(cmd);
++                    case KWN_WLAN_TXCHAINMASK:
++                        sprintf( cmd, "uci set wireless.wifi%d.txchainmask='%d'", ind, long_val );
++                        system( cmd );
 +                        break;
-+                    case WLANRXCHAINMASK:
-+                        sprintf(cmd,"uci set wireless.wifi%d.rxchainmask='%s'",ind,var_val);
-+                        system(cmd);
++                    case KWN_WLAN_RXCHAINMASK:
++                        sprintf( cmd, "uci set wireless.wifi%d.rxchainmask='%d'", ind, long_val );
++                        system( cmd );
 +                        break;
 +                    default:
 +                        return SNMP_ERR_GENERR;
@@ -1119,11 +1284,9 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +        case UNDO:                 /* Reverse the SET action and free resources */
 +            break;
 +        case COMMIT:
-+            snmp_save_persistent(netsnmp_ds_get_string(NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_APPTYPE));
-+            (void) snmp_call_callbacks(SNMP_CALLBACK_LIBRARY,
-+                    SNMP_CALLBACK_STORE_DATA, NULL);
-+            snmp_clean_persistent(netsnmp_ds_get_string
-+                    (NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_APPTYPE));
++            snmp_save_persistent( netsnmp_ds_get_string( NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_APPTYPE ) );
++            (void) snmp_call_callbacks( SNMP_CALLBACK_LIBRARY, SNMP_CALLBACK_STORE_DATA, NULL );
++            snmp_clean_persistent( netsnmp_ds_get_string( NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_APPTYPE ) );
 +            break;
 +        case FREE:                 /* Free any resources allocated */
 +            break;
@@ -1132,13 +1295,14 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +}
 +
 +int
-+nwkwriteSystem(int action,
++nwkwriteMethod( int action,
 +        u_char * var_val,
 +        u_char var_val_type,
 +        size_t var_val_len,
-+        u_char * statP, oid * name, size_t name_len)
++        u_char * statP, oid * name, size_t name_len )
 +{
 +    char cmd[100];
++    char ip[30];
 +
 +    var_val[var_val_len] = '\0';
 +    switch (action) {
@@ -1148,26 +1312,36 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +            break;
 +        case ACTION:               /* Perform the SET action (if reversible) */
 +            {
-+                switch ((char) name[9]) {
++                switch( (char) name[10] ) {
 +                    case KWN_NWK_ADRSTYPE:
-+                        sprintf(cmd,"uci set network.lan.proto='%s'",var_val);
-+                        system(cmd);
++                        sprintf( cmd, "uci set network.lan.proto='%s'", var_val );
++                        system( cmd );
 +                        break;
 +                    case KWN_NWK_IP:
-+                        sprintf(cmd,"uci set network.lan.ipaddr='%s'",var_val);
-+                        system(cmd);
++                        {
++                            char buf1[30];
++                            u_long ip1;
++                            memcpy( buf1, var_val, (var_val_len > 8) ? 8 : var_val_len );
++                            ip1 = *( (u_long *) buf1 );
++                            kwn_conv_uint32_to_ip( var_val, var_val_len, &ip[0] );
++                            sprintf( cmd, "uci set network.lan.ipaddr='%s'", ip );
++                            system( cmd );
++                        }
 +                        break;
 +                    case KWN_NWK_MASK:
-+                        sprintf(cmd,"uci set network.lan.netmask='%s'",var_val);
-+                        system(cmd);
++                        kwn_conv_uint32_to_ip( var_val, var_val_len, &ip[0] );
++                        sprintf( cmd, "uci set network.lan.netmask='%s'", ip );
++                        system( cmd );
 +                        break;
 +                    case KWN_NWK_GATEWAY:
-+                        sprintf(cmd,"uci set network.lan.gateway='%s'",var_val);
-+                        system(cmd);
++                        kwn_conv_uint32_to_ip( var_val, var_val_len, &ip[0] );
++                        sprintf( cmd, "uci set network.lan.gateway='%s'", ip );
++                        system( cmd );
 +                        break;
 +                    case KWN_NWK_DNS:
-+                        sprintf(cmd,"uci set network.lan.dns='%s'",var_val);
-+                        system(cmd);
++                        kwn_conv_uint32_to_ip( var_val, var_val_len, &ip[0] );
++                        sprintf( cmd, "uci set network.lan.dns='%s'", ip );
++                        system( cmd );
 +                        break;
 +                    default:
 +                        return SNMP_ERR_GENERR;
@@ -1177,11 +1351,9 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +        case UNDO:                 /* Reverse the SET action and free resources */
 +            break;
 +        case COMMIT:
-+            snmp_save_persistent(netsnmp_ds_get_string(NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_APPTYPE));
-+            (void) snmp_call_callbacks(SNMP_CALLBACK_LIBRARY,
-+                    SNMP_CALLBACK_STORE_DATA, NULL);
-+            snmp_clean_persistent(netsnmp_ds_get_string
-+                    (NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_APPTYPE));
++            snmp_save_persistent( netsnmp_ds_get_string ( NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_APPTYPE ) );
++            (void) snmp_call_callbacks( SNMP_CALLBACK_LIBRARY, SNMP_CALLBACK_STORE_DATA, NULL );
++            snmp_clean_persistent( netsnmp_ds_get_string ( NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_APPTYPE ) );
 +            break;
 +        case FREE:                 /* Free any resources allocated */
 +            break;
@@ -1190,66 +1362,74 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +}
 +
 +int
-+radiuswriteSystem(int action,
++radiuswriteMethod( int action,
 +        u_char * var_val,
 +        u_char var_val_type,
 +        size_t var_val_len,
-+        u_char * statP, oid * name, size_t name_len)
++        u_char * statP, oid * name, size_t name_len )
 +{
 +    char cmd[100];
++    char ip[30];
++    long long_val;
++    
++    if ( var_val_type == ASN_INTEGER ) {
++        long_val = *( (long *) var_val );
++    }
 +
 +    var_val[var_val_len] = '\0';
-+    switch (action) {
++    switch ( action ) {
 +        case RESERVE1:             /* Check values for acceptability */
 +            break;
 +        case RESERVE2:             /* Allocate memory and similar resources */
 +            break;
 +        case ACTION:               /* Perform the SET action (if reversible) */
 +            {
-+                switch ((char) name[9]) {
-+                    case RADIUSSTATUS:
-+                        sprintf(cmd,"uci set wrt-radauth.sys.enableRadAuth='%s'",var_val);
-+                        system(cmd);
++                switch( (char) name[10] ) {
++                    case KWN_RADIUS_STATUS:
++                        sprintf( cmd, "uci set wrt-radauth.sys.enableRadAuth='%d'", long_val );
++                        system( cmd );
 +                        break;
-+                    case RADIUSPRISERVER:
-+                        sprintf(cmd,"uci set wrt-radauth.sys.primaryServer='%s'",var_val);
-+                        system(cmd);
++                    case KWN_RADIUS_PRISERVER:
++                        kwn_conv_uint32_to_ip( var_val, var_val_len, &ip[0] );
++                        sprintf( cmd, "uci set wrt-radauth.sys.primaryServer='%s'", ip );
++                        system( cmd );
 +                        break;
-+                    case RADIUSPRIPORT:
-+                        sprintf(cmd,"uci set wrt-radauth.sys.primaryPort='%s'",var_val);
-+                        system(cmd);
++                    case KWN_RADIUS_PRIPORT:
++                        sprintf( cmd, "uci set wrt-radauth.sys.primaryPort='%d'", long_val );
++                        system( cmd );
 +                        break;
-+                    case RADIUSPRISECRET:
-+                        sprintf(cmd,"uci set wrt-radauth.sys.primarySecret='%s'",var_val);
-+                        system(cmd);
++                    case KWN_RADIUS_PRISECRET:
++                        sprintf( cmd, "uci set wrt-radauth.sys.primarySecret='%s'", var_val );
++                        system( cmd );
 +                        break;
-+                    case RADIUSSECSERVER:
-+                        sprintf(cmd,"uci set wrt-radauth.sys.secondaryServer='%s'",var_val);
-+                        system(cmd);
++                    case KWN_RADIUS_SECSERVER:
++                        kwn_conv_uint32_to_ip( var_val, var_val_len, &ip[0] );
++                        sprintf( cmd, "uci set wrt-radauth.sys.secondaryServer='%s'", ip );
++                        system( cmd );
 +                        break;
-+                    case RADIUSSECPORT:
-+                        sprintf(cmd,"uci set wrt-radauth.sys.secondaryPort='%s'",var_val);
-+                        system(cmd);
++                    case KWN_RADIUS_SECPORT:
++                        sprintf( cmd, "uci set wrt-radauth.sys.secondaryPort='%d'", long_val );
++                        system( cmd );
 +                        break;
-+                    case RADIUSSECSECRET:
-+                        sprintf(cmd,"uci set wrt-radauth.sys.secondarySecret='%s'",var_val);
-+                        system(cmd);
++                    case KWN_RADIUS_SECSECRET:
++                        sprintf( cmd, "uci set wrt-radauth.sys.secondarySecret='%s'", var_val );
++                        system( cmd );
 +                        break;
-+                    case RADIUSREAUTHTIME:
-+                        sprintf(cmd,"uci set wrt-radauth.sys.reauthTime='%s'",var_val);
-+                        system(cmd);
++                    case KWN_RADIUS_REAUTHTIME:
++                        sprintf( cmd, "uci set wrt-radauth.sys.reauthTime='%d'", long_val );
++                        system( cmd );
 +                        break;
-+                    case RADIUSRETRYTIME:
-+                        sprintf(cmd,"uci set wrt-radauth.sys.retryTime='%s'",var_val);
-+                        system(cmd);
++                    case KWN_RADIUS_RETRYTIME:
++                        sprintf( cmd, "uci set wrt-radauth.sys.retryTime='%d'", long_val );
++                        system( cmd );
 +                        break;
-+                    case RADIUSRETRYCOUNT:
-+                        sprintf(cmd,"uci set wrt-radauth.sys.requestRetries='%s'",var_val);
-+                        system(cmd);
++                    case KWN_RADIUS_RETRYCOUNT:
++                        sprintf( cmd, "uci set wrt-radauth.sys.requestRetries='%d'", long_val );
++                        system( cmd );
 +                        break;
-+                    case RADIUSRETRYCOUNTPERIOD:
-+                        sprintf(cmd,"uci set wrt-radauth.sys.requestTimeout='%s'",var_val);
-+                        system(cmd);
++                    case KWN_RADIUS_RETRYCOUNTPERIOD:
++                        sprintf( cmd, "uci set wrt-radauth.sys.requestTimeout='%d'", long_val );
++                        system( cmd );
 +                        break;
 +                    default:
 +                        return SNMP_ERR_GENERR;
@@ -1259,11 +1439,9 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +        case UNDO:                 /* Reverse the SET action and free resources */
 +            break;
 +        case COMMIT:
-+            snmp_save_persistent(netsnmp_ds_get_string(NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_APPTYPE));
-+            (void) snmp_call_callbacks(SNMP_CALLBACK_LIBRARY,
-+                    SNMP_CALLBACK_STORE_DATA, NULL);
-+            snmp_clean_persistent(netsnmp_ds_get_string
-+                    (NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_APPTYPE));
++            snmp_save_persistent( netsnmp_ds_get_string( NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_APPTYPE ) );
++            (void) snmp_call_callbacks( SNMP_CALLBACK_LIBRARY, SNMP_CALLBACK_STORE_DATA, NULL );
++            snmp_clean_persistent( netsnmp_ds_get_string( NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_APPTYPE ) );
 +            break;
 +        case FREE:                 /* Free any resources allocated */
 +            break;
@@ -1272,54 +1450,59 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +}
 +
 +int
-+vlanwriteSystem(int action,
++vlanwriteMethod( int action,
 +        u_char * var_val,
 +        u_char var_val_type,
 +        size_t var_val_len,
-+        u_char * statP, oid * name, size_t name_len)
++        u_char * statP, oid * name, size_t name_len )
 +{
 +    char cmd[100];
++    long long_val;
++    
++    if ( var_val_type == ASN_INTEGER ) {
++        long_val = *( (long *) var_val );
++    }
 +
 +    var_val[var_val_len] = '\0';
-+    switch (action) {
++    switch ( action ) {
 +        case RESERVE1:             /* Check values for acceptability */
 +            break;
 +        case RESERVE2:             /* Allocate memory and similar resources */
 +            break;
 +        case ACTION:               /* Perform the SET action (if reversible) */
 +            {
-+                switch ((char) name[9]) {
-+                    case VLANSTATUS:
-+                        sprintf(cmd,"uci set vlan.vlan.status='%s'",var_val);
-+                        system(cmd);
++                switch( (char) name[10] ) {
++                    case KWN_VLAN_STATUS:
++                        sprintf( cmd, "uci set vlan.vlan.status='%d'", long_val );
++                        system( cmd );
 +                        break;
-+                    case VLANMODE:
-+                        sprintf(cmd,"uci set vlan.vlan.mode='%s'",var_val);
-+                        system(cmd);
++                    case KWN_VLAN_MODE:
++                        sprintf( cmd, "uci set vlan.vlan.mode='%d'", long_val );
++                        system( cmd );
 +                        break;
-+                    case VLANMGMTID:
-+                        sprintf(cmd,"uci set vlan.vlan.mgmtvlan='%s'",var_val);
-+                        system(cmd);
++                    case KWN_VLAN_MGMTID:
++                        sprintf( cmd, "uci set vlan.vlan.mgmtvlan='%d'", long_val );
++                        system( cmd );
 +                        break;
-+                    case VLANACCESSID:
-+                        sprintf(cmd,"uci set vlan.vlan.accessvlan='%s'",var_val);
-+                        system(cmd);
++                    case KWN_VLAN_ACCESSID:
++                        sprintf( cmd, "uci set vlan.vlan.accessvlan='%d'", long_val );
++                        system( cmd );
 +                        break;
-+                    case VLANTRUNKOPTION:
-+                        sprintf(cmd,"uci set vlan.vlan.trunkoption='%s'",var_val);
-+                        system(cmd);
++                    case KWN_VLAN_TRUNKOPTION:
++                        sprintf( cmd, "uci set vlan.vlan.trunkoption='%d'", long_val );
++                        system( cmd );
 +                        break;
-+                    case VLANTRUNKID:
-+                        sprintf(cmd,"uci set vlan.vlan.trunkvlan='%s'",var_val);
-+                        system(cmd);
++                    case KWN_VLAN_TRUNKID:
++                        sprintf( cmd, "uci set vlan.vlan.trunkvlan='%s'", var_val );
++                        system( cmd );
 +                        break;
-+                    case VLANSVLANID:
-+                        sprintf(cmd,"uci set vlan.vlan.svlan='%s'",var_val);
-+                        system(cmd);
++                    case KWN_VLAN_SVLAN:
++                        sprintf( cmd, "uci set vlan.vlan.svlan='%d'", long_val );
++                        system( cmd );
 +                        break;
-+                    case VLANSVLANETHERTYPE:
-+                        sprintf(cmd,"uci set vlan.vlan.svlanethertype='%s'",var_val);
-+                        system(cmd);
++                    case KWN_VLAN_SVLAN_ETHERTYPE:
++                        sprintf( cmd, "uci set vlan.vlan.svlanethertype='%s'", var_val );
++                        system( cmd );
 +                        break;
 +                    default:
 +                        return SNMP_ERR_GENERR;
@@ -1329,11 +1512,9 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +        case UNDO:                 /* Reverse the SET action and free resources */
 +            break;
 +        case COMMIT:
-+            snmp_save_persistent(netsnmp_ds_get_string(NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_APPTYPE));
-+            (void) snmp_call_callbacks(SNMP_CALLBACK_LIBRARY,
-+                    SNMP_CALLBACK_STORE_DATA, NULL);
-+            snmp_clean_persistent(netsnmp_ds_get_string
-+                    (NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_APPTYPE));
++            snmp_save_persistent( netsnmp_ds_get_string( NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_APPTYPE ) );
++            (void) snmp_call_callbacks( SNMP_CALLBACK_LIBRARY, SNMP_CALLBACK_STORE_DATA, NULL );
++            snmp_clean_persistent( netsnmp_ds_get_string( NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_APPTYPE ) );
 +            break;
 +        case FREE:                 /* Free any resources allocated */
 +            break;
@@ -1342,26 +1523,31 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +}
 +
 +int
-+ethernetwriteSystem(int action,
++ethernetwriteMethod( int action,
 +        u_char * var_val,
 +        u_char var_val_type,
 +        size_t var_val_len,
-+        u_char * statP, oid * name, size_t name_len)
++        u_char * statP, oid * name, size_t name_len )
 +{
 +    char cmd[100];
++    long long_val;
++    
++    if ( var_val_type == ASN_INTEGER ) {
++        long_val = *( (long *) var_val );
++    }
 +
 +    var_val[var_val_len] = '\0';
-+    switch (action) {
++    switch ( action ) {
 +        case RESERVE1:             /* Check values for acceptability */
 +            break;
 +        case RESERVE2:             /* Allocate memory and similar resources */
 +            break;
 +        case ACTION:               /* Perform the SET action (if reversible) */
 +            {
-+                switch ((char) name[9]) {
-+                    case ETHERNETSPEED:
-+                        sprintf(cmd,"uci set ethernet.ethernet.mode='%s'",var_val);
-+                        system(cmd);
++                switch( (char) name[10] ) {
++                    case KWN_ETHERNET_MODE:
++                        sprintf( cmd, "uci set ethernet.ethernet.mode='%d'", long_val );
++                        system( cmd );
 +                        break;
 +                    default:
 +                        return SNMP_ERR_GENERR;
@@ -1371,11 +1557,9 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +        case UNDO:                 /* Reverse the SET action and free resources */
 +            break;
 +        case COMMIT:
-+            snmp_save_persistent(netsnmp_ds_get_string(NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_APPTYPE));
-+            (void) snmp_call_callbacks(SNMP_CALLBACK_LIBRARY,
-+                    SNMP_CALLBACK_STORE_DATA, NULL);
-+            snmp_clean_persistent(netsnmp_ds_get_string
-+                    (NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_APPTYPE));
++            snmp_save_persistent( netsnmp_ds_get_string( NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_APPTYPE ) );
++            (void) snmp_call_callbacks( SNMP_CALLBACK_LIBRARY, SNMP_CALLBACK_STORE_DATA, NULL );
++            snmp_clean_persistent( netsnmp_ds_get_string( NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_APPTYPE ) );
 +            break;
 +        case FREE:                 /* Free any resources allocated */
 +            break;
@@ -1384,62 +1568,64 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +}
 +
 +int
-+dhcpwriteSystem(int action,
++dhcpwriteMethod( int action,
 +        u_char * var_val,
 +        u_char var_val_type,
 +        size_t var_val_len,
-+        u_char * statP, oid * name, size_t name_len)
++        u_char * statP, oid * name, size_t name_len )
 +{
 +    char cmd[100];
 +    int val;
++    long long_val;
++    
++    if ( var_val_type == ASN_INTEGER ) {
++        long_val = *( (long *) var_val );
++    }
 +
 +    var_val[var_val_len] = '\0';
-+    switch (action) {
++    switch( action ) {
 +        case RESERVE1:             /* Check values for acceptability */
 +            break;
 +        case RESERVE2:             /* Allocate memory and similar resources */
 +            break;
 +        case ACTION:               /* Perform the SET action (if reversible) */
 +            {
-+                switch ((char) name[9]) {
-+                    case DHCPSERVER:
-+                        val = atoi(var_val);
-+                        if( val == 1 ) {
-+                            sprintf(cmd,"uci set dhcp.lan=dhcp");
++                switch( (char) name[10] ) {
++                    case KWN_DHCP_SERVER:
++                        if( long_val == 1 ) {
++                            sprintf( cmd, "uci set dhcp.lan=dhcp" );
 +                            system( cmd );
-+                            sprintf(cmd,"uci set dhcp.lan.interface='lan'");
++                            sprintf( cmd, "uci set dhcp.lan.interface='lan'" );
 +                            system( cmd );
-+                            sprintf(cmd,"uci set dhcp.lan.start='100'");
++                            sprintf( cmd, "uci set dhcp.lan.start='100'" );
 +                            system( cmd );
-+                            sprintf(cmd,"uci set dhcp.lan.limit='150'");
++                            sprintf( cmd, "uci set dhcp.lan.limit='150'" );
 +                            system( cmd );
-+                            sprintf(cmd,"uci set dhcp.lan.leasetime='12h'");
++                            sprintf( cmd, "uci set dhcp.lan.leasetime='12h'" );
 +                            system( cmd );
-+                            sprintf(cmd,"uci set dhcp.lan.dhcpv6='server'");
++                            sprintf( cmd, "uci set dhcp.lan.dhcpv6='server'" );
 +                            system( cmd );
-+                            sprintf(cmd,"uci set dhcp.lan.ra='server'");
++                            sprintf( cmd, "uci set dhcp.lan.ra='server'" );
 +                            system( cmd );
 +                        }
-+                        else if( val == 0 ) {
-+                            sprintf(cmd,"uci delete dhcp.lan");
-+                            system(cmd);
++                        else if( long_val == 0 ) {
++                            sprintf( cmd, "uci delete dhcp.lan" );
++                            system( cmd );
 +                        }
 +                        else
 +                            return SNMP_ERR_GENERR;
-+                        sprintf(cmd,"uci set dhcp.lan.start='%s'",var_val);
-+                        system(cmd);
 +                        break;
-+                    case DHCPSTART:
-+                        sprintf(cmd,"uci set dhcp.lan.start='%s'",var_val);
-+                        system(cmd);
++                    case KWN_DHCP_START:
++                        sprintf( cmd, "uci set dhcp.lan.start='%d'", long_val );
++                        system( cmd );
 +                        break;
-+                    case DHCPLIMIT:
-+                        sprintf(cmd,"uci set dhcp.lan.limit='%s'",var_val);
-+                        system(cmd);
++                    case KWN_DHCP_LIMIT:
++                        sprintf( cmd, "uci set dhcp.lan.limit='%d'", long_val );
++                        system( cmd );
 +                        break;
-+                    case DHCPLEASETIME:
-+                        sprintf(cmd,"uci set dhcp.lan.leasetime='%s'",var_val);
-+                        system(cmd);
++                    case KWN_DHCP_LEASE_TIME:
++                        sprintf( cmd, "uci set dhcp.lan.leasetime='%d'", long_val );
++                        system( cmd );
 +                        break;
 +                    default:
 +                        return SNMP_ERR_GENERR;
@@ -1449,11 +1635,9 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +        case UNDO:                 /* Reverse the SET action and free resources */
 +            break;
 +        case COMMIT:
-+            snmp_save_persistent(netsnmp_ds_get_string(NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_APPTYPE));
-+            (void) snmp_call_callbacks(SNMP_CALLBACK_LIBRARY,
-+                    SNMP_CALLBACK_STORE_DATA, NULL);
-+            snmp_clean_persistent(netsnmp_ds_get_string
-+                    (NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_APPTYPE));
++            snmp_save_persistent( netsnmp_ds_get_string( NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_APPTYPE ) );
++            (void) snmp_call_callbacks( SNMP_CALLBACK_LIBRARY, SNMP_CALLBACK_STORE_DATA, NULL );
++            snmp_clean_persistent( netsnmp_ds_get_string( NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_APPTYPE ) );
 +            break;
 +        case FREE:                 /* Free any resources allocated */
 +            break;
@@ -1462,49 +1646,43 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +}
 +
 +int
-+managementwriteSystem(int action,
++systemwriteMethod( int action,
 +        u_char * var_val,
 +        u_char var_val_type,
 +        size_t var_val_len,
-+        u_char * statP, oid * name, size_t name_len)
++        u_char * statP, oid * name, size_t name_len )
 +{
 +    char cmd[100];
 +    int val;
++    long long_val;
++    
++    if ( var_val_type == ASN_INTEGER ) {
++        long_val = *( (long *) var_val );
++    }
 +
-+    sprintf( cmd, "echo %d >> /tmp/mgmt.txt", (int)name[9]);
-+    system(cmd);
-+    sprintf( cmd, "echo %d >> /tmp/mgmt.txt", var_val);
-+    system(cmd);
 +    var_val[var_val_len] = '\0';
-+    switch (action) {
++    switch( action ) {
 +        case RESERVE1:             /* Check values for acceptability */
 +            break;
 +        case RESERVE2:             /* Allocate memory and similar resources */
 +            break;
 +        case ACTION:               /* Perform the SET action (if reversible) */
 +            {
-+                switch ((char) name[9]) {
-+                    case APPLY:
-+                        system("echo apply >> /tmp/mgmt.txt");
-+                        val = atoi(var_val);
-+                        sprintf( cmd, "echo %d >> /tmp/mgmt.txt", val);
-+                        system(cmd);
-+                        if( val == 1 ) {
-+                            system("uci commit");
-+                            system("reload_config");
++                switch( (char) name[10] ) {
++                    case KWN_SYS_APPLY:
++                        if( long_val == 1 ) {
++                            system( "uci commit" );
++                            system( "reload_config" );
 +                        }
 +                        break;
-+                    case RESET:
-+                        system("echo reset >> /tmp/mgmt.txt");
-+                        val = atoi(var_val);
-+                        if( val == 1 ) {
-+                            system("sleep 1; killall dropbear uhttpd; sleep 1; jffs2reset -y && reboot");
++                    case KWN_SYS_RESET:
++                        if( long_val == 1 ) {
++                            system( "sleep 1; killall dropbear uhttpd; sleep 1; jffs2reset -y && reboot" );
 +                        }
 +                        break;
-+                    case REBOOT:
-+                        val = atoi(var_val);
-+                        if( val == 1 ) {
-+                            system("reboot");
++                    case KWN_SYS_REBOOT:
++                        if( long_val == 1 ) {
++                            system( "reboot" );
 +                        }
 +                        break;
 +                    default:
@@ -1515,11 +1693,9 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +        case UNDO:                 /* Reverse the SET action and free resources */
 +            break;
 +        case COMMIT:
-+            snmp_save_persistent(netsnmp_ds_get_string(NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_APPTYPE));
-+            (void) snmp_call_callbacks(SNMP_CALLBACK_LIBRARY,
-+                    SNMP_CALLBACK_STORE_DATA, NULL);
-+            snmp_clean_persistent(netsnmp_ds_get_string
-+                    (NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_APPTYPE));
++            snmp_save_persistent( netsnmp_ds_get_string( NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_APPTYPE ) );
++            (void) snmp_call_callbacks( SNMP_CALLBACK_LIBRARY, SNMP_CALLBACK_STORE_DATA, NULL );
++            snmp_clean_persistent( netsnmp_ds_get_string( NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_APPTYPE ) );
 +            break;
 +        case FREE:                 /* Free any resources allocated */
 +            break;
@@ -1529,8 +1705,8 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +
 diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.h
 --- net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h	1970-01-01 05:30:00.000000000 +0530
-+++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.h	2018-09-10 20:12:57.212867628 +0530
-@@ -0,0 +1,172 @@
++++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.h	2018-09-12 17:33:31.354156693 +0530
+@@ -0,0 +1,229 @@
 +/****************************************************************************
 +*                                                                           *
 +*  File Name:           kwnmib.h                                      *
@@ -1554,11 +1730,14 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h net-snmp-5.4.4-mod/agent/mi
 +
 +config_require(util_funcs)
 +
-+#define KWN_MAC_ADDR_LEN 6
-+#define KWN_GPS_LEN 32
-+#define KWN_MAX_LINKS 1
++/* Macros */
++#define KWN_PRIVATE_MIB_OID              52619
++#define KWN_UCI_CMD_OUTPUT_LEN_MAX       256
++#define KWN_MAC_ADDR_LEN                 6
++#define KWN_GPS_LEN                      32
++#define KWN_LINKS_MAX                    20
 +
-+/* function prototypes */
++/* Function Prototypes */
 +
 +void   init_kwnmib ( void );
 +FindVarMethod var_WlanTable;
@@ -1571,10 +1750,64 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h net-snmp-5.4.4-mod/agent/mi
 +FindVarMethod var_AssocTable;
 +FindVarMethod var_EthernetStatsTable;
 +
++/* Enum Types */
 +enum KWN_TYPE {
 +    KWN_TYPE_INTEGER32 = 1,
 +    KWN_TYPE_DISPLAY_STRING = 2,
 +    KWN_TYPE_IP_ADDRESS = 3
++};
++
++enum KWN_MIB {
++    KWN_SMAC = 1
++};
++
++enum KWN_SMAC {
++    KWN_CONFIGURATION = 1,
++    KWN_MANAGEMENT = 2,
++    KWN_MONITOR = 3
++};
++
++enum KWN_CONFIGURATION {
++    KWN_WIRELESS = 1,
++    KWN_NETWORK = 2,
++    KWN_RADIUS = 3,
++    KWN_VLAN = 4,
++    KWN_ETHERNET = 5,
++    KWN_DHCP = 6,
++};
++
++enum KWN_WIRELESS {
++    KWN_WLANTABLE = 1
++};
++
++enum KWN_WLANTABLE {
++    KWN_WLANENTRY = 1
++};
++
++enum KWN_WLANENTRY {
++    KWN_WLAN_INDEX = 1,
++    KWN_WLAN_RADIOMODE = 2,
++    KWN_WLAN_SSID = 3,
++    KWN_WLAN_COUNTRY = 4,
++    KWN_WLAN_OPMODE = 5,
++    KWN_WLAN_BANDWIDTH = 6,
++    KWN_WLAN_CHANNEL = 7,
++    KWN_WLAN_RATE = 8,
++    KWN_WLAN_TXPOWER = 9,
++    KWN_WLAN_AMSDU = 10,
++    KWN_WLAN_UPLINK_LIMIT = 11,
++    KWN_WLAN_DOWNLINK_LIMIT = 12,
++    KWN_WLAN_HIDE_ESSID = 13,
++    KWN_WLAN_CUSTOMER_NAME = 14,
++    KWN_WLAN_LINKID = 15,
++    KWN_WLAN_SECURITY_ENC = 16,
++    KWN_WLAN_SECURITY_KEY = 17,
++    KWN_WLAN_MACFILTER = 18,
++    KWN_WLAN_MACLIST = 19,
++    KWN_WLAN_DISTANCE = 20,
++    KWN_WLAN_SHORTGI = 21,
++    KWN_WLAN_TXCHAINMASK = 22,
++    KWN_WLAN_RXCHAINMASK = 23
 +};
 +
 +enum KWN_NETWORK {
@@ -1585,14 +1818,101 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h net-snmp-5.4.4-mod/agent/mi
 +    KWN_NWK_DNS = 5
 +};
 +
++enum KWN_RADIUS {
++    KWN_RADIUS_STATUS = 1,
++    KWN_RADIUS_PRISERVER = 2,
++    KWN_RADIUS_PRIPORT = 3,
++    KWN_RADIUS_PRISECRET = 4,
++    KWN_RADIUS_SECSERVER = 5,
++    KWN_RADIUS_SECPORT = 6,
++    KWN_RADIUS_SECSECRET = 7,
++    KWN_RADIUS_REAUTHTIME = 8,
++    KWN_RADIUS_RETRYTIME = 9,
++    KWN_RADIUS_RETRYCOUNT = 10,
++    KWN_RADIUS_RETRYCOUNTPERIOD = 11
++};
++
++enum KWN_VLAN {
++    KWN_VLAN_STATUS = 1,
++    KWN_VLAN_MODE = 2,
++    KWN_VLAN_MGMTID = 3,
++    KWN_VLAN_ACCESSID = 4,
++    KWN_VLAN_TRUNKOPTION = 5,
++    KWN_VLAN_TRUNKID = 6,
++    KWN_VLAN_SVLAN = 7,
++    KWN_VLAN_SVLAN_ETHERTYPE = 8
++};
++
++enum KWN_ETHERNET {
++    KWN_ETHERNET_MODE = 1
++};
++
++enum KWN_DHCP {
++    KWN_DHCP_SERVER = 1,
++    KWN_DHCP_START = 2,
++    KWN_DHCP_LIMIT = 3,
++    KWN_DHCP_LEASE_TIME = 4
++};
++
++enum KWN_MANAGEMENT {
++    KWN_SYSTEM = 1
++};
++
++enum KWN_SYSTEM {
++    KWN_SYS_APPLY = 1,
++    KWN_SYS_RESET = 2,
++    KWN_SYS_REBOOT = 3
++};
++
++enum KWN_MONITOR {
++    KWN_ASSOCLIST = 1,
++    KWN_ETHERNETSTATS = 2
++};
++
++enum KWN_ASSOCLIST {
++    KWN_ASSOCENTRY = 1
++};
++
++enum KWN_ASSOCENTRY {
++    KWN_ASSOC_RADIO_INDEX = 1,
++    KWN_ASSOC_SEC_INDEX = 2,
++    KWN_ASSOC_MAC = 3,
++    KWN_ASSOC_IP = 4,
++    KWN_ASSOC_REMOTE_LAT = 5,
++    KWN_ASSOC_REMOTE_LONG = 6,
++    KWN_ASSOC_LOCAL_LAT = 7,
++    KWN_ASSOC_LOCAL_LONG = 8,
++    KWN_ASSOC_RX_RATE = 9,
++    KWN_ASSOC_TX_RATE = 10,
++    KWN_ASSOC_RX_TPUT = 11,
++    KWN_ASSOC_TX_TPUT = 12,
++    KWN_ASSOC_LOCAL_SNR_A1 = 13,
++    KWN_ASSOC_LOCAL_SNR_A2 = 14,
++    KWN_ASSOC_REMOTE_SNR_A1 = 15,
++    KWN_ASSOC_REMOTE_SNR_A2 = 16,
++    KWN_ASSOC_LOCAL_PHY_ERR = 17,
++    KWN_ASSOC_REMOTE_PHY_ERR = 18,
++    KWN_ASSOC_LOCAL_MPDU_ERR = 19,
++    KWN_ASSOC_REMOTE_MPDU_ERR = 20,
++    KWN_ASSOC_LOCAL_RETRIES = 21,
++    KWN_ASSOC_REMOTE_RETRIES = 22
++};
++
++enum KWN_ETHERNETSTATS {
++    KWN_ETHSTATS_STATUS = 1,
++    KWN_ETHSTATS_SPEED = 2,
++    KWN_ETHSTATS_DUPLEX = 3
++};
++
++/* Structure Definitions */
 +typedef struct
 +{
-+    uint8_t  mac[KWN_MAC_ADDR_LEN];
++    uint8_t  mac[ KWN_MAC_ADDR_LEN ];
 +    uint32_t ip;
-+    char  r_latitude[KWN_GPS_LEN];
-+    char  r_longitude[KWN_GPS_LEN];
-+    char  l_latitude[KWN_GPS_LEN];
-+    char  l_longitude[KWN_GPS_LEN];
++    char  r_latitude[ KWN_GPS_LEN ];
++    char  r_longitude[ KWN_GPS_LEN ];
++    char  l_latitude[ KWN_GPS_LEN ];
++    char  l_longitude[ KWN_GPS_LEN ];
 +    long tx_rate;
 +    long rx_rate;
 +    long tx_tput;
@@ -1612,96 +1932,9 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h net-snmp-5.4.4-mod/agent/mi
 +typedef struct
 +{
 +    int no_of_links;
-+    kwn_link_stats sta[KWN_MAX_LINKS];
++    kwn_link_stats sta[ KWN_LINKS_MAX ];
 +}kwn_wireless_stats;
-+/* Wireless Parameters */
-+#define WLANRADIOINDEX                    1
-+#define WLANRADIOMODE                     2
-+#define WLANSSID                          3
-+#define WLANCOUNTRY                       4
-+#define WLANOPMODE                        5
-+#define WLANBANDWIDTH                     6
-+#define WLANCHANNEL                       7
-+#define WLANRATE                          8
-+#define WLANTXPOWER                       9
-+#define WLANAMSDU                        10
-+#define WLANUPLINKLIMIT                  11
-+#define WLANDOWNLINKLIMIT                12
-+#define WLANHIDEESSID                    13
-+#define WLANCUSTOMERNAME                 14
-+#define WLANLINKID                       15
-+#define WLANSECENC                       16
-+#define WLANSECKEY                       17
-+#define WLANMACFILTER                    18
-+#define WLANMACLIST                      19
-+#define WLANDISTANCE                     20
-+#define WLANSHORTGI                      21
-+#define WLANTXCHAINMASK                  22
-+#define WLANRXCHAINMASK                  23
-+/* Network Parameters */
-+#define NWKADRSTYPE                      24
-+#define NWKIPADRS                        25
-+#define NWKMASK                          26
-+#define NWKGATEWAY                       27
-+#define NWKDNSIP                         28
-+/* RADIUS Parameters */
-+#define RADIUSSTATUS                     29
-+#define RADIUSPRISERVER                  30
-+#define RADIUSPRIPORT                    31
-+#define RADIUSPRISECRET                  32
-+#define RADIUSSECSERVER                  33
-+#define RADIUSSECPORT                    34
-+#define RADIUSSECSECRET                  35
-+#define RADIUSREAUTHTIME                 36
-+#define RADIUSRETRYTIME                  37
-+#define RADIUSRETRYCOUNT                 38
-+#define RADIUSRETRYCOUNTPERIOD           39
-+/* VLAN Parameters */
-+#define VLANSTATUS                       40
-+#define VLANMODE                         41
-+#define VLANMGMTID                       42
-+#define VLANACCESSID                     43
-+#define VLANTRUNKOPTION                  44
-+#define VLANTRUNKID                      45
-+#define VLANSVLANID                      46
-+#define VLANSVLANETHERTYPE               47
-+/* Ethernet Parameters */
-+#define ETHERNETSPEED                    48
-+/* DHCP Parameters */
-+#define DHCPSERVER                       49
-+#define DHCPSTART                        50
-+#define DHCPLIMIT                        51
-+#define DHCPLEASETIME                    52
-+/* Management Parameters */
-+#define APPLY                            53
-+#define RESET                            54
-+#define REBOOT                           55
-+/* Assoc Table */
-+#define ASSOCINDEX                       56
-+#define ASSOCMAC                         57
-+#define ASSOCIP                          58
-+#define ASSOCREMOTELAT                   59
-+#define ASSOCREMOTELONG                  60
-+#define ASSOCLOCALLAT                    61
-+#define ASSOCLOCALLONG                   62
-+#define ASSOCRXRATE                      63
-+#define ASSOCTXRATE                      64
-+#define ASSOCRXTPUT                      65
-+#define ASSOCTXTPUT                      66
-+#define ASSOCLOCALSNRA1                  67
-+#define ASSOCLOCALSNRA2                  68
-+#define ASSOCREMOTESNRA1                 69
-+#define ASSOCREMOTESNRA2                 70
-+#define ASSOCLOCALPHYERR                 71
-+#define ASSOCREMOTEPHYERR                72
-+#define ASSOCLOCALMPDUERR                73
-+#define ASSOCREMOTEMPDUERR               74
-+#define ASSOCLOCALRETRIES                75
-+#define ASSOCREMOTERETRIES               76
-+/* Ethernet Stats */
-+#define ETHERNETSTATUS                   77
-+#define ETHERNETSPEED                    78
-+#define ETHERNETDUPLEX                   79
++
 +#endif /* _MIBGROUP_KWNMIB_H */
 diff -urN net-snmp-5.4.4-org/include/ieee80211_defines.h net-snmp-5.4.4-mod/include/ieee80211_defines.h
 --- net-snmp-5.4.4-org/include/ieee80211_defines.h	1970-01-01 05:30:00.000000000 +0530
@@ -8475,3 +8708,782 @@ diff -urN net-snmp-5.4.4-org/include/ieee80211_ioctl.h net-snmp-5.4.4-mod/includ
 +#endif
 +
 +#endif /* _NET80211_IEEE80211_IOCTL_H_ */
+diff -urN net-snmp-5.4.4-org/mibs/KWN-SMAC-MIB.mib net-snmp-5.4.4-mod/mibs/KWN-SMAC-MIB.mib
+--- net-snmp-5.4.4-org/mibs/KWN-SMAC-MIB.mib	1970-01-01 05:30:00.000000000 +0530
++++ net-snmp-5.4.4-mod/mibs/KWN-SMAC-MIB.mib	2018-09-12 17:40:41.315095570 +0530
+@@ -0,0 +1,775 @@
++------------------------------------------------------------------------
++------------------------------------------------------------------------
++--
++-- Copyright (C) 2014 by Keywest Networks. All rights reserved
++-- Enterprise MIB definition to manage smac3.0 product.
++-- MIB author: Srilatha
++--
++------------------------------------------------------------------------
++------------------------------------------------------------------------
++
++
++KWN-SMAC-MIB DEFINITIONS ::= BEGIN
++
++
++IMPORTS
++	MODULE-IDENTITY, OBJECT-IDENTITY,
++	NOTIFICATION-TYPE, OBJECT-TYPE,
++	Integer32, enterprises,
++	IpAddress 		
++		FROM SNMPv2-SMI
++
++	DisplayString, DateAndTime,
++	RowStatus
++		FROM SNMPv2-TC;
++		
++
++kwnMIB MODULE-IDENTITY
++	LAST-UPDATED    "201809030000Z"
++	ORGANIZATION    "Keywest Networks."
++	CONTACT-INFO	"www.keywestnetworks.com"
++	DESCRIPTION 	"Keywest Networks private enterprise MIB definition"
++	REVISION 	"201809030000Z"
++	DESCRIPTION	"First Release"
++::= { enterprises 52619 }
++
++
++kwnSmacMIB OBJECT-IDENTITY
++	STATUS current
++	DESCRIPTION "Root Node for Keywest Networks smac3.0 product."
++::= { kwnMIB 1}
++
++kwnConfiguration OBJECT-IDENTITY
++        STATUS current
++        DESCRIPTION "Configuration"
++::= { kwnSmacMIB 1 }
++
++kwnManagement OBJECT-IDENTITY
++        STATUS current
++        DESCRIPTION "Management"
++::= { kwnSmacMIB 2 }
++
++kwnMonitor OBJECT-IDENTITY
++        STATUS current
++        DESCRIPTION "Monitor"
++::= { kwnSmacMIB 3 }
++
++------------------------------------------------------------------------
++------------------------------------------------------------------------
++kwnWireless OBJECT-IDENTITY
++        STATUS current
++        DESCRIPTION "Wireless configuration"
++::= { kwnConfiguration 1 }
++
++
++kwnWirelessTable OBJECT-TYPE
++        SYNTAX SEQUENCE OF KwnWirelessEntry
++        MAX-ACCESS not-accessible
++        STATUS current
++        DESCRIPTION "Wireless Table"
++::= { kwnWireless 1 }
++
++
++kwnWirelessEntry OBJECT-TYPE
++        SYNTAX KwnWirelessEntry
++        MAX-ACCESS not-accessible
++        STATUS current
++        DESCRIPTION "Wireless Entry"
++        INDEX   { kwnWirelessIndex }
++::= { kwnWirelessTable 1 }
++
++
++KwnWirelessEntry ::=
++        SEQUENCE {
++                kwnWirelessIndex Integer32,
++                kwnWirelessRadioMode DisplayString,
++                kwnWirelessSSID DisplayString,
++                kwnWirelessCountry Integer32,
++                kwnWirelessOpmode DisplayString,
++                kwnWirelessBandwidth DisplayString,
++                kwnWirelessChannel DisplayString,
++                kwnWirelessRate DisplayString,
++                kwnWirelessTxPower Integer32,
++                kwnWirelessAMSDU Integer32,
++                kwnWirelessUplinkLimit Integer32,
++                kwnWirelessDownlinkLimit Integer32,
++                kwnWirelessHideESSID Integer32,
++                kwnWirelessCustomerName DisplayString,
++                kwnWirelessLinkId Integer32,
++                kwnWirelessSecurityEncryption DisplayString,
++                kwnWirelessSecurityKey DisplayString,
++                kwnWirelessMACFilter DisplayString,
++                kwnWirelessMACList DisplayString,
++                kwnWirelessDistance Integer32,
++                kwnWirelessShortGI Integer32,
++                kwnWirelessTxChainmask Integer32,
++                kwnWirelessRxChainmask Integer32
++        }
++
++
++kwnWirelessIndex OBJECT-TYPE
++        SYNTAX Integer32 (1..2)
++        MAX-ACCESS not-accessible
++        STATUS current
++        DESCRIPTION     "Index for Wireless table."
++::= { kwnWirelessEntry 1 }
++
++
++kwnWirelessRadioMode OBJECT-TYPE
++        SYNTAX DisplayString
++        MAX-ACCESS read-write
++        STATUS current
++        DESCRIPTION     "Radio Mode of the radio"
++::= { kwnWirelessEntry 2 }
++
++
++kwnWirelessSSID OBJECT-TYPE
++        SYNTAX DisplayString
++        MAX-ACCESS read-write
++        STATUS current
++        DESCRIPTION     "SSID of the radio"
++::= { kwnWirelessEntry 3 }
++
++kwnWirelessCountry OBJECT-TYPE
++        SYNTAX Integer32
++        MAX-ACCESS read-write
++        STATUS current
++        DESCRIPTION     "Country of the radio"
++::= { kwnWirelessEntry 4 }
++
++kwnWirelessOpmode OBJECT-TYPE
++        SYNTAX DisplayString
++        MAX-ACCESS read-write
++        STATUS current
++        DESCRIPTION     "Operational mode of the radio"
++::= { kwnWirelessEntry 5 }
++
++kwnWirelessBandwidth OBJECT-TYPE
++        SYNTAX DisplayString
++        MAX-ACCESS read-write
++        STATUS current
++        DESCRIPTION     "Bandwidth of the radio"
++::= { kwnWirelessEntry 6 }
++
++kwnWirelessChannel OBJECT-TYPE
++        SYNTAX DisplayString
++        MAX-ACCESS read-write
++        STATUS current
++        DESCRIPTION     "Channel of the radio"
++::= { kwnWirelessEntry 7 }
++
++kwnWirelessRate OBJECT-TYPE
++        SYNTAX DisplayString
++        MAX-ACCESS read-write
++        STATUS current
++        DESCRIPTION     "Rate of the radio"
++::= { kwnWirelessEntry 8 }
++
++kwnWirelessTxPower OBJECT-TYPE
++        SYNTAX Integer32
++        MAX-ACCESS read-write
++        STATUS current
++        DESCRIPTION     "Tx Power of the radio"
++::= { kwnWirelessEntry 9 }
++
++kwnWirelessAMSDU OBJECT-TYPE
++        SYNTAX Integer32
++        MAX-ACCESS read-write
++        STATUS current
++        DESCRIPTION     "AMSDU of the radio"
++::= { kwnWirelessEntry 10 }
++
++kwnWirelessUplinkLimit OBJECT-TYPE
++        SYNTAX Integer32
++        MAX-ACCESS read-write
++        STATUS current
++        DESCRIPTION     "Uplink Limit of the radio"
++::= { kwnWirelessEntry 11 }
++
++kwnWirelessDownlinkLimit OBJECT-TYPE
++        SYNTAX Integer32
++        MAX-ACCESS read-write
++        STATUS current
++        DESCRIPTION     "Downlink Limit of the radio"
++::= { kwnWirelessEntry 12 }
++
++kwnWirelessHideESSID OBJECT-TYPE
++        SYNTAX Integer32
++        MAX-ACCESS read-write
++        STATUS current
++        DESCRIPTION     "Hide ESSID of the radio"
++::= { kwnWirelessEntry 13 }
++
++kwnWirelessCustomerName OBJECT-TYPE
++        SYNTAX DisplayString
++        MAX-ACCESS read-write
++        STATUS current
++        DESCRIPTION     "Customer Name of the radio"
++::= { kwnWirelessEntry 14 }
++
++kwnWirelessLinkId OBJECT-TYPE
++        SYNTAX Integer32
++        MAX-ACCESS read-write
++        STATUS current
++        DESCRIPTION     "Link Id of the radio"
++::= { kwnWirelessEntry 15 }
++
++kwnWirelessSecurityEncryption OBJECT-TYPE
++        SYNTAX DisplayString
++        MAX-ACCESS read-write
++        STATUS current
++        DESCRIPTION     "Security Encryption of the radio"
++::= { kwnWirelessEntry 16 }
++
++kwnWirelessSecurityKey OBJECT-TYPE
++        SYNTAX DisplayString
++        MAX-ACCESS read-write
++        STATUS current
++        DESCRIPTION     "Security Key of the radio"
++::= { kwnWirelessEntry 17 }
++
++kwnWirelessMACFilter OBJECT-TYPE
++        SYNTAX DisplayString
++        MAX-ACCESS read-write
++        STATUS current
++        DESCRIPTION     "MAC Filter of the radio"
++::= { kwnWirelessEntry 18 }
++
++kwnWirelessMACList OBJECT-TYPE
++        SYNTAX DisplayString
++        MAX-ACCESS read-write
++        STATUS current
++        DESCRIPTION     "MAC List of the radio"
++::= { kwnWirelessEntry 19 }
++
++kwnWirelessDistance OBJECT-TYPE
++        SYNTAX Integer32
++        MAX-ACCESS read-write
++        STATUS current
++        DESCRIPTION     "Distance of the radio"
++::= { kwnWirelessEntry 20 }
++
++kwnWirelessShortGI OBJECT-TYPE
++        SYNTAX Integer32
++        MAX-ACCESS read-write
++        STATUS current
++        DESCRIPTION     "Short GI of the radio"
++::= { kwnWirelessEntry 21 }
++
++kwnWirelessTxChainmask OBJECT-TYPE
++        SYNTAX Integer32
++        MAX-ACCESS read-write
++        STATUS current
++        DESCRIPTION     "Tx Chainmask of the radio"
++::= { kwnWirelessEntry 22 }
++
++kwnWirelessRxChainmask OBJECT-TYPE
++        SYNTAX Integer32
++        MAX-ACCESS read-write
++        STATUS current
++        DESCRIPTION     "Rx Chainmask of the radio"
++::= { kwnWirelessEntry 23 }
++
++
++------------------------------------------------------------------------
++------------------------------------------------------------------------
++kwnNetwork OBJECT-IDENTITY
++        STATUS current
++        DESCRIPTION "Network Parameters"
++::= { kwnConfiguration 2 }
++
++
++kwnNetworkAddressType OBJECT-TYPE
++        SYNTAX DisplayString
++        MAX-ACCESS read-write
++        STATUS current
++        DESCRIPTION     "Address Type."
++::= { kwnNetwork 1 }
++
++kwnNetworkIPAddress OBJECT-TYPE
++        SYNTAX IpAddress
++        MAX-ACCESS read-write
++        STATUS current
++        DESCRIPTION     "IP Address."
++::= { kwnNetwork 2 }
++
++kwnNetworkNetMask OBJECT-TYPE
++        SYNTAX IpAddress
++        MAX-ACCESS read-write
++        STATUS current
++        DESCRIPTION     "Subnet Mask."
++::= { kwnNetwork 3 }
++
++kwnNetworkGateway OBJECT-TYPE
++        SYNTAX IpAddress
++        MAX-ACCESS read-write
++        STATUS current
++        DESCRIPTION     "Gateway."
++::= { kwnNetwork 4 }
++
++kwnNetworkDNSIP OBJECT-TYPE
++        SYNTAX IpAddress
++        MAX-ACCESS read-write
++        STATUS current
++        DESCRIPTION     "DNS IP Address."
++::= { kwnNetwork 5 }
++
++
++------------------------------------------------------------------------
++------------------------------------------------------------------------
++kwnRadius OBJECT-IDENTITY
++        STATUS current
++        DESCRIPTION "RADIUS Parameters"
++::= { kwnConfiguration 3 }
++
++kwnRadiusStatus OBJECT-TYPE
++        SYNTAX Integer32
++        MAX-ACCESS read-write
++        STATUS current
++        DESCRIPTION     "Radius Server status."
++::= { kwnRadius 1 }
++
++kwnRadiusPrimaryServer OBJECT-TYPE
++        SYNTAX IpAddress
++        MAX-ACCESS read-write
++        STATUS current
++        DESCRIPTION     "Radius Server Primary IP Address."
++::= { kwnRadius 2 }
++
++kwnRadiusPrimaryPort OBJECT-TYPE
++        SYNTAX Integer32
++        MAX-ACCESS read-write
++        STATUS current
++        DESCRIPTION     "Radius Server Primary Port."
++::= { kwnRadius 3 }
++
++kwnRadiusPrimarySecret OBJECT-TYPE
++        SYNTAX DisplayString
++        MAX-ACCESS read-write
++        STATUS current
++        DESCRIPTION     "Radius Server Primary Secret."
++::= { kwnRadius 4 }
++
++kwnRadiusSecondaryServer OBJECT-TYPE
++        SYNTAX IpAddress
++        MAX-ACCESS read-write
++        STATUS current
++        DESCRIPTION     "Radius Secondary Server."
++::= { kwnRadius 5 }
++
++kwnRadiusSecondaryPort OBJECT-TYPE
++        SYNTAX Integer32
++        MAX-ACCESS read-write
++        STATUS current
++        DESCRIPTION     "Radius Server Secondary Port."
++::= { kwnRadius 6 }
++
++kwnRadiusSecondarySecret OBJECT-TYPE
++        SYNTAX DisplayString
++        MAX-ACCESS read-write
++        STATUS current
++        DESCRIPTION     "Radius Server Secondary Secret."
++::= { kwnRadius 7 }
++kwnRadiusAuthenticationTime OBJECT-TYPE
++        SYNTAX Integer32
++        MAX-ACCESS read-write
++        STATUS current
++        DESCRIPTION     "Radius Server Authentication Time in seconds."
++::= { kwnRadius 8 }
++
++kwnRadiusRetryTime OBJECT-TYPE
++        SYNTAX Integer32
++        MAX-ACCESS read-write
++        STATUS current
++        DESCRIPTION     "Radius Server Retry time in seconds."
++::= { kwnRadius 9 }
++
++kwnRadiusRetryCount OBJECT-TYPE
++        SYNTAX Integer32
++        MAX-ACCESS read-write
++        STATUS current
++        DESCRIPTION     "Radius Server Retry count."
++::= { kwnRadius 10 }
++
++kwnRadiusRetryCountPeriod OBJECT-TYPE
++        SYNTAX Integer32
++        MAX-ACCESS read-write
++        STATUS current
++        DESCRIPTION     "Radius Server Retry Count Period."
++::= { kwnRadius 11 }
++
++------------------------------------------------------------------------
++------------------------------------------------------------------------
++kwnVlan OBJECT-IDENTITY
++        STATUS current
++        DESCRIPTION "VLAN Parameters"
++::= { kwnConfiguration 4 }
++
++kwnVlanStatus OBJECT-TYPE
++        SYNTAX Integer32
++        MAX-ACCESS read-write
++        STATUS current
++        DESCRIPTION     "VLAN status."
++::= { kwnVlan 1 }
++
++kwnVlanMode OBJECT-TYPE
++        SYNTAX Integer32
++        MAX-ACCESS read-write
++        STATUS current
++        DESCRIPTION     "VLAN mode."
++::= { kwnVlan 2 }
++
++kwnVlanMgmtId OBJECT-TYPE
++        SYNTAX Integer32
++        MAX-ACCESS read-write
++        STATUS current
++        DESCRIPTION     "VLAN management Id."
++::= { kwnVlan 3 }
++
++kwnVlanAccessId OBJECT-TYPE
++        SYNTAX Integer32
++        MAX-ACCESS read-write
++        STATUS current
++        DESCRIPTION     "VLAN Access Id."
++::= { kwnVlan 4 }
++
++kwnVlanTrunkOption OBJECT-TYPE
++        SYNTAX Integer32
++        MAX-ACCESS read-write
++        STATUS current
++        DESCRIPTION     "VLAN Trunk option."
++::= { kwnVlan 5 }
++
++kwnVlanTrunkId OBJECT-TYPE
++        SYNTAX DisplayString
++        MAX-ACCESS read-write
++        STATUS current
++        DESCRIPTION     "VLAN Trunk Id."
++::= { kwnVlan 6 }
++
++kwnVlanSvlanId OBJECT-TYPE
++        SYNTAX Integer32
++        MAX-ACCESS read-write
++        STATUS current
++        DESCRIPTION     "VLAN SVLAN Id."
++::= { kwnVlan 7 }
++
++kwnVlanSVlanEtherType OBJECT-TYPE
++        SYNTAX DisplayString
++        MAX-ACCESS read-write
++        STATUS current
++        DESCRIPTION     "VLAN SVLAN Ether Type."
++::= { kwnVlan 8 }
++
++------------------------------------------------------------------------
++------------------------------------------------------------------------
++kwnEthernet OBJECT-IDENTITY
++        STATUS current
++        DESCRIPTION "Ethernet Parameters"
++::= { kwnConfiguration 5 }
++
++kwnEthernetMode OBJECT-TYPE
++        SYNTAX Integer32
++        MAX-ACCESS read-write
++        STATUS current
++        DESCRIPTION     "Ethernet Mode and Speed."
++::= { kwnEthernet 1 }
++
++------------------------------------------------------------------------
++------------------------------------------------------------------------
++kwnDhcp OBJECT-IDENTITY
++        STATUS current
++        DESCRIPTION "DHCP Parameters"
++::= { kwnConfiguration 6 }
++
++kwnDhcpServer OBJECT-TYPE
++        SYNTAX Integer32
++        MAX-ACCESS read-write
++        STATUS current
++        DESCRIPTION     "DHCP Server Status."
++::= { kwnDhcp 1 }
++
++kwnDhcpStart OBJECT-TYPE
++        SYNTAX Integer32
++        MAX-ACCESS read-write
++        STATUS current
++        DESCRIPTION     "DHCP Server Start."
++::= { kwnDhcp 2 }
++
++kwnDhcpLimit OBJECT-TYPE
++        SYNTAX Integer32
++        MAX-ACCESS read-write
++        STATUS current
++        DESCRIPTION     "DHCP Server Limit."
++::= { kwnDhcp 3 }
++
++kwnDhcpLeaseTime OBJECT-TYPE
++        SYNTAX Integer32
++        MAX-ACCESS read-write
++        STATUS current
++        DESCRIPTION     "DHCP Server Lease Time."
++::= { kwnDhcp 4 }
++
++
++------------------------------------------------------------------------
++------------------------------------------------------------------------
++kwnSystem OBJECT-IDENTITY
++        STATUS current
++        DESCRIPTION "Management Parameters"
++::= { kwnManagement 1 }
++
++kwnApply OBJECT-TYPE
++        SYNTAX Integer32
++        MAX-ACCESS read-write
++        STATUS current
++        DESCRIPTION     "Apply parameters."
++::= { kwnSystem 1 }
++
++kwnReset OBJECT-TYPE
++        SYNTAX Integer32
++        MAX-ACCESS read-write
++        STATUS current
++        DESCRIPTION     "Factory Reset."
++::= { kwnSystem 2 }
++
++kwnReboot OBJECT-TYPE
++        SYNTAX Integer32
++        MAX-ACCESS read-write
++        STATUS current
++        DESCRIPTION     "Reboot."
++::= { kwnSystem 3 }
++
++
++------------------------------------------------------------------------
++------------------------------------------------------------------------
++
++kwnAssocTable OBJECT-TYPE
++        SYNTAX SEQUENCE OF KwnAssocEntry
++        MAX-ACCESS not-accessible
++        STATUS current
++        DESCRIPTION "Wireless Association Station Table"
++::= { kwnMonitor 1 }
++
++
++kwnAssocEntry OBJECT-TYPE
++        SYNTAX KwnAssocEntry
++        MAX-ACCESS not-accessible
++        STATUS current
++        DESCRIPTION "Associated station Entry"
++        INDEX   { kwnAssocRadioIndex, kwnAssocSecIndex }
++::= { kwnAssocTable 1 }
++
++
++KwnAssocEntry ::=
++        SEQUENCE {
++                kwnAssocRadioIndex Integer32,
++                kwnAssocSecIndex Integer32,
++                kwnAssocMAC DisplayString,
++                kwnAssocIP IpAddress,
++                kwnAssocRemoteLat DisplayString,
++                kwnAssocRemoteLong DisplayString,
++                kwnAssocLocalLat DisplayString,
++                kwnAssocLocalLong DisplayString,
++                kwnAssocRxRate Integer32,
++                kwnAssocTxRate Integer32,
++                kwnAssocRxTput Integer32,
++                kwnAssocTxTput Integer32,
++                kwnAssocLocalSNRA1 Integer32,
++                kwnAssocLocalSNRA2 Integer32,
++                kwnAssocRemoteSNRA1 Integer32,
++                kwnAssocRemoteSNRA2 Integer32,
++                kwnAssocLocalPhyErr Integer32,
++                kwnAssocRemotePhyErr Integer32,
++                kwnAssocLocalMPDUErr Integer32,
++                kwnAssocRemoteMPDUErr Integer32,
++                kwnAssocLocalRetries Integer32,
++                kwnAssocRemoteRetries Integer32
++        }
++
++
++kwnAssocRadioIndex OBJECT-TYPE
++        SYNTAX Integer32 (1..2)
++        MAX-ACCESS not-accessible
++        STATUS current
++        DESCRIPTION     "Radio Index for Wireless Assoc table."
++::= { kwnAssocEntry 1 }
++
++kwnAssocSecIndex OBJECT-TYPE
++        SYNTAX Integer32 (1..2)
++        MAX-ACCESS not-accessible
++        STATUS current
++        DESCRIPTION     "Secondary Index for Wireless Assoc table."
++::= { kwnAssocEntry 2 }
++
++
++kwnAssocMAC OBJECT-TYPE
++        SYNTAX DisplayString
++        MAX-ACCESS read-only
++        STATUS current
++        DESCRIPTION     " MAC Address"
++::= { kwnAssocEntry 3 }
++
++
++kwnAssocIP OBJECT-TYPE
++        SYNTAX IpAddress
++        MAX-ACCESS read-only
++        STATUS current
++        DESCRIPTION     "IP Address"
++::= { kwnAssocEntry 4 }
++
++kwnAssocRemoteLat OBJECT-TYPE
++        SYNTAX DisplayString
++        MAX-ACCESS read-only
++        STATUS current
++        DESCRIPTION     "Remote Latitude"
++::= { kwnAssocEntry 5 }
++
++kwnAssocRemoteLong OBJECT-TYPE
++        SYNTAX DisplayString
++        MAX-ACCESS read-only
++        STATUS current
++        DESCRIPTION     "Remote Longitude"
++::= { kwnAssocEntry 6 }
++
++kwnAssocLocalLat OBJECT-TYPE
++        SYNTAX DisplayString
++        MAX-ACCESS read-only
++        STATUS current
++        DESCRIPTION     "Local Latitude"
++::= { kwnAssocEntry 7 }
++
++kwnAssocLocalLong OBJECT-TYPE
++        SYNTAX DisplayString
++        MAX-ACCESS read-only
++        STATUS current
++        DESCRIPTION     "Local Longitude"
++::= { kwnAssocEntry 8 }
++
++kwnAssocRxRate OBJECT-TYPE
++        SYNTAX Integer32
++        MAX-ACCESS read-only
++        STATUS current
++        DESCRIPTION     "Rx Rate"
++::= { kwnAssocEntry 9 }
++
++kwnAssocTxRate OBJECT-TYPE
++        SYNTAX Integer32
++        MAX-ACCESS read-only
++        STATUS current
++        DESCRIPTION     "Tx Rate"
++::= { kwnAssocEntry 10 }
++
++kwnAssocRxTput OBJECT-TYPE
++        SYNTAX Integer32
++        MAX-ACCESS read-only
++        STATUS current
++        DESCRIPTION     "Rx Throughput"
++::= { kwnAssocEntry 11 }
++
++kwnAssocTxTput OBJECT-TYPE
++        SYNTAX Integer32
++        MAX-ACCESS read-only
++        STATUS current
++        DESCRIPTION     "Tx Throughput"
++::= { kwnAssocEntry 12 }
++
++kwnAssocLocalSNRA1 OBJECT-TYPE
++        SYNTAX Integer32
++        MAX-ACCESS read-only
++        STATUS current
++        DESCRIPTION     "Local SNR A1"
++::= { kwnAssocEntry 13 }
++
++kwnAssocLocalSNRA2 OBJECT-TYPE
++        SYNTAX Integer32
++        MAX-ACCESS read-only
++        STATUS current
++        DESCRIPTION     "Local SNR A2"
++::= { kwnAssocEntry 14 }
++
++kwnAssocRemoteSNRA1 OBJECT-TYPE
++        SYNTAX Integer32
++        MAX-ACCESS read-only
++        STATUS current
++        DESCRIPTION     "Remote SNR A1"
++::= { kwnAssocEntry 15 }
++
++kwnAssocRemoteSNRA2 OBJECT-TYPE
++        SYNTAX Integer32
++        MAX-ACCESS read-only
++        STATUS current
++        DESCRIPTION     "Remote SNR A2"
++::= { kwnAssocEntry 16 }
++
++kwnAssocLocalPhyErr OBJECT-TYPE
++        SYNTAX Integer32
++        MAX-ACCESS read-only
++        STATUS current
++        DESCRIPTION     "Local Phy Error"
++::= { kwnAssocEntry 17 }
++
++kwnAssocRemotePhyErr OBJECT-TYPE
++        SYNTAX Integer32
++        MAX-ACCESS read-only
++        STATUS current
++        DESCRIPTION     "Remote Phy Error"
++::= { kwnAssocEntry 18 }
++
++kwnAssocLocalMPDUErr OBJECT-TYPE
++        SYNTAX Integer32
++        MAX-ACCESS read-only
++        STATUS current
++        DESCRIPTION     "Local MPDU Error"
++::= { kwnAssocEntry 19 }
++
++kwnAssocRemoteMPDUErr OBJECT-TYPE
++        SYNTAX Integer32
++        MAX-ACCESS read-only
++        STATUS current
++        DESCRIPTION     "Remote Phy Error"
++::= { kwnAssocEntry 20 }
++
++kwnAssocLocalRetries OBJECT-TYPE
++        SYNTAX Integer32
++        MAX-ACCESS read-only
++        STATUS current
++        DESCRIPTION     "Local Retries"
++::= { kwnAssocEntry 21 }
++
++kwnAssocRemoteRetries OBJECT-TYPE
++        SYNTAX Integer32
++        MAX-ACCESS read-only
++        STATUS current
++        DESCRIPTION     "Remote Retries"
++::= { kwnAssocEntry 22 }
++
++
++------------------------------------------------------------------------
++------------------------------------------------------------------------
++kwnEthernetStats OBJECT-IDENTITY
++        STATUS current
++        DESCRIPTION "Ethernet Statistcs"
++::= { kwnMonitor 2 }
++
++kwnEthernetStatus OBJECT-TYPE
++        SYNTAX DisplayString
++        MAX-ACCESS read-only
++        STATUS current
++        DESCRIPTION     "Ethernet Status."
++::= { kwnEthernetStats 1 }
++
++kwnEthernetSpeed OBJECT-TYPE
++        SYNTAX DisplayString
++        MAX-ACCESS read-only
++        STATUS current
++        DESCRIPTION     "Ethernet Speed."
++::= { kwnEthernetStats 2 }
++
++kwnEthernetDuplex OBJECT-TYPE
++        SYNTAX DisplayString
++        MAX-ACCESS read-only
++        STATUS current
++        DESCRIPTION     "Ethernet Duplex."
++::= { kwnEthernetStats 3 }
++
++END
