@@ -72,3 +72,8 @@ case $opmode in
    11ac)
       iwpriv ath1 vhtmcs "$acrate" ;;
 esac
+
+#Set Power dynamically
+pow=$(uci get wireless.wifi1.TXPowLim5G)
+pow5G=`expr $pow \* 2`
+iwpriv wifi1 TXPowLim5G $pow5G

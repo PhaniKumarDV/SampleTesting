@@ -98,7 +98,7 @@ void cfg_set( char *type, char *value )
             sprintf(cmd,"uci set wireless.wifi1.rate='%s'",value);
             break;
         case UCI_ID_RADIO1_POWER:
-            sprintf(cmd,"uci set wireless.wifi1.txpower='%s'",value);
+            sprintf(cmd,"uci set wireless.wifi1.TXPowLim5G='%s'",value);
             break;
         case UCI_ID_RADIO1_AMSDU:
             sprintf(cmd,"uci set wireless.@wifi-iface[1].kwnamsdu='%s'",value);
