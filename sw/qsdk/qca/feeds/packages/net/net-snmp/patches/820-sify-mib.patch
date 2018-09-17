@@ -1916,8 +1916,8 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +}
 diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.h
 --- net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h	1970-01-01 05:30:00.000000000 +0530
-+++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.h	2018-09-17 17:09:37.902096390 +0530
-@@ -0,0 +1,247 @@
++++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.h	2018-09-17 17:53:09.713767381 +0530
+@@ -0,0 +1,249 @@
 +/****************************************************************************
 +*                                                                           *
 +*  File Name:           kwnmib.h                                      *
@@ -2156,6 +2156,8 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h net-snmp-5.4.4-mod/agent/mi
 +    long remote_mpdu_err;
 +    long local_retries;
 +    long remote_retries;
++    long local_noise_floor;
++    long remote_noise_floor;
 +}kwn_link_stats;
 +
 +typedef struct
