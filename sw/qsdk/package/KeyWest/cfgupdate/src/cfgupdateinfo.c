@@ -110,13 +110,7 @@ void cfg_set( char *type, char *value )
             sprintf(cmd,"uci set wireless.@wifi-iface[1].dllmt='%s'",value);
             break;
         case UCI_ID_RADIO1_HIDE_ESSID:
-            {
-                int val = atoi(value);
-                if( val == 0 )
-                    sprintf(cmd,"uci delete wireless.@wifi-iface[1].hidden");
-                else
-                    sprintf(cmd,"uci set wireless.@wifi-iface[1].hidden='%s'",value);
-            }
+            sprintf(cmd,"uci set wireless.@wifi-iface[1].hidden='%s'",value);
             break;
         case UCI_ID_RADIO1_CUSTOMER_NAME:
             sprintf(cmd,"uci set wireless.wifi1.customername='%s'",value);
@@ -146,13 +140,7 @@ void cfg_set( char *type, char *value )
             sprintf(cmd,"uci set wireless.wifi0.txpower='%s'",value);
             break;
         case UCI_ID_RADIO2_HIDE_ESSID:
-            {
-                int val = atoi(value);
-                if( val == 0 )
-                    sprintf(cmd,"uci delete wireless.@wifi-iface[0].hidden");
-                else
-                    sprintf(cmd,"uci set wireless.@wifi-iface[0].hidden='%s'",value);
-            }
+            sprintf(cmd,"uci set wireless.@wifi-iface[0].hidden='%s'",value);
             break;
         case UCI_ID_IP:
             sprintf(cmd,"uci set network.lan.ipaddr='%s'",value);

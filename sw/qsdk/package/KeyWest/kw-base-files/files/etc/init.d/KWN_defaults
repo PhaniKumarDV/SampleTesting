@@ -11,6 +11,8 @@ start_service() {
     rx_chainmask_radio1=$(uci get wireless.wifi1.rxchainmask)
     shortgi_radio1=$(uci get wireless.@wifi-iface[1].shortgi)
     distance_radio1=$(uci get wireless.wifi1.distance)
+    hidden_radio0=$(uci get wireless.@wifi-iface[0].hidden)
+    hidden_radio1=$(uci get wireless.@wifi-iface[1].hidden)
     
     if [ "$eth_timer" == "" ]
     then
@@ -36,9 +38,18 @@ start_service() {
     then
         uci set wireless.wifi1.distance='5'
     fi
+    if [ "$hidden_radio1" == "" ]
+    then
+        uci set wireless.@wifi-iface[1].hidden='0'
+    fi
 #2.4 Radio Default values
     uci set wireless.wifi0.txchainmask='1'
     uci set wireless.wifi0.rxchainmask='1'
+    uci set wireless.wifi0.rate='0'
+    if [ "$hidden_radio0" == "" ]
+    then
+        uci set wireless.@wifi-iface[0].hidden='1'
+    fi
 
     procd_close_instance
 }

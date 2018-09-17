@@ -1109,7 +1109,7 @@ enable_qcawifi() {
 
 		iwconfig "$ifname" channel "$channel" >/dev/null 2>/dev/null
 
-		config_get_bool hidden "$vif" hidden 0
+		config_get hidden "$vif" hidden
 		iwpriv "$ifname" hide_ssid "$hidden"
 
                 config_get_bool dynamicbeacon "$vif" dynamicbeacon 0
@@ -1878,9 +1878,9 @@ enable_qcawifi() {
 
 		config_get opmode "$device" hwmode
 		case $opmode in
-			11a)
+			11a|11g)
 				iwconfig "$ifname" rate $arate ;;
-			11na)
+			11na|11ng)
 				iwpriv "$ifname" set11NRates "$nrate" ;;
 			11ac)
 				iwpriv "$ifname" vhtmcs "$acrate" ;;
