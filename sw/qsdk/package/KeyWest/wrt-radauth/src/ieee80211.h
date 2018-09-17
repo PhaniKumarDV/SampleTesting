@@ -769,7 +769,9 @@ struct ieee80211_action_vht_gid_mgmt {
 #define IEEE80211_ACTION_TPC_REPORT         3
 #define IEEE80211_ACTION_CHAN_SWITCH        4   /* 802.11h Channel Switch Announcement */
 #define IEEE80211_ACTION_DYING_GASP         5   /*Dying Gasp*/
-#define IEEE80211_ACTION_ULDL_LIMIT         6   /*ULDL Limit*/
+#define IEEE80211_ACTION_LINK_PARAM         6   /*Link param*/
+#define IEEE80211_ACTION_NODE_STATS         7   /*Node Stats*/
+#define IEEE80211_ACTION_TPUT_TEST          8   /*Tput Test*/
 
 /* HT actions */
 #define IEEE80211_ACTION_HT_TXCHWIDTH       0   /* recommended transmission channel width */
@@ -845,16 +847,49 @@ struct ieee80211_ie_op_mode_ntfy {
 #define DG_PKT_TYPE_INFORM 1
 #define DG_PKT_TYPE_ACK	   2
 
-struct ieee80211_uldl_limit {
+struct ieee80211_tput_test {
+    u_int32_t  	ipv4;
+    u_int8_t  	start_stop; 
+    u_int32_t  	duration; 
+    u_int32_t  	pkt_size; 
+    u_int32_t  	cnt; 
+} __packed;
+
+/* VHT - TPUT Test*/
+struct ieee80211_action_vht_tput_test {
+    struct ieee80211_action    at_header;
+    struct ieee80211_tput_test at_tput_test;
+} __packed;
+
+struct ieee80211_node_stats {
+    u_int32_t  	ipv4;
+    u_int8_t  	snr_a1; 
+    u_int8_t  	snr_a2; 
+    u_int64_t   rx_tput_mbps;
+    u_int32_t  	phy_err; 
+    u_int32_t  	mpdu_err; 
+    u_int32_t  	retries; 
+    int16_t  	noise_floor; 
+} __packed;
+
+/* VHT - Node Stats*/
+struct ieee80211_action_vht_node_stats {
+    struct ieee80211_action     at_header;
+    struct ieee80211_node_stats at_node_stats;
+} __packed;
+
+struct ieee80211_link_param {
     u_int32_t  	ipv4;
     u_int32_t  	ul_limit; 
     u_int32_t  	dl_limit; 
+    u_int8_t	link_id;
+    u_int8_t	customer_name[32];
 } __packed;
 
-/* VHT - Uplink Downlink Limit*/
-struct ieee80211_action_vht_uldl_limit {
+/* VHT - exchange param */
+struct ieee80211_action_vht_link_param {
     struct ieee80211_action     at_header;
-    struct ieee80211_uldl_limit at_uldl_limit;
+    struct ieee80211_link_param at_uldl_limit;
 } __packed;
 
 struct ieee80211_dying_gasp_ie {
@@ -2859,6 +2894,23 @@ struct ieee80211req_sta_info {
         u_int8_t isi_l_longitude[32];
         u_int64_t isi_tx_tput;             /* Tx Thput */
         u_int64_t isi_rx_tput;             /* Rx Thput */
+        u_int8_t isi_local_snr_a1;        /* Local SNR A1 */
+        u_int8_t isi_local_snr_a2;        /* Local SNR A2 */
+        u_int8_t isi_remote_snr_a1;        /* Remote SNR A1 */
+        u_int8_t isi_remote_snr_a2;        /* Remote SNR A2 */
+        u_int32_t  isi_ip_addr;
+        u_int32_t isi_local_phy_err;        /* Local Phy Err */
+        u_int32_t isi_remote_phy_err;       /* Remote Phy Err */
+        u_int32_t isi_local_mpdu_err;       /* Local MPDU Err */
+        u_int32_t isi_remote_mpdu_err;      /* Remote MPDU Err */
+        u_int32_t isi_local_retries;        /* Local Retries */
+        u_int32_t isi_remote_retries;       /* Remote Retries */
+        u_int8_t  isi_l_customer_name[32];
+        u_int8_t  isi_r_customer_name[32];
+        u_int8_t  isi_l_link_id;
+        u_int8_t  isi_r_link_id;
+        int16_t   isi_l_noise_floor;
+        int16_t   isi_r_noise_floor;
 
 };
 

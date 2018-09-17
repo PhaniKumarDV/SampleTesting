@@ -131,6 +131,12 @@
 							document.getElementById("rem_a1").innerHTML = assoclist[j].remote_snr_a1;
 							document.getElementById("loc_a2").innerHTML = assoclist[j].local_snr_a2;
 							document.getElementById("rem_a2").innerHTML = assoclist[j].remote_snr_a2;
+							document.getElementById("loc_sig_a1").innerHTML = assoclist[j].local_snr_a1 == 0 ? assoclist[j].local_snr_a1 : (assoclist[j].local_snr_a1 + assoclist[j].l_noise_floor);
+							document.getElementById("rem_sig_a1").innerHTML = assoclist[j].remote_snr_a1 == 0 ? assoclist[j].remote_snr_a1 : (assoclist[j].remote_snr_a1 + assoclist[j].r_noise_floor);
+							document.getElementById("loc_sig_a2").innerHTML = assoclist[j].local_snr_a2 == 0 ? assoclist[j].local_snr_a2 : (assoclist[j].local_snr_a2 + assoclist[j].l_noise_floor);
+							document.getElementById("rem_sig_a2").innerHTML = assoclist[j].remote_snr_a2 == 0 ? assoclist[j].remote_snr_a2 : (assoclist[j].remote_snr_a2 + assoclist[j].r_noise_floor);
+							document.getElementById("loc_noise").innerHTML = assoclist[j].l_noise_floor;
+							document.getElementById("rem_noise").innerHTML = assoclist[j].r_noise_floor;
 							document.getElementById("loc_rate").innerHTML = assoclist[j].tx_rate / 1000;
 							document.getElementById("rem_rate").innerHTML = assoclist[j].rx_rate / 1000;
 							document.getElementById("loc_tput").innerHTML = assoclist[j].tx_tput > (1000 * 1000) ? (assoclist[j].tx_tput / ( 1000 * 1000 )).toFixed(2) : 0;
@@ -186,6 +192,21 @@
 				<td>SNR A2 (dB)</td>
 				<td id="loc_a2"></td>
 				<td id="rem_a2"></td>
+			</tr>
+			<tr>
+				<td>Signal A1 (dB)</td>
+				<td id="loc_sig_a1"></td>
+				<td id="rem_sig_a1"></td>
+			</tr>
+			<tr>
+				<td>Signal A2 (dB)</td>
+				<td id="loc_sig_a2"></td>
+				<td id="rem_sig_a2"></td>
+			</tr>
+			<tr>
+				<td>Noise (dB)</td>
+				<td id="loc_noise"></td>
+				<td id="rem_noise"></td>
 			</tr>
 			<tr>
 				<td>Rate (Mbps)</td>

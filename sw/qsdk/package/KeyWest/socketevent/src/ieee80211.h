@@ -771,6 +771,7 @@ struct ieee80211_action_vht_gid_mgmt {
 #define IEEE80211_ACTION_DYING_GASP         5   /*Dying Gasp*/
 #define IEEE80211_ACTION_LINK_PARAM         6   /*Link param*/
 #define IEEE80211_ACTION_NODE_STATS         7   /*Node Stats*/
+#define IEEE80211_ACTION_TPUT_TEST          8   /*Tput Test*/
 
 /* HT actions */
 #define IEEE80211_ACTION_HT_TXCHWIDTH       0   /* recommended transmission channel width */
@@ -846,6 +847,20 @@ struct ieee80211_ie_op_mode_ntfy {
 #define DG_PKT_TYPE_INFORM 1
 #define DG_PKT_TYPE_ACK	   2
 
+struct ieee80211_tput_test {
+    u_int32_t  	ipv4;
+    u_int8_t  	start_stop; 
+    u_int32_t  	duration; 
+    u_int32_t  	pkt_size; 
+    u_int32_t  	cnt; 
+} __packed;
+
+/* VHT - TPUT Test*/
+struct ieee80211_action_vht_tput_test {
+    struct ieee80211_action    at_header;
+    struct ieee80211_tput_test at_tput_test;
+} __packed;
+
 struct ieee80211_node_stats {
     u_int32_t  	ipv4;
     u_int8_t  	snr_a1; 
@@ -854,6 +869,7 @@ struct ieee80211_node_stats {
     u_int32_t  	phy_err; 
     u_int32_t  	mpdu_err; 
     u_int32_t  	retries; 
+    int16_t  	noise_floor; 
 } __packed;
 
 /* VHT - Node Stats*/
@@ -2893,6 +2909,8 @@ struct ieee80211req_sta_info {
         u_int8_t  isi_r_customer_name[32];
         u_int8_t  isi_l_link_id;
         u_int8_t  isi_r_link_id;
+        int16_t   isi_l_noise_floor;
+        int16_t   isi_r_noise_floor;
 
 };
 
