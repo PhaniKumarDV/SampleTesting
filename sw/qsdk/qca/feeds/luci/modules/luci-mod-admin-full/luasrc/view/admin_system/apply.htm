@@ -5,6 +5,28 @@
 -%>
 
 <%+header%>
+<style>
+.dot {
+    height: 10px;
+    width: 20px;
+    background-color: #AAA;
+    border-radius: 50px;
+    display: inline-block;
+}
+</style>
+<script type="text/javascript">
+var index = 0;
+function inc ()
+{
+    index++;
+    document.getElementById("custom-style").innerHTML = ".dots .dot:nth-child( -n + " + index + "){background-color: #a5bc23;}"
+    if( index == 20 ) {
+       clearInterval(myVar);
+       location.href='<%=luci.dispatcher.build_url("admin")%>';
+    }
+}
+
+</script>
 <div class="page-content system">
 <h2><a id="content" name="content"><%:Apply%></a></h2>
 <p><%:Apply the configuration to device%></p>
@@ -15,6 +37,33 @@ if not apply then
 </p>
 <%- else -%>
 <p><%:Please wait while applying configuration...%></p>
-<script type="text/javascript">setTimeout("location='<%=controller%>/admin'", 20000)</script>
+<script type="text/javascript">
+var myVar = setInterval(inc,1000);
+</script>
+
+<style id='custom-style'>.dots .dot:nth-child(-n + 5){background-color: #AAA;}</style>
+<div class="dots">
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+</div>
+
 <%- end -%>
 <%+footer%>
