@@ -8959,12 +8959,12 @@ diff -urN net-snmp-5.4.4-org/include/ieee80211_ioctl.h net-snmp-5.4.4-mod/includ
 +#endif /* _NET80211_IEEE80211_IOCTL_H_ */
 diff -urN net-snmp-5.4.4-org/mibs/KWN-SMAC-MIB.mib net-snmp-5.4.4-mod/mibs/KWN-SMAC-MIB.mib
 --- net-snmp-5.4.4-org/mibs/KWN-SMAC-MIB.mib	1970-01-01 05:30:00.000000000 +0530
-+++ net-snmp-5.4.4-mod/mibs/KWN-SMAC-MIB.mib	2018-09-17 17:10:04.813973914 +0530
++++ net-snmp-5.4.4-mod/mibs/KWN-SMAC-MIB.mib	2018-09-18 09:54:14.242635534 +0530
 @@ -0,0 +1,869 @@
 +------------------------------------------------------------------------
 +------------------------------------------------------------------------
 +--
-+-- Copyright (C) 2014 by Keywest Networks. All rights reserved
++-- Copyright (C) 2018 by Keywest Networks. All rights reserved
 +-- Enterprise MIB definition to manage smac3.0 product.
 +-- MIB author: Srilatha
 +--
