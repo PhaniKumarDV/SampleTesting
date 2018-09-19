@@ -30,7 +30,8 @@
 	end
         function uciget(cmd)
                 local res = luci.util.exec(cmd)
-                return res
+                local str = string.gsub(res, "\n", "")
+                return str
         end
 -%>
 
@@ -48,6 +49,28 @@
 	var ind = <%=luci.http.write_json(entryind)%>;
         var mac, timer;
 
+function disable_spin()
+{
+    document.getElementById("spin").innerHTML = "";
+}
+
+function save_value( dur )
+{
+    document.getElementById("spin").innerHTML = "<i class='fa fa-spinner fa-pulse'></i>";
+    setTimeout("disable_spin()", dur);
+    var setdata = "";
+    var f = document.formTable;
+    for( i=0; i<f.elements.length; i++)
+    {
+        setdata += f.elements[i].name + "=" + f.elements[i].value + "~";
+    }
+    XHR.get('<%=luci.dispatcher.build_url("admin")%>/cfg_set' + '/' + setdata, null,
+	    function(x, data) {
+		    if (data) { 
+		    }
+	    }
+    );
+}
 	function nowrap(s) {
 		return s.replace(/ /g, '&#160;');
 	}
@@ -56,11 +79,11 @@
 		location.href='<%=luci.dispatcher.build_url("admin/monitor/stats")%>';
 	}
         function enable() {
-		document.getElementById("s1").innerHTML="<input type='button' class='cbi-button' value='<%:Start Performance%>' onclick='starttool()' />";
+		document.getElementById("s1").innerHTML="<input type='button' class='cbi-button' value='<%:Start Test%>' onclick='starttool()' />";
 		document.getElementById("msg").innerHTML="";
 	}
 	function stoptool() {
-		document.getElementById("s1").innerHTML="<input type='button' class='cbi-button' value='<%:Start Performance%>' onclick='starttool()' />";
+		document.getElementById("s1").innerHTML="<input type='button' class='cbi-button' value='<%:Start Test%>' onclick='starttool()' />";
 		clearTimeout( timer );
     		XHR.get('<%=luci.dispatcher.build_url("admin", "monitor", "stats")%>/stoptool' + '/' + mac, null,
 			function(x, data) {
@@ -71,8 +94,11 @@
     		);
 	}
 	function starttool() {
-		document.getElementById("s1").innerHTML="<input type='button' class='cbi-button' value='<%:Stop Performance%>' onclick='stoptool()' />";
-    		timer = setTimeout("enable()",120000);
+        var dur = document.getElementById("duration").value;
+        dur = dur * 1000;
+        save_value( dur );
+		document.getElementById("s1").innerHTML="<input type='button' class='cbi-button' value='<%:Stop Test%>' onclick='stoptool()' />";
+    		timer = setTimeout("enable()",dur);
     		XHR.get('<%=luci.dispatcher.build_url("admin", "monitor","stats")%>/starttool' + '/' + mac, null,
 			function(x, data) {
 				if (data) { 
@@ -161,13 +187,45 @@
 <h2><a id="content" name="content"><%:Detailed Statistics%></a></h2>
 <div class="cbi-page-actions right">
 <input type="button" class="cbi-button" value="<%:Back%>" onclick="back()" />
-<span id="s1"><input type="button" class="cbi-button" value="<%:Start Performance%>" onclick="starttool()" /></span>
 <input type="button" class="cbi-button" value="<%:Disconnect%>" onclick="disconnect()" />
 </div>
-<div id="msg"></div>
+<h2><a id="content" name="content"><%:Link Test%></a></h2>
+<div class="cbi-map">
+    <fieldset class="cbi-section">
+       <form name="formTable">
+        <table>
+            <tr>
+                <td width="35%">Packet Size&nbsp;<input type="text" name="78" class="cbi-input-select" style="width:100px;" value="<%=uciget('uci get tool.tool.size')%>">&nbsp;Bytes</td>
+                <td width="35%">Duration&nbsp;<input type="text" name="79" class="cbi-input-select" id="duration" style="width:100px;" value="<%=uciget('uci get tool.tool.dur')%>">&nbsp;Sec</td>
+                <td width="35%" class="cbi-value-field">Direction&nbsp;
+                    <select class="cbi-input-select" name="80" style="width:110px;">
+                    <script type="text/javascript">
+                        var dir = "<%=uciget('uci get tool.tool.dir')%>";
+                        document.write("<option value='1' ");
+                        if( dir == "1" )
+                            document.write(" selected");
+                        document.write(">Uplink</option>");
+                        document.write("<option value='2' ");
+                        if( dir == "2" )
+                            document.write(" selected");
+                        document.write(">Downlink</option>");
+                        document.write("<option value='3' ");
+                        if( dir == "3" )
+                            document.write(" selected");
+                        document.write(">Bidirection</option>");
+                    </script>
+                    </select>
+                </td>
+                <td><span id="s1" style="padding-left:0px;" class="cbi-page-actions right"><input type="button" class="cbi-button" value="<%:Start Test%>" onclick="starttool()" /></span></td>
+            </tr>
+        </table>
+        </form>
+    </fieldset>
+</div>
+<div style="text-align:left;"><span id="spin"></span>&nbsp;&nbsp;<span id="msg"></span></div>
 <div class="cbi-map">
 	<fieldset class="cbi-section">
-		<table class="cbi-section-table" style="margin:10px">
+		<table class="cbi-section-table" style="margin:10px" width="900px">
 			<tr class="cbi-section-table-titles">
 				<th class="cbi-section-table-cell"></th>
 				<th class="cbi-section-table-cell">Local</th>

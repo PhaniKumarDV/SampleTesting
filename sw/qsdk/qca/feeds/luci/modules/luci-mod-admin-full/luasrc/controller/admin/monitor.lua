@@ -66,7 +66,7 @@ function starttool( mac )
 	luci.sys.exec("uci set tool.tool.mac="..mac)
 	luci.sys.exec("/etc/init.d/KWtool start")
 	luci.sys.exec("iwpriv ath1 kwn_tput_test 1")
-	data = "Performance test is in progress..."
+	data = "Link test is in progress..."
 	luci.http.prepare_content("application/json")
 	luci.http.write_json(data)
 end
@@ -74,7 +74,7 @@ end
 function stoptool( mac )
 	local data = {}
 	luci.sys.exec("iwpriv ath1 kwn_tput_test 0")
-	data = "Performance test is stopped..."
+	data = "Link test is stopped..."
 	luci.http.prepare_content("application/json")
 	luci.http.write_json(data)
 end

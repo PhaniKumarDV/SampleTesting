@@ -351,6 +351,15 @@ void cfg_set( char *type, char *value )
         case UCI_ID_ETHERNET_INACTIVITY:
             sprintf(cmd,"uci set ethernet.ethernet.ethtimer='%s'",value);
             break;
+        case UCI_ID_LINK_TEST_SIZE:
+            sprintf(cmd,"uci set tool.tool.size='%s'",value);
+            break;
+        case UCI_ID_LINK_TEST_DUR:
+            sprintf(cmd,"uci set tool.tool.dur='%s'",value);
+            break;
+        case UCI_ID_LINK_TEST_DIR:
+            sprintf(cmd,"uci set tool.tool.dir='%s'",value);
+            break;
         default:
             break;
     }

@@ -11,12 +11,22 @@ start_service() {
 
    procd_open_instance
 
+    mode=$(uci get wireless.@wifi-iface[1].mode)
     size=$(uci get tool.tool.size)
     dur=$(uci get tool.tool.dur)
     dir=$(uci get tool.tool.dir)
     mac=$(uci get tool.tool.mac)
     cnt=$(uci get tool.tool.cnt)
 
+    if [ "$mode" == "ap" ]; then
+        if [ $dir -eq "1" ]; then                       
+            dir=2                                         
+        else                                              
+            if [ $dir -eq "2" ]; then
+                dir=1                                      
+            fi                                            
+        fi                                                
+    fi
     iwpriv ath1 kwn_tput_dur $dur                              
     iwpriv ath1 kwn_tput_cnt $cnt                              
     iwpriv ath1 kwn_tput_size $size
