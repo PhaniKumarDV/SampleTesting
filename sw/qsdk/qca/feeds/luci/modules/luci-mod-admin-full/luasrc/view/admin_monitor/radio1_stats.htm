@@ -338,10 +338,10 @@
                             d = d.toFixed(2);
 							tr.insertCell(-1).innerHTML = nowrap(String.format('%d', d));
 
-							tr.insertCell(-1).innerHTML = assoclist[j].local_snr_a1 == 0 ? assoclist[j].local_snr_a1 : (assoclist[j].local_snr_a1 + assoclist[j].l_noise_floor);
-							tr.insertCell(-1).innerHTML = assoclist[j].local_snr_a2 == 0 ? assoclist[j].local_snr_a2 : (assoclist[j].local_snr_a2 + assoclist[j].l_noise_floor);
-							tr.insertCell(-1).innerHTML = assoclist[j].remote_snr_a1 == 0 ? assoclist[j].remote_snr_a1 : (assoclist[j].remote_snr_a1 + assoclist[j].r_noise_floor);
-							tr.insertCell(-1).innerHTML = assoclist[j].remote_snr_a2 == 0 ? assoclist[j].remote_snr_a2 : (assoclist[j].remote_snr_a2 + assoclist[j].r_noise_floor);
+							tr.insertCell(-1).innerHTML = assoclist[j].local_snr_a1 > 128 ? assoclist[j].l_noise_floor : (assoclist[j].local_snr_a1 + assoclist[j].l_noise_floor);
+							tr.insertCell(-1).innerHTML = assoclist[j].local_snr_a2 > 128 ? assoclist[j].l_noise_floor : (assoclist[j].local_snr_a2 + assoclist[j].l_noise_floor);
+							tr.insertCell(-1).innerHTML = assoclist[j].remote_snr_a1 > 128 ? assoclist[j].r_noise_floor : (assoclist[j].remote_snr_a1 + assoclist[j].r_noise_floor);
+							tr.insertCell(-1).innerHTML = assoclist[j].remote_snr_a2 > 128 ? assoclist[j].r_noise_floor : (assoclist[j].remote_snr_a2 + assoclist[j].r_noise_floor);
 							tr.insertCell(-1).innerHTML = assoclist[j].rx_rate / 1000;
 							tr.insertCell(-1).innerHTML = assoclist[j].tx_rate / 1000;
 							tr.insertCell(-1).innerHTML = assoclist[j].rx_tput > (1000 * 1000) ? (assoclist[j].rx_tput / ( 1000 * 1000 )).toFixed(2) : 0;
