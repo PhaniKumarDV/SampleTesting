@@ -16,8 +16,12 @@ while [ 1 ] ; do
 	elif [ "$CMD" == "reload_config" ]; then
 		reload_config
 	elif [ "$CMD" == "reboot" ]; then
+		echo "Device is rebooting...."
+        /usr/sbin/sify_reboot_log.sh 2
 		reboot
 	elif [ "$CMD" == "reset" ]; then
+		echo "Device is resetting to factory defaults...."
+        /usr/sbin/sify_reboot_log.sh 6
 		firstboot
 	else
 		a=`echo "$CMD" | cut -d' ' -f 1`

@@ -266,6 +266,22 @@ function action_logtype( logtype )
             data = "Wireless Log file is empty."
         end
 	end
+    -- Ethernet Events
+	if( string.match(logtype,"6") ) then
+        if string.len(string.sub(luci.util.exec("cat /etc/eth_events.txt"),1,-2) ) > 5 then
+            data = luci.sys.exec("cat /etc/eth_events.txt")
+        else
+            data = "Ethernet Log file is empty."
+        end
+	end
+    -- Reboot Log
+	if( string.match(logtype,"7") ) then
+        if string.len(string.sub(luci.util.exec("cat /etc/reboot_logs"),1,-2) ) > 20 then
+            data = luci.sys.exec("cat /etc/reboot_logs")
+        else
+            data = "Reboot Log file is empty."
+        end
+	end
 	luci.http.prepare_content("application/json")
 	luci.http.write_json(data)
 end

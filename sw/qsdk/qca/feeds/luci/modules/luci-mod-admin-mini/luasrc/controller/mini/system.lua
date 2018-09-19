@@ -39,6 +39,7 @@ function action_backup()
 	
 	if upload and #upload > 0 then
 		luci.template.render("mini/applyreboot")
+        luci.util.exec("/usr/sbin/sify_reboot_log.sh 7")
 		luci.sys.reboot()
 	elseif backup then
 		local reader = ltn12_popen(backup_cmd:format(_keep_pattern()))
@@ -48,6 +49,7 @@ function action_backup()
 		luci.ltn12.pump.all(reader, luci.http.write)
 	elseif reset then
 		luci.template.render("mini/applyreboot")
+        luci.util.exec("/usr/sbin/sify_reboot_log.sh 4")
 		luci.util.exec("mtd -r erase rootfs_data")
 	else
 		luci.template.render("mini/backup", {reset_avail = reset_avail})
@@ -58,6 +60,7 @@ function action_reboot()
 	local reboot = luci.http.formvalue("reboot")
 	luci.template.render("mini/reboot", {reboot=reboot})
 	if reboot then
+        luci.util.exec("/usr/sbin/sify_reboot_log.sh 1")
 		luci.sys.reboot()
 	end
 end
@@ -147,6 +150,7 @@ function action_upgrade()
 			luci.ltn12.pump.all(flash, luci.http.write)
 
 			-- Make sure the device is rebooted
+             luci.util.exec("/usr/sbin/sify_reboot_log.sh 5")
 			luci.sys.reboot()
 		end
 

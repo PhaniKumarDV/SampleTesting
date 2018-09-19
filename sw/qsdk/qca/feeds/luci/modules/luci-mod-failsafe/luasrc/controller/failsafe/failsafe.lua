@@ -141,6 +141,7 @@ function action_reboot()
 	local reboot = luci.http.formvalue("reboot")
 	luci.template.render("failsafe/reboot", {reboot=reboot})
 	if reboot then
+        luci.util.exec("/usr/sbin/sify_reboot_log.sh 1")
 		luci.sys.reboot()
 	end
 end

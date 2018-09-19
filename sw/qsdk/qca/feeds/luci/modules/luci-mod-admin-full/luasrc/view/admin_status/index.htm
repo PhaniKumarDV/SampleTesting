@@ -153,6 +153,17 @@ else
 		);
 	}
 
+function clear_log()
+{
+    var id = 1;
+    XHR.get('<%=luci.dispatcher.build_url("admin")%>/clr_eventlog' + '/' + id, null,
+	function(x, data) {
+		if (data) { 
+			document.getElementById("result").innerHTML=data;
+		}
+	}
+    );
+}
 function get_links()
 {
     var id = 6;
@@ -392,9 +403,16 @@ function get_log()
 
 </fieldset>
 <div>&nbsp;</div>
-<h2><a id="content" name="content"><%:Eventlog%></a></h2>
+
+
+
+<div class="cbi-page-actions left" style="margin:-19px 0px 0px -148px;">
+<span style="color:#a5bc23;font-size:17px; font-weight:400;font-family:SegoeUI-Semibold;margin-right:690px;">EVENT LOG</span>
+<input type="button" id="s3" class="cbi-button" value="<%:Clear%>" onclick="clear_log()" />
+</div>
+
 <div id="content_wifi1stats">
-<textarea readonly="readonly" wrap="off" style="width:950px; height:180px;" rows="<%=eventlog:cmatch("\n")+2%>" id="result"><%=eventlog:pcdata()%></textarea>
+<textarea readonly="readonly" wrap="off" style="width:950px; height:163px;" rows="<%=eventlog:cmatch("\n")+2%>" id="result"><%=eventlog:pcdata()%></textarea>
 </div>
 <% end %>
 

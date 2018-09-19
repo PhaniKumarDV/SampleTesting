@@ -24,10 +24,9 @@ function index()
 	-- entry({"admin", "services"}, firstchild(), _("Services"), 40).index = true
 
 	entry({"admin", "home"}, call("action_index"), _("Home"), 10)
-    page = entry({"admin", "eventlog"}, call("action_eventlog"), nil)
-    page.leaf = true
-    page = entry({"admin", "no_of_links"}, call("action_links"), nil)
-    page.leaf = true
+    entry({"admin", "eventlog"}, call("action_eventlog"), nil).leaf = true
+    entry({"admin", "clr_eventlog"}, call("action_clr_eventlog"), nil).leaf = true
+    entry({"admin", "no_of_links"}, call("action_links"), nil).leaf = true
 	entry({"admin", "apply"}, call("action_apply"), _("Apply"), 88)
 	entry({"admin", "reboot"}, call("action_reboot"), _("Reboot"), 89)
 	entry({"admin", "logout"}, call("action_logout"), _("Logout"), 90)
@@ -46,13 +45,22 @@ function action_links()
 	luci.http.write_json(data)
 end
 
+function action_clr_eventlog()
+	local data = {}
+
+    luci.util.exec("rm -rf /etc/wifi_packet_logs")
+    data = "Event Log is cleared."
+	luci.http.prepare_content("application/json")
+	luci.http.write_json(data)
+end
+
 function action_eventlog()
 	local data = {}
 
     if string.len(string.sub(luci.util.exec("cat /etc/wifi_packet_logs"),1,-2) ) > 20 then
         data = luci.util.exec("cat /etc/wifi_packet_logs")
     else
-        data = "Wireless Log file is empty."
+        data = "Event Log is empty."
     end
 	luci.http.prepare_content("application/json")
 	luci.http.write_json(data)
@@ -90,6 +98,7 @@ function action_reboot()
 	local reboot = luci.http.formvalue("reboot")
 	luci.template.render("admin_system/reboot", {reboot=reboot})
 	if reboot then
+        luci.util.exec("/usr/sbin/sify_reboot_log.sh 1")
 		luci.sys.reboot()
 	end
 end

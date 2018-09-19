@@ -254,6 +254,7 @@ function action_flashops()
 		local upload = luci.http.formvalue("archive")
 		if upload and #upload > 0 then
 			luci.template.render("admin_system/applyreboot")
+            luci.util.exec("/usr/sbin/sify_reboot_log.sh 7")
 			luci.sys.reboot()
 		end
 	elseif luci.http.formvalue("image") or luci.http.formvalue("step") then
@@ -282,6 +283,7 @@ function action_flashops()
 		--
 		elseif step == 2 then
 			local keep = (luci.http.formvalue("keep") == "1") and "" or "-n"
+            luci.util.exec("/usr/sbin/sify_reboot_log.sh 5")
 			luci.template.render("admin_system/applyreboot", {
 				title = luci.i18n.translate("Flashing..."),
 				msg   = luci.i18n.translate("The system is flashing now.<br /> DO NOT POWER OFF THE DEVICE!<br /> Wait a few minutes before you try to reconnect. It might be necessary to renew the address of your computer to reach the device again, depending on your settings."),
@@ -293,6 +295,7 @@ function action_flashops()
 		--
 		-- Reset system
 		--
+            luci.util.exec("/usr/sbin/sify_reboot_log.sh 4")
 		luci.template.render("admin_system/applyreboot", {
 			title = luci.i18n.translate("Erasing..."),
 			msg   = luci.i18n.translate("The system is erasing the configuration partition now and will reboot itself when finished."),
@@ -330,6 +333,7 @@ function action_reboot()
 	local reboot = luci.http.formvalue("reboot")
 	luci.template.render("admin_system/reboot", {reboot=reboot})
 	if reboot then
+        luci.util.exec("/usr/sbin/sify_reboot_log.sh 1")
 		luci.sys.reboot()
 	end
 end
