@@ -27,7 +27,7 @@ function index()
 
 	entry({"admin", "monitor", "syslog"}, call("action_syslog"), _("Logs"), 3)
     entry({"admin", "monitor", "log_type"}, call("action_logtype"), nil).leaf = true
-	entry({"admin", "monitor", "clr_templog"}, call("action_clr_templog"), nil).leaf = true
+	entry({"admin", "monitor", "clr_log"}, call("action_clr_log"), nil).leaf = true
 
 	entry({"admin", "monitor", "tools"}, template("admin_network/diagnostics"), _("Tools"), 4)
     if (string.match(mode,"ap") and string.match(wds,"1") ) then
@@ -252,7 +252,11 @@ function action_logtype( logtype )
 	end
     -- Temperature Log
 	if( string.match(logtype,"3") ) then
-		data = luci.sys.exec("cat /tmp/temp-log")
+        if string.len(string.sub(luci.util.exec("cat /tmp/temp-log"),1,-2) ) > 5 then
+            data = luci.sys.exec("cat /tmp/temp-log")
+        else
+            data = "Temperature Log file is empty."
+        end
 	end
     -- Config Log
 	if( string.match(logtype,"4") ) then
@@ -306,10 +310,21 @@ function action_templog()
 	luci.template.render("admin_monitor/templog", {templog=templog})
 end
 
-function action_clr_templog()
+function action_clr_log( logtype )
 	local data = {}
-	luci.sys.exec("echo '' > /tmp/temp-log")
-	data = luci.sys.exec("cat /tmp/temp-log")
+
+	if( string.match(logtype,"3") ) then
+        luci.sys.exec("rm -rf /tmp/temp-log")
+	    data = "Temperature Log is cleared"
+    end
+	if( string.match(logtype,"5") ) then
+        luci.sys.exec("rm -rf /etc/wifi_packet_logs")
+	    data = "Wireless Events are cleared"
+    end
+	if( string.match(logtype,"6") ) then
+        luci.sys.exec("rm -rf /etc/eth_events.txt")
+	    data = "Ethernet Events are cleared"
+    end
 	luci.http.prepare_content("application/json")
 	luci.http.write_json(data)
 end

@@ -10,7 +10,7 @@ function get_results()
 {
     var id = document.getElementById("logtype").value;
     var x = document.getElementById("s3");
-    if( id == 3 )
+    if( id == 3 || id == 5 || id == 6 )
         x.style.visibility = "visible";
     else
         x.style.visibility = "hidden";
@@ -24,8 +24,8 @@ function get_results()
 }
 function clear_log()
 {
-    var id = 1;
-    XHR.get('<%=luci.dispatcher.build_url("admin", "monitor")%>/clr_templog' + '/' + id, null,
+    var id = document.getElementById("logtype").value;
+    XHR.get('<%=luci.dispatcher.build_url("admin", "monitor")%>/clr_log' + '/' + id, null,
 	function(x, data) {
 		if (data) { 
 			document.getElementById("result").innerHTML=data;
