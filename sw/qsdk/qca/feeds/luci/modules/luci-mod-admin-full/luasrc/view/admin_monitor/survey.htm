@@ -51,6 +51,21 @@ function get_values( val )
             );
         }
     );
+function clear_scan()
+{
+    var id = 6;
+    XHR.get('<%=luci.dispatcher.build_url("admin", "monitor", "tools")%>/surveyclear/' + id, null,
+    function(x, data) {
+        if (data) { 
+            var surveytable = document.getElementById('survey-list');
+            if( surveytable ) {
+	            while (surveytable.rows.length > 1)
+		            surveytable.rows[1].parentNode.removeChild(surveytable.rows[1]);
+            }
+        }
+    }
+    );
+}
 </script>
 <div class="page-content">
 <h2><a id="content" name="content"><%:Tools%></a></h2>
@@ -58,6 +73,9 @@ function get_values( val )
         <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=luci.dispatcher.build_url("admin/monitor/tools")%>"><%:Diagnostics%></a></li>
         <li style="margin-right:4px" class="cbi-tab"><a href="#"><%:Site Survey%></a></li>
     </ul>
+<div class="cbi-page-actions right" style="padding:11px 360px 2px 150px;">
+<input type="button" id="s1" class="cbi-button" value="<%:Clear%>" onclick="clear_scan()" />
+</div>
 <div class="cbi-map">
 	<fieldset class="cbi-section">
 		<table class="cbi-section-table" style="width:600px; margin:10px;" id="survey-list">

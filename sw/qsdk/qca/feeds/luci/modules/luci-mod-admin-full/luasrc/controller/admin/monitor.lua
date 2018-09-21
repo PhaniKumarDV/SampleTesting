@@ -37,6 +37,7 @@ function index()
     if (string.match(mode,"sta") and string.match(wds,"1") ) then
 	    entry({"admin", "monitor", "tools", "survey"}, call("action_survey"))
 	    entry({"admin", "monitor", "tools", "surveyrefresh"}, call("action_surveyrefresh"), nil).leaf = true
+	    entry({"admin", "monitor", "tools", "surveyclear"}, call("action_surveyclear"), nil).leaf = true
     end
 
     --entry({"admin", "monitor", "wifi0stats"}, call("action_wifi0stats"), _("Wifi0 Statistics"), 3).leaf = true
@@ -91,6 +92,16 @@ end
 
 function action_surveyrefresh()
 	local data = luci.sys.exec("iwlist ath1 ap")
+	luci.http.prepare_content("application/json")
+	luci.http.write_json(data)
+end
+
+function action_surveyclear()
+    local data = {}
+    luci.sys.exec("iwpriv ath1 kwn_pbb_flag 1")
+    luci.sys.exec("iwpriv ath1 s_scan_flush 1")
+    luci.sys.exec("iwpriv ath1 kwn_pbb_flag 0")
+	data = luci.sys.exec("iwlist ath1 ap")
 	luci.http.prepare_content("application/json")
 	luci.http.write_json(data)
 end

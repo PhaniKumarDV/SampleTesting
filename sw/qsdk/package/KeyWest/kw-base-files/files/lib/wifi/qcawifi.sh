@@ -1954,6 +1954,7 @@ enable_qcawifi() {
 		config_get macaddr "$device" macaddr
 		[ -n "$macaddr" ] && iwpriv "$phy" setHwaddr "$macaddr"
 
+        iwpriv "$ifname" scanentryage 600
 
 	done
 
