@@ -6,4 +6,8 @@ config vlan 'vlan'
     option trunkoption '2'
     option svlan '-1'
     option svlanethertype '0x0081'
+    option bda '00:00:00:00:00:00'
+    option bsa '00:00:00:00:00:00'
+    option bvid '-1'
+    option bisid '-1'
 

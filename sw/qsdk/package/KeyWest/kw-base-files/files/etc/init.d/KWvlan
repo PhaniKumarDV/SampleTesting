@@ -17,16 +17,21 @@ start_service() {
     trunkvlan=$(uci get vlan.vlan.trunkvlan)
     svlan=$(uci get vlan.vlan.svlan)
     svlanethertype=$(uci get vlan.vlan.svlanethertype)
+    bda=$(uci get vlan.vlan.bda)
+    bsa=$(uci get vlan.vlan.bsa)
+    bvid=$(uci get vlan.vlan.bvid)
+    bisid=$(uci get vlan.vlan.bisid)
 
 
+# VLAN Disable: Mgmt vlan must be set to 0 since it is used 
+# in driver for forwarding the mgmt VLAN packets to local host.
     if [ $status -eq "2" ]; then
         mode=-1
         mgmtvlan=0
         accvlan=0
     fi
-    if [ $mode -ne "3" ]; then
-        svlan=0
-        svlanethertype=0
+    if [ $mode -eq "4" ]; then
+        svlanethertype="0xa888"
     fi
     iwpriv ath1 kwn_vlan_mode $mode
     iwpriv ath1 kwn_mgmt_vid $mgmtvlan
@@ -40,6 +45,17 @@ start_service() {
     }
     iwpriv ath1 kwn_svlan_id $svlan
     iwpriv ath1 kwn_setherType $svlanethertype
+
+#addmac ioctl is used for link test, vlan bda and bsa
+#set tput dur to 0 and reset kwn_pbb_flag is set to 0
+    iwpriv ath1 kwn_tput_dur 0
+    iwpriv ath1 kwn_pbb_flag 1
+    iwpriv ath1 addmac $bda
+    iwpriv ath1 kwn_pbb_flag 2
+    iwpriv ath1 addmac $bsa
+    iwpriv ath1 kwn_pbb_flag 0
+    iwpriv ath1 kwn_pbb_bvid $bvid
+    iwpriv ath1 kwn_pbb_bisid $bisid
 
     procd_close_instance
 }

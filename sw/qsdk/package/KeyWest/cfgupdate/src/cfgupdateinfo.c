@@ -360,6 +360,18 @@ void cfg_set( char *type, char *value )
         case UCI_ID_LINK_TEST_DIR:
             sprintf(cmd,"uci set tool.tool.dir='%s'",value);
             break;
+        case UCI_ID_VLAN_BDA:
+            sprintf(cmd,"uci set vlan.vlan.bda='%s'",value);
+            break;
+        case UCI_ID_VLAN_BSA:
+            sprintf(cmd,"uci set vlan.vlan.bsa='%s'",value);
+            break;
+        case UCI_ID_VLAN_BVID:
+            sprintf(cmd,"uci set vlan.vlan.bvid='%s'",value);
+            break;
+        case UCI_ID_VLAN_BISID:
+            sprintf(cmd,"uci set vlan.vlan.bisid='%s'",value);
+            break;
         default:
             break;
     }

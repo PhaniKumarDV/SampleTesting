@@ -97,7 +97,12 @@ enum uci_cfg_id {
     /* Link Test */
     UCI_ID_LINK_TEST_SIZE =78,
     UCI_ID_LINK_TEST_DUR =79,
-    UCI_ID_LINK_TEST_DIR =80
+    UCI_ID_LINK_TEST_DIR =80,
+    /* VLAN */
+    UCI_ID_VLAN_BDA =81,
+    UCI_ID_VLAN_BSA =82,
+    UCI_ID_VLAN_BVID =83,
+    UCI_ID_VLAN_BISID =84
 };
 
 typedef struct

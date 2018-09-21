@@ -143,6 +143,11 @@ function updateparam()
         document.getElementById("trunkvlan2").style.display = "none";
         document.getElementById("qinq").style.display = "none";
         document.getElementById("ethertype").style.display = "none";
+        document.getElementById("macethertype").style.display = "none";
+        document.getElementById("bda").style.display = "none";
+        document.getElementById("bsa").style.display = "none";
+        document.getElementById("bvid").style.display = "none";
+        document.getElementById("bisid").style.display = "none";
     }
     else
     {
@@ -162,6 +167,11 @@ function hideparam()
         document.getElementById("trunkvlan2").style.display = "none";
         document.getElementById("qinq").style.display = "none";
         document.getElementById("ethertype").style.display = "none";
+        document.getElementById("macethertype").style.display = "none";
+        document.getElementById("bda").style.display = "none";
+        document.getElementById("bsa").style.display = "none";
+        document.getElementById("bvid").style.display = "none";
+        document.getElementById("bisid").style.display = "none";
     }
     else if( mode == 1 ) {
         document.getElementById("accessvlan").style.display = "block";
@@ -170,6 +180,11 @@ function hideparam()
         document.getElementById("trunkvlan2").style.display = "none";
         document.getElementById("qinq").style.display = "none";
         document.getElementById("ethertype").style.display = "none";
+        document.getElementById("macethertype").style.display = "none";
+        document.getElementById("bda").style.display = "none";
+        document.getElementById("bsa").style.display = "none";
+        document.getElementById("bvid").style.display = "none";
+        document.getElementById("bisid").style.display = "none";
     }
     else if( mode == 2 ) {
         document.getElementById("accessvlan").style.display = "none";
@@ -178,6 +193,24 @@ function hideparam()
         document.getElementById("trunkvlan2").style.display = "block";
         document.getElementById("qinq").style.display = "none";
         document.getElementById("ethertype").style.display = "none";
+        document.getElementById("macethertype").style.display = "none";
+        document.getElementById("bda").style.display = "none";
+        document.getElementById("bsa").style.display = "none";
+        document.getElementById("bvid").style.display = "none";
+        document.getElementById("bisid").style.display = "none";
+    }
+    else if( mode == 3 ) {
+        document.getElementById("accessvlan").style.display = "none";
+        document.getElementById("trunkoption").style.display = "block";
+        document.getElementById("trunkvlan1").style.display = "block";
+        document.getElementById("trunkvlan2").style.display = "block";
+        document.getElementById("qinq").style.display = "block";
+        document.getElementById("ethertype").style.display = "block";
+        document.getElementById("macethertype").style.display = "none";
+        document.getElementById("bda").style.display = "none";
+        document.getElementById("bsa").style.display = "none";
+        document.getElementById("bvid").style.display = "none";
+        document.getElementById("bisid").style.display = "none";
     }
     else {
         document.getElementById("accessvlan").style.display = "none";
@@ -185,10 +218,15 @@ function hideparam()
         document.getElementById("trunkvlan1").style.display = "block";
         document.getElementById("trunkvlan2").style.display = "block";
         document.getElementById("qinq").style.display = "block";
-        document.getElementById("ethertype").style.display = "block";
+        document.getElementById("ethertype").style.display = "none";
+        document.getElementById("macethertype").style.display = "block";
+        document.getElementById("bda").style.display = "block";
+        document.getElementById("bsa").style.display = "block";
+        document.getElementById("bvid").style.display = "block";
+        document.getElementById("bisid").style.display = "block";
     }
     if( document.getElementById("trunkopt").value == 1 && 
-        ( mode == 2 || mode == 3 ) )
+        ( mode == 2 || mode == 3 || mode == 4 ) )
     {
         document.getElementById("trunkvlan1").style.display = "block";
         document.getElementById("trunkvlan2").style.display = "block";
@@ -247,6 +285,10 @@ function hideparam()
                     if( mode == "3" )
                        document.write(" selected");
                     document.write(">Q-in-Q</option>");
+                    document.write("<option value='4' ");
+                    if( mode == "4" )
+                       document.write(" selected");
+                    document.write(">MAC-in-MAC</option>");
                  }
                  </script>
               </select>
@@ -262,6 +304,30 @@ function hideparam()
             <label class="cbi-value-title">Access VLAN ID</label>
             <div class="cbi-value-field">
               <input type="text" name="55" class="cbi-input-select" value="<%=uciget('uci get vlan.vlan.accessvlan')%>">
+            </div>
+          </div>
+          <div class="cbi-value" id="bda">
+            <label class="cbi-value-title">B-DA</label>
+            <div class="cbi-value-field">
+              <input type="text" name="81" class="cbi-input-select" value="<%=uciget('uci get vlan.vlan.bda')%>">
+            </div>
+          </div>
+          <div class="cbi-value" id="bsa">
+            <label class="cbi-value-title">B-SA</label>
+            <div class="cbi-value-field">
+              <input type="text" name="82" class="cbi-input-select" value="<%=uciget('uci get vlan.vlan.bsa')%>">
+            </div>
+          </div>
+          <div class="cbi-value" id="bvid">
+            <label class="cbi-value-title">B-VID</label>
+            <div class="cbi-value-field">
+              <input type="text" name="83" class="cbi-input-select" value="<%=uciget('uci get vlan.vlan.bvid')%>">
+            </div>
+          </div>
+          <div class="cbi-value" id="bisid">
+            <label class="cbi-value-title">B-ISID</label>
+            <div class="cbi-value-field">
+              <input type="text" name="84" class="cbi-input-select" value="<%=uciget('uci get vlan.vlan.bisid')%>">
             </div>
           </div>
           <div class="cbi-value" id="qinq">
@@ -295,6 +361,10 @@ function hideparam()
                  </script>
               </select>
             </div>
+          </div>
+          <div class="cbi-value" id="macethertype">
+            <label class="cbi-value-title">SVLAN EtherType</label>
+            <div class="cbi-value-field">0x88a8</div>
           </div>
           <div class="cbi-value" id="trunkoption">
             <label class="cbi-value-title">Trunk Option</label>
