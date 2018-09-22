@@ -48,15 +48,85 @@ diff -urN linux-3.14-org/include/asm-generic/param.h linux-3.14-mod/include/asm-
  # define USER_HZ	100		/* some user interfaces are */
  # define CLOCKS_PER_SEC	(USER_HZ)       /* in "ticks" like times() */
  #endif /* __ASM_GENERIC_PARAM_H */
+diff -urN linux-3.14-org/include/linux/if_vlan.h linux-3.14-mod/include/linux/if_vlan.h
+--- linux-3.14-org/include/linux/if_vlan.h	2018-08-13 14:08:30.640588000 +0530
++++ linux-3.14-mod/include/linux/if_vlan.h	2018-09-19 12:46:31.905505703 +0530
+@@ -24,6 +24,8 @@
+ #define VLAN_ETH_HLEN	18		/* Total octets in header.	 */
+ #define VLAN_ETH_ZLEN	64		/* Min. octets in frame sans FCS */
+ 
++#define VLAN_HLEN_PBB	6+6+4+2+4		/* The additional bytes required by PBB VLAN */
++
+ /*
+  * According to 802.3ac, the packet can be 4 bytes longer. --Klika Jan
+  */
+@@ -42,6 +44,23 @@
+ 
+ /**
+  *	struct vlan_ethhdr - vlan ethernet header (ethhdr + vlan_hdr)
++ *	@b_dest: Backbone destination ethernet address
++ *	@b_source: Backbone source ethernet address
++ *	@b_vlan_proto: ethernet protocol(0x88a8)
++ *	@b_vlan_TCI: priority and VLAN ID
++ *	@b_tpid: 0x88e7
++ *	@b_isid: Backbone VLAN Service ID
++ */
++struct vlan_ethhdr_pbb {
++	unsigned char	b_dest[ETH_ALEN];
++	unsigned char	b_source[ETH_ALEN];
++	__be16		b_vproto;
++	__be16		b_vid;
++	__be16		b_tpid;
++	__be32		b_isid;
++};
++/**
++ *	struct vlan_ethhdr - vlan ethernet header (ethhdr + vlan_hdr)
+  *	@h_dest: destination ethernet address
+  *	@h_source: source ethernet address
+  *	@h_vlan_proto: ethernet protocol
+@@ -281,7 +300,29 @@
+ 		return true;
+ 	return false;
+ }
++/* vlan_insert_pbb_tag - VLAN PBB tag inserting
++ *@skb: skbuff to tag
++ */
+ 
++static inline struct sk_buff *vlan_insert_tag_pbb( struct sk_buff *skb )
++{
++	struct vlan_ethhdr_pbb *veth;
++
++	if (skb_cow_head(skb, VLAN_HLEN) < 0) {
++		kfree_skb(skb);
++		return NULL;
++	}
++	veth = (struct vlan_ethhdr_pbb *)skb_push(skb, VLAN_HLEN_PBB);
++
++	/* B-DA | B-SA | 0x88a8 | BVID | 0x88e7 | ISID */
++	memcpy(veth->b_dest, skb->pbb_da_mac, ETH_ALEN);
++	memcpy(veth->b_source, skb->pbb_sa_mac, ETH_ALEN);
++	veth->b_vproto = htons(ETH_P_8021AD);
++	veth->b_vid = htons(skb->pbb_bvid);
++	veth->b_tpid = htons(ETH_P_8021AH);
++	veth->b_isid = htons(skb->pbb_isid);
++	return skb;
++}
+ /**
+  * vlan_insert_tag - regular VLAN tag inserting
+  * @skb: skbuff to tag
 diff -urN linux-3.14-org/include/linux/skbuff.h linux-3.14-mod/include/linux/skbuff.h
 --- linux-3.14-org/include/linux/skbuff.h	2018-08-13 14:08:30.688588000 +0530
-+++ linux-3.14-mod/include/linux/skbuff.h	2018-08-22 15:54:41.869024198 +0530
-@@ -554,6 +554,8 @@
++++ linux-3.14-mod/include/linux/skbuff.h	2018-09-19 12:47:14.101390053 +0530
+@@ -554,6 +554,12 @@
  	void			*alloc_addr[DEBUG_OBJECTS_SKBUFF_STACKSIZE];
  	u32			sum;
  #endif
 +	__be16			vlan_proto_kwn;
 +	__u16			vlan_tci_kwn;
++	__u8			pbb_da_mac[6];
++	__u8			pbb_sa_mac[6];
++	__u16			pbb_bvid;
++	u32			pbb_isid;
  };
  
  #ifdef __KERNEL__
@@ -155,41 +225,57 @@ diff -urN linux-3.14-org/net/bridge/br_private.h linux-3.14-mod/net/bridge/br_pr
  			      const unsigned char *addr, u16 vid);
 diff -urN linux-3.14-org/net/core/dev.c linux-3.14-mod/net/core/dev.c
 --- linux-3.14-org/net/core/dev.c	2018-08-13 14:08:30.968588000 +0530
-+++ linux-3.14-mod/net/core/dev.c	2018-08-22 15:52:16.065018955 +0530
-@@ -2582,6 +2582,24 @@
++++ linux-3.14-mod/net/core/dev.c	2018-09-19 12:45:58.109597644 +0530
+@@ -2582,6 +2582,31 @@
  			skb->vlan_tci = 0;
  		}
  
 +		/* KWN: VLAN Support */
 +		if (vlan_tx_tag_present(skb) &&
 +				((strncmp(dev->name, "ath1", 4) == 0 ))) {
++			/* KWN: 802.1q */
 +			skb = __vlan_put_tag(skb, skb->vlan_proto,
 +					vlan_tx_tag_get(skb));
 +			if (unlikely(!skb))
 +				goto out;
-+
-+			skb->vlan_tci = 0;
-+			/* Add SVLAN Tag if configured */
++			
++			/* KLWN: 802.1ad */
 +			if ( skb->vlan_tci_kwn > 0 ) {
-+
 +				skb = __vlan_put_tag(skb, skb->vlan_proto_kwn,
 +						skb->vlan_tci_kwn);
 +				if (unlikely(!skb))
 +					goto out;
 +			}
++			
++			/* KWN: PBB */
++			if ( skb->pbb_bvid > 0 ) {
++				skb = vlan_insert_tag_pbb( skb );
++				if (unlikely(!skb))
++					goto out;
++			}
++			skb->vlan_tci = 0;
 +		}
  		/* If encapsulation offload request, verify we are testing
  		 * hardware encapsulation features instead of standard
  		 * features for the netdev
 diff -urN linux-3.14-org/net/core/skbuff.c linux-3.14-mod/net/core/skbuff.c
 --- linux-3.14-org/net/core/skbuff.c	2018-08-13 14:08:30.972588000 +0530
-+++ linux-3.14-mod/net/core/skbuff.c	2018-08-22 15:54:16.257023277 +0530
-@@ -812,6 +812,9 @@
++++ linux-3.14-mod/net/core/skbuff.c	2018-09-19 12:46:58.221433686 +0530
+@@ -812,6 +812,18 @@
  	new->vlan_proto		= old->vlan_proto;
  	new->vlan_tci		= old->vlan_tci;
  
++	/* KWN: 802.1ad */
 +	new->vlan_proto_kwn	= old->vlan_proto_kwn;
 +	new->vlan_tci_kwn	= old->vlan_tci_kwn;
++
++	/* KWN: PBB */
++	memcpy(new->pbb_da_mac, old->pbb_da_mac, 
++			sizeof(old->pbb_da_mac));
++	memcpy(new->pbb_sa_mac, old->pbb_sa_mac, 
++			sizeof(old->pbb_sa_mac));
++	new->pbb_bvid	= old->pbb_bvid;
++	new->pbb_isid	= old->pbb_isid;
 +
  	skb_copy_secmark(new, old);
  
