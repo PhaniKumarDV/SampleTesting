@@ -1,7 +1,7 @@
 diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.c
 --- net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c	1970-01-01 05:30:00.000000000 +0530
-+++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.c	2018-09-25 19:21:16.598092128 +0530
-@@ -0,0 +1,2167 @@
++++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.c	2018-09-25 21:40:59.880597824 +0530
+@@ -0,0 +1,2396 @@
 +/****************************************************************************
 +*                                                                           *
 +*  File Name:           kwnmib.c                                           *
@@ -101,107 +101,137 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +struct variable7 kwnmib_variables[] = {
 +/*  magic number        , variable type , ro/rw , callback fn  , L, oidsuffix */
 +  /* Wireless MIBS */
-+  { 1   , ASN_INTEGER    , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_INDEX } },
-+  { 2   , ASN_INTEGER    , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_RADIOMODE } },
-+  { 3   , ASN_OCTET_STR  , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_SSID } },
-+  { 4   , ASN_INTEGER    , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_COUNTRY } },
-+  { 5   , ASN_INTEGER    , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_OPMODE } },
-+  { 6   , ASN_OCTET_STR  , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_SUPPORTED_BANDWIDTHS } },
-+  { 7   , ASN_INTEGER    , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_BANDWIDTH } },
-+  { 8   , ASN_OCTET_STR  , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_SUPPORTED_CHANNELS } },
-+  { 9   , ASN_INTEGER    , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_CHANNEL } },
-+  { 10  , ASN_OCTET_STR  , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_SUPPORTED_RATES } },
-+  { 11  , ASN_INTEGER    , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_RATE } },
-+  { 12  , ASN_INTEGER    , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_TXPOWER } },
-+  { 13  , ASN_INTEGER    , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_AMSDU } },
-+  { 14  , ASN_INTEGER    , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_UPLINK_LIMIT } },
-+  { 15  , ASN_INTEGER    , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_DOWNLINK_LIMIT } },
-+  { 16  , ASN_INTEGER    , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_HIDE_ESSID } },
-+  { 17  , ASN_OCTET_STR  , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_CUSTOMER_NAME } },
-+  { 18  , ASN_INTEGER    , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_LINKID } },
-+  { 19  , ASN_INTEGER    , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_SECURITY_ENC } },
-+  { 20  , ASN_OCTET_STR  , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_SECURITY_KEY } },
-+  { 21  , ASN_INTEGER    , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_MACFILTER } },
-+  { 22  , ASN_OCTET_STR  , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_MACLIST } },
-+  { 23  , ASN_INTEGER    , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_DISTANCE } },
-+  { 24  , ASN_INTEGER    , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_SHORTGI } },
-+  { 25  , ASN_INTEGER    , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_TXCHAINMASK } },
-+  { 26  , ASN_INTEGER    , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_RXCHAINMASK } },
++  { 1    , ASN_INTEGER    , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_INDEX } },
++  { 2    , ASN_INTEGER    , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_RADIOMODE } },
++  { 3    , ASN_OCTET_STR  , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_SSID } },
++  { 4    , ASN_INTEGER    , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_COUNTRY } },
++  { 5    , ASN_INTEGER    , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_OPMODE } },
++  { 6    , ASN_OCTET_STR  , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_SUPPORTED_BANDWIDTHS } },
++  { 7    , ASN_INTEGER    , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_BANDWIDTH } },
++  { 8    , ASN_OCTET_STR  , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_SUPPORTED_CHANNELS } },
++  { 9    , ASN_INTEGER    , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_CHANNEL } },
++  { 10   , ASN_OCTET_STR  , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_SUPPORTED_RATES } },
++  { 11   , ASN_INTEGER    , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_RATE } },
++  { 12   , ASN_INTEGER    , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_TXPOWER } },
++  { 13   , ASN_INTEGER    , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_AMSDU } },
++  { 14   , ASN_INTEGER    , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_UPLINK_LIMIT } },
++  { 15   , ASN_INTEGER    , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_DOWNLINK_LIMIT } },
++  { 16   , ASN_INTEGER    , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_HIDE_ESSID } },
++  { 17   , ASN_OCTET_STR  , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_CUSTOMER_NAME } },
++  { 18   , ASN_INTEGER    , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_LINKID } },
++  { 19   , ASN_INTEGER    , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_SECURITY_ENC } },
++  { 20   , ASN_OCTET_STR  , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_SECURITY_KEY } },
++  { 21   , ASN_INTEGER    , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_MACFILTER } },
++  { 22   , ASN_OCTET_STR  , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_MACLIST } },
++  { 23   , ASN_INTEGER    , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_DISTANCE } },
++  { 24   , ASN_INTEGER    , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_SHORTGI } },
++  { 25   , ASN_INTEGER    , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_TXCHAINMASK } },
++  { 26   , ASN_INTEGER    , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_RXCHAINMASK } },
 +  /* Network MIBS */
-+  { 27  , ASN_INTEGER    , RWRITE, var_NwkIPTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_NETWORK, KWN_NWK_ADRSTYPE } },
-+  { 28  , ASN_IPADDRESS  , RWRITE, var_NwkIPTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_NETWORK, KWN_NWK_IP } },
-+  { 29  , ASN_IPADDRESS  , RWRITE, var_NwkIPTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_NETWORK, KWN_NWK_MASK } },
-+  { 30  , ASN_IPADDRESS  , RWRITE, var_NwkIPTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_NETWORK, KWN_NWK_GATEWAY } },
-+  { 31  , ASN_IPADDRESS  , RWRITE, var_NwkIPTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_NETWORK, KWN_NWK_DNS } },
++  { 27   , ASN_INTEGER    , RWRITE, var_NwkIPTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_NETWORK, KWN_NWK_ADRSTYPE } },
++  { 28   , ASN_IPADDRESS  , RWRITE, var_NwkIPTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_NETWORK, KWN_NWK_IP } },
++  { 29   , ASN_IPADDRESS  , RWRITE, var_NwkIPTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_NETWORK, KWN_NWK_MASK } },
++  { 30   , ASN_IPADDRESS  , RWRITE, var_NwkIPTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_NETWORK, KWN_NWK_GATEWAY } },
++  { 31   , ASN_IPADDRESS  , RWRITE, var_NwkIPTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_NETWORK, KWN_NWK_DNS } },
 +  /* RADIUS MIBS */
-+  { 32  , ASN_INTEGER    , RWRITE, var_RadiusTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_RADIUS, KWN_RADIUS_STATUS } },
-+  { 33  , ASN_IPADDRESS  , RWRITE, var_RadiusTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_RADIUS, KWN_RADIUS_PRISERVER } },
-+  { 34  , ASN_INTEGER    , RWRITE, var_RadiusTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_RADIUS, KWN_RADIUS_PRIPORT } },
-+  { 35  , ASN_OCTET_STR  , RWRITE, var_RadiusTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_RADIUS, KWN_RADIUS_PRISECRET } },
-+  { 36  , ASN_IPADDRESS  , RWRITE, var_RadiusTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_RADIUS, KWN_RADIUS_SECSERVER } },
-+  { 37  , ASN_INTEGER    , RWRITE, var_RadiusTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_RADIUS, KWN_RADIUS_SECPORT } },
-+  { 38  , ASN_OCTET_STR  , RWRITE, var_RadiusTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_RADIUS, KWN_RADIUS_SECSECRET } },
-+  { 39  , ASN_INTEGER    , RWRITE, var_RadiusTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_RADIUS, KWN_RADIUS_REAUTHTIME } },
-+  { 40  , ASN_INTEGER    , RWRITE, var_RadiusTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_RADIUS, KWN_RADIUS_RETRYTIME } },
-+  { 41  , ASN_INTEGER    , RWRITE, var_RadiusTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_RADIUS, KWN_RADIUS_RETRYCOUNT } },
-+  { 42  , ASN_INTEGER    , RWRITE, var_RadiusTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_RADIUS, KWN_RADIUS_RETRYCOUNTPERIOD } },
++  { 32   , ASN_INTEGER    , RWRITE, var_RadiusTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_RADIUS, KWN_RADIUS_STATUS } },
++  { 33   , ASN_IPADDRESS  , RWRITE, var_RadiusTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_RADIUS, KWN_RADIUS_PRISERVER } },
++  { 34   , ASN_INTEGER    , RWRITE, var_RadiusTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_RADIUS, KWN_RADIUS_PRIPORT } },
++  { 35   , ASN_OCTET_STR  , RWRITE, var_RadiusTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_RADIUS, KWN_RADIUS_PRISECRET } },
++  { 36   , ASN_IPADDRESS  , RWRITE, var_RadiusTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_RADIUS, KWN_RADIUS_SECSERVER } },
++  { 37   , ASN_INTEGER    , RWRITE, var_RadiusTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_RADIUS, KWN_RADIUS_SECPORT } },
++  { 38   , ASN_OCTET_STR  , RWRITE, var_RadiusTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_RADIUS, KWN_RADIUS_SECSECRET } },
++  { 39   , ASN_INTEGER    , RWRITE, var_RadiusTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_RADIUS, KWN_RADIUS_REAUTHTIME } },
++  { 40   , ASN_INTEGER    , RWRITE, var_RadiusTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_RADIUS, KWN_RADIUS_RETRYTIME } },
++  { 41   , ASN_INTEGER    , RWRITE, var_RadiusTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_RADIUS, KWN_RADIUS_RETRYCOUNT } },
++  { 42   , ASN_INTEGER    , RWRITE, var_RadiusTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_RADIUS, KWN_RADIUS_RETRYCOUNTPERIOD } },
 +  /* VLAN MIBS */
-+  { 43  , ASN_INTEGER    , RWRITE, var_VlanTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_VLAN, KWN_VLAN_STATUS } },
-+  { 44  , ASN_INTEGER    , RWRITE, var_VlanTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_VLAN, KWN_VLAN_MODE } },
-+  { 45  , ASN_INTEGER    , RWRITE, var_VlanTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_VLAN, KWN_VLAN_MGMTID } },
-+  { 46  , ASN_INTEGER    , RWRITE, var_VlanTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_VLAN, KWN_VLAN_ACCESSID } },
-+  { 47  , ASN_INTEGER    , RWRITE, var_VlanTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_VLAN, KWN_VLAN_TRUNKOPTION } },
-+  { 48  , ASN_OCTET_STR  , RWRITE, var_VlanTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_VLAN, KWN_VLAN_TRUNKID } },
-+  { 49  , ASN_INTEGER    , RWRITE, var_VlanTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_VLAN, KWN_VLAN_SVLAN } },
-+  { 50  , ASN_INTEGER    , RWRITE, var_VlanTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_VLAN, KWN_VLAN_SVLAN_ETHERTYPE } },
++  { 43   , ASN_INTEGER    , RWRITE, var_VlanTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_VLAN, KWN_VLAN_STATUS } },
++  { 44   , ASN_INTEGER    , RWRITE, var_VlanTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_VLAN, KWN_VLAN_MODE } },
++  { 45   , ASN_INTEGER    , RWRITE, var_VlanTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_VLAN, KWN_VLAN_MGMTID } },
++  { 46   , ASN_INTEGER    , RWRITE, var_VlanTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_VLAN, KWN_VLAN_ACCESSID } },
++  { 47   , ASN_INTEGER    , RWRITE, var_VlanTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_VLAN, KWN_VLAN_TRUNKOPTION } },
++  { 48   , ASN_OCTET_STR  , RWRITE, var_VlanTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_VLAN, KWN_VLAN_TRUNKID } },
++  { 49   , ASN_INTEGER    , RWRITE, var_VlanTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_VLAN, KWN_VLAN_SVLAN } },
++  { 50   , ASN_INTEGER    , RWRITE, var_VlanTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_VLAN, KWN_VLAN_SVLAN_ETHERTYPE } },
++  { 51   , ASN_OCTET_STR  , RWRITE, var_VlanTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_VLAN, KWN_VLAN_BDA } },
++  { 52   , ASN_OCTET_STR  , RWRITE, var_VlanTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_VLAN, KWN_VLAN_BSA } },
++  { 53   , ASN_INTEGER    , RWRITE, var_VlanTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_VLAN, KWN_VLAN_BVID } },
++  { 54   , ASN_INTEGER    , RWRITE, var_VlanTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_VLAN, KWN_VLAN_BISID } },
 +  /* Ethernet MIBS */
-+  { 51  , ASN_INTEGER    , RWRITE, var_EthernetTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_ETHERNET, KWN_ETHERNET_MODE } },
-+  { 52  , ASN_INTEGER    , RWRITE, var_EthernetTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_ETHERNET, KWN_ETHERNET_INACTIVITY } },
++  { 55   , ASN_INTEGER    , RWRITE, var_EthernetTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_ETHERNET, KWN_ETHERNET_MODE } },
++  { 56   , ASN_INTEGER    , RWRITE, var_EthernetTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_ETHERNET, KWN_ETHERNET_INACTIVITY } },
 +  /* DHCP MIBS */
-+  { 53  , ASN_INTEGER    , RWRITE, var_DhcpTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_DHCP, KWN_DHCP_SERVER } },
-+  { 54  , ASN_INTEGER    , RWRITE, var_DhcpTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_DHCP, KWN_DHCP_START } },
-+  { 55  , ASN_INTEGER    , RWRITE, var_DhcpTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_DHCP, KWN_DHCP_LIMIT } },
-+  { 56  , ASN_INTEGER    , RWRITE, var_DhcpTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_DHCP, KWN_DHCP_LEASE_TIME } },
++  { 57   , ASN_INTEGER    , RWRITE, var_DhcpTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_DHCP, KWN_DHCP_SERVER } },
++  { 58   , ASN_INTEGER    , RWRITE, var_DhcpTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_DHCP, KWN_DHCP_START } },
++  { 59   , ASN_INTEGER    , RWRITE, var_DhcpTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_DHCP, KWN_DHCP_LIMIT } },
++  { 60   , ASN_INTEGER    , RWRITE, var_DhcpTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_DHCP, KWN_DHCP_LEASE_TIME } },
 +  /* Management MIBS */
-+  { 57  , ASN_INTEGER    , RWRITE, var_SystemTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM, KWN_SYS_APPLY } },
-+  { 58  , ASN_INTEGER    , RWRITE, var_SystemTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM, KWN_SYS_RESET } },
-+  { 59  , ASN_INTEGER    , RWRITE, var_SystemTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM, KWN_SYS_REBOOT } },
-+  { 60  , ASN_INTEGER    , RWRITE, var_SystemTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM, KWN_SYS_DYNAMIC_APPLY } },
++  { 61   , ASN_INTEGER    , RWRITE, var_SystemTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM, KWN_SYS_APPLY } },
++  { 62   , ASN_INTEGER    , RWRITE, var_SystemTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM, KWN_SYS_RESET } },
++  { 63   , ASN_INTEGER    , RWRITE, var_SystemTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM, KWN_SYS_REBOOT } },
++  { 64   , ASN_INTEGER    , RWRITE, var_SystemTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM, KWN_SYS_DYNAMIC_APPLY } },
 +  /* Wireless Stats MIBS */
-+  { 61  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_RADIO_INDEX } },
-+  { 62  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_REMOTEPARTNERS } },
++  { 65   , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_RADIO_INDEX } },
++  { 66   , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_REMOTEPARTNERS } },
++  { 67   , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_DATA_TXTOTALPACKETS } },
++  { 68   , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_DATA_RXTOTALPACKETS } },
++  { 69   , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_DATA_TXMULTICASTPACKETS } },
++  { 70   , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_DATA_RXMULTICASTPACKETS } },
++  { 71   , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_DATA_TXUNICASTPACKETS } },
++  { 72   , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_DATA_RXUNICASTPACKETS } },
++  { 73   , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_TXPACKETS } },
++  { 74   , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_RXPACKETS } },
++  { 75   , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_TXBEACONS } },
++  { 76   , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_RXBEACONS } },
++  { 77   , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_AUTHREQSENT } },
++  { 78   , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_AUTHREQRECV } },
++  { 79   , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_AUTHCNF } },
++  { 80   , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_AUTHREJ } },
++  { 81   , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_DEAUTHREQSENT } },
++  { 82   , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_DEAUTHREQRECV } },
++  { 83   , ASN_OCTET_STR  , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_AUTHRESLAST } },
++  { 84   , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_ASSOCREQSENT } },
++  { 85   , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_ASSOCREQRECV } },
++  { 86   , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_ASSOCCNF } },
++  { 87   , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_ASSOCREJ } },
++  { 88   , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_DEASSOCREQSENT } },
++  { 89   , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_DEASSOCREQRECV } },
++  { 90   , ASN_OCTET_STR  , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_ASSOCRESLAST } },
++  { 91   , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MPDU_ERRORS } },
++  { 92   , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_PHY_ERRORS } },
 +  /* Ethernet Stats MIBS */
-+  { 63  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 4, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHSTATS_STATUS } },
-+  { 64  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 4, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHSTATS_SPEED } },
-+  { 65  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 4, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHSTATS_DUPLEX } },
++  { 93   , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 4, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHSTATS_STATUS } },
++  { 94   , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 4, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHSTATS_SPEED } },
++  { 95   , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 4, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHSTATS_DUPLEX } },
 +  /* Assoc MIBS */
-+  { 66  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_RADIO_INDEX } },
-+  { 67  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_SEC_INDEX } },
-+  { 68  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_MAC } },
-+  { 69  , ASN_IPADDRESS  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_IP } },
-+  { 70  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_LAT } },
-+  { 71  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_LONG } },
-+  { 72  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_LAT } },
-+  { 73  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_LONG } },
-+  { 74  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_RX_RATE } },
-+  { 75  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_TX_RATE } },
-+  { 76  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_RX_TPUT } },
-+  { 77  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_TX_TPUT } },
-+  { 78  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_SNR_A1 } },
-+  { 79  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_SNR_A2 } },
-+  { 80  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_SNR_A1 } },
-+  { 81  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_SNR_A2 } },
-+  { 82  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_PHY_ERR } },
-+  { 83  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_PHY_ERR } },
-+  { 84  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_MPDU_ERR } },
-+  { 85  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_MPDU_ERR } },
-+  { 86  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_RETRIES } },
-+  { 87  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_RETRIES } },
-+  { 88  , ASN_INTEGER    , RWRITE, var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LINKTEST_DUR } },
-+  { 89  , ASN_INTEGER    , RWRITE, var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LINKTEST_DIR } },
-+  { 90  , ASN_INTEGER    , RWRITE, var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LINKTEST_START_STOP } },
-+  { 91  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_NOISE_FLOOR } },
-+  { 92  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_NOISE_FLOOR } },
++  { 96   , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_RADIO_INDEX } },
++  { 97   , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_SEC_INDEX } },
++  { 98   , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_MAC } },
++  { 99   , ASN_IPADDRESS  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_IP } },
++  { 100  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_LAT } },
++  { 101  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_LONG } },
++  { 102  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_LAT } },
++  { 103  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_LONG } },
++  { 104  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_RX_RATE } },
++  { 105  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_TX_RATE } },
++  { 106  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_RX_TPUT } },
++  { 107  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_TX_TPUT } },
++  { 108  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_SNR_A1 } },
++  { 109  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_SNR_A2 } },
++  { 110  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_SNR_A1 } },
++  { 111  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_SNR_A2 } },
++  { 112  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_PHY_ERR } },
++  { 113  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_PHY_ERR } },
++  { 114  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_MPDU_ERR } },
++  { 115  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_MPDU_ERR } },
++  { 116  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_RETRIES } },
++  { 117  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_RETRIES } },
++  { 118  , ASN_INTEGER    , RWRITE, var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LINKTEST_DUR } },
++  { 119  , ASN_INTEGER    , RWRITE, var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LINKTEST_DIR } },
++  { 120  , ASN_INTEGER    , RWRITE, var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LINKTEST_START_STOP } },
++  { 121  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_NOISE_FLOOR } },
++  { 122  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_NOISE_FLOOR } },
 +};
 +
 +/****************************************************************************
@@ -606,7 +636,7 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +            {
 +                sprintf( cmd, "uci get wireless.wifi%d.channel", ind );
 +                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len, NULL );
-+                if ( strncmp( res_str, "auto", 4 ) == 0 )
++                if( strncmp( res_str, "auto", 4 ) == 0 )
 +                {
 +                    res_val = -1;
 +                }
@@ -1004,7 +1034,7 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +        case KWN_VLAN_TRUNKID:
 +            {
 +                sprintf( cmd, "uci get vlan.vlan.trunkvlan" );
-+                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
++                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len, NULL );
 +                return ( u_char * ) res_str;
 +            }
 +        case KWN_VLAN_SVLAN:
@@ -1017,6 +1047,30 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +            {
 +                sprintf( cmd, "uci get vlan.vlan.svlanethertype" );
 +                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, &kwn_network_vlan_ethertype );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_VLAN_BDA:
++            {
++                sprintf( cmd, "uci get vlan.vlan.bda" );
++                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len, NULL );
++                return ( u_char * ) res_str;
++            }
++        case KWN_VLAN_BSA:
++            {
++                sprintf( cmd, "uci get vlan.vlan.bsa" );
++                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len, NULL );
++                return ( u_char * ) res_str;
++            }
++        case KWN_VLAN_BVID:
++            {
++                sprintf( cmd, "uci get vlan.vlan.bvid" );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_VLAN_BISID:
++            {
++                sprintf( cmd, "uci get vlan.vlan.bisid" );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
 +                return ( u_char * ) &res_val;
 +            }
 +        default:
@@ -1199,11 +1253,14 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +        size_t  *var_len, 
 +        WriteMethod **write_method)
 +{
-+    char cmd[100];
++    char cmd[200];
 +    int radio_ind;
 +
 +    radio_ind = ( int )name[12];
++    if( radio_ind < 1 || radio_ind > 2 )
++        return NULL;
 +    radio_ind = radio_ind - 1;
++
 +    memset( res_str, '\0', sizeof( res_str ) );
 +    res_val = 0;
 +    res_ip = 0;
@@ -1223,6 +1280,162 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +            {
 +                *var_len = sizeof ( long );
 +                return ( u_char * ) &kwn_assoc_list.no_of_links;
++            }
++        case KWN_WIRELESSSTATS_DATA_TXTOTALPACKETS:
++            {
++                sprintf( cmd, "athstats -i wifi%d | grep tx: | sed 's/tx://'", radio_ind );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_WIRELESSSTATS_DATA_RXTOTALPACKETS:
++            {
++                sprintf( cmd, "athstats -i wifi%d | grep rx: | sed 's/rx://'", radio_ind );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_WIRELESSSTATS_DATA_TXMULTICASTPACKETS:
++            {
++                sprintf( cmd, "80211stats -i ath%d | grep 'Multicast packets sent:' | sed 's/ Multicast packets sent:            //'", radio_ind );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_WIRELESSSTATS_DATA_RXMULTICASTPACKETS:
++            {
++                sprintf( cmd, "80211stats -i ath%d | grep 'Multicast packets received:' | sed 's/ Multicast packets received:         //'", radio_ind );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_WIRELESSSTATS_DATA_TXUNICASTPACKETS:
++            {
++                sprintf( cmd, "80211stats -i ath%d | grep 'Unicast packets sent:' | sed 's/ Unicast packets sent:               //'", radio_ind );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_WIRELESSSTATS_DATA_RXUNICASTPACKETS:
++            {
++                sprintf( cmd, "80211stats -i ath%d | grep 'Unicast packets received:' | sed 's/ Unicast packets received:          //'", radio_ind );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_WIRELESSSTATS_MGMT_TXPACKETS:
++            {
++                sprintf( cmd, "athstats -i wifi%d | grep ast_tx_packets: | sed 's/ast_tx_packets://'", radio_ind );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_WIRELESSSTATS_MGMT_RXPACKETS:
++            {
++                sprintf( cmd, "athstats -i wifi%d | grep ast_rx_packets: | sed 's/ast_rx_packets://'", radio_ind );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_WIRELESSSTATS_MGMT_TXBEACONS:
++            {
++                sprintf( cmd, "athstats -i wifi%d | grep ast_be_xmit: | sed 's/ast_be_xmit://'", radio_ind );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_WIRELESSSTATS_MGMT_RXBEACONS:
++            {
++                sprintf( cmd, "80211stats -i ath%d | grep  'Beacons received:' | sed 's/ Beacons received:                   //'", radio_ind );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_WIRELESSSTATS_MGMT_AUTHREQSENT:
++            {
++                sprintf( cmd, "80211stats -i ath%d | grep  'Authentication requests sent:' | sed 's/ Authentication requests sent:       //'", radio_ind );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_WIRELESSSTATS_MGMT_AUTHREQRECV:
++            {
++                sprintf( cmd, "80211stats -i ath%d | grep  'Authentication requests received:' | sed 's/ Authentication requests received:   //'", radio_ind );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_WIRELESSSTATS_MGMT_AUTHCNF:
++            {
++                sprintf( cmd, "80211stats -i ath%d | grep  'Authentication confirms:' | sed 's/ Authentication confirms:            //'", radio_ind );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_WIRELESSSTATS_MGMT_AUTHREJ:
++            {
++                sprintf( cmd, "80211stats -i ath%d | grep  'Authentication rejects:' | sed 's/ Authentication rejects:             //'", radio_ind );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_WIRELESSSTATS_MGMT_DEAUTHREQSENT:
++            {
++                sprintf( cmd, "80211stats -i ath%d | grep  'Deauthentication requests sent:' | sed 's/ Deauthentication requests sent:     //'", radio_ind );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_WIRELESSSTATS_MGMT_DEAUTHREQRECV:
++            {
++                sprintf( cmd, "80211stats -i ath%d | grep  'Deauthentication requests received:' | sed 's/ Deauthentication requests received: //'", radio_ind );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_WIRELESSSTATS_MGMT_AUTHRESLAST:
++            {
++                sprintf( cmd, "80211stats -i ath%d | grep  'Authentication result last:' | sed 's/ Authentication result last:         //'", radio_ind );
++                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len, NULL );
++                return ( u_char * ) &res_str;
++            }
++        case KWN_WIRELESSSTATS_MGMT_ASSOCREQSENT:
++            {
++                sprintf( cmd, "80211stats -i ath%d | grep  'Association requests sent:' | sed 's/ Association requests sent:          //'", radio_ind );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_WIRELESSSTATS_MGMT_ASSOCREQRECV:
++            {
++                sprintf( cmd, "80211stats -i ath%d | grep  'Association requests received:' | sed 's/ Association requests received:      //'", radio_ind );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_WIRELESSSTATS_MGMT_ASSOCCNF:
++            {
++                sprintf( cmd, "80211stats -i ath%d | grep  'Association confirms' | sed 's/ Association confirms:               //'", radio_ind );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_WIRELESSSTATS_MGMT_ASSOCREJ:
++            {
++                sprintf( cmd, "80211stats -i ath%d | grep  'Association rejects:' | sed 's/ Association rejects:                //'", radio_ind );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_WIRELESSSTATS_MGMT_DEASSOCREQSENT:
++            {
++                sprintf( cmd, "80211stats -i ath%d | grep  'Disassociation requests sent:' | sed 's/ Disassociation requests sent:       //'", radio_ind );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_WIRELESSSTATS_MGMT_DEASSOCREQRECV:
++            {
++                sprintf( cmd, "80211stats -i ath%d | grep  'Disassociation requests received:' | sed 's/ Disassociation requests received:   //'", radio_ind );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_WIRELESSSTATS_MGMT_ASSOCRESLAST:
++            {
++                sprintf( cmd, "80211stats -i ath%d | grep  'Association result last:' | sed 's/ Association result last:            //'", radio_ind );
++                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len, NULL );
++                return ( u_char * ) &res_str;
++            }
++        case KWN_WIRELESSSTATS_MPDU_ERRORS:
++            {
++                sprintf( cmd, "athstats -i wifi%d | grep mpdu_errs | sed 's/mpdu_errs://'", radio_ind );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_WIRELESSSTATS_PHY_ERRORS:
++            {
++                sprintf( cmd, "athstats -i wifi%d | grep phy_errors | sed 's/phy_errors://'", radio_ind );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
++                return ( u_char * ) &res_val;
 +            }
 +        default:
 +            ERROR_MSG ( "" );
@@ -1878,6 +2091,22 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +                        sprintf( cmd, "uci set vlan.vlan.svlanethertype='%s'", str_val );
 +                        system( cmd );
 +                        break;
++                    case KWN_VLAN_BDA:
++                        sprintf( cmd, "uci set vlan.vlan.bda='%s'", var_val );
++                        system( cmd );
++                        break;
++                    case KWN_VLAN_BSA:
++                        sprintf( cmd, "uci set vlan.vlan.bsa='%s'", var_val );
++                        system( cmd );
++                        break;
++                    case KWN_VLAN_BVID:
++                        sprintf( cmd, "uci set vlan.vlan.bvid='%d'", long_val );
++                        system( cmd );
++                        break;
++                    case KWN_VLAN_BISID:
++                        sprintf( cmd, "uci set vlan.vlan.bisid='%d'", long_val );
++                        system( cmd );
++                        break;
 +                    default:
 +                        return SNMP_ERR_GENERR;
 +                }
@@ -2171,8 +2400,8 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +}
 diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.h
 --- net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h	1970-01-01 05:30:00.000000000 +0530
-+++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.h	2018-09-25 19:18:55.548711567 +0530
-@@ -0,0 +1,277 @@
++++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.h	2018-09-25 21:41:15.876754391 +0530
+@@ -0,0 +1,307 @@
 +/****************************************************************************
 +*                                                                           *
 +*  File Name:           kwnmib.h                                      *
@@ -2311,7 +2540,11 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h net-snmp-5.4.4-mod/agent/mi
 +    KWN_VLAN_TRUNKOPTION = 5,
 +    KWN_VLAN_TRUNKID = 6,
 +    KWN_VLAN_SVLAN = 7,
-+    KWN_VLAN_SVLAN_ETHERTYPE = 8
++    KWN_VLAN_SVLAN_ETHERTYPE = 8,
++    KWN_VLAN_BDA = 9,
++    KWN_VLAN_BSA = 10,
++    KWN_VLAN_BVID = 11,
++    KWN_VLAN_BISID = 12
 +};
 +
 +enum KWN_ETHERNET {
@@ -2349,7 +2582,33 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h net-snmp-5.4.4-mod/agent/mi
 +
 +enum KWN_WIRELESSSTATSENTRY {
 +    KWN_WIRELESSSTATS_RADIO_INDEX = 1,
-+    KWN_WIRELESSSTATS_REMOTEPARTNERS = 2
++    KWN_WIRELESSSTATS_REMOTEPARTNERS = 2,
++    KWN_WIRELESSSTATS_DATA_TXTOTALPACKETS = 3,
++    KWN_WIRELESSSTATS_DATA_RXTOTALPACKETS = 4,
++    KWN_WIRELESSSTATS_DATA_TXMULTICASTPACKETS = 5,
++    KWN_WIRELESSSTATS_DATA_RXMULTICASTPACKETS = 6,
++    KWN_WIRELESSSTATS_DATA_TXUNICASTPACKETS = 7,
++    KWN_WIRELESSSTATS_DATA_RXUNICASTPACKETS = 8,
++    KWN_WIRELESSSTATS_MGMT_TXPACKETS = 9,
++    KWN_WIRELESSSTATS_MGMT_RXPACKETS = 10,
++    KWN_WIRELESSSTATS_MGMT_TXBEACONS = 11,
++    KWN_WIRELESSSTATS_MGMT_RXBEACONS = 12,
++    KWN_WIRELESSSTATS_MGMT_AUTHREQSENT = 13,
++    KWN_WIRELESSSTATS_MGMT_AUTHREQRECV = 14,
++    KWN_WIRELESSSTATS_MGMT_AUTHCNF = 15,
++    KWN_WIRELESSSTATS_MGMT_AUTHREJ = 16,
++    KWN_WIRELESSSTATS_MGMT_DEAUTHREQSENT = 17,
++    KWN_WIRELESSSTATS_MGMT_DEAUTHREQRECV = 18,
++    KWN_WIRELESSSTATS_MGMT_AUTHRESLAST = 19,
++    KWN_WIRELESSSTATS_MGMT_ASSOCREQSENT = 20,
++    KWN_WIRELESSSTATS_MGMT_ASSOCREQRECV = 21,
++    KWN_WIRELESSSTATS_MGMT_ASSOCCNF = 22,
++    KWN_WIRELESSSTATS_MGMT_ASSOCREJ = 23,
++    KWN_WIRELESSSTATS_MGMT_DEASSOCREQSENT = 24,
++    KWN_WIRELESSSTATS_MGMT_DEASSOCREQRECV = 25,
++    KWN_WIRELESSSTATS_MGMT_ASSOCRESLAST = 26,
++    KWN_WIRELESSSTATS_MPDU_ERRORS = 27,
++    KWN_WIRELESSSTATS_PHY_ERRORS = 28
 +};
 +
 +enum KWN_ETHERNETSTATS {
