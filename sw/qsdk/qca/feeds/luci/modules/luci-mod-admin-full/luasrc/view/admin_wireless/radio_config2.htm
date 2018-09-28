@@ -221,14 +221,15 @@ function updatehidessid()
           <div class="cbi-value">
             <label class="cbi-value-title">Transmit Power</label>
             <div class="cbi-value-field">
-              <select class="cbi-input-select" name="21">
+              <input type="text" name="21" class="cbi-input-select" value="<%=uciget('uci get wireless.wifi0.TXPowLim2G')%>" > &nbsp; dBm
+              <!--<select class="cbi-input-select" name="21">
                  <script type="text/javascript">
-                 var pwr = "<%=uciget('uci get wireless.wifi0.txpower')%>";
+                 var pwr = "<%=uciget('uci get wireless.wifi0.TXPowLim2G')%>";
                  if( pwr == "" )
                      pwr = 20;
                  getoptions( pwrlist, pwr );
                  </script>
-             </select>
+             </select>-->
            </div>
          </div>
           <div class="cbi-value">

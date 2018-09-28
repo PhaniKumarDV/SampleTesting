@@ -7,12 +7,14 @@ start_service() {
 
     eth_timer=$(uci get ethernet.ethernet.ethtimer)
     tx_power_radio1=$(uci get wireless.wifi1.TXPowLim5G)
+    tx_power_radio2=$(uci get wireless.wifi0.TXPowLim2G)
     tx_chainmask_radio1=$(uci get wireless.wifi1.txchainmask)
     rx_chainmask_radio1=$(uci get wireless.wifi1.rxchainmask)
     shortgi_radio1=$(uci get wireless.@wifi-iface[1].shortgi)
     distance_radio1=$(uci get wireless.wifi1.distance)
     hidden_radio0=$(uci get wireless.@wifi-iface[0].hidden)
     hidden_radio1=$(uci get wireless.@wifi-iface[1].hidden)
+    dgackdisable=$(uci get wireless.@wifi-iface[1].dgackdisable)
     
     if [ "$eth_timer" == "" ]
     then
@@ -21,6 +23,10 @@ start_service() {
     if [ "$tx_power_radio1" == "" ]
     then
         uci set wireless.wifi1.TXPowLim5G='26'
+    fi
+    if [ "$tx_power_radio2" == "" ]
+    then
+        uci set wireless.wifi0.TXPowLim2G='20'
     fi
     if [ "$tx_chainmask_radio1" == "" ]
     then
@@ -41,6 +47,10 @@ start_service() {
     if [ "$hidden_radio1" == "" ]
     then
         uci set wireless.@wifi-iface[1].hidden='0'
+    fi
+    if [ "$dgackdisable" == "" ]
+    then
+        uci set wireless.@wifi-iface[1].dgackdisable='0'
     fi
 #2.4 Radio Default values
     uci set wireless.wifi0.txchainmask='1'

@@ -219,6 +219,24 @@ function updategps()
               </select>
             </div>
           </div>
+          <div class="cbi-value" id="dis_ack">
+            <label class="cbi-value-title">ACK</label>
+            <div class="cbi-value-field">
+              <select class="cbi-input-select" name="85">
+                 <script type="text/javascript">
+                 var disack = "<%=uciget('uci get wireless.@wifi-iface[1].dgackdisable')%>";
+                 document.write("<option value='0' ");
+                 if( disack == "0" )
+                     document.write(" selected");
+                 document.write(">Enable</option>");
+                 document.write("<option value='1' ");
+                 if( disack == "1" )
+                     document.write(" selected");
+                 document.write(">Disable</option>");
+                 </script>
+              </select>
+            </div>
+          </div>
           <h2><a id="content" name="content"><%:LEDs%></a></h2>
           <div class="cbi-value">
             <label class="cbi-value-title">Enable LEDS</label>
@@ -243,6 +261,9 @@ function updategps()
 </div>
 <script type="text/javascript">
 save_def_value();
+var mode = "<%=uciget('uci get wireless.@wifi-iface[1].mode')%>";
+if( mode == "sta" )
+    document.getElementById("dis_ack").style.display = "none";
 </script>
 </div>
 <%+footer%>

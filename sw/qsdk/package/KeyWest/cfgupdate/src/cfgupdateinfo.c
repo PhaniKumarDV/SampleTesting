@@ -137,7 +137,7 @@ void cfg_set( char *type, char *value )
             sprintf(cmd,"uci set wireless.wifi0.channel='%s'",value);
             break;
         case UCI_ID_RADIO2_POWER:
-            sprintf(cmd,"uci set wireless.wifi0.txpower='%s'",value);
+            sprintf(cmd,"uci set wireless.wifi0.TXPowLim2G='%s'",value);
             break;
         case UCI_ID_RADIO2_HIDE_ESSID:
             sprintf(cmd,"uci set wireless.@wifi-iface[0].hidden='%s'",value);
@@ -371,6 +371,9 @@ void cfg_set( char *type, char *value )
             break;
         case UCI_ID_VLAN_BISID:
             sprintf(cmd,"uci set vlan.vlan.bisid='%s'",value);
+            break;
+        case UCI_ID_DG_DISABLE_ACK:
+            sprintf(cmd,"uci set wireless.@wifi-iface[1].dgackdisable='%s'",value);
             break;
         default:
             break;

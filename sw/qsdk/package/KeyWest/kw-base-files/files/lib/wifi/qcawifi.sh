@@ -648,6 +648,9 @@ enable_qcawifi() {
 	config_get dyinggasp "$vif" dyinggasp
 	[ -n "$dyinggasp" ] && iwpriv "$phy" dying_gasp $dyinggasp
 	
+	config_get dgackdisable "$vif" dgackdisable
+	[ -n "$dgackdisable" ] && iwpriv "$phy" dgackdisable $dgackdisable
+
 	#By default dying gasp timer is set to 2 ms
 	iwpriv "$phy" dgtimeout 2
 

@@ -102,7 +102,9 @@ enum uci_cfg_id {
     UCI_ID_VLAN_BDA =81,
     UCI_ID_VLAN_BSA =82,
     UCI_ID_VLAN_BVID =83,
-    UCI_ID_VLAN_BISID =84
+    UCI_ID_VLAN_BISID =84,
+    /* DYING GASP */
+    UCI_ID_DG_DISABLE_ACK =85
 };
 
 typedef struct
