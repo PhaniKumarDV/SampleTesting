@@ -1,7 +1,7 @@
 diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.c
 --- net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c	1970-01-01 05:30:00.000000000 +0530
-+++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.c	2018-09-25 21:40:59.880597824 +0530
-@@ -0,0 +1,2396 @@
++++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.c	2018-09-28 16:17:16.590146420 +0530
+@@ -0,0 +1,2465 @@
 +/****************************************************************************
 +*                                                                           *
 +*  File Name:           kwnmib.c                                           *
@@ -62,7 +62,7 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +kwn_snmp_array kwn_wireless_radio_mode = { 4,{ { 1, "ap" }, { 2, "sta" }, { 3, "ap" }, { 4, "sta" } } };
 +kwn_snmp_array kwn_wireless_country = { 4, { { 1, "5011" }, { 2, "5016" }, { 3, "5017" }, { 4, "643" } } };
 +kwn_snmp_array kwn_wireless_opmode = { 5, { { 1, "11g" }, { 2, "11ng" }, { 3, "11a" }, { 4, "11na" }, { 5, "11ac" } } };
-+kwn_snmp_array kwn_wireless_bandwidth = { 3, { { 1, "HT20" }, { 2, "HT40+" }, { 3, "HT80" } } };
++kwn_snmp_array kwn_wireless_bandwidth = { 6, { { 1, "HT5" }, { 2, "HT10" }, { 3, "HT20" }, { 4, "HT40+" }, { 5, "HT40-" }, { 6, "HT80" } } };
 +kwn_snmp_array kwn_wireless_encryption = { 2, { { 1, "none" }, { 2, "psk2+ccmp" } } };
 +kwn_snmp_array kwn_wireless_macfilter = { 3, { { 1, "disable" }, { 2, "allow" }, { 3, "deny" } } };
 +kwn_snmp_array kwn_network_ip_type = { 2, { { 1, "static" }, { 2, "dhcp" } } };
@@ -204,34 +204,40 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +  { 93   , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 4, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHSTATS_STATUS } },
 +  { 94   , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 4, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHSTATS_SPEED } },
 +  { 95   , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 4, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHSTATS_DUPLEX } },
++  { 96   , ASN_INTEGER    , RONLY , var_EthernetStatsTable, 4, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHSTATS_TXTOTALPACKETS } },
++  { 97   , ASN_INTEGER    , RONLY , var_EthernetStatsTable, 4, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHSTATS_RXTOTALPACKETS } },
++  { 98   , ASN_INTEGER    , RONLY , var_EthernetStatsTable, 4, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHSTATS_TXTOTALBYTES } },
++  { 99   , ASN_INTEGER    , RONLY , var_EthernetStatsTable, 4, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHSTATS_RXTOTALBYTES } },
++  { 100  , ASN_INTEGER    , RONLY , var_EthernetStatsTable, 4, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHSTATS_TXERRORS } },
++  { 101  , ASN_INTEGER    , RONLY , var_EthernetStatsTable, 4, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHSTATS_RXERRORS } },
 +  /* Assoc MIBS */
-+  { 96   , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_RADIO_INDEX } },
-+  { 97   , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_SEC_INDEX } },
-+  { 98   , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_MAC } },
-+  { 99   , ASN_IPADDRESS  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_IP } },
-+  { 100  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_LAT } },
-+  { 101  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_LONG } },
-+  { 102  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_LAT } },
-+  { 103  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_LONG } },
-+  { 104  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_RX_RATE } },
-+  { 105  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_TX_RATE } },
-+  { 106  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_RX_TPUT } },
-+  { 107  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_TX_TPUT } },
-+  { 108  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_SNR_A1 } },
-+  { 109  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_SNR_A2 } },
-+  { 110  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_SNR_A1 } },
-+  { 111  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_SNR_A2 } },
-+  { 112  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_PHY_ERR } },
-+  { 113  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_PHY_ERR } },
-+  { 114  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_MPDU_ERR } },
-+  { 115  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_MPDU_ERR } },
-+  { 116  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_RETRIES } },
-+  { 117  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_RETRIES } },
-+  { 118  , ASN_INTEGER    , RWRITE, var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LINKTEST_DUR } },
-+  { 119  , ASN_INTEGER    , RWRITE, var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LINKTEST_DIR } },
-+  { 120  , ASN_INTEGER    , RWRITE, var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LINKTEST_START_STOP } },
-+  { 121  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_NOISE_FLOOR } },
-+  { 122  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_NOISE_FLOOR } },
++  { 102  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_RADIO_INDEX } },
++  { 103  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_SEC_INDEX } },
++  { 104  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_MAC } },
++  { 105  , ASN_IPADDRESS  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_IP } },
++  { 106  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_LAT } },
++  { 107  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_LONG } },
++  { 108  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_LAT } },
++  { 109  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_LONG } },
++  { 110  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_RX_RATE } },
++  { 111  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_TX_RATE } },
++  { 112  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_RX_TPUT } },
++  { 113  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_TX_TPUT } },
++  { 114  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_SNR_A1 } },
++  { 115  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_SNR_A2 } },
++  { 116  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_SNR_A1 } },
++  { 117  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_SNR_A2 } },
++  { 118  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_PHY_ERR } },
++  { 119  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_PHY_ERR } },
++  { 120  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_MPDU_ERR } },
++  { 121  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_MPDU_ERR } },
++  { 122  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_RETRIES } },
++  { 123  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_RETRIES } },
++  { 124  , ASN_INTEGER    , RWRITE, var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LINKTEST_DUR } },
++  { 125  , ASN_INTEGER    , RWRITE, var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LINKTEST_DIR } },
++  { 126  , ASN_INTEGER    , RWRITE, var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LINKTEST_START_STOP } },
++  { 127  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_NOISE_FLOOR } },
++  { 128  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_NOISE_FLOOR } },
 +};
 +
 +/****************************************************************************
@@ -667,12 +673,17 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +                bw = res_val;
 +                /* 11A */
 +                if( hwmode == kwn_wireless_opmode.array[2].value ) {
-+                    /* 20MHz */
++                    /* 5MHz */
 +                    if( bw == kwn_wireless_bandwidth.array[0].value ) {
-+                        sprintf( res_str, "0-6Mbps,1-9Mbps,2-12Mbps,3-18Mbps,4-24Mbps,5-36Mbps,6-48Mbps,7-54Mbps" );
++                        sprintf( res_str, "0-1.5Mbps,1-2.25Mbps,2-3Mbps,3-4.5Mbps,4-6Mbps,5-9Mbps,6-12Mbps,7-13.5Mbps" );
 +                    }
++                    /* 10MHz */
 +                    else if( bw == kwn_wireless_bandwidth.array[1].value ) {
-+                        sprintf( res_str, "0-12Mbps,1-18Mbps,2-24Mbps,3-36Mbps,4-48Mbps,5-72Mbps,6-96Mbps,7-108Mbps" );
++                        sprintf( res_str, "0-3Mbps,1-4.5Mbps,2-6Mbps,3-9Mbps,4-12Mbps,5-18Mbps,6-24Mbps,7-27Mbps" );
++                    }
++                    /* 20MHz */
++                    else if( bw == kwn_wireless_bandwidth.array[2].value ) {
++                        sprintf( res_str, "0-6Mbps,1-9Mbps,2-12Mbps,3-18Mbps,4-24Mbps,5-36Mbps,6-48Mbps,7-54Mbps" );
 +                    }
 +                    else {
 +                        sprintf( res_str, "-NA-" );
@@ -680,24 +691,46 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +                }
 +                /* 11NA */
 +                else if( hwmode == kwn_wireless_opmode.array[3].value ) {
++                    /* 5MHz */
 +                    if( bw == kwn_wireless_bandwidth.array[0].value ) {
++                        sprintf( res_str, "0-1.8Mbps,1-3.6Mbps,2-5.4Mbps,3-7.2Mbps,4-10.8Mbps,5-14.4Mbps,6-16.2Mbps,7-18Mbps,8-3.6Mbps,9-7.2Mbps,10-10.8Mbps,11-14.4Mbps,12-21.7Mbps,13-28.9Mbps,14-32.5Mbps,15-36.1Mbps" );
++                    }
++                    /* 10MHz */
++                    if( bw == kwn_wireless_bandwidth.array[1].value ) {
++                        sprintf( res_str, "0-3.6Mbps,1-7.2Mbps,2-10.8Mbps,3-14.4Mbps,4-21.7Mbps,5-28.9Mbps,6-32.5Mbps,7-36.1Mbps,8-7.2Mbps,9-14.4Mbps,10-21.7Mbps,11-28.9Mbps,12-43.3Mbps,13-57.8Mbps,14-65Mbps,15-72.2Mbps" );
++                    }
++                    /* 20MHz */
++                    if( bw == kwn_wireless_bandwidth.array[2].value ) {
 +                        sprintf( res_str, "0-7.2Mbps,1-14.4Mbps,2-21.7Mbps,3-28.9Mbps,4-43.3Mbps,5-57.8Mbps,6-65Mbps,7-72.2Mbps,8-14.4Mbps,9-28.9Mbps,10-43.3Mbps,11-57.8Mbps,12-86.7Mbps,13-115.6Mbps,14-130Mbps,15-144.4Mbps" );
 +                    }
-+                    else if( bw == kwn_wireless_opmode.array[1].value ) {
++                    /* 40MHz */
++                    else if( bw == kwn_wireless_bandwidth.array[3].value || bw == kwn_wireless_bandwidth.array[4].value ) {
 +                        sprintf( res_str, "0-15Mbps,1-30Mbps,2-45Mbps,3-60Mbps,4-90Mbps,5-120Mbps,6-135Mbps,7-150Mbps,8-30Mbps,9-60Mbps,10-90Mbps,11-120Mbps,12-180Mbps,13-240Mbps,14-270Mbps,15-300Mbps" );
 +                    }
 +                    else {
 +                        sprintf( res_str, "-NA-" );
 +                    }
 +                }
++                /* 11AC */
 +                else if( hwmode == kwn_wireless_opmode.array[4].value ) {
++                    /* 5MHz */
 +                    if( bw == kwn_wireless_bandwidth.array[0].value ) {
++                        sprintf( res_str, "0-1.8Mbps,1-3.6Mbps,2-5.4Mbps,3-7.2Mbps,4-10.8Mbps,5-14.4Mbps,6-16.2Mbps,7-18Mbps,8-3.6Mbps,9-7.2Mbps,10-10.8Mbps,11-14.4Mbps,12-21.7Mbps,13-28.9Mbps,14-32.5Mbps,15-36.1Mbps" );
++                    }
++                    /* 10MHz */
++                    if( bw == kwn_wireless_bandwidth.array[1].value ) {
++                        sprintf( res_str, "0-3.6Mbps,1-7.2Mbps,2-10.8Mbps,3-14.4Mbps,4-21.7Mbps,5-28.9Mbps,6-32.5Mbps,7-36.1Mbps,8-7.2Mbps,9-14.4Mbps,10-21.7Mbps,11-28.9Mbps,12-43.3Mbps,13-57.8Mbps,14-65Mbps,15-72.2Mbps" );
++                    }
++                    /* 20MHz */
++                    if( bw == kwn_wireless_bandwidth.array[2].value ) {
 +                        sprintf( res_str, "0-7.2Mbps,1-14.4Mbps,2-21.7Mbps,3-28.9Mbps,4-43.3Mbps,5-57.8Mbps,6-65Mbps,7-72.2Mbps,8-86.7Mbps,9-14.4Mbps,10-28.9Mbps,11-43.3Mbps,12-57.8Mbps,13-86.7Mbps,14-115.6Mbps,15-130Mbps,16-144.4Mbps,17-173.3Mbps" );
 +                    }
-+                    else if( bw == kwn_wireless_opmode.array[1].value ) {
++                    /* 40MHz */
++                    else if( bw == kwn_wireless_bandwidth.array[3].value || bw == kwn_wireless_bandwidth.array[4].value ) {
 +                        sprintf( res_str, "0-15Mbps,1-30Mbps,2-45Mbps,3-60Mbps,4-90Mbps,5-120Mbps,6-135Mbps,7-150Mbps,8-180Mbps,9-200Mbps,10-30Mbps,11-60Mbps,12-90Mbps,13-120Mbps,14-180Mbps,15-240Mbps,16-270Mbps,17-300Mbps,18-360Mbps,19-400Mbps" );
 +                    }
-+                    else if( bw == kwn_wireless_opmode.array[2].value ) {
++                    /* 80MHz */
++                    else if( bw == kwn_wireless_bandwidth.array[5].value ) {
 +                        sprintf( res_str, "0-32.5Mbps,1-65Mbps,2-97.5Mbps,3-130Mbps,4-195Mbps,5-260Mbps,6-292.5Mbps,7-325Mbps,8-390Mbps,9-433.3Mbps,10-65Mbps,11-130Mbps,12-195Mbps,13-260Mbps,14-390Mbps,15-520Mbps,16-585Mbps,17-650Mbps,18-780Mbps,19-866.7Mbps" );
 +                    }
 +                    else {
@@ -1381,7 +1414,7 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +            {
 +                sprintf( cmd, "80211stats -i ath%d | grep  'Authentication result last:' | sed 's/ Authentication result last:         //'", radio_ind );
 +                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len, NULL );
-+                return ( u_char * ) &res_str;
++                return ( u_char * ) res_str;
 +            }
 +        case KWN_WIRELESSSTATS_MGMT_ASSOCREQSENT:
 +            {
@@ -1423,7 +1456,7 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +            {
 +                sprintf( cmd, "80211stats -i ath%d | grep  'Association result last:' | sed 's/ Association result last:            //'", radio_ind );
 +                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len, NULL );
-+                return ( u_char * ) &res_str;
++                return ( u_char * ) res_str;
 +            }
 +        case KWN_WIRELESSSTATS_MPDU_ERRORS:
 +            {
@@ -1486,6 +1519,42 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +                sprintf( cmd, "ethtool eth0 | grep 'Duplex' | sed 's/\tDuplex: //'" );
 +                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len, NULL );
 +                return (u_char *) res_str;
++            }
++        case KWN_ETHSTATS_TXTOTALPACKETS:
++            {
++                sprintf( cmd, "iwpriv ath1 g_kwn_ethtxpkt | sed 's/ath1      g_kwn_ethtxpkt://'" );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
++                return (u_char *) &res_val;
++            }
++        case KWN_ETHSTATS_RXTOTALPACKETS:
++            {
++                sprintf( cmd, "iwpriv ath1 g_kwn_ethrxpkt | sed 's/ath1      g_kwn_ethrxpkt://'" );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
++                return (u_char *) &res_val;
++            }
++        case KWN_ETHSTATS_TXTOTALBYTES:
++            {
++                sprintf( cmd, "iwpriv ath1 g_kwn_ethtxbyt | sed 's/ath1      g_kwn_ethtxbyt://'" );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
++                return (u_char *) &res_val;
++            }
++        case KWN_ETHSTATS_RXTOTALBYTES:
++            {
++                sprintf( cmd, "iwpriv ath1 g_kwn_ethrxbyt   | sed 's/ath1      g_kwn_ethrxbyt://'" );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
++                return (u_char *) &res_val;
++            }
++        case KWN_ETHSTATS_TXERRORS:
++            {
++                sprintf( cmd, "iwpriv ath1 g_kwn_ethtxerr | sed 's/ath1      g_kwn_ethtxerr://'" );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
++                return (u_char *) &res_val;
++            }
++        case KWN_ETHSTATS_RXERRORS:
++            {
++                sprintf( cmd, "iwpriv ath1 g_kwn_ethrxerr | sed 's/ath1      g_kwn_ethrxerr://'" );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
++                return (u_char *) &res_val;
 +            }
 +        default:
 +            ERROR_MSG ( "" );
@@ -2400,8 +2469,8 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +}
 diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.h
 --- net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h	1970-01-01 05:30:00.000000000 +0530
-+++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.h	2018-09-25 21:41:15.876754391 +0530
-@@ -0,0 +1,307 @@
++++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.h	2018-09-28 16:17:25.570065402 +0530
+@@ -0,0 +1,313 @@
 +/****************************************************************************
 +*                                                                           *
 +*  File Name:           kwnmib.h                                      *
@@ -2614,7 +2683,13 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h net-snmp-5.4.4-mod/agent/mi
 +enum KWN_ETHERNETSTATS {
 +    KWN_ETHSTATS_STATUS = 1,
 +    KWN_ETHSTATS_SPEED = 2,
-+    KWN_ETHSTATS_DUPLEX = 3
++    KWN_ETHSTATS_DUPLEX = 3,
++    KWN_ETHSTATS_TXTOTALPACKETS = 4,
++    KWN_ETHSTATS_RXTOTALPACKETS = 5,
++    KWN_ETHSTATS_TXTOTALBYTES = 6,
++    KWN_ETHSTATS_RXTOTALBYTES = 7,
++    KWN_ETHSTATS_TXERRORS = 8,
++    KWN_ETHSTATS_RXERRORS = 9
 +};
 +
 +enum KWN_ASSOCLIST {
@@ -2709,150 +2784,149 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h net-snmp-5.4.4-mod/agent/mi
 +}kwn_freqlist;
 +
 +#endif /* _MIBGROUP_KWNMIB_H */
-diff -urN net-snmp-5.4.4-org/mibs/KWN-SMAC-MIB.mib net-snmp-5.4.4-mod/mibs/KWN-SMAC-MIB.mib
---- net-snmp-5.4.4-org/mibs/KWN-SMAC-MIB.mib	1970-01-01 05:30:00.000000000 +0530
-+++ net-snmp-5.4.4-mod/mibs/KWN-SMAC-MIB.mib	2018-09-25 19:25:19.868473205 +0530
-@@ -0,0 +1,1520 @@
+diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWEST-MIB.mib
+--- net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib	1970-01-01 05:30:00.000000000 +0530
++++ net-snmp-5.4.4-mod/mibs/KEYWEST-MIB.mib	2018-09-28 16:43:46.151796209 +0530
+@@ -0,0 +1,1574 @@
 +------------------------------------------------------------------------
 +------------------------------------------------------------------------
 +--
 +-- Copyright (C) 2018 by KeyWest Networks. All rights reserved
-+-- Enterprise MIB definition to manage SMAC3.0 product.
++-- Enterprise MIB definition to manage MAP100 product.
 +--
 +------------------------------------------------------------------------
 +------------------------------------------------------------------------
 +
 +
-+KWN-SMAC-MIB DEFINITIONS ::= BEGIN
++KEYWEST-MIB DEFINITIONS ::= BEGIN
 +
 +
 +IMPORTS
-+	MODULE-IDENTITY, OBJECT-IDENTITY,
-+	NOTIFICATION-TYPE, OBJECT-TYPE,
-+	Integer32, enterprises,
-+	IpAddress 		
-+		FROM SNMPv2-SMI
++    MODULE-IDENTITY, OBJECT-IDENTITY,
++    NOTIFICATION-TYPE, OBJECT-TYPE,
++    Integer32, enterprises,
++    IpAddress
++        FROM SNMPv2-SMI
 +
-+	DisplayString, DateAndTime,
-+	RowStatus
-+		FROM SNMPv2-TC;
-+		
++    DisplayString, DateAndTime,
++    RowStatus
++        FROM SNMPv2-TC;
 +
-+kwnMIB MODULE-IDENTITY
-+	LAST-UPDATED "201809030000Z"
-+	ORGANIZATION "KeyWest Networks."
-+	CONTACT-INFO "www.keywestnetworks.com"
-+	DESCRIPTION  "KeyWest Networks private enterprise MIB definition"
-+	REVISION 	 "201809030000Z"
-+	DESCRIPTION	 "First Release"
++
++keywest MODULE-IDENTITY
++        LAST-UPDATED "201809030000Z"
++        ORGANIZATION "KeyWest Networks."
++        CONTACT-INFO "www.keywestnetworks.com"
++        DESCRIPTION  "KeyWest Networks private enterprise MIB definition"
++        REVISION     "201809030000Z"
++        DESCRIPTION  "First Release"
 +::= { enterprises 52619 }
 +
 +
-+kwnSmacMIB OBJECT-IDENTITY
-+	STATUS      current
-+	DESCRIPTION "Root Node for KeyWest Networks SMAC3.0 product."
-+::= { kwnMIB 1}
++objects OBJECT-IDENTITY
++    STATUS      current
++    DESCRIPTION "Root Node for KeyWest Networks MAP100 product."
++::= { keywest 1 }
 +
-+kwnConfiguration OBJECT-IDENTITY
++configuration OBJECT-IDENTITY
 +        STATUS      current
 +        DESCRIPTION "Configuration"
-+::= { kwnSmacMIB 1 }
++::= { objects 1 }
 +
-+kwnManagement OBJECT-IDENTITY
++management OBJECT-IDENTITY
 +        STATUS      current
 +        DESCRIPTION "Management"
-+::= { kwnSmacMIB 2 }
++::= { objects 2 }
 +
-+kwnMonitor OBJECT-IDENTITY
++monitor OBJECT-IDENTITY
 +        STATUS      current
 +        DESCRIPTION "Monitor"
-+::= { kwnSmacMIB 3 }
-+
++::= { objects 3 }
 +------------------------------------------------------------------------
 +------------------------------------------------------------------------
-+kwnWireless OBJECT-IDENTITY
++wireless OBJECT-IDENTITY
 +        STATUS      current
 +        DESCRIPTION "Wireless configuration"
-+::= { kwnConfiguration 1 }
++::= { configuration 1 }
 +
 +
-+kwnWirelessTable OBJECT-TYPE
-+        SYNTAX SEQUENCE OF KwnWirelessEntry
++wirelessTable OBJECT-TYPE
++        SYNTAX SEQUENCE OF WirelessEntry
 +        MAX-ACCESS         not-accessible
 +        STATUS             current
 +        DESCRIPTION        "This table is used to specify Wireless
 +                            Configuration."
-+::= { kwnWireless 1 }
++::= { wireless 1 }
 +
 +
-+kwnWirelessEntry OBJECT-TYPE
-+        SYNTAX      KwnWirelessEntry
++wirelessEntry OBJECT-TYPE
++        SYNTAX      WirelessEntry
 +        MAX-ACCESS  not-accessible
 +        STATUS      current
 +        DESCRIPTION "This parameter represents an entry in the 
 +                     Wireless Configuration table."
-+        INDEX       { kwnWirelessIndex }
-+::= { kwnWirelessTable 1 }
++        INDEX       { wirelessIndex }
++::= { wirelessTable 1 }
 +
 +
-+KwnWirelessEntry ::=
++WirelessEntry ::=
 +        SEQUENCE {
-+                kwnWirelessIndex    
++                wirelessIndex
 +                    Integer32,
-+                kwnWirelessRadioMode 
++                wirelessRadioMode
 +                    INTEGER,
-+                kwnWirelessSSID 
++                wirelessSSID
 +                    DisplayString,
-+                kwnWirelessCountry
++                wirelessCountry
 +                    INTEGER,
-+                kwnWirelessOpmode
++                wirelessOpmode
 +                    INTEGER,
-+                kwnWirelessSupportedBandwidths
++                wirelessSupportedBandwidths
 +                    DisplayString,
-+                kwnWirelessBandwidth
++                wirelessBandwidth
 +                    INTEGER,
-+                kwnWirelessSupportedChannels
++                wirelessSupportedChannels
 +                    DisplayString,
-+                kwnWirelessChannel
++                wirelessChannel
 +                    Integer32,
-+                kwnWirelessSupportedRates
++                wirelessSupportedRates
 +                    DisplayString,
-+                kwnWirelessRate
++                wirelessRate
 +                    Integer32,
-+                kwnWirelessTxPower 
++                wirelessTxPower
 +                    Integer32,
-+                kwnWirelessAMSDU 
++                wirelessAMSDU
 +                    INTEGER,
-+                kwnWirelessUplinkLimit
++                wirelessUplinkLimit
 +                    Integer32,
-+                kwnWirelessDownlinkLimit
++                wirelessDownlinkLimit
 +                    Integer32,
-+                kwnWirelessHideESSID
++                wirelessHideESSID
 +                    INTEGER,
-+                kwnWirelessCustomerName
++                wirelessCustomerName
 +                    DisplayString,
-+                kwnWirelessLinkId
++                wirelessLinkId
 +                    Integer32,
-+                kwnWirelessSecurityEncryption
++                wirelessSecurityEncryption
 +                    INTEGER,
-+                kwnWirelessSecurityKey
++                wirelessSecurityKey
 +                    DisplayString,
-+                kwnWirelessMACFilter
++                wirelessMACFilter
 +                    INTEGER,
-+                kwnWirelessMACList
++                wirelessMACList
 +                    DisplayString,
-+                kwnWirelessDistance
++                wirelessDistance
 +                    Integer32,
-+                kwnWirelessShortGI
++                wirelessShortGI
 +                    INTEGER,
-+                kwnWirelessTxChainmask
++                wirelessTxChainmask
 +                    Integer32,
-+                kwnWirelessRxChainmask
++                wirelessRxChainmask
 +                    Integer32
 +        }
 +
 +
-+kwnWirelessIndex OBJECT-TYPE
++wirelessIndex OBJECT-TYPE
 +        SYNTAX      Integer32 (1..2)
 +        MAX-ACCESS  not-accessible
 +        STATUS      current
@@ -2860,10 +2934,9 @@ diff -urN net-snmp-5.4.4-org/mibs/KWN-SMAC-MIB.mib net-snmp-5.4.4-mod/mibs/KWN-S
 +                     for Wireless Configuration table
 +                     For 2.4 GHz radio - '1'
 +                     For   5 GHz radio - '2'."
-+::= { kwnWirelessEntry 1 }
++::= { wirelessEntry 1 }
 +
-+
-+kwnWirelessRadioMode OBJECT-TYPE
++wirelessRadioMode OBJECT-TYPE
 +        SYNTAX      INTEGER {
 +            outdoorbase       (1),
 +            outdoorsubscriber (2),
@@ -2878,17 +2951,16 @@ diff -urN net-snmp-5.4.4-org/mibs/KWN-SMAC-MIB.mib net-snmp-5.4.4-mod/mibs/KWN-S
 +                                         '4' - Client
 +                     For   5 GHz radio - '1' - Outdoor Base
 +                                         '2' - Outdoor Subscriber."
-+::= { kwnWirelessEntry 2 }
++::= { wirelessEntry 2 }
 +
-+
-+kwnWirelessSSID OBJECT-TYPE
++wirelessSSID OBJECT-TYPE
 +        SYNTAX      DisplayString
 +        MAX-ACCESS  read-write
 +        STATUS      current
 +        DESCRIPTION "This parameter is used to configure SSID."
-+::= { kwnWirelessEntry 3 }
++::= { wirelessEntry 3 }
 +
-+kwnWirelessCountry OBJECT-TYPE
++wirelessCountry OBJECT-TYPE
 +        SYNTAX      INTEGER {
 +            russia   (1),
 +            indiaul  (2),
@@ -2903,9 +2975,9 @@ diff -urN net-snmp-5.4.4-org/mibs/KWN-SMAC-MIB.mib net-snmp-5.4.4-mod/mibs/KWN-S
 +                     For   5 GHz radio - '1' - RUSSIA
 +                                         '2' - INDIA_UL
 +                                         '3' - INDIA_L."
-+::= { kwnWirelessEntry 4 }
++::= { wirelessEntry 4 }
 +
-+kwnWirelessOpmode OBJECT-TYPE
++wirelessOpmode OBJECT-TYPE
 +        SYNTAX      INTEGER {
 +            dot11g  (1),
 +            dot11ng (2),
@@ -2922,42 +2994,47 @@ diff -urN net-snmp-5.4.4-org/mibs/KWN-SMAC-MIB.mib net-snmp-5.4.4-mod/mibs/KWN-S
 +                     For   5 GHz radio - '3' - Legacy (11A)
 +                                         '4' - 11NA
 +                                         '5' - 11AC."
-+::= { kwnWirelessEntry 5 }
++::= { wirelessEntry 5 }
 +
-+kwnWirelessSupportedBandwidths OBJECT-TYPE
++wirelessSupportedBandwidths OBJECT-TYPE
 +        SYNTAX      DisplayString
 +        MAX-ACCESS  read-only
 +        STATUS      current
 +        DESCRIPTION "This parameter represents the supported 
 +                     Bandwidths."
-+::= { kwnWirelessEntry 6 }
++::= { wirelessEntry 6 }
 +
-+kwnWirelessBandwidth OBJECT-TYPE
++wirelessBandwidth OBJECT-TYPE
 +        SYNTAX      INTEGER {
-+            bw20MHz (1),
-+            bw40MHz (2),
-+            bw80MHz (3)
++            bw5       (1),
++            bw10      (2),
++            bw20      (3),
++            bw40PLUS  (4),
++            bw40MINUS (5),
++            bw80      (6)
 +        }
 +        MAX-ACCESS  read-write
 +        STATUS      current
 +        DESCRIPTION "This parameter represents the bandwidth.
 +                     It can be configured as
-+                     For 2.4 GHz - '1' - 20 MHz
-+                                   '2' - 40 MHz
-+                     For   5 GHz - '1' - 20 MHz
-+                                   '2' - 40 MHz
-+                                   '3' - 80 MHz."
-+::= { kwnWirelessEntry 7 }
++                     For 2.4 GHz - '3' - 20  MHz
++                                   '4' - 40  MHz
++                                   '5' - 40- MHz
++                     For   5 GHz - '3' - 20  MHz
++                                   '4' - 40+ MHz
++                                   '5' - 40- MHz
++                                   '6' - 80  MHz."
++::= { wirelessEntry 7 }
 +
-+kwnWirelessSupportedChannels OBJECT-TYPE
++wirelessSupportedChannels OBJECT-TYPE
 +        SYNTAX      DisplayString
 +        MAX-ACCESS  read-only
 +        STATUS      current
 +        DESCRIPTION "This parameter represents the supported 
 +                     channel list."
-+::= { kwnWirelessEntry 8 }
++::= { wirelessEntry 8 }
 +
-+kwnWirelessChannel OBJECT-TYPE
++wirelessChannel OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-write
 +        STATUS      current
@@ -2965,17 +3042,17 @@ diff -urN net-snmp-5.4.4-org/mibs/KWN-SMAC-MIB.mib net-snmp-5.4.4-mod/mibs/KWN-S
 +                     It can be configured as auto (-1) or any other
 +                     channel from the supported channel list based on
 +                     country selected."
-+::= { kwnWirelessEntry 9 }
++::= { wirelessEntry 9 }
 +
-+kwnWirelessSupportedRates OBJECT-TYPE
++wirelessSupportedRates OBJECT-TYPE
 +        SYNTAX      DisplayString
 +        MAX-ACCESS  read-only
 +        STATUS      current
 +        DESCRIPTION "This parameter represents the supported 
 +                     Modulation Rates."
-+::= { kwnWirelessEntry 10 }
++::= { wirelessEntry 10 }
 +
-+kwnWirelessRate OBJECT-TYPE
++wirelessRate OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-write
 +        STATUS      current
@@ -2985,9 +3062,9 @@ diff -urN net-snmp-5.4.4-org/mibs/KWN-SMAC-MIB.mib net-snmp-5.4.4-mod/mibs/KWN-S
 +                     For   5 GHz radio - MCS 0 - MCS  7 for Legacy (11A)
 +                                         MCS 0 - MCS 15 for 11NA
 +                                         MCS 0 - MCS 19 for 11AC."
-+::= { kwnWirelessEntry 11 }
++::= { wirelessEntry 11 }
 +
-+kwnWirelessTxPower OBJECT-TYPE
++wirelessTxPower OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-write
 +        STATUS      current
@@ -2995,9 +3072,9 @@ diff -urN net-snmp-5.4.4-org/mibs/KWN-SMAC-MIB.mib net-snmp-5.4.4-mod/mibs/KWN-S
 +                     power. It can be configured as 
 +                     For 2.4 GHz radio - ( 1 - 26 ) dBm
 +                     For   5 GHz radio - ( 1 - 26 ) dBm."
-+::= { kwnWirelessEntry 12 }
++::= { wirelessEntry 12 }
 +
-+kwnWirelessAMSDU OBJECT-TYPE
++wirelessAMSDU OBJECT-TYPE
 +        SYNTAX      INTEGER {
 +            enable  (1),
 +            disable (2)
@@ -3009,9 +3086,9 @@ diff -urN net-snmp-5.4.4-org/mibs/KWN-SMAC-MIB.mib net-snmp-5.4.4-mod/mibs/KWN-S
 +                     For 2.4 GHz - NA
 +                     For   5 GHz - '1' - Enable
 +                                   '2' - Disable."
-+::= { kwnWirelessEntry 13 }
++::= { wirelessEntry 13 }
 +
-+kwnWirelessUplinkLimit OBJECT-TYPE
++wirelessUplinkLimit OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-write
 +        STATUS      current
@@ -3019,9 +3096,9 @@ diff -urN net-snmp-5.4.4-org/mibs/KWN-SMAC-MIB.mib net-snmp-5.4.4-mod/mibs/KWN-S
 +                     It can be configured as
 +                     For 2.4 GHz - NA
 +                     For   5 GHz - ( 1024 - 887000 ) Kbps."
-+::= { kwnWirelessEntry 14 }
++::= { wirelessEntry 14 }
 +
-+kwnWirelessDownlinkLimit OBJECT-TYPE
++wirelessDownlinkLimit OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-write
 +        STATUS      current
@@ -3029,9 +3106,9 @@ diff -urN net-snmp-5.4.4-org/mibs/KWN-SMAC-MIB.mib net-snmp-5.4.4-mod/mibs/KWN-S
 +                     It can be configured as
 +                     For 2.4 GHz - NA
 +                     For   5 GHz - ( 1024 - 887000 ) Kbps."
-+::= { kwnWirelessEntry 15 }
++::= { wirelessEntry 15 }
 +
-+kwnWirelessHideESSID OBJECT-TYPE
++wirelessHideESSID OBJECT-TYPE
 +        SYNTAX      INTEGER {
 +            disable (0),
 +            enable  (1)
@@ -3042,26 +3119,26 @@ diff -urN net-snmp-5.4.4-org/mibs/KWN-SMAC-MIB.mib net-snmp-5.4.4-mod/mibs/KWN-S
 +                     It can be configured as
 +                     For 2.4 / 5 GHz - 0 - uncheck (disable)
 +                                       1 - check   (enable)."
-+::= { kwnWirelessEntry 16 }
++::= { wirelessEntry 16 }
 +
-+kwnWirelessCustomerName OBJECT-TYPE
++wirelessCustomerName OBJECT-TYPE
 +        SYNTAX      DisplayString
 +        MAX-ACCESS  read-write
 +        STATUS      current
 +        DESCRIPTION "This parameter represents CustomerName.
 +                     It is configured only for 5 GHz radio."
-+::= { kwnWirelessEntry 17 }
++::= { wirelessEntry 17 }
 +
-+kwnWirelessLinkId OBJECT-TYPE
++wirelessLinkId OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-write
 +        STATUS      current
 +        DESCRIPTION "This parameter represents LinkId.
 +                     It can be configured only for 5 GHz radio
 +                     in Outdoor Subscriber mode."
-+::= { kwnWirelessEntry 18 }
++::= { wirelessEntry 18 }
 +
-+kwnWirelessSecurityEncryption OBJECT-TYPE
++wirelessSecurityEncryption OBJECT-TYPE
 +        SYNTAX      INTEGER {
 +            none     (1),
 +            wpa2-psk (2)
@@ -3072,17 +3149,17 @@ diff -urN net-snmp-5.4.4-org/mibs/KWN-SMAC-MIB.mib net-snmp-5.4.4-mod/mibs/KWN-S
 +                     type. It can be cofigured as
 +                     For 2.4 / 5 GHz - '1' - None
 +                                       '2' - WPA2/PSK."
-+::= { kwnWirelessEntry 19 }
++::= { wirelessEntry 19 }
 +
-+kwnWirelessSecurityKey OBJECT-TYPE
++wirelessSecurityKey OBJECT-TYPE
 +        SYNTAX      DisplayString
 +        MAX-ACCESS  read-write
 +        STATUS      current
 +        DESCRIPTION "This parameter is used to configure the
 +                     Security Key."
-+::= { kwnWirelessEntry 20 }
++::= { wirelessEntry 20 }
 +
-+kwnWirelessMACFilter OBJECT-TYPE
++wirelessMACFilter OBJECT-TYPE
 +        SYNTAX      INTEGER {
 +            disable (1),
 +            allow   (2),
@@ -3095,26 +3172,26 @@ diff -urN net-snmp-5.4.4-org/mibs/KWN-SMAC-MIB.mib net-snmp-5.4.4-mod/mibs/KWN-S
 +                     For 2.4 / 5 GHz - '1' - Disable
 +                                       '2' - Allow
 +                                       '3' - Deny."
-+::= { kwnWirelessEntry 21 }
++::= { wirelessEntry 21 }
 +
-+kwnWirelessMACList OBJECT-TYPE
++wirelessMACList OBJECT-TYPE
 +        SYNTAX      DisplayString
 +        MAX-ACCESS  read-write
 +        STATUS      current
 +        DESCRIPTION "This parameter represents the MAC List.
 +                     It can be configured as
 +                     For 2.4 / 5 GHz - mac '<mac address>'."
-+::= { kwnWirelessEntry 22 }
++::= { wirelessEntry 22 }
 +
-+kwnWirelessDistance OBJECT-TYPE
++wirelessDistance OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-write
 +        STATUS      current
 +        DESCRIPTION "This parameter is used to configure the
 +                     Distance."
-+::= { kwnWirelessEntry 23 }
++::= { wirelessEntry 23 }
 +
-+kwnWirelessShortGI OBJECT-TYPE
++wirelessShortGI OBJECT-TYPE
 +        SYNTAX      INTEGER {
 +            disable (0),
 +            enable  (1)
@@ -3125,34 +3202,34 @@ diff -urN net-snmp-5.4.4-org/mibs/KWN-SMAC-MIB.mib net-snmp-5.4.4-mod/mibs/KWN-S
 +                     Interval.It is configured only for 5 GHz 
 +                     radio as '0' - Disable
 +                              '1' - Enable."
-+::= { kwnWirelessEntry 24 }
++::= { wirelessEntry 24 }
 +
-+kwnWirelessTxChainmask OBJECT-TYPE
++wirelessTxChainmask OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-write
 +        STATUS      current
 +        DESCRIPTION "This parameter is used to configure the 
 +                     Tx Chainmask."
-+::= { kwnWirelessEntry 25 }
++::= { wirelessEntry 25 }
 +
-+kwnWirelessRxChainmask OBJECT-TYPE
++wirelessRxChainmask OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-write
 +        STATUS      current
 +        DESCRIPTION "This parameter is used to configure the 
 +                     Rx Chainmask."
-+::= { kwnWirelessEntry 26 }
++::= { wirelessEntry 26 }
 +
 +
 +------------------------------------------------------------------------
 +------------------------------------------------------------------------
-+kwnNetwork OBJECT-IDENTITY
++network OBJECT-IDENTITY
 +        STATUS      current
 +        DESCRIPTION "Network Parameters"
-+::= { kwnConfiguration 2 }
++::= { configuration 2 }
 +
 +
-+kwnNetworkAddressType OBJECT-TYPE
++networkAddressType OBJECT-TYPE
 +        SYNTAX      INTEGER {
 +            static  (1),
 +            dynamic (2)
@@ -3164,49 +3241,50 @@ diff -urN net-snmp-5.4.4-org/mibs/KWN-SMAC-MIB.mib net-snmp-5.4.4-mod/mibs/KWN-S
 +                     '1' - Static
 +                     '2' - Dynamic."
 +        DEFVAL      { static }
-+::= { kwnNetwork 1 }
++::= { network 1 }
 +
-+kwnNetworkIPAddress OBJECT-TYPE
++networkIPAddress OBJECT-TYPE
 +        SYNTAX      IpAddress
 +        MAX-ACCESS  read-write
 +        STATUS      current
 +        DESCRIPTION "This parameter is used to configure the
 +                     IP Address. Default value 192.168.1.1."
-+::= { kwnNetwork 2 }
++::= { network 2 }
 +
-+kwnNetworkNetMask OBJECT-TYPE
++networkNetMask OBJECT-TYPE
 +        SYNTAX      IpAddress
 +        MAX-ACCESS  read-write
 +        STATUS      current
 +        DESCRIPTION "This parameter is used to configure the 
 +                     Subnet Mask. Default value 255.255.255.0"
-+::= { kwnNetwork 3 }
++::= { network 3 }
 +
-+kwnNetworkGateway OBJECT-TYPE
++networkGateway OBJECT-TYPE
 +        SYNTAX      IpAddress
 +        MAX-ACCESS  read-write
 +        STATUS      current
 +        DESCRIPTION "This parameter is used to configure the
 +                     Gateway IP Addres. Default value 192.168.1.1."
-+::= { kwnNetwork 4 }
++::= { network 4 }
 +
-+kwnNetworkDNSIP OBJECT-TYPE
++networkDNSIP OBJECT-TYPE
 +        SYNTAX      IpAddress
 +        MAX-ACCESS  read-write
 +        STATUS      current
 +        DESCRIPTION "This parameter is used to configure the 
 +                     DNS Server IP Address."
-+::= { kwnNetwork 5 }
++::= { network 5 }
 +
 +
 +------------------------------------------------------------------------
 +------------------------------------------------------------------------
-+kwnRadius OBJECT-IDENTITY
++
++radius OBJECT-IDENTITY
 +        STATUS      current
 +        DESCRIPTION "RADIUS Parameters."
-+::= { kwnConfiguration 3 }
++::= { configuration 3 }
 +
-+kwnRadiusStatus OBJECT-TYPE
++radiusStatus OBJECT-TYPE
 +        SYNTAX      INTEGER {
 +            disable (0),
 +            enable  (1)
@@ -3218,101 +3296,103 @@ diff -urN net-snmp-5.4.4-org/mibs/KWN-SMAC-MIB.mib net-snmp-5.4.4-mod/mibs/KWN-S
 +                     '0' - Disable
 +                     '1' - Enable"
 +        DEFVAL      { disable }
-+::= { kwnRadius 1 }
++::= { radius 1 }
 +
-+kwnRadiusPrimaryServer OBJECT-TYPE
++radiusPrimaryServer OBJECT-TYPE
 +        SYNTAX      IpAddress
 +        MAX-ACCESS  read-write
 +        STATUS      current
 +        DESCRIPTION "This parameter is used to configure the Radius
 +                     Primary Server IP Address. Default value is 
 +                     192.168.1.100."
-+::= { kwnRadius 2 }
++::= { radius 2 }
 +
-+kwnRadiusPrimaryPort OBJECT-TYPE
++radiusPrimaryPort OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-write
 +        STATUS      current
 +        DESCRIPTION "This parameter is used to configure the Radius
 +                     Primary Port. Default value is 1812."
-+::= { kwnRadius 3 }
++::= { radius 3 }
 +
-+kwnRadiusPrimarySecret OBJECT-TYPE
++radiusPrimarySecret OBJECT-TYPE
 +        SYNTAX      DisplayString
 +        MAX-ACCESS  read-write
 +        STATUS      current
 +        DESCRIPTION "This parameter is used to configure the Radius
 +                     Primary Secret."
 +        DEFVAL      { "public" }
-+::= { kwnRadius 4 }
++::= { radius 4 }
 +
-+kwnRadiusSecondaryServer OBJECT-TYPE
++radiusSecondaryServer OBJECT-TYPE
 +        SYNTAX      IpAddress
 +        MAX-ACCESS  read-write
 +        STATUS      current
 +        DESCRIPTION "This parameter is used to configure the Radius
 +                     Secondary Server IP Address. Default value is
 +                     192.168.1.100."
-+::= { kwnRadius 5 }
++::= { radius 5 }
 +
-+kwnRadiusSecondaryPort OBJECT-TYPE
++radiusSecondaryPort OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-write
 +        STATUS      current
 +        DESCRIPTION "This parameter is used to configure the Radius
 +                     Secondary Port. Default value is 1812."
-+::= { kwnRadius 6 }
++::= { radius 6 }
 +
-+kwnRadiusSecondarySecret OBJECT-TYPE
++radiusSecondarySecret OBJECT-TYPE
 +        SYNTAX      DisplayString
 +        MAX-ACCESS  read-write
 +        STATUS      current
 +        DESCRIPTION "This parameter is used to configure the Radius
 +                     Secondary Secret."
 +        DEFVAL      { "public" }
-+::= { kwnRadius 7 }
-+kwnRadiusAuthenticationTime OBJECT-TYPE
++::= { radius 7 }
++
++radiusAuthenticationTime OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-write
 +        STATUS      current
 +        DESCRIPTION "This parameter is used to configure the Radius
 +                     ReAuthentication Time in seconds. Default value
 +                     is 21600."
-+::= { kwnRadius 8 }
++::= { radius 8 }
 +
-+kwnRadiusRetryTime OBJECT-TYPE
++radiusRetryTime OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-write
 +        STATUS      current
 +        DESCRIPTION "This parameter is used to configure the Radius
 +                     Retry Time in seconds. Default value is 300."
-+::= { kwnRadius 9 }
++::= { radius 9 }
 +
-+kwnRadiusRetryCount OBJECT-TYPE
++radiusRetryCount OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-write
 +        STATUS      current
 +        DESCRIPTION "This parameter is used to configure the Radius
 +                     Retry Count. Default value is 3."
-+::= { kwnRadius 10 }
++::= { radius 10 }
 +
-+kwnRadiusRetryCountPeriod OBJECT-TYPE
++radiusRetryCountPeriod OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-write
 +        STATUS      current
 +        DESCRIPTION "This parameter is used to configure the Radius
 +                     Retry Count Period in seconds. Default value is 
 +                     3."
-+::= { kwnRadius 11 }
++::= { radius 11 }
 +
 +------------------------------------------------------------------------
 +------------------------------------------------------------------------
-+kwnVlan OBJECT-IDENTITY
++
++vlan OBJECT-IDENTITY
 +        STATUS      current
 +        DESCRIPTION "VLAN Parameters"
-+::= { kwnConfiguration 4 }
++::= { configuration 4 }
 +
-+kwnVlanStatus OBJECT-TYPE
++vlanStatus OBJECT-TYPE
 +        SYNTAX      INTEGER {
 +            enable  (1),
 +            disable (2)
@@ -3324,9 +3404,9 @@ diff -urN net-snmp-5.4.4-org/mibs/KWN-SMAC-MIB.mib net-snmp-5.4.4-mod/mibs/KWN-S
 +                     '1' - Enable
 +                     '2' - Disable."
 +        DEFVAL      { disable }
-+::= { kwnVlan 1 }
++::= { vlan 1 }
 +
-+kwnVlanMode OBJECT-TYPE
++vlanMode OBJECT-TYPE
 +        SYNTAX      INTEGER {
 +            transparent (0),
 +            access      (1),
@@ -3345,27 +3425,27 @@ diff -urN net-snmp-5.4.4-org/mibs/KWN-SMAC-MIB.mib net-snmp-5.4.4-mod/mibs/KWN-S
 +                                          '3' - Q-in-Q
 +                                          '4' - MAC-in-MAC."
 +        DEFVAL      { transparent }
-+::= { kwnVlan 2 }
++::= { vlan 2 }
 +
-+kwnVlanMgmtId OBJECT-TYPE
++vlanMgmtId OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-write
 +        STATUS      current
 +        DESCRIPTION "This parameter is used to configure
 +                     the Managment VLAN ID. Default value
 +                     is 1."
-+::= { kwnVlan 3 }
++::= { vlan 3 }
 +
-+kwnVlanAccessId OBJECT-TYPE
++vlanAccessId OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-write
 +        STATUS      current
 +        DESCRIPTION "This parameter is used to configure
 +                     the Access VLAN ID. Default value
 +                     is -1."
-+::= { kwnVlan 4 }
++::= { vlan 4 }
 +
-+kwnVlanTrunkOption OBJECT-TYPE
++vlanTrunkOption OBJECT-TYPE
 +        SYNTAX      INTEGER {
 +            list (1),
 +            all  (2)
@@ -3377,25 +3457,25 @@ diff -urN net-snmp-5.4.4-org/mibs/KWN-SMAC-MIB.mib net-snmp-5.4.4-mod/mibs/KWN-S
 +                     '1' - List
 +                     '2' - All."
 +        DEFVAL      { all }
-+::= { kwnVlan 5 }
++::= { vlan 5 }
 +
-+kwnVlanTrunkId OBJECT-TYPE
++vlanTrunkId OBJECT-TYPE
 +        SYNTAX      DisplayString
 +        MAX-ACCESS  read-write
 +        STATUS      current
 +        DESCRIPTION "This parameter is used to configure 
 +                     the Trunk VLAN ID."
-+::= { kwnVlan 6 }
++::= { vlan 6 }
 +
-+kwnVlanSvlanId OBJECT-TYPE
++vlanSvlanId OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-write
 +        STATUS      current
 +        DESCRIPTION "This parameter is used to configure 
 +                     the SVLAN ID. Default value is -1."
-+::= { kwnVlan 7 }
++::= { vlan 7 }
 +
-+kwnVlanSVlanEtherType OBJECT-TYPE
++vlanSVlanEtherType OBJECT-TYPE
 +        SYNTAX      INTEGER {
 +            x8100 (1),
 +            x88a8 (2),
@@ -3411,52 +3491,53 @@ diff -urN net-snmp-5.4.4-org/mibs/KWN-SMAC-MIB.mib net-snmp-5.4.4-mod/mibs/KWN-S
 +                     '3' - 0x9100
 +                     '4' - 0x9200.
 +                     Default value is 0x8100."
-+::= { kwnVlan 8 }
++::= { vlan 8 }
 +
-+kwnVlanBackboneDestinationMAC OBJECT-TYPE
-+SYNTAX      DisplayString
-+MAX-ACCESS  read-write
-+STATUS      current
-+DESCRIPTION "This parameter is used to configure the
-+             Backbone Destination MAC Address. 
-+             Default value is 00:00:00:00:00:00."
-+::= { kwnVlan 9 }
++vlanBackboneDestinationMAC OBJECT-TYPE
++        SYNTAX      DisplayString
++        MAX-ACCESS  read-write
++        STATUS      current
++        DESCRIPTION "This parameter is used to configure the
++                     Backbone Destination MAC Address. 
++                     Default value is 00:00:00:00:00:00."
++::= { vlan 9 }
 +
-+kwnVlanBackboneSourceMAC OBJECT-TYPE
-+SYNTAX      DisplayString
-+MAX-ACCESS  read-write
-+STATUS      current
-+DESCRIPTION "This parameter is used to configure the
-+             Backbone Source MAC Address.
-+             Default value is 00:00:00:00:00:00."
-+::= { kwnVlan 10 }
++vlanBackboneSourceMAC OBJECT-TYPE
++        SYNTAX      DisplayString
++        MAX-ACCESS  read-write
++        STATUS      current
++        DESCRIPTION "This parameter is used to configure the
++                     Backbone Source MAC Address.
++                     Default value is 00:00:00:00:00:00."
++::= { vlan 10 }
 +
-+kwnVlanBackboneVLANID OBJECT-TYPE
-+SYNTAX      Integer32
-+MAX-ACCESS  read-write
-+STATUS      current
-+DESCRIPTION "This parameter is used to configure 
-+             the Backbone VLANID. Defult value 
-+             is -1."
-+::= { kwnVlan 11 }
++vlanBackboneVLANID OBJECT-TYPE
++        SYNTAX      Integer32
++        MAX-ACCESS  read-write
++        STATUS      current
++        DESCRIPTION "This parameter is used to configure 
++                     the Backbone VLANID. Defult value 
++                     is -1."
++::= { vlan 11 }
 +
-+kwnVlanBackboneServiceInstanceVLANID OBJECT-TYPE
-+SYNTAX      Integer32
-+MAX-ACCESS  read-write
-+STATUS      current
-+DESCRIPTION "This parameter is used to configure 
-+             the Backbone Service Instance VLANID.
-+             Default value is -1."
-+::= { kwnVlan 12 }
++vlanBackboneServiceInstanceVLANID OBJECT-TYPE
++        SYNTAX      Integer32
++        MAX-ACCESS  read-write
++        STATUS      current
++        DESCRIPTION "This parameter is used to configure 
++                     the Backbone Service Instance VLANID.
++                     Default value is -1."
++::= { vlan 12 }
 +
 +------------------------------------------------------------------------
 +------------------------------------------------------------------------
-+kwnEthernet OBJECT-IDENTITY
++
++ethernet OBJECT-IDENTITY
 +        STATUS      current
 +        DESCRIPTION "Ethernet Parameters."
-+::= { kwnConfiguration 5 }
++::= { configuration 5 }
 +
-+kwnEthernetMode OBJECT-TYPE
++ethernetMode OBJECT-TYPE
 +        SYNTAX      INTEGER {
 +            autoNegotation (0),
 +            half10Mbps     (1),
@@ -3476,25 +3557,26 @@ diff -urN net-snmp-5.4.4-org/mibs/KWN-SMAC-MIB.mib net-snmp-5.4.4-mod/mibs/KWN-S
 +                     '4' - 100Mbps-Full,
 +                     '5' - 1000Mbps-Full."
 +        DEFVAL      { autoNegotation }
-+::= { kwnEthernet 1 }
++::= { ethernet 1 }
 +
-+kwnEthernetInactivity OBJECT-TYPE
++ethernetInactivity OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-write
 +        STATUS      current
 +        DESCRIPTION "This parameter is used to Configuration 
 +                     the Ethernet Inactivity in minutes. 
 +                     Default value is 0"
-+::= { kwnEthernet 2 }
++::= { ethernet 2 }
 +
 +------------------------------------------------------------------------
 +------------------------------------------------------------------------
-+kwnDhcp OBJECT-IDENTITY
++
++dhcp OBJECT-IDENTITY
 +        STATUS current
 +        DESCRIPTION "DHCP Parameters"
-+::= { kwnConfiguration 6 }
++::= { configuration 6 }
 +
-+kwnDhcpServer OBJECT-TYPE
++dhcpServer OBJECT-TYPE
 +        SYNTAX      INTEGER {
 +            disable (0),
 +            enable  (1)
@@ -3506,42 +3588,43 @@ diff -urN net-snmp-5.4.4-org/mibs/KWN-SMAC-MIB.mib net-snmp-5.4.4-mod/mibs/KWN-S
 +                     '0' - Disable
 +                     '1' - Enable."
 +        DEFVAL      { disable }
-+::= { kwnDhcp 1 }
++::= { dhcp 1 }
 +
-+kwnDhcpStart OBJECT-TYPE
++dhcpStart OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-write
 +        STATUS      current
 +        DESCRIPTION "This parameter is used to configure DHCP
 +                     Server Start Range. Defualt value is 100."
-+::= { kwnDhcp 2 }
++::= { dhcp 2 }
 +
-+kwnDhcpLimit OBJECT-TYPE
++dhcpLimit OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-write
 +        STATUS      current
 +        DESCRIPTION "This parameter is used to configure DHCP
 +                     Server End Limit Range. Default value is 
 +                     150."
-+::= { kwnDhcp 3 }
++::= { dhcp 3 }
 +
-+kwnDhcpLeaseTime OBJECT-TYPE
++dhcpLeaseTime OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-write
 +        STATUS      current
 +        DESCRIPTION "This parameter is used to configure DHCP 
 +                     Server Lease Time. Default value is 12h."
-+::= { kwnDhcp 4 }
++::= { dhcp 4 }
 +
 +
 +------------------------------------------------------------------------
 +------------------------------------------------------------------------
-+kwnSystem OBJECT-IDENTITY
++
++sysMgmt OBJECT-IDENTITY
 +        STATUS current
 +        DESCRIPTION "Management Parameters"
-+::= { kwnManagement 1 }
++::= { management 1 }
 +
-+kwnApply OBJECT-TYPE
++sysMgmtApply OBJECT-TYPE
 +        SYNTAX      INTEGER {
 +            yes (1),
 +            no  (2)
@@ -3550,9 +3633,9 @@ diff -urN net-snmp-5.4.4-org/mibs/KWN-SMAC-MIB.mib net-snmp-5.4.4-mod/mibs/KWN-S
 +        STATUS      current
 +        DESCRIPTION "This parameter is used to Apply 
 +                     changed configuration."
-+::= { kwnSystem 1 }
++::= { sysMgmt 1 }
 +
-+kwnReset OBJECT-TYPE
++sysMgmtReset OBJECT-TYPE
 +        SYNTAX      INTEGER {
 +            yes (1),
 +            no  (2)
@@ -3561,9 +3644,9 @@ diff -urN net-snmp-5.4.4-org/mibs/KWN-SMAC-MIB.mib net-snmp-5.4.4-mod/mibs/KWN-S
 +        STATUS      current
 +        DESCRIPTION "This parameter is used to restore
 +                     default configuration."
-+::= { kwnSystem 2 }
++::= { sysMgmt 2 }
 +
-+kwnReboot OBJECT-TYPE
++sysMgmtReboot OBJECT-TYPE
 +        SYNTAX      INTEGER {
 +            yes (1),
 +            no  (2)
@@ -3572,9 +3655,9 @@ diff -urN net-snmp-5.4.4-org/mibs/KWN-SMAC-MIB.mib net-snmp-5.4.4-mod/mibs/KWN-S
 +        STATUS      current
 +        DESCRIPTION "This parameter is used to Reboot
 +                     the device."
-+::= { kwnSystem 3 }
++::= { sysMgmt 3 }
 +
-+kwnDynamicUpdate OBJECT-TYPE
++sysMgmtDynamicUpdate OBJECT-TYPE
 +        SYNTAX      INTEGER {
 +            yes (1),
 +            no  (2)
@@ -3583,653 +3666,699 @@ diff -urN net-snmp-5.4.4-org/mibs/KWN-SMAC-MIB.mib net-snmp-5.4.4-mod/mibs/KWN-S
 +        STATUS      current
 +        DESCRIPTION "This parameter is used to apply
 +                     Dynamic Configuration."
-+::= { kwnSystem 4 }
-+
++::= { sysMgmt 4 }
 +
 +------------------------------------------------------------------------
 +------------------------------------------------------------------------
 +
-+kwnWirelessStatsTable OBJECT-TYPE
-+        SYNTAX SEQUENCE OF KwnWirelessStatsEntry
++wirelessStatsTable OBJECT-TYPE
++        SYNTAX SEQUENCE OF WirelessStatsEntry
 +        MAX-ACCESS         not-accessible
 +        STATUS             current
 +        DESCRIPTION        "This table is used to specify 
 +                            Wireless Statistics."
-+::= { kwnMonitor 1 }
++::= { monitor 1 }
 +
-+
-+kwnWirelessStatsEntry OBJECT-TYPE
-+        SYNTAX      KwnWirelessStatsEntry
++wirelessStatsEntry OBJECT-TYPE
++        SYNTAX      WirelessStatsEntry
 +        MAX-ACCESS  not-accessible
 +        STATUS      current
 +        DESCRIPTION "This parameter represents an entry in the 
 +                     Wireless Statistics Table."
-+        INDEX       { kwnWirelessStatsRadioIndex }
-+::= { kwnWirelessStatsTable 1 }
++        INDEX       { wirelessStatsRadioIndex }
++::= { wirelessStatsTable 1 }
 +
 +
-+KwnWirelessStatsEntry ::=
++WirelessStatsEntry ::=
 +        SEQUENCE {
-+                kwnWirelessStatsRadioIndex 
++                wirelessStatsRadioIndex
 +                    Integer32,
-+                kwnWirelessStatsRemotePartners 
++                wirelessStatsRemotePartners
 +                    Integer32,
-+                kwnWirelessStatsDataTXTotalPackets
++                wirelessStatsDataTxTotalPackets
 +                    Integer32,
-+                kwnWirelessStatsDataRXTotalPackets
++                wirelessStatsDataRxTotalPackets
 +                    Integer32,
-+                kwnWirelessStatsDataTXMulticastPackets
++                wirelessStatsDataTxMulticastPackets
 +                    Integer32,
-+                kwnWirelessStatsDataRXMulticastPackets
++                wirelessStatsDataRxMulticastPackets
 +                    Integer32,
-+                kwnWirelessStatsDataTXUnicastPackets
++                wirelessStatsDataTxUnicastPackets
 +                    Integer32,
-+                kwnWirelessStatsDataRXUnicastPackets
++                wirelessStatsDataRxUnicastPackets
 +                    Integer32,
-+                kwnWirelessStatsMgmtTXPackets
++                wirelessStatsMgmtTxPackets
 +                    Integer32,
-+                kwnWirelessStatsMgmtRXPackets
++                wirelessStatsMgmtRxPackets
 +                    Integer32,
-+                kwnWirelessStatsMgmtTXBeacons
++                wirelessStatsMgmtTxBeacons
 +                    Integer32,
-+                kwnWirelessStatsMgmtRXBeacons
++                wirelessStatsMgmtRxBeacons
 +                    Integer32,
-+                kwnWirelessStatsMgmtAuthReqSent
++                wirelessStatsMgmtAuthReqSent
 +                    Integer32,
-+                kwnWirelessStatsMgmtAuthReqRecv
++                wirelessStatsMgmtAuthReqRecv
 +                    Integer32,
-+                kwnWirelessStatsMgmtAuthConfirm
++                wirelessStatsMgmtAuthConfirm
 +                    Integer32,
-+                kwnWirelessStatsMgmtAuthReject
++                wirelessStatsMgmtAuthReject
 +                    Integer32,
-+                kwnWirelessStatsMgmtDeAuthReqSent
++                wirelessStatsMgmtDeAuthReqSent
 +                    Integer32,
-+                kwnWirelessStatsMgmtDeAuthReqRecv
++                wirelessStatsMgmtDeAuthReqRecv
 +                    Integer32,
-+                kwnWirelessStatsMgmtAuthResultLast
++                wirelessStatsMgmtAuthResultLast
 +                    DisplayString,
-+                kwnWirelessStatsMgmtAssocReqSent
++                wirelessStatsMgmtAssocReqSent
 +                    Integer32,
-+                kwnWirelessStatsMgmtAssocReqRecv
++                wirelessStatsMgmtAssocReqRecv
 +                    Integer32,
-+                kwnWirelessStatsMgmtAssocConfirm
++                wirelessStatsMgmtAssocConfirm
 +                    Integer32,
-+                kwnWirelessStatsMgmtAssocReject
++                wirelessStatsMgmtAssocReject
 +                    Integer32,
-+                kwnWirelessStatsMgmtDeAssocReqSent
++                wirelessStatsMgmtDeAssocReqSent
 +                    Integer32,
-+                kwnWirelessStatsMgmtDeAssocReqRecv
++                wirelessStatsMgmtDeAssocReqRecv
 +                    Integer32,
-+                kwnWirelessStatsMgmtAssocResultLast
++                wirelessStatsMgmtAssocResultLast
 +                    DisplayString,
-+                kwnWirelessStatsMPDUErrors
++                wirelessStatsMPDUErrors
 +                    Integer32,
-+                kwnWirelessStatsPhyErrors
++                wirelessStatsPhyErrors
 +                    Integer32
 +        }
 +
-+kwnWirelessStatsRadioIndex OBJECT-TYPE
++wirelessStatsRadioIndex OBJECT-TYPE
 +        SYNTAX      Integer32 (1..2)
 +        MAX-ACCESS  read-only
 +        STATUS      current
 +        DESCRIPTION "This parameter represents the index for the 
 +                     wireless Statistics table."
-+::= { kwnWirelessStatsEntry 1 }
++::= { wirelessStatsEntry 1 }
 +
-+kwnWirelessStatsRemotePartners OBJECT-TYPE
++wirelessStatsRemotePartners OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-only
 +        STATUS      current
 +        DESCRIPTION "This parameter represents the Remote Partners
 +                     in Wireless Statistics."
-+::= { kwnWirelessStatsEntry 2 }
++::= { wirelessStatsEntry 2 }
 +
-+kwnWirelessStatsDataTXTotalPackets OBJECT-TYPE
++wirelessStatsDataTxTotalPackets OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-only
 +        STATUS      current
-+        DESCRIPTION "This parameter represents the TX total packets
++        DESCRIPTION "This parameter represents the Tx total packets
 +                     in Wireless Statistics of type data."
-+::= { kwnWirelessStatsEntry 3 }
++::= { wirelessStatsEntry 3 }
 +
-+kwnWirelessStatsDataRXTotalPackets OBJECT-TYPE
++wirelessStatsDataRxTotalPackets OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-only
 +        STATUS      current
-+        DESCRIPTION "This parameter represents the RX total packets
++        DESCRIPTION "This parameter represents the Rx total packets
 +                     in Wireless Statistics of type data."
-+::= { kwnWirelessStatsEntry 4 }
++::= { wirelessStatsEntry 4 }
 +
-+kwnWirelessStatsDataTXMulticastPackets OBJECT-TYPE
++wirelessStatsDataTxMulticastPackets OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-only
 +        STATUS      current
-+        DESCRIPTION "This parameter represents the TX Multicast
++        DESCRIPTION "This parameter represents the Tx Multicast
 +                     packets in Wireless Statistics of type data."
-+::= { kwnWirelessStatsEntry 5 }
++::= { wirelessStatsEntry 5 }
 +
-+kwnWirelessStatsDataRXMulticastPackets OBJECT-TYPE
++wirelessStatsDataRxMulticastPackets OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-only
 +        STATUS      current
-+        DESCRIPTION "This parameter represents the RX Multicast
++        DESCRIPTION "This parameter represents the Rx Multicast
 +                     packets in Wireless Statistics of type data."
-+::= { kwnWirelessStatsEntry 6 }
++::= { wirelessStatsEntry 6 }
 +
-+kwnWirelessStatsDataTXUnicastPackets OBJECT-TYPE
++wirelessStatsDataTxUnicastPackets OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-only
 +        STATUS      current
-+        DESCRIPTION "This parameter represents the TX Multicast
++        DESCRIPTION "This parameter represents the Tx Multicast
 +                     packets in Wireless Statistics of type data."
-+::= { kwnWirelessStatsEntry 7 }
++::= { wirelessStatsEntry 7 }
 +
-+kwnWirelessStatsDataRXUnicastPackets OBJECT-TYPE
++wirelessStatsDataRxUnicastPackets OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-only
 +        STATUS      current
-+        DESCRIPTION "This parameter represents the RX Multicast
++        DESCRIPTION "This parameter represents the Rx Multicast
 +                     packets in Wireless Statistics of type data."
-+::= { kwnWirelessStatsEntry 8 }
++::= { wirelessStatsEntry 8 }
 +
-+kwnWirelessStatsMgmtTXPackets OBJECT-TYPE
++wirelessStatsMgmtTxPackets OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-only
 +        STATUS      current
-+        DESCRIPTION "This parameter represents the TX packets
++        DESCRIPTION "This parameter represents the Tx packets
 +                     in Wireless Statistics of type Managment."
-+::= { kwnWirelessStatsEntry 9 }
++::= { wirelessStatsEntry 9 }
 +
-+kwnWirelessStatsMgmtRXPackets OBJECT-TYPE
++wirelessStatsMgmtRxPackets OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-only
 +        STATUS      current
-+        DESCRIPTION "This parameter represents the RX packets
++        DESCRIPTION "This parameter represents the Rx packets
 +                     in Wireless Statistics of type Managment."
-+::= { kwnWirelessStatsEntry 10 }
++::= { wirelessStatsEntry 10 }
 +
-+kwnWirelessStatsMgmtTXBeacons OBJECT-TYPE
++wirelessStatsMgmtTxBeacons OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-only
 +        STATUS      current
-+        DESCRIPTION "This parameter represents the TX packets
++        DESCRIPTION "This parameter represents the Tx Beacons
 +                     in Wireless Statistics of type Managment."
-+::= { kwnWirelessStatsEntry 11 }
++::= { wirelessStatsEntry 11 }
 +
-+kwnWirelessStatsMgmtRXBeacons OBJECT-TYPE
++wirelessStatsMgmtRxBeacons OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-only
 +        STATUS      current
-+        DESCRIPTION "This parameter represents the RX packets
++        DESCRIPTION "This parameter represents the Rx Beacons
 +                     in Wireless Statistics of type Managment."
-+::= { kwnWirelessStatsEntry 12 }
++::= { wirelessStatsEntry 12 }
 +
-+kwnWirelessStatsMgmtAuthReqSent OBJECT-TYPE
++wirelessStatsMgmtAuthReqSent OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-only
 +        STATUS      current
 +        DESCRIPTION "This parameter represents the Authentication
 +                     request sent in Wireless Statistics of type 
 +                     Managment."
-+::= { kwnWirelessStatsEntry 13 }
++::= { wirelessStatsEntry 13 }
 +
-+kwnWirelessStatsMgmtAuthReqRecv OBJECT-TYPE
++wirelessStatsMgmtAuthReqRecv OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-only
 +        STATUS      current
 +        DESCRIPTION "This parameter represents the Authentication
 +                     request received in Wireless Statistics of 
 +                     type Managment."
-+::= { kwnWirelessStatsEntry 14 }
++::= { wirelessStatsEntry 14 }
 +
-+kwnWirelessStatsMgmtAuthConfirm OBJECT-TYPE
++wirelessStatsMgmtAuthConfirm OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-only
 +        STATUS      current
 +        DESCRIPTION "This parameter represents the Authentication
 +                     confirm in Wireless Statistics of type 
 +                     Managment."
-+::= { kwnWirelessStatsEntry 15 }
++::= { wirelessStatsEntry 15 }
 +
-+kwnWirelessStatsMgmtAuthReject OBJECT-TYPE
++wirelessStatsMgmtAuthReject OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-only
 +        STATUS      current
 +        DESCRIPTION "This parameter represents the Authentication
 +                     reject in Wireless Statistics of 
 +                     type Managment."
-+::= { kwnWirelessStatsEntry 16 }
++::= { wirelessStatsEntry 16 }
 +
-+kwnWirelessStatsMgmtDeAuthReqSent OBJECT-TYPE
++wirelessStatsMgmtDeAuthReqSent OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-only
 +        STATUS      current
 +        DESCRIPTION "This parameter represents the DeAuthentication
 +                     request sent in Wireless Statistics of type 
 +                     Managment."
-+::= { kwnWirelessStatsEntry 17 }
++::= { wirelessStatsEntry 17 }
 +
-+kwnWirelessStatsMgmtDeAuthReqRecv OBJECT-TYPE
++wirelessStatsMgmtDeAuthReqRecv OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-only
 +        STATUS      current
 +        DESCRIPTION "This parameter represents the DeAuthentication
 +                     request received in Wireless Statistics of 
 +                     type Managment."
-+::= { kwnWirelessStatsEntry 18 }
++::= { wirelessStatsEntry 18 }
 +
-+kwnWirelessStatsMgmtAuthResultLast OBJECT-TYPE
++wirelessStatsMgmtAuthResultLast OBJECT-TYPE
 +        SYNTAX      DisplayString
 +        MAX-ACCESS  read-only
 +        STATUS      current
 +        DESCRIPTION "This parameter represents the Authentication
 +                     result last in Wireless Statistics of 
 +                     type Managment."
-+::= { kwnWirelessStatsEntry 19 }
++::= { wirelessStatsEntry 19 }
 +
-+kwnWirelessStatsMgmtAssocReqSent OBJECT-TYPE
++wirelessStatsMgmtAssocReqSent OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-only
 +        STATUS      current
 +        DESCRIPTION "This parameter represents the Association
 +                     request sent in Wireless Statistics of type 
 +                     Managment."
-+::= { kwnWirelessStatsEntry 20 }
++::= { wirelessStatsEntry 20 }
 +
-+kwnWirelessStatsMgmtAssocReqRecv OBJECT-TYPE
++wirelessStatsMgmtAssocReqRecv OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-only
 +        STATUS      current
 +        DESCRIPTION "This parameter represents the Association
 +                     request received in Wireless Statistics of 
 +                     type Managment."
-+::= { kwnWirelessStatsEntry 21 }
++::= { wirelessStatsEntry 21 }
 +
-+kwnWirelessStatsMgmtAssocConfirm OBJECT-TYPE
++wirelessStatsMgmtAssocConfirm OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-only
 +        STATUS      current
 +        DESCRIPTION "This parameter represents the Association
 +                     confirm in Wireless Statistics of type 
 +                     Managment."
-+::= { kwnWirelessStatsEntry 22 }
++::= { wirelessStatsEntry 22 }
 +
-+kwnWirelessStatsMgmtAssocReject OBJECT-TYPE
++wirelessStatsMgmtAssocReject OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-only
 +        STATUS      current
 +        DESCRIPTION "This parameter represents the Association
 +                     reject in Wireless Statistics of 
 +                     type Managment."
-+::= { kwnWirelessStatsEntry 23 }
++::= { wirelessStatsEntry 23 }
 +
-+kwnWirelessStatsMgmtDeAssocReqSent OBJECT-TYPE
++wirelessStatsMgmtDeAssocReqSent OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-only
 +        STATUS      current
 +        DESCRIPTION "This parameter represents the DeAssociation
 +                     request sent in Wireless Statistics of type 
 +                     Managment."
-+::= { kwnWirelessStatsEntry 24 }
++::= { wirelessStatsEntry 24 }
 +
-+kwnWirelessStatsMgmtDeAssocReqRecv OBJECT-TYPE
++wirelessStatsMgmtDeAssocReqRecv OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-only
 +        STATUS      current
 +        DESCRIPTION "This parameter represents the DeAssociation
 +                     request received in Wireless Statistics of 
 +                     type Managment."
-+::= { kwnWirelessStatsEntry 25 }
++::= { wirelessStatsEntry 25 }
 +
-+kwnWirelessStatsMgmtAssocResultLast OBJECT-TYPE
++wirelessStatsMgmtAssocResultLast OBJECT-TYPE
 +        SYNTAX      DisplayString
 +        MAX-ACCESS  read-only
 +        STATUS      current
 +        DESCRIPTION "This parameter represents the Association
 +                     result last in Wireless Statistics of 
 +                     type Managment."
-+::= { kwnWirelessStatsEntry 26 }
++::= { wirelessStatsEntry 26 }
 +
-+kwnWirelessStatsMPDUErrors OBJECT-TYPE
++wirelessStatsMPDUErrors OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-only
 +        STATUS      current
 +        DESCRIPTION "This parameter represents the MPDU Errors
 +                     in Wireless Statistcs."
-+::= { kwnWirelessStatsEntry 27 }
++::= { wirelessStatsEntry 27 }
 +
-+kwnWirelessStatsPhyErrors OBJECT-TYPE
++wirelessStatsPhyErrors OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-only
 +        STATUS      current
 +        DESCRIPTION "This parameter represents the Phy Errors
 +                     in Wireless Statistcs."
-+::= { kwnWirelessStatsEntry 28 }
++::= { wirelessStatsEntry 28 }
 +
 +------------------------------------------------------------------------
 +------------------------------------------------------------------------
-+kwnEthernetStats OBJECT-IDENTITY
++
++ethernetStats OBJECT-IDENTITY
 +        STATUS      current
 +        DESCRIPTION "Ethernet Statistcs"
-+::= { kwnMonitor 2 }
++::= { monitor 2 }
 +
-+kwnEthernetStatus OBJECT-TYPE
++ethernetStatus OBJECT-TYPE
 +        SYNTAX      DisplayString
 +        MAX-ACCESS  read-only
 +        STATUS      current
 +        DESCRIPTION "This parameter represents the Ethernet Status."
-+::= { kwnEthernetStats 1 }
++::= { ethernetStats 1 }
 +
-+kwnEthernetSpeed OBJECT-TYPE
++ethernetSpeed OBJECT-TYPE
 +        SYNTAX      DisplayString
 +        MAX-ACCESS  read-only
 +        STATUS      current
 +        DESCRIPTION "This parameter represents the Ethernet Speed."
-+::= { kwnEthernetStats 2 }
++::= { ethernetStats 2 }
 +
-+kwnEthernetDuplex OBJECT-TYPE
++ethernetDuplex OBJECT-TYPE
 +        SYNTAX      DisplayString
 +        MAX-ACCESS  read-only
 +        STATUS      current
 +        DESCRIPTION "This parameter represents the Ethernet Duplex."
-+::= { kwnEthernetStats 3 }
++::= { ethernetStats 3 }
++
++ethernetTxTotalPackets OBJECT-TYPE
++        SYNTAX      Integer32
++        MAX-ACCESS  read-only
++        STATUS      current
++        DESCRIPTION "This parameter represents the Tx Total packets
++                     in ethernet statistics."
++::= { ethernetStats 4 }
++
++ethernetRxTotalPackets OBJECT-TYPE
++        SYNTAX      Integer32
++        MAX-ACCESS  read-only
++        STATUS      current
++        DESCRIPTION "This parameter represents the Rx Total packets
++                     in ethernet statistics."
++::= { ethernetStats 5 }
++
++ethernetTxTotalBytes OBJECT-TYPE
++        SYNTAX      Integer32
++        MAX-ACCESS  read-only
++        STATUS      current
++        DESCRIPTION "This parameter represents the Tx Total Bytes
++                     in ethernet statistics."
++::= { ethernetStats 6 }
++
++ethernetRxTotalBytes OBJECT-TYPE
++        SYNTAX      Integer32
++        MAX-ACCESS  read-only
++        STATUS      current
++        DESCRIPTION "This parameter represents the Rx Total Bytes
++                     in ethernet statistics."
++::= { ethernetStats 7 }
++
++ethernetTxErrors OBJECT-TYPE
++        SYNTAX      Integer32
++        MAX-ACCESS  read-only
++        STATUS      current
++        DESCRIPTION "This parameter represents the Tx Errors
++                     in ethernet statistics."
++::= { ethernetStats 8 }
++
++ethernetRxErrors OBJECT-TYPE
++        SYNTAX      Integer32
++        MAX-ACCESS  read-only
++        STATUS      current
++        DESCRIPTION "This parameter represents the Rx Errors
++                     in ethernet statistics."
++::= { ethernetStats 9 }
 +
 +------------------------------------------------------------------------
 +------------------------------------------------------------------------
 +
-+kwnAssocTable OBJECT-TYPE
-+        SYNTAX SEQUENCE OF KwnAssocEntry
++assocTable OBJECT-TYPE
++        SYNTAX SEQUENCE OF AssocEntry
 +        MAX-ACCESS         not-accessible
 +        STATUS             current
 +        DESCRIPTION        "This table is used to specify
 +                            Wireless Association Station"
-+::= { kwnMonitor 3 }
++::= { monitor 3 }
 +
 +
-+kwnAssocEntry OBJECT-TYPE
-+        SYNTAX      KwnAssocEntry
++assocEntry OBJECT-TYPE
++        SYNTAX      AssocEntry
 +        MAX-ACCESS  not-accessible
 +        STATUS      current
 +        DESCRIPTION "This parameter represents an entry in the
 +                     Associated station Table"
-+        INDEX   { kwnAssocRadioIndex, kwnAssocSecIndex }
-+::= { kwnAssocTable 1 }
++        INDEX   { assocRadioIndex, assocSecIndex }
++::= { assocTable 1 }
 +
 +
-+KwnAssocEntry ::=
++AssocEntry ::=
 +        SEQUENCE {
-+                kwnAssocRadioIndex 
++                assocRadioIndex
 +                    Integer32,
-+                kwnAssocSecIndex 
++                assocSecIndex
 +                    Integer32,
-+                kwnAssocMAC 
++                assocMAC
 +                    DisplayString,
-+                kwnAssocIP 
++                assocIP
 +                    IpAddress,
-+                kwnAssocRemoteLat 
++                assocRemoteLat
 +                    DisplayString,
-+                kwnAssocRemoteLong 
++                assocRemoteLong
 +                    DisplayString,
-+                kwnAssocLocalLat 
++                assocLocalLat
 +                    DisplayString,
-+                kwnAssocLocalLong 
++                assocLocalLong
 +                    DisplayString,
-+                kwnAssocRxRate 
++                assocRxRate
 +                    Integer32,
-+                kwnAssocTxRate 
++                assocTxRate
 +                    Integer32,
-+                kwnAssocRxTput 
++                assocRxTput
 +                    Integer32,
-+                kwnAssocTxTput 
++                assocTxTput
 +                    Integer32,
-+                kwnAssocLocalSNRA1 
++                assocLocalSNRA1
 +                    Integer32,
-+                kwnAssocLocalSNRA2 
++                assocLocalSNRA2
 +                    Integer32,
-+                kwnAssocRemoteSNRA1 
++                assocRemoteSNRA1
 +                    Integer32,
-+                kwnAssocRemoteSNRA2 
++                assocRemoteSNRA2
 +                    Integer32,
-+                kwnAssocLocalPhyErr 
++                assocLocalPhyErr
 +                    Integer32,
-+                kwnAssocRemotePhyErr 
++                assocRemotePhyErr
 +                    Integer32,
-+                kwnAssocLocalMPDUErr 
++                assocLocalMPDUErr
 +                    Integer32,
-+                kwnAssocRemoteMPDUErr 
++                assocRemoteMPDUErr
 +                    Integer32,
-+                kwnAssocLocalRetries 
++                assocLocalRetries
 +                    Integer32,
-+                kwnAssocRemoteRetries 
++                assocRemoteRetries
 +                    Integer32,
-+                kwnAssocLinkTestDuration 
++                assocLinkTestDuration
 +                    Integer32,
-+                kwnAssocLinkTestDirection 
++                assocLinkTestDirection
 +                    Integer32,
-+                kwnAssocLinkTestStartStop 
++                assocLinkTestStartStop
 +                    Integer32,
-+                kwnAssocLocalNoiseFloor 
++                assocLocalNoiseFloor
 +                    Integer32,
-+                kwnAssocRemoteNoiseFloor 
++                assocRemoteNoiseFloor
 +                    Integer32
 +        }
 +
-+
-+kwnAssocRadioIndex OBJECT-TYPE
++assocRadioIndex OBJECT-TYPE
 +        SYNTAX      Integer32 (1..2)
 +        MAX-ACCESS  not-accessible
 +        STATUS      current
 +        DESCRIPTION "This parameter represents the index for the 
 +                     wireless Assoc Table."
-+::= { kwnAssocEntry 1 }
++::= { assocEntry 1 }
 +
-+kwnAssocSecIndex OBJECT-TYPE
++assocSecIndex OBJECT-TYPE
 +        SYNTAX      Integer32 (1..2)
 +        MAX-ACCESS  not-accessible
 +        STATUS      current
 +        DESCRIPTION "This parameter represents the Secondary index 
 +                     for the wireless Assoc Table."
-+::= { kwnAssocEntry 2 }
++::= { assocEntry 2 }
 +
 +
-+kwnAssocMAC OBJECT-TYPE
++assocMAC OBJECT-TYPE
 +        SYNTAX      DisplayString
 +        MAX-ACCESS  read-only
 +        STATUS      current
 +        DESCRIPTION "This parameter represents the MAC address of 
 +                     associated station for a wireless interface."
-+::= { kwnAssocEntry 3 }
++::= { assocEntry 3 }
 +
 +
-+kwnAssocIP OBJECT-TYPE
++assocIP OBJECT-TYPE
 +        SYNTAX      IpAddress
 +        MAX-ACCESS  read-only
 +        STATUS      current
 +        DESCRIPTION "This parameter represents the IP address of 
 +                     associated station for a wireless interface."
-+::= { kwnAssocEntry 4 }
++::= { assocEntry 4 }
 +
-+kwnAssocRemoteLat OBJECT-TYPE
++assocRemoteLat OBJECT-TYPE
 +        SYNTAX      DisplayString
 +        MAX-ACCESS  read-only
 +        STATUS      current
 +        DESCRIPTION "This parameter represents the Remote Latitude 
 +                     of associated station for a wireless interface."
-+::= { kwnAssocEntry 5 }
++::= { assocEntry 5 }
 +
-+kwnAssocRemoteLong OBJECT-TYPE
++assocRemoteLong OBJECT-TYPE
 +        SYNTAX      DisplayString
 +        MAX-ACCESS  read-only
 +        STATUS      current
 +        DESCRIPTION "This parameter represents the Remote Longitude 
 +                     of associated station for a wireless interface."
-+::= { kwnAssocEntry 6 }
++::= { assocEntry 6 }
 +
-+kwnAssocLocalLat OBJECT-TYPE
++assocLocalLat OBJECT-TYPE
 +        SYNTAX      DisplayString
 +        MAX-ACCESS  read-only
 +        STATUS      current
 +        DESCRIPTION "This parameter represents the Local Latitude 
 +                     of associated station for a wireless interface."
-+::= { kwnAssocEntry 7 }
++::= { assocEntry 7 }
 +
-+kwnAssocLocalLong OBJECT-TYPE
++assocLocalLong OBJECT-TYPE
 +        SYNTAX      DisplayString
 +        MAX-ACCESS  read-only
 +        STATUS      current
 +        DESCRIPTION "This parameter represents the Local Longitude 
 +                     of associated station for a wireless interface."
-+::= { kwnAssocEntry 8 }
++::= { assocEntry 8 }
 +
-+kwnAssocRxRate OBJECT-TYPE
++assocRxRate OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-only
 +        STATUS      current
 +        DESCRIPTION "This parameter represents the Rx Rate 
 +                     of associated station for a wireless interface."
-+::= { kwnAssocEntry 9 }
++::= { assocEntry 9 }
 +
-+kwnAssocTxRate OBJECT-TYPE
++assocTxRate OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-only
 +        STATUS      current
 +        DESCRIPTION "This parameter represents the Tx Rate 
 +                     of associated station for a wireless interface."
-+::= { kwnAssocEntry 10 }
++::= { assocEntry 10 }
 +
-+kwnAssocRxTput OBJECT-TYPE
++assocRxTput OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-only
 +        STATUS      current
 +        DESCRIPTION "This parameter represents the Rx Throughput 
 +                     of associated station for a wireless interface."
-+::= { kwnAssocEntry 11 }
++::= { assocEntry 11 }
 +
-+kwnAssocTxTput OBJECT-TYPE
++assocTxTput OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-only
 +        STATUS      current
 +        DESCRIPTION "This parameter represents the Tx Throughput 
 +                     of associated station for a wireless interface."
-+::= { kwnAssocEntry 12 }
++::= { assocEntry 12 }
 +
-+kwnAssocLocalSNRA1 OBJECT-TYPE
++assocLocalSNRA1 OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-only
 +        STATUS      current
 +        DESCRIPTION "This parameter represents the Local SNR A1 
 +                     of associated station for a wireless interface."
-+::= { kwnAssocEntry 13 }
++::= { assocEntry 13 }
 +
-+kwnAssocLocalSNRA2 OBJECT-TYPE
++assocLocalSNRA2 OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-only
 +        STATUS      current
 +        DESCRIPTION "This parameter represents the Local SNR A2 
 +                     of associated station for a wireless interface."
-+::= { kwnAssocEntry 14 }
++::= { assocEntry 14 }
 +
-+kwnAssocRemoteSNRA1 OBJECT-TYPE
++assocRemoteSNRA1 OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-only
 +        STATUS      current
 +        DESCRIPTION "This parameter represents the Remote SNR A1 
 +                     of associated station for a wireless interface."
-+::= { kwnAssocEntry 15 }
++::= { assocEntry 15 }
 +
-+kwnAssocRemoteSNRA2 OBJECT-TYPE
++assocRemoteSNRA2 OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-only
 +        STATUS      current
 +        DESCRIPTION "This parameter represents the Remote SNR A2 
 +                     of associated station for a wireless interface."
-+::= { kwnAssocEntry 16 }
++::= { assocEntry 16 }
 +
-+kwnAssocLocalPhyErr OBJECT-TYPE
++assocLocalPhyErr OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-only
 +        STATUS      current
 +        DESCRIPTION "This parameter represents the Local Phy Errors 
 +                     of associated station for a wireless interface."
-+::= { kwnAssocEntry 17 }
++::= { assocEntry 17 }
 +
-+kwnAssocRemotePhyErr OBJECT-TYPE
++assocRemotePhyErr OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-only
 +        STATUS      current
 +        DESCRIPTION "This parameter represents the Remote Phy Errors 
 +                     of associated station for a wireless interface."
-+::= { kwnAssocEntry 18 }
++::= { assocEntry 18 }
 +
-+kwnAssocLocalMPDUErr OBJECT-TYPE
++assocLocalMPDUErr OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-only
 +        STATUS      current
 +        DESCRIPTION "This parameter represents the Local MPDU Errors 
 +                     of associated station for a wireless interface."
-+::= { kwnAssocEntry 19 }
++::= { assocEntry 19 }
 +
-+kwnAssocRemoteMPDUErr OBJECT-TYPE
++assocRemoteMPDUErr OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-only
 +        STATUS      current
 +        DESCRIPTION "This parameter represents the Remote MPDU Errors 
 +                     of associated station for a wireless interface."
-+::= { kwnAssocEntry 20 }
++::= { assocEntry 20 }
 +
-+kwnAssocLocalRetries OBJECT-TYPE
++assocLocalRetries OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-only
 +        STATUS      current
 +        DESCRIPTION "This parameter represents the Local Retries
 +                     of associated station for a wireless interface."
-+::= { kwnAssocEntry 21 }
++::= { assocEntry 21 }
 +
-+kwnAssocRemoteRetries OBJECT-TYPE
++assocRemoteRetries OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-only
 +        STATUS      current
 +        DESCRIPTION "This parameter represents the Remote Retries
 +                     of associated station for a wireless interface."
-+::= { kwnAssocEntry 22 }
++::= { assocEntry 22 }
 +
-+kwnAssocLinkTestDuration OBJECT-TYPE
++assocLinkTestDuration OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-write
 +        STATUS      current
 +        DESCRIPTION "This parameter represents the Link test Duration."
-+::= { kwnAssocEntry 23 }
++::= { assocEntry 23 }
 +
-+kwnAssocLinkTestDirection OBJECT-TYPE
++assocLinkTestDirection OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-write
 +        STATUS      current
 +        DESCRIPTION "This parameter represents the Link test Direction."
-+::= { kwnAssocEntry 24 }
++::= { assocEntry 24 }
 +
-+kwnAssocLinkTestStartStop OBJECT-TYPE
++assocLinkTestStartStop OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-write
 +        STATUS      current
 +        DESCRIPTION "This parameter represents the Link test status as
 +                     Start or Stop."
-+::= { kwnAssocEntry 25 }
++::= { assocEntry 25 }
 +
-+kwnAssocLocalNoiseFloor OBJECT-TYPE
++assocLocalNoiseFloor OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-only
 +        STATUS      current
 +        DESCRIPTION "This parameter represents the Local Noise Floor
 +                     of associated station for a wireless interface."
-+::= { kwnAssocEntry 26 }
++::= { assocEntry 26 }
 +
-+kwnAssocRemoteNoiseFloor OBJECT-TYPE
++assocRemoteNoiseFloor OBJECT-TYPE
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-only
 +        STATUS      current
 +        DESCRIPTION "This parameter represents the Remote Noise Floor
 +                     of associated station for a wireless interface."
-+::= { kwnAssocEntry 27 }
++::= { assocEntry 27 }
 +
 +
 +END
