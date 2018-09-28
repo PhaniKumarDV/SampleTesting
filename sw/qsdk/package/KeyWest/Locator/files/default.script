@@ -10,7 +10,8 @@ debug(){
 	case "$1" in
 		SET_IP)
 			debug "== $0 called =="
-			/etc/init.d/lanip reload
+			#/etc/init.d/lanip reload
+            reload_config
 		;;
 		RESET)
 			debug "== $0 called =="
