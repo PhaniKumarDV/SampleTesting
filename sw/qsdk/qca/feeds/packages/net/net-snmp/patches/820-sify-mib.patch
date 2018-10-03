@@ -2683,8 +2683,8 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +}
 diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.h
 --- net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h	1970-01-01 05:30:00.000000000 +0530
-+++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.h	2018-10-02 16:48:11.396781714 +0530
-@@ -0,0 +1,340 @@
++++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.h	2018-10-03 11:14:46.477457348 +0530
+@@ -0,0 +1,352 @@
 +/****************************************************************************
 +*                                                                           *
 +*  File Name:           kwnmib.h                                      *
@@ -2847,7 +2847,8 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h net-snmp-5.4.4-mod/agent/mi
 +enum KWN_MANAGEMENT {
 +    KWN_SYSTEM_MGMT = 1,
 +    KWN_SYSTEM_INFO = 2,
-+    KWN_SYSTEM_INV = 3
++    KWN_SYSTEM_INV = 3,
++    KWN_TRAP_CTRL = 4
 +};
 +
 +enum KWN_SYSTEM_MGMT {
@@ -2873,10 +2874,15 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h net-snmp-5.4.4-mod/agent/mi
 +    KWN_SYSTEM_INV_VERSION = 3
 +};
 +
++enum KWN_TRAP_CTRL {
++    KWN_GENERIC_TRAP = 1
++};
++
 +enum KWN_MONITOR {
 +    KWN_WIRELESSSTATS = 1,
 +    KWN_ETHERNETSTATS = 2,
-+    KWN_ASSOCLIST = 3
++    KWN_ASSOCLIST = 3,
++    KWN_TRAPS = 4
 +};
 +
 +enum KWN_WIRELESSSTATS {
@@ -2967,6 +2973,12 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h net-snmp-5.4.4-mod/agent/mi
 +    KWN_ASSOC_REMOTE_NOISE_FLOOR = 27
 +};
 +
++enum KWN_TRAPS {
++    KWN_ASSOCIATED_TRAP = 1,
++    KWN_DISASSOCIATED_TRAP = 2,
++    KWN_DYINGGASP_REMOTE_TRAP = 3
++};
++
 +/* Structure Definitions */
 +typedef struct
 +{
@@ -3051,8 +3063,8 @@ diff -urN net-snmp-5.4.4-org/include/net-snmp/net-snmp-config.h.in net-snmp-5.4.
  
 diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWEST-MIB.mib
 --- net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib	1970-01-01 05:30:00.000000000 +0530
-+++ net-snmp-5.4.4-mod/mibs/KEYWEST-MIB.mib	2018-10-02 16:44:01.304260811 +0530
-@@ -0,0 +1,1730 @@
++++ net-snmp-5.4.4-mod/mibs/KEYWEST-MIB.mib	2018-10-03 11:08:19.553750869 +0530
+@@ -0,0 +1,1773 @@
 +------------------------------------------------------------------------
 +------------------------------------------------------------------------
 +--
@@ -3886,7 +3898,7 @@ diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWES
 +
 +sysMgmt OBJECT-IDENTITY
 +        STATUS current
-+        DESCRIPTION "Management Parameters"
++        DESCRIPTION "System Management Parameters"
 +::= { management 1 }
 +
 +sysMgmtApply OBJECT-TYPE
@@ -3938,7 +3950,7 @@ diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWES
 +
 +sysInfo OBJECT-IDENTITY
 +        STATUS current
-+        DESCRIPTION "Management Parameters"
++        DESCRIPTION "System Information Parameters"
 +::= { management 2 }
 +
 +sysInfoName OBJECT-TYPE
@@ -3994,7 +4006,7 @@ diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWES
 +
 +sysInventory OBJECT-IDENTITY
 +        STATUS current
-+        DESCRIPTION "Management Parameters"
++        DESCRIPTION "System Inventory Parameters"
 +::= { management 3 }
 +
 +sysInventorySerialNo OBJECT-TYPE
@@ -4020,6 +4032,23 @@ diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWES
 +        DESCRIPTION "This parameter is represents the 
 +                     firmware version number."
 +::= { sysInventory 3 }
++
++------------------------------------------------------------------------
++------------------------------------------------------------------------
++
++trapControl OBJECT-IDENTITY
++        STATUS current
++        DESCRIPTION "Trap Parameters"
++::= { management 4 }
++
++
++genericTrap  OBJECT-TYPE
++        SYNTAX       DisplayString
++        MAX-ACCESS   accessible-for-notify
++        STATUS       current
++        DESCRIPTION  "This parameter is used to provide additional information on traps."
++
++::= { trapControl 1 }
 +
 +------------------------------------------------------------------------
 +------------------------------------------------------------------------
@@ -4781,5 +4810,31 @@ diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWES
 +                     of associated station for a wireless interface."
 +::= { assocEntry 27 }
 +
++
++------------------------------------------------------------------------
++------------------------------------------------------------------------
++
++traps OBJECT-IDENTITY
++        STATUS current
++        DESCRIPTION "Trap Parameters"
++::= { monitor 4 }
++
++associatedTrap  NOTIFICATION-TYPE
++        OBJECTS { genericTrap }
++        STATUS       current
++        DESCRIPTION  "This trap is generated when 5GHz radio wireless link is up."
++::= { traps 1 }
++
++disassociatedTrap  NOTIFICATION-TYPE
++        OBJECTS { genericTrap }
++        STATUS       current
++        DESCRIPTION  "This trap is generated when 5GHz radio wireless link is down."
++::= { traps 2 }
++
++dyinggaspRemoteTrap  NOTIFICATION-TYPE
++        OBJECTS { genericTrap }
++        STATUS       current
++        DESCRIPTION  "This trap is generated when remote device is power off."
++::= { traps 3 }
 +
 +END

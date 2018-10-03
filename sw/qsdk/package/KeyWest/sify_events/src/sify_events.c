@@ -36,6 +36,7 @@ void sify_file_write(char *sify_buf,int status, int reason)
 	FILE *sify_fp;
     int len;
     char t[50];
+    char trap_cmd[100];
 
 	/* Get current time */
 	time( &rawtime );
@@ -63,6 +64,8 @@ void sify_file_write(char *sify_buf,int status, int reason)
 	{
 		fprintf(sify_fp, "%s: Associated ( MAC: %s )\n",t,sify_buf);
 		syslog(LOG_INFO, " Associated ( MAC: %s )\n",sify_buf);		       
+        sprintf( trap_cmd, "/usr/sbin/snmptrap.sh 1 %s  > /dev/null 2>&1", sify_buf);
+        system( trap_cmd );
                 //int rc=system("/usr/sbin/sify_senddata.sh '1'"); 
 	}
 	else
@@ -72,18 +75,26 @@ void sify_file_write(char *sify_buf,int status, int reason)
             case IEEE80211_EV_DYING_GASP:
                 fprintf(sify_fp, "%s: Disassociated ( MAC : %s, Reason: Power Off )\n",t,sify_buf);
                 syslog(LOG_INFO, " Disassociated ( MAC : %s, Reason: Power Off )\n",sify_buf);		       
+                sprintf( trap_cmd, "/usr/sbin/snmptrap.sh 3 %s  > /dev/null 2>&1", sify_buf);
+                system( trap_cmd );
                 break;
             case IEEE80211_EV_DISASSOC_IND_AP:
                 fprintf(sify_fp, "%s: Disassociated ( MAC: %s, Reason: Remote Terminated )\n",t,sify_buf);
                 syslog(LOG_INFO, " Disassociated ( MAC: %s, Reason: Remote Terminated )\n",sify_buf);		       
+                sprintf( trap_cmd, "/usr/sbin/snmptrap.sh 2 %s  > /dev/null 2>&1", sify_buf);
+                system( trap_cmd );
                 break;
             case IEEE80211_EV_DISASSOC_COMPLETE_AP:
                 fprintf(sify_fp, "%s: Disassociated ( MAC: %s, Reason: Local Terminated )\n",t,sify_buf);
                 syslog(LOG_INFO, " Disassociated ( MAC: %s, Reason: Local Terminated )\n",sify_buf);		       
+                sprintf( trap_cmd, "/usr/sbin/snmptrap.sh 2 %s  > /dev/null 2>&1", sify_buf);
+                system( trap_cmd );
                 break;
             default:
                 fprintf(sify_fp, "%s: Disassociated ( MAC: %s )\n",t,sify_buf);
                 syslog(LOG_INFO, " Disassociated ( MAC: %s )\n",sify_buf);		       
+                sprintf( trap_cmd, "/usr/sbin/snmptrap.sh 2 %s  > /dev/null 2>&1", sify_buf);
+                system( trap_cmd );
                 break;
         }
     }
