@@ -34,7 +34,7 @@ fi
 if [ "$MODEL" != "" ]; then
     echo "$MODEL" > ./package/KeyWest/kw-base-files/files/etc/model
 else
-    echo "SMAC30" > ./package/KeyWest/kw-base-files/files/etc/model
+    echo "MAP100" > ./package/KeyWest/kw-base-files/files/etc/model
 fi
 
 

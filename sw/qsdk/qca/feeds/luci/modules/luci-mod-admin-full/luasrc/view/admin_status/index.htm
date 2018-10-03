@@ -24,6 +24,7 @@
     local eth_has_link 
     local eth_has_no_link
 	local model_name =  luci.sys.exec("cat /etc/model")
+	local serial_no =  luci.sys.exec("fw_printenv | grep amigoserial | sed 's/amigoserial=//'")
 
     local uci  = require "luci.model.uci".cursor()
     local currTemperature = uci:get_first("system", "system", "temperature")
@@ -372,6 +373,7 @@ function get_log()
 	<table width="100%" cellspacing="10">
 		<tr><td width="33%"><%:Hostname%></td><td><%=luci.sys.hostname() or "?"%></td></tr>
 		<tr><td width="33%"><%:Model%></td><td><%=model_name %></td></tr>
+		<tr><td width="33%"><%:Serial Number%></td><td><%=serial_no %></td></tr>
 		<tr><td width="33%"><%:Local Time%></td><td id="localtime">-</td></tr>
 		<tr><td width="33%"><%:Uptime%></td><td id="uptime">-</td></tr>
 		<tr><td width="33%">Temperature</td><td><%=currTemperature%> &#8451;</td></tr>
