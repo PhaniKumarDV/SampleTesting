@@ -72,7 +72,7 @@ function action_index()
     if string.len(string.sub(luci.util.exec("cat /etc/wifi_packet_logs"),1,-2) ) > 20 then
         eventlog = luci.util.exec("cat /etc/wifi_packet_logs")
     else
-        eventlog = "Wireless Log file is empty."
+        eventlog = "Event Log is empty."
     end
 	luci.template.render("admin_status/index", {eventlog=eventlog})
 end
