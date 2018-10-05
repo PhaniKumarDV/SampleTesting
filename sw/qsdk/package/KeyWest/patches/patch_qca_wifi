@@ -89,7 +89,7 @@ diff -urN qca-wifi-org/include/_ieee80211.h qca-wifi-mod/include/_ieee80211.h
          ((struct ieee80211_channel *) IEEE80211_CHAN_ANY)
 diff -urN qca-wifi-org/include/ieee80211.h qca-wifi-mod/include/ieee80211.h
 --- qca-wifi-org/include/ieee80211.h	2018-06-08 11:00:50.000000000 +0530
-+++ qca-wifi-mod/include/ieee80211.h	2018-09-17 16:59:03.712389483 +0530
++++ qca-wifi-mod/include/ieee80211.h	2018-10-05 12:59:55.497103529 +0530
 @@ -768,6 +768,10 @@
  #define IEEE80211_ACTION_TPC_REQUEST        2   /* Transmit Power control */
  #define IEEE80211_ACTION_TPC_REPORT         3
@@ -186,7 +186,7 @@ diff -urN qca-wifi-org/include/ieee80211.h qca-wifi-mod/include/ieee80211.h
   * 802.11n HT Capability IE
   */
  struct ieee80211_ie_htcap {
-@@ -2813,6 +2888,29 @@
+@@ -2813,6 +2888,30 @@
          u_int8_t isi_tx_rate_mcs;
          u_int8_t isi_tx_rate_flags;
  #endif
@@ -213,6 +213,7 @@ diff -urN qca-wifi-org/include/ieee80211.h qca-wifi-mod/include/ieee80211.h
 +        u_int8_t  isi_r_link_id;
 +        int16_t   isi_l_noise_floor;
 +        int16_t   isi_r_noise_floor;
++        u_int8_t  isi_kwn_tx_rate_mcs;
  
  };
  
@@ -2007,7 +2008,7 @@ diff -urN qca-wifi-org/umac/base/ieee80211_config.c qca-wifi-mod/umac/base/ieee8
      break;
 diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.c qca-wifi-mod/umac/base/ieee80211_ucfg.c
 --- qca-wifi-org/umac/base/ieee80211_ucfg.c	2018-06-08 11:00:49.000000000 +0530
-+++ qca-wifi-mod/umac/base/ieee80211_ucfg.c	2018-09-21 18:58:21.913233424 +0530
++++ qca-wifi-mod/umac/base/ieee80211_ucfg.c	2018-10-05 13:01:12.192778359 +0530
 @@ -50,6 +50,27 @@
  #define HIGHEST_BASIC_RATE 24000
  #define THREE_HUNDRED_FIFTY_MBPS 350000
@@ -2331,7 +2332,15 @@ diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.c qca-wifi-mod/umac/base/ieee802
      len = sta_space(node, &ielen, vap);
      if (len > req->space) {
          return;
-@@ -6685,7 +6964,40 @@
+@@ -6641,6 +6920,7 @@
+         si->isi_tx_rate_mcs = rinfo.mcs;
+         si->isi_tx_rate_flags = rinfo.flags;
+ #endif
++        si->isi_kwn_tx_rate_mcs = rinfo.mcs & 0x0F;
+ 
+     }
+ 
+@@ -6685,7 +6965,40 @@
      si->isi_is_256qam = wlan_node_get_256qam_support(node);
      si->isi_rx_nss = wlan_node_get_rx_spatial(node);
      si->isi_tx_nss = wlan_node_get_tx_spatial(node);

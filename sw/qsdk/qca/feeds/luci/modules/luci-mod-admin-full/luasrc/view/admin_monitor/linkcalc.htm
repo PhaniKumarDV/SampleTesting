@@ -1,0 +1,121 @@
+<%#
+ Copyright 2008 Steven Barth <steven@midlink.org>
+ Copyright 2008 Jo-Philipp Wich <jow@openwrt.org>
+ Licensed to the public under the Apache License 2.0.
+-%>
+<%+header%>
+<%
+    local iw = luci.sys.wifi.getiwinfo("wifi1.network1")
+    local currfreq = iw.frequency
+        function uciget(cmd)
+                local res = luci.util.exec(cmd)
+                local str = string.gsub(res, "\n", "")
+                return str
+        end
+%>
+<script type="text/javascript">
+var curr_freq = <%= luci.http.write_json(currfreq) %>;
+function getBaseLog(x, y) {
+      return Math.log(y) / Math.log(x);
+}
+
+function disable_spin()
+{
+    document.getElementById("spin").innerHTML = "";
+}
+function calculate()
+{
+    var hw = "<%=uciget('uci get wireless.wifi1.hwmode')%>";
+    var tx_pow_ac = [ 23, 22, 22, 21, 21, 20, 19, 18, 17, 16, 23, 22, 22, 21, 21, 20, 19, 18, 17, 16 ];
+    var tx_pow_n = [ 23, 22, 21, 20, 19, 18, 17, 16, 23, 22, 21, 20, 19, 18, 17, 16 ];
+    var tx_pow = ( hw == "11ac" ? tx_pow_ac : tx_pow_n );
+    var tx_loss = document.getElementById("txloss").value;
+    var rx_loss = document.getElementById("rxloss").value;
+    var tx_gain = document.getElementById("txgain").value;
+    var rx_gain = document.getElementById("rxgain").value;
+    var freq = document.getElementById("freq").value;
+    var dis = document.getElementById("dis").value;
+
+    document.getElementById("spin").innerHTML = "<i class='fa fa-spinner fa-pulse'></i>";
+    setTimeout("disable_spin()",500);
+    if( freq == "" ) {
+        alert("Enter Frequency")
+        return;
+    }
+    var path_loss = (20 * (dis > 0 ? getBaseLog(10,dis) : 0)) + (20 * (freq > 0 ? getBaseLog(10,freq) : 0)) + 32.44;
+    path_loss = path_loss.toFixed(2);
+    document.getElementById("pathloss").innerHTML = "<b>Path Loss</b>&nbsp;" + path_loss + "&nbsp; dB";
+
+    var linktable = document.getElementById('link-table');
+    while( linktable.rows.length > 1 )
+        linktable.rows[1].parentNode.removeChild(linktable.rows[1]);
+    for( i = 0; i < tx_pow.length; i++ )
+    {
+        var tx = tx_pow[i] + parseInt(tx_gain) - parseInt(tx_loss);
+        var rx = rx_gain - rx_loss;
+        var rec_pow = tx + rx - path_loss;
+        rec_pow = rec_pow.toFixed(2);
+        var sen = 0;
+        var margin = 0;
+        var tr = linktable.insertRow(-1);
+        tr.className = 'cbi-section-table-row cbi-rowstyle-2';
+        tr.insertCell(-1).innerHTML = "MCS" + i;
+        tr.insertCell(-1).innerHTML = rec_pow;
+    }
+}
+</script>
+</script>
+<div class="page-content">
+<h2><a id="content" name="content"><%:Tools%></a></h2>
+    <ul class="cbi-tabmenu">
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=luci.dispatcher.build_url("admin/monitor/tools")%>"><%:Diagnostics%></a></li>
+        <script type="text/javascript">
+            var mode = "<%=uciget('uci get wireless.@wifi-iface[1].mode')%>";
+            if( mode == "ap" )
+               document.write("<li style='margin-right:4px' class='cbi-tab-disabled'><a href='sascan'><%:Spectrum Analyzer%></a></li>");
+            else
+               document.write("<li style='margin-right:4px' class='cbi-tab-disabled'><a href='survey'><%:Site Survey%></a></li>");
+        </script>
+        <li style="margin-right:4px" class="cbi-tab"><a href="#"><%:Link Calculator%></a></li>
+    </ul>
+<div class="cbi-map">
+<fieldset class="cbi-section">
+<table class="cbi-section-table">
+   <tr class="cbi-section-table-titles">
+      <th class="cbi-section-table-cell" style="padding-left:95px;"> Tx </th>
+      <th class="cbi-section-table-cell" style="padding-left:95px;"> Rx </th>
+      <th class="cbi-section-table-cell" style="padding-left:65px;"> Path Loss </th>
+   </tr>
+   <tr>
+       <td width="35%">Antenna Gain<span style="padding-left:12px;"><input type="text" class="cbi-input-select" id="txgain" style="width:100px;" value="23"></span>&nbsp;dBi</td>
+       <td width="35%">Antenna Gain<span style="padding-left:12px;"><input type="text" class="cbi-input-select" id="rxgain" style="width:100px;" value="23"></span>&nbsp;dBi</td>
+       <td width="35%">Frequency<span style="padding-left:12px;"><input type="text" class="cbi-input-select" id="freq" style="width:100px;" value=""></span>&nbsp;MHz</td>
+   </tr>
+   <tr>
+       <td width="35%">Loss<span style="padding-left:68px;"><input type="text" class="cbi-input-select" id="txloss" style="width:100px;" value="0"></span>&nbsp;dB</td>
+       <td width="35%">Loss<span style="padding-left:68px;"><input type="text" class="cbi-input-select" id="rxloss" style="width:100px;" value="0"></span>&nbsp;dB</td>
+       <td width="35%">Distance<span style="padding-left:24px;"><input type="text" class="cbi-input-select" id="dis" style="width:100px;" value="5"></span>&nbsp;Km</td>
+   </tr>
+</table>
+</fieldset>
+</div>
+<div class="cbi-page-actions" style="padding-right:510px;">
+<span id="spin"></span>
+<input type="button" id="s1" class="cbi-button" value="<%:Calculate%>" onclick="calculate()" />&nbsp;&nbsp;&nbsp;&nbsp;<span id="pathloss"></span>
+</div>
+<div class="cbi-map">
+	<fieldset class="cbi-section">
+		<table class="cbi-section-table" style="width:300px; margin:10px;" id="link-table">
+			<tr class="cbi-section-table-titles">
+				<th class="cbi-section-table-cell"><%:MCS Index%></th>
+				<th class="cbi-section-table-cell"><%:Rx Power (dBm)%></th>
+            </tr>
+        </table>
+    </fieldset>
+</div>
+<script type="text/javascript">
+document.getElementById("freq").value = curr_freq;
+calculate();
+</script>
+</div>
+<%+footer%>

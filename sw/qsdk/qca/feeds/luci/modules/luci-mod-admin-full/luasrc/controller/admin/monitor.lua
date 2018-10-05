@@ -39,6 +39,7 @@ function index()
 	    entry({"admin", "monitor", "tools", "surveyrefresh"}, call("action_surveyrefresh"), nil).leaf = true
 	    entry({"admin", "monitor", "tools", "surveyclear"}, call("action_surveyclear"), nil).leaf = true
     end
+	entry({"admin", "monitor", "tools", "linkcalc"}, template("admin_monitor/linkcalc"))
 
     --entry({"admin", "monitor", "wifi0stats"}, call("action_wifi0stats"), _("Wifi0 Statistics"), 3).leaf = true
     --entry({"admin", "monitor", "wifi1stats"}, call("action_wifi1stats"), _("Wifi1 Statistics"), 4).leaf = true

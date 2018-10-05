@@ -28,6 +28,8 @@
 			netdevs[net:id()] = dev:name()
 		end
 	end
+    local iw = luci.sys.wifi.getiwinfo("wifi1.network1")
+    local freq = iw.frequency
         function uciget(cmd)
                 local res = luci.util.exec(cmd)
                 local str = string.gsub(res, "\n", "")
@@ -46,8 +48,13 @@
 
 <script type="text/javascript" src="<%=resource%>/cbi.js"></script>
 <script type="text/javascript">
-	var ind = <%=luci.http.write_json(entryind)%>;
-        var mac, timer;
+var ind = <%=luci.http.write_json(entryind)%>;
+var freq = <%= luci.http.write_json(freq) %>;
+var hw = "<%=uciget('uci get wireless.wifi1.hwmode')%>";
+var tx_pow_ac = [ 23, 22, 22, 21, 21, 20, 19, 18, 17, 16 ];
+var tx_pow_n = [ 23, 22, 21, 20, 19, 18, 17, 16 ];
+var tx_pow = ( hw == "11ac" ? tx_pow_ac : tx_pow_n );
+var mac, timer;
 
 function disable_spin()
 {
@@ -71,6 +78,20 @@ function save_value( dur )
 	    }
     );
 }
+    function distanceInKmBetweenEarthCoordinates(lat1, lon1, lat2, lon2) {
+        var earthRadiusKm = 6371;
+
+        var dLat = degreesToRadians(lat2-lat1);
+        var dLon = degreesToRadians(lon2-lon1);
+
+        lat1 = degreesToRadians(lat1);
+        lat2 = degreesToRadians(lat2);
+
+        var a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+        Math.sin(dLon/2) * Math.sin(dLon/2) * Math.cos(lat1) * Math.cos(lat2); 
+        var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+        return earthRadiusKm * c;
+    }
 	function nowrap(s) {
 		return s.replace(/ /g, '&#160;');
 	}
@@ -115,6 +136,10 @@ function save_value( dur )
         return degrees * Math.PI / 180;
     }
 
+function getBaseLog(x, y) {
+      return Math.log(y) / Math.log(x);
+}
+
     function distanceInKmBetweenEarthCoordinates(lat1, lon1, lat2, lon2) {
         var earthRadiusKm = 6371;
 
@@ -151,6 +176,20 @@ function save_value( dur )
 						for( var j = 0; j < assoclist.length; j++ )
 						{
 							mac = assoclist[j].bssid;
+                            var tx_gain = document.getElementById("txgain").value;
+                            var tx_loss = document.getElementById("txloss").value;
+                            var rx_gain = document.getElementById("rxgain").value;
+                            var rx_loss = document.getElementById("rxloss").value;
+                            var dis = distanceInKmBetweenEarthCoordinates(assoclist[j].local_lat,assoclist[j].local_long,assoclist[j].remote_lat,assoclist[j].remote_long);
+                            dis = dis.toFixed(2);
+                            var mcs = assoclist[j].tx_rate_mcs;
+                            var path_loss = (20 * (assoclist[j].remote_lat > 0 ? getBaseLog(10,dis) : 0)) + (20 * getBaseLog(10,freq)) + 32.44;
+                            path_loss = path_loss.toFixed(2);
+                            document.getElementById("pathloss").innerHTML = 0 - path_loss;
+                            var tx = tx_pow[mcs] + parseInt(tx_gain) - parseInt(tx_loss);
+                            var rx = parseInt(rx_gain) - parseInt(rx_loss);
+                            var rec_pow = tx + rx - path_loss;
+                            document.getElementById("recpow").innerHTML = rec_pow;
 							document.getElementById("rem_mac").innerHTML = assoclist[j].bssid;
 							document.getElementById("loc_gps").innerHTML = assoclist[j].local_lat != "" ? ( assoclist[j].local_lat + "&deg" + assoclist[j].local_long + "'") : 0;
 							document.getElementById("rem_gps").innerHTML = assoclist[j].local_lat != "" ? ( assoclist[j].remote_lat + "&deg" + assoclist[j].remote_long + "'") : 0;
@@ -221,6 +260,23 @@ function save_value( dur )
             </tr>
         </table>
         </form>
+    </fieldset>
+</div>
+<h2><a id="content" name="content"><%:Link Budget%></a></h2>
+<div class="cbi-map">
+    <fieldset class="cbi-section">
+        <table>
+            <tr>
+                <td width="35%">Tx Loss&nbsp;<input type="text" class="cbi-input-select" id="txloss" style="width:100px;" value="0">&nbsp;dB</td>
+                <td width="35%">Tx Antenna Gain&nbsp;<input type="text" class="cbi-input-select" id="txgain" style="width:100px;" value="23">&nbsp;dBi</td>
+                <td width="35%">Path Loss<span id="pathloss" style="padding-left:50px;"></span>&nbsp;dB</td>
+            </tr>
+            <tr>
+                <td width="35%">Rx Loss&nbsp;<input type="text" class="cbi-input-select" id="rxloss" style="width:100px;" value="0">&nbsp;dB</td>
+                <td width="35%">Rx Antenna Gain&nbsp;<input type="text" class="cbi-input-select" id="rxgain" style="width:100px;" value="23">&nbsp;dBi</td>
+                <td width="35%">Rx Power&nbsp;<span id="recpow" style="padding-left:50px;"></span>&nbsp;dBm</td>
+            </tr>
+        </table>
     </fieldset>
 </div>
 <div style="text-align:left;"><span id="spin"></span>&nbsp;&nbsp;<span id="msg"></span></div>

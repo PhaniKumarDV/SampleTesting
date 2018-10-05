@@ -2911,6 +2911,7 @@ struct ieee80211req_sta_info {
         u_int8_t  isi_r_link_id;
         int16_t   isi_l_noise_floor;
         int16_t   isi_r_noise_floor;
+        u_int8_t  isi_kwn_tx_rate_mcs;
 
 };
 
