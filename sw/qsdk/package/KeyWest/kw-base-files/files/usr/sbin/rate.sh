@@ -75,5 +75,6 @@ esac
 
 #Set Power dynamically
 pow=$(uci get wireless.wifi1.TXPowLim5G)
-pow5G=`expr $pow \* 2`
+pow5G=`expr $pow + 3`
+pow5G=`expr $pow5G \* 2`
 iwpriv wifi1 TXPowLim5G $pow5G

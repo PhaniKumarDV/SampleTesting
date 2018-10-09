@@ -22,7 +22,7 @@ start_service() {
     fi
     if [ "$tx_power_radio1" == "" ]
     then
-        uci set wireless.wifi1.TXPowLim5G='26'
+        uci set wireless.wifi1.TXPowLim5G='23'
     fi
     if [ "$tx_power_radio2" == "" ]
     then
