@@ -28,8 +28,15 @@ if [ "$1" -eq 2 ]; then
 fi
 
 if [ "$1" -eq 3 ]; then
-    trapmsg="Remote device (MAC:$2) is power off"
+    trapmsg="Outdoor Subscriber (MAC:$2) is power off"
     trapoid="1.3.6.1.4.1.52619.1.3.4.3"
+	trap_send
+    exit
+fi
+
+if [ "$1" -eq 4 ]; then
+    trapmsg="Outdoor Base (MAC:$2) is power off"
+    trapoid="1.3.6.1.4.1.52619.1.3.4.4"
 	trap_send
     exit
 fi
