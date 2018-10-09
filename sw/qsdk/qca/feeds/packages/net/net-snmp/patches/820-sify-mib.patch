@@ -1,7 +1,7 @@
 diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.c
 --- net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c	1970-01-01 05:30:00.000000000 +0530
-+++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.c	2018-10-03 14:24:17.972936397 +0530
-@@ -0,0 +1,2679 @@
++++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.c	2018-10-09 18:35:33.663657192 +0530
+@@ -0,0 +1,2688 @@
 +/****************************************************************************
 +*                                                                           *
 +*  File Name:           kwnmib.c                                           *
@@ -210,7 +210,7 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +  { 97   , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_ASSOCCNF } },
 +  { 98   , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_ASSOCREJ } },
 +  { 99   , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_DEASSOCREQSENT } },
-+  { 100   , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_DEASSOCREQRECV } },
++  { 100  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_DEASSOCREQRECV } },
 +  { 101  , ASN_OCTET_STR  , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_ASSOCRESLAST } },
 +  { 102  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MPDU_ERRORS } },
 +  { 103  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_PHY_ERRORS } },
@@ -1303,6 +1303,7 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +        WriteMethod **write_method)
 +{
 +    char cmd[100];
++    char *lat_long_token;
 +
 +    if ( header_generic ( vp, name, length, exact, var_len, write_method )
 +            == MATCH_FAILED )
@@ -1343,12 +1344,20 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +            {
 +                sprintf( cmd, "uci get system.gps.latitude" );
 +                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len, NULL );
++                lat_long_token = strtok( res_str, " ");
++                strncpy(res_str, lat_long_token, strlen(lat_long_token) );
++                res_str[ strlen( res_str ) ] = '\0';
++                *var_len = strlen( res_str );
 +                return ( u_char * ) res_str;
 +            }
 +        case KWN_SYSTEM_INFO_GEO_LONGITUDE:
 +            {
 +                sprintf( cmd, "uci get system.gps.longitude" );
 +                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len, NULL );
++                lat_long_token = strtok( res_str, " ");
++                strncpy(res_str, lat_long_token, strlen(lat_long_token) );
++                res_str[ strlen( res_str ) ] = '\0';
++                *var_len = strlen( res_str );
 +                return ( u_char * ) res_str;
 +            }
 +        case KWN_SYSTEM_INFO_TEMPERATURE:
@@ -2683,8 +2692,8 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +}
 diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.h
 --- net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h	1970-01-01 05:30:00.000000000 +0530
-+++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.h	2018-10-03 11:14:46.477457348 +0530
-@@ -0,0 +1,352 @@
++++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.h	2018-10-09 18:34:01.195008578 +0530
+@@ -0,0 +1,353 @@
 +/****************************************************************************
 +*                                                                           *
 +*  File Name:           kwnmib.h                                      *
@@ -2976,7 +2985,8 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h net-snmp-5.4.4-mod/agent/mi
 +enum KWN_TRAPS {
 +    KWN_ASSOCIATED_TRAP = 1,
 +    KWN_DISASSOCIATED_TRAP = 2,
-+    KWN_DYINGGASP_REMOTE_TRAP = 3
++    KWN_DYINGGASP_SU_TRAP = 3,
++    KWN_DYINGGASP_BSU_TRAP = 4
 +};
 +
 +/* Structure Definitions */
@@ -3063,8 +3073,8 @@ diff -urN net-snmp-5.4.4-org/include/net-snmp/net-snmp-config.h.in net-snmp-5.4.
  
 diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWEST-MIB.mib
 --- net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib	1970-01-01 05:30:00.000000000 +0530
-+++ net-snmp-5.4.4-mod/mibs/KEYWEST-MIB.mib	2018-10-03 11:08:19.553750869 +0530
-@@ -0,0 +1,1773 @@
++++ net-snmp-5.4.4-mod/mibs/KEYWEST-MIB.mib	2018-10-09 18:33:30.018790238 +0530
+@@ -0,0 +1,1779 @@
 +------------------------------------------------------------------------
 +------------------------------------------------------------------------
 +--
@@ -4831,10 +4841,16 @@ diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWES
 +        DESCRIPTION  "This trap is generated when 5GHz radio wireless link is down."
 +::= { traps 2 }
 +
-+dyinggaspRemoteTrap  NOTIFICATION-TYPE
++dyinggaspSUTrap  NOTIFICATION-TYPE
 +        OBJECTS { genericTrap }
 +        STATUS       current
-+        DESCRIPTION  "This trap is generated when remote device is power off."
++        DESCRIPTION  "This trap is generated when Outdoor Subscriber is power off."
 +::= { traps 3 }
++
++dyinggaspBSUTrap  NOTIFICATION-TYPE
++        OBJECTS { genericTrap }
++        STATUS       current
++        DESCRIPTION  "This trap is generated when Outdoor Base is power off."
++::= { traps 4 }
 +
 +END

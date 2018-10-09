@@ -739,7 +739,7 @@ header ul.nav { width: 250px; float: left; margin: 35px 0 0 100px;}
 .cbi-map .cbi-section-table-descr th {  border-top: 1px solid #ddd!important; }
 .border fieldset.cbi-section { border: 1px solid #c2c2c2;     padding: 25px 0 0 0;}
 .border .cbi-map-descr { font-size: 15px; font-weight: 400; padding-bottom: 20px; margin-bottom: 0;}
-.index fieldset.cbi-section.half { padding: 25px 10px;  position: relative;  border: 1px solid #c2c2c2; padding-bottom: 10px; min-height: 375px;
+.index fieldset.cbi-section.half { padding: 25px 10px;  position: relative;  border: 1px solid #c2c2c2; padding-bottom: 10px; min-height: 400px;
     box-sizing: border-box; width: 47%; float: none; margin: 0 1% 0px 1%; display: inline-block; vertical-align: top;}
 .index {text-align: center;}
 textarea#syslog {  width: 100%; padding: 20px; box-sizing: border-box; float: left; border-radius: 0; box-shadow: none; line-height: 1.5; font-size: 14px;    font-family: 'Roboto', sans-serif;
