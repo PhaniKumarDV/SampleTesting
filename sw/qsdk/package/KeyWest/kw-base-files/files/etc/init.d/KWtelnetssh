@@ -1,0 +1,30 @@
+#!/bin/sh /etc/rc.common
+START=93
+USE_PROCD=1
+
+service_triggers() {
+        procd_add_reload_trigger "telnetssh"
+}
+
+start_service() {
+
+    procd_open_instance
+    telnet=$(uci get telnetssh.telnet.status)
+    ssh=$(uci get telnetssh.ssh.status)
+
+    if [ $telnet -eq "1" ]; then
+        /etc/init.d/telnet start
+    else
+        /etc/init.d/telnet stop
+    fi
+
+    if [ $ssh -eq "1" ]; then
+        /etc/init.d/sshd stop
+        /etc/init.d/sshd start
+    else
+        /etc/init.d/sshd stop
+    fi
+    procd_close_instance
+}
+
+

@@ -7,6 +7,10 @@ PROG="/usr/sbin/snmpd"
 
 CONFIGFILE="/var/run/snmpd.conf"
 
+service_triggers() {
+    procd_add_reload_trigger "snmpd"
+}
+
 snmpd_agent_add() {
 	local cfg="$1"
 

@@ -12,7 +12,10 @@ function index()
 	entry({"admin", "system", "clock_status"}, call("action_clock_status"))
 
 	entry({"admin", "system", "system"}, call("action_system"), _("System"), 1)
-	entry({"admin", "system", "admin"}, cbi("admin_system/admin"), _("Administration"), 2)
+	entry({"admin", "system", "services"}, template("admin_system/http"), _("Services"), 2)
+	entry({"admin", "system", "services", "telnet"}, template("admin_system/telnet"))
+	entry({"admin", "system", "services", "snmp"}, template("admin_system/snmp"))
+	--entry({"admin", "system", "admin"}, cbi("admin_system/admin"), _("Administration"), 3)
 	entry({"admin", "system", "system", "logging"}, template("admin_system/logging"))
 
 	--if fs.access("/bin/opkg") then

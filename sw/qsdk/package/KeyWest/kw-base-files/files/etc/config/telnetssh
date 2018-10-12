@@ -1,0 +1,10 @@
+config telnet 'telnet'
+    option status '1'
+    option port '23'
+    option sessions '2'
+
+config ssh 'ssh'
+    option status '1'
+    option port '22'
+    option sessions '2'
+

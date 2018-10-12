@@ -1,0 +1,130 @@
+<%#
+ Copyright 2008-2009 Steven Barth <steven@midlink.org>
+ Copyright 2008-2015 Jo-Philipp Wich <jow@openwrt.org>
+ Licensed to the public under the Apache License 2.0.
+-%>
+
+<%-
+        function uciget(cmd)
+                local res = luci.util.exec(cmd)
+                local str = string.gsub(res, "\n", "")
+                return str
+        end
+-%>
+<%+header%>
+<div class="page-content">
+<script type="text/javascript" src="<%=resource%>/cbi.js"></script>
+<script type="text/javascript">
+var def = new Array(8);
+function save_def_value()
+{
+    var f = document.formTable;
+    for (i=0; i<f.elements.length; i++)
+    {
+        def[i] = f.elements[i].value;
+    }
+}
+
+function disable_spin()
+{
+    document.getElementById("spin").innerHTML = "";
+}
+
+function save_value()
+{
+    document.getElementById("spin").innerHTML = "<i class='fa fa-spinner fa-pulse'></i>";
+    setTimeout("disable_spin()",1000);
+    var setdata = "";
+    var f = document.formTable;
+    for( i=0; i<f.elements.length; i++)
+    {
+        if( def[i] != f.elements[i].value ) {
+            def[i] = f.elements[i].value;
+            setdata += f.elements[i].name + "=" + f.elements[i].value + "~";
+        }
+    }
+    XHR.get('<%=luci.dispatcher.build_url("admin")%>/cfg_set' + '/' + setdata, null,
+	    function(x, data) {
+		    if (data) { 
+		    }
+	    }
+    );
+}
+function updatesnmp()
+{
+    if( document.getElementById("snmp2").checked == "1" )
+        document.getElementById("snmp1").value = "any";
+    else
+        document.getElementById("snmp1").value = "none";
+}
+</script>
+<h2><a id="content" name="content"><%: Services%></a></h2>
+<div class="cbi-map">
+    <ul class="cbi-tabmenu">
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=luci.dispatcher.build_url("admin/system/services")%>"><%:HTTP/HTTPS%></a></li>
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="telnet"><%:Telnet/SSH%></a></li>
+        <li style="margin-right:4px" class="cbi-tab"><a href="#"><%:SNMP%></a></li>
+    </ul>
+    <fieldset class="cbi-section">
+       <form name="formTable">
+          <div class="cbi-value">
+            <label class="cbi-value-title">Enable SNMP</label>
+            <div style="display:none"><input type="text" id="snmp1" name="86" value="<%=uciget('uci get snmpd.public_access.version')%>"></div>
+            <div class="cbi-value-field">
+                 <script type="text/javascript">
+                 var ver = "<%=uciget('uci get snmpd.public_access.version')%>";
+                 document.write("<input type='checkbox' ");
+                 if( ver != "none" )
+                     document.write(" checked");
+                 document.write(" id='snmp2' class='cibi-input-select' onchange='updatesnmp()' >");
+              </script>
+            </div>
+          </div>
+          <div class="cbi-value">
+            <label class="cbi-value-title">Version</label>
+            <div class="cbi-value-field">
+              <select class="cbi-input-select" name="87">
+                 <script type="text/javascript">
+                 var ver = "<%=uciget('uci get snmpd.public_access.version')%>";
+                 document.write("<option value='v1' ");
+                 if( ver == "v1" )
+                     document.write(" selected");
+                 document.write(">SNMPv1</option>");
+                 document.write("<option value='any' ");
+                 if( ver == "any" )
+                     document.write(" selected");
+                 document.write(">SNMPv1-v2c</option>");
+                 </script>
+              </select>
+            </div>
+          </div>
+          <div class="cbi-value">
+            <label class="cbi-value-title">Read/Write Password</label>
+            <div class="cbi-value-field">
+              <input type="password" name="88" class="cbi-input-select" value="<%=uciget('uci get snmpd.public.community')%>" >
+            </div>
+          </div>
+          <div class="cbi-value">
+            <label class="cbi-value-title">SNMP Trap Host IP Address</label>
+            <div class="cbi-value-field">
+              <input type="text" name="89" class="cbi-input-select" value="<%=uciget('uci get snmpd.trapaddress.host')%>" >
+            </div>
+          </div>
+          <div class="cbi-value">
+            <label class="cbi-value-title">SNMP Trap Host Password</label>
+            <div class="cbi-value-field">
+              <input type="password" name="90" class="cbi-input-select" value="<%=uciget('uci get snmpd.trapaddress.paswd')%>" >
+            </div>
+          </div>
+        </form>
+        </fieldset>
+</div>
+<div class="cbi-page-actions left">
+<div id="spin"></div>
+<input type="button" class="cbi-button" value="<%:Save%>" onclick="save_value()" />
+</div>
+<script type="text/javascript">
+save_def_value();
+</script>
+</div>
+<%+footer%>

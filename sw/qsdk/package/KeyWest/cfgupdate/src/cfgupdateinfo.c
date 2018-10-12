@@ -375,6 +375,79 @@ void cfg_set( char *type, char *value )
         case UCI_ID_DG_DISABLE_ACK:
             sprintf(cmd,"uci set wireless.@wifi-iface[1].dgackdisable='%s'",value);
             break;
+        case UCI_ID_SNMP_STATUS:
+            sprintf(cmd,"uci set snmpd.public_access.version='%s'",value);
+            break;
+        case UCI_ID_SNMP_VERSION:
+            sprintf(cmd,"uci set snmpd.public_access.version='%s'",value);
+            break;
+        case UCI_ID_SNMP_RW_PASWD:
+            sprintf(cmd,"uci set snmpd.public.community='%s'",value);
+            break;
+        case UCI_ID_SNMP_TRPA_HOST_IP:
+            sprintf(cmd,"uci set snmpd.trapaddress.host='%s'",value);
+            break;
+        case UCI_ID_SNMP_TRAP_HOST_PWD:
+            sprintf(cmd,"uci set snmpd.trapaddress.paswd='%s'",value);
+            break;
+        case UCI_ID_HTTP_STATUS:
+            {
+                int val = atoi(value);
+                if( val == 0 ) {
+                    sprintf(cmd,"uci delete uhttpd.main.listen_http");
+                }
+                else {
+                    sprintf(cmd,"uci set uhttpd.main.listen_http='0.0.0.0:80'");
+                }
+            }
+            break;
+        case UCI_ID_HTTP_ADMIN_PWD:
+            system("uci set uhttpd.main.pwdmodified='1'");
+            sprintf(cmd,"uci set uhttpd.main.adminpwd='%s'",value);
+            break;
+        case UCI_ID_HTTP_USER_PWD:
+            system("uci set uhttpd.main.pwdmodified='1'");
+            sprintf(cmd,"uci set uhttpd.main.userpwd='%s'",value);
+            break;
+        case UCI_ID_HTTP_SUPER_PWD:
+            system("uci set uhttpd.main.pwdmodified='1'");
+            sprintf(cmd,"uci set uhttpd.main.superpwd='%s'",value);
+            break;
+        case UCI_ID_HTTP_PORT:
+            sprintf(cmd,"uci set uhttpd.main.listen_http='0.0.0.0:%s'",value);
+            break;
+        case UCI_ID_HTTPS_STATUS:
+            {
+                int val = atoi(value);
+                if( val == 0 ) {
+                    sprintf(cmd,"uci delete uhttpd.main.listen_https");
+                }
+                else {
+                    sprintf(cmd,"uci set uhttpd.main.listen_https='0.0.0.0:443'");
+                }
+            }
+            break;
+        case UCI_ID_HTTPS_PORT:
+            sprintf(cmd,"uci set uhttpd.main.listen_https='0.0.0.0:%s'",value);
+            break;
+        case UCI_ID_TELNET_STATUS:
+            sprintf(cmd,"uci set telnetssh.telnet.status='%s'",value);
+            break;
+        case UCI_ID_TELNET_PORT:
+            sprintf(cmd,"uci set telnetssh.telnet.port='%s'",value);
+            break;
+        case UCI_ID_TELNET_SESSIONS:
+            sprintf(cmd,"uci set telnetssh.telnet.sessions='%s'",value);
+            break;
+        case UCI_ID_SSH_STATUS:
+            sprintf(cmd,"uci set telnetssh.ssh.status='%s'",value);
+            break;
+        case UCI_ID_SSH_PORT:
+            sprintf(cmd,"uci set telnetssh.ssh.port='%s'",value);
+            break;
+        case UCI_ID_SSH_SESSIONS:
+            sprintf(cmd,"uci set telnetssh.ssh.sessions='%s'",value);
+            break;
         default:
             break;
     }

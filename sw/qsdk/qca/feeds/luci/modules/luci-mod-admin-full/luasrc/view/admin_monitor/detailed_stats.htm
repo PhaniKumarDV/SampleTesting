@@ -189,6 +189,7 @@ function getBaseLog(x, y) {
                             var tx = tx_pow[mcs] + parseInt(tx_gain) - parseInt(tx_loss);
                             var rx = parseInt(rx_gain) - parseInt(rx_loss);
                             var rec_pow = tx + rx - path_loss;
+                            rec_pow = rec_pow.toFixed(2);
                             document.getElementById("recpow").innerHTML = rec_pow;
 							document.getElementById("rem_mac").innerHTML = assoclist[j].bssid;
 							document.getElementById("loc_gps").innerHTML = assoclist[j].local_lat != "" ? ( assoclist[j].local_lat + "&deg" + assoclist[j].local_long + "'") : 0;
