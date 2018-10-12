@@ -641,6 +641,8 @@ enable_qcawifi() {
 
 	config_get kwnamsdu "$vif" kwnamsdu
 	[ -n "$kwnamsdu" ] && iwpriv "$phy" kwn_amsdu $kwnamsdu
+    # using AMSDU instead of kwn_amsdu
+	iwpriv "$phy" kwn_amsdu 1
 
     config_get linkid "$device" linkid
 	[ -n "$linkid" ] && iwpriv "$phy" linkid $linkid

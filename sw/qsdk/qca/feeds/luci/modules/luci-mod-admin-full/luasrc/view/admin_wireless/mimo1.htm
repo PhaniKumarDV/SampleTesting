@@ -228,18 +228,14 @@ function getoptions( list, value )
           <div class="cbi-value">
             <label class="cbi-value-title">AMSDU</label>
             <div class="cbi-value-field">
-              <select class="cbi-input-select" name="9">
-                 <script type="text/javascript">
-                 var amsdu = "<%=uciget('uci get wireless.@wifi-iface[1].kwnamsdu')%>";
-                 document.write("<option value='1' ");
-                 if( amsdu == "1" )
-                     document.write(" selected");
-                 document.write(">Enable</option>");
-                 document.write("<option value='2' ");
-                 if( amsdu == "2" )
-                     document.write(" selected");
-                 document.write(">Disable</option>");
-                 </script>
+              <input type="text" name="9" class="cbi-input-select" value="<%=uciget('uci get wireless.@wifi-iface[1].amsdu')%>" > &nbsp; (1-4)
+             </select>
+           </div>
+         </div>
+          <div class="cbi-value">
+            <label class="cbi-value-title">AMPDU</label>
+            <div class="cbi-value-field">
+              <input type="text" name="104" class="cbi-input-select" value="<%=uciget('uci get wireless.@wifi-iface[1].ampdu')%>" > &nbsp; (1-64)
              </select>
            </div>
          </div>

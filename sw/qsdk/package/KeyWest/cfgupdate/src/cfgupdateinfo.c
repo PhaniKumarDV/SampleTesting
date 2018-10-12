@@ -101,7 +101,7 @@ void cfg_set( char *type, char *value )
             sprintf(cmd,"uci set wireless.wifi1.TXPowLim5G='%s'",value);
             break;
         case UCI_ID_RADIO1_AMSDU:
-            sprintf(cmd,"uci set wireless.@wifi-iface[1].kwnamsdu='%s'",value);
+            sprintf(cmd,"uci set wireless.@wifi-iface[1].amsdu='%s'",value);
             break;
         case UCI_ID_RADIO1_UPLINK_LMT:
             sprintf(cmd,"uci set wireless.@wifi-iface[1].ullmt='%s'",value);
@@ -447,6 +447,9 @@ void cfg_set( char *type, char *value )
             break;
         case UCI_ID_SSH_SESSIONS:
             sprintf(cmd,"uci set telnetssh.ssh.sessions='%s'",value);
+            break;
+        case UCI_ID_RADIO1_AMPDU:
+            sprintf(cmd,"uci set wireless.@wifi-iface[1].ampdu='%s'",value);
             break;
         default:
             break;

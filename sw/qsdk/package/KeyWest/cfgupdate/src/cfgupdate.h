@@ -125,7 +125,9 @@ enum uci_cfg_id {
     UCI_ID_TELNET_SESSIONS =100,
     UCI_ID_SSH_STATUS =101,
     UCI_ID_SSH_PORT =102,
-    UCI_ID_SSH_SESSIONS =103
+    UCI_ID_SSH_SESSIONS =103,
+    /* Wireless */
+    UCI_ID_RADIO1_AMPDU =104
 };
 
 typedef struct

@@ -15,6 +15,8 @@ start_service() {
     hidden_radio0=$(uci get wireless.@wifi-iface[0].hidden)
     hidden_radio1=$(uci get wireless.@wifi-iface[1].hidden)
     dgackdisable=$(uci get wireless.@wifi-iface[1].dgackdisable)
+    amsdu1=$(uci get wireless.@wifi-iface[1].amsdu)
+    ampdu1=$(uci get wireless.@wifi-iface[1].ampdu)
     
     if [ "$eth_timer" == "" ]
     then
@@ -51,6 +53,14 @@ start_service() {
     if [ "$dgackdisable" == "" ]
     then
         uci set wireless.@wifi-iface[1].dgackdisable='0'
+    fi
+    if [ "$amsdu1" == "" ]
+    then
+        uci set wireless.@wifi-iface[1].amsdu='4'
+    fi
+    if [ "$ampdu1" == "" ]
+    then
+        uci set wireless.@wifi-iface[1].ampdu='64'
     fi
 #2.4 Radio Default values
     uci set wireless.wifi0.txchainmask='1'
