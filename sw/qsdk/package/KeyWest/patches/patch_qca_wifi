@@ -476,7 +476,7 @@ diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_ath_config.c qca-wifi-
                 (scn->target_type == TARGET_TYPE_QCA9888) || (scn->target_type == TARGET_TYPE_IPQ4019))
 diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_vap.c qca-wifi-mod/offload/wlan/lmac_offload_if/ol_if_vap.c
 --- qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_vap.c	2018-06-08 11:00:45.000000000 +0530
-+++ qca-wifi-mod/offload/wlan/lmac_offload_if/ol_if_vap.c	2018-10-09 18:27:44.904385284 +0530
++++ qca-wifi-mod/offload/wlan/lmac_offload_if/ol_if_vap.c	2018-10-12 16:47:50.652232961 +0530
 @@ -32,6 +32,7 @@
  #if ATH_SUPPORT_GREEN_AP
  #include "ath_green_ap.h"
@@ -514,7 +514,7 @@ diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_vap.c qca-wifi-mod/off
                      /* Note: Event though val is 32 bits, only the lower 8 bits matter */
                      val = WMI_HOST_FIXED_RATE_NONE;
                  }
-@@ -3717,6 +3724,71 @@
+@@ -3717,6 +3724,69 @@
      return 0;
  }
  
@@ -558,9 +558,7 @@ diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_vap.c qca-wifi-mod/off
 +                    (ip & 0xFF),(ip >> 8) & 0xFF,(ip >> 16 ) & 0xFF,(ip >> 24) & 0xFF,
 +                    ni->dg_count++);
 +        }
-+        else {
-+            ieee80211_send_dying_gasp( vap , 0, NULL );
-+        }
++        ieee80211_send_dying_gasp( vap , 0, NULL );
 +        //printk("dg_ack_rcvd : %d \n",dg_ack_rcvd);	
 +        //printk("vap->iv_ic->ic_dg_timer_interval = %d,HZ = %d,jiffies = %9lu , Next jiffies = %9lu \n",vap->iv_ic->ic_dg_timer_interval,HZ,jiffies, 
 +        //	jiffies+(vap->iv_ic->ic_dg_timer_interval*HZ/1000));
@@ -586,7 +584,7 @@ diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_vap.c qca-wifi-mod/off
  /* Intialization functions */
  void
  ol_ath_vap_attach(struct ieee80211com *ic)
-@@ -3754,6 +3826,7 @@
+@@ -3754,6 +3824,7 @@
          ath_green_ap_start(ic);
      }
  #endif  /* ATH_SUPPORT_GREEN_AP */
