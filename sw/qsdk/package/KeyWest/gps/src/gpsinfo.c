@@ -441,7 +441,7 @@ int main(int argc, char **argv)
     do {
         nNMEAlen = 0;
 	    ioctl(nGpsFile,GET_NMEA_READ_PERIOD,&nPPS);
-        if(nPPS)
+        //if(nPPS)
         {		
 //            printf("nPPS = %d \n",nPPS);
             {
