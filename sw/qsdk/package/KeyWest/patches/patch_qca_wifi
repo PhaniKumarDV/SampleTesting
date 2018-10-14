@@ -1160,8 +1160,8 @@ diff -urN qca-wifi-org/offload/wlan/umac_offload_if/ol_if_scan.c qca-wifi-mod/of
                  ss->ss_all_chans[ss->ss_nallchans++] = c;
 diff -urN qca-wifi-org/os/linux/include/ieee80211_ioctl.h qca-wifi-mod/os/linux/include/ieee80211_ioctl.h
 --- qca-wifi-org/os/linux/include/ieee80211_ioctl.h	2018-06-08 11:00:42.000000000 +0530
-+++ qca-wifi-mod/os/linux/include/ieee80211_ioctl.h	2018-09-19 12:43:56.598086389 +0530
-@@ -1530,6 +1530,31 @@
++++ qca-wifi-mod/os/linux/include/ieee80211_ioctl.h	2018-10-14 23:27:52.498790670 +0530
+@@ -1530,6 +1530,32 @@
      IEEE80211_PARAM_TIMEOUTIE                  = 550,   /* set/get assoc comeback timeout value */
      IEEE80211_PARAM_PMF_ASSOC                  = 551,   /* enable/disable pmf support */
      IEEE80211_PARAM_DFS_INFO_NOTIFY_APP        = 552,   /* Enable the feature to notify dfs info to app */
@@ -1189,13 +1189,14 @@ diff -urN qca-wifi-org/os/linux/include/ieee80211_ioctl.h qca-wifi-mod/os/linux/
 +    IEEE80211_PARAM_KWN_SET_SVLAN_ETHERTYPE    = 574,   /* SVLAN EtherType */
 +    IEEE80211_PARAM_KWN_SET_PBB_B_VLANID       = 575,   /* PBB B-VLANID */
 +    IEEE80211_PARAM_KWN_SET_PBB_B_ISID 	       = 576,	/* PBB B-ISID */
-+    IEEE80211_PARAM_KWN_SET_PBB_B_MAC_FLAG     = 577	/* PBB B-MAC Flag */
++    IEEE80211_PARAM_KWN_SET_PBB_B_MAC_FLAG     = 577,	/* PBB B-MAC Flag */
++    IEEE80211_PARAM_KWN_NOISE_FLOOR_OFFSET     = 578	/* Noise Floor Offset */
  };
  #define WOW_CUSTOM_PKT_LEN 102
  #define WOW_SYNC_PATTERN 0xFF
 diff -urN qca-wifi-org/os/linux/src/ieee80211_wireless.c qca-wifi-mod/os/linux/src/ieee80211_wireless.c
 --- qca-wifi-org/os/linux/src/ieee80211_wireless.c	2018-06-08 11:00:40.000000000 +0530
-+++ qca-wifi-mod/os/linux/src/ieee80211_wireless.c	2018-09-19 12:45:22.985730700 +0530
++++ qca-wifi-mod/os/linux/src/ieee80211_wireless.c	2018-10-14 23:28:08.502696730 +0530
 @@ -106,6 +106,10 @@
  int ieee80211_authorise_local_peer(wlan_if_t vap, char *params);
  #endif
@@ -1334,7 +1335,7 @@ diff -urN qca-wifi-org/os/linux/src/ieee80211_wireless.c qca-wifi-mod/os/linux/s
      rc = wlan_set_acl_add(vap, sa->sa_data, IEEE80211_ACL_FLAG_ACL_LIST_1);
      return rc;
  }
-@@ -14947,6 +15022,71 @@
+@@ -14947,6 +15022,75 @@
      IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1, 0, "dfs_notify" },
      { IEEE80211_PARAM_DFS_INFO_NOTIFY_APP,
      0, IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1, "g_dfs_notify" },
@@ -1402,11 +1403,15 @@ diff -urN qca-wifi-org/os/linux/src/ieee80211_wireless.c qca-wifi-mod/os/linux/s
 +	    IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1, 0, "kwn_pbb_bisid" },
 +    { IEEE80211_PARAM_KWN_SET_PBB_B_MAC_FLAG,
 +	    IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1, 0, "kwn_pbb_flag" },
++    { IEEE80211_PARAM_KWN_NOISE_FLOOR_OFFSET,
++	    IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1, 0, "kwnnoiseoff" },
++    { IEEE80211_PARAM_KWN_NOISE_FLOOR_OFFSET,
++	    0, IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1, "g_kwnnoiseoff" }
 +
  };
  
  static const iw_handler ieee80211_handlers[] = {
-@@ -14992,7 +15132,7 @@
+@@ -14992,7 +15136,7 @@
  #endif /* SIOCGIWSCAN */
      (iw_handler) ieee80211_ioctl_siwessid,      /* SIOCSIWESSID */
      (iw_handler) ieee80211_ioctl_giwessid,      /* SIOCGIWESSID */
@@ -1415,7 +1420,7 @@ diff -urN qca-wifi-org/os/linux/src/ieee80211_wireless.c qca-wifi-mod/os/linux/s
      (iw_handler) NULL,      /* SIOCGIWNICKN */
      (iw_handler) NULL,              /* -- hole -- */
      (iw_handler) NULL,              /* -- hole -- */
-@@ -15309,11 +15449,26 @@
+@@ -15309,11 +15453,26 @@
      {
  
      case SIOCG80211STATS:
@@ -2052,7 +2057,7 @@ diff -urN qca-wifi-org/umac/base/ieee80211_config.c qca-wifi-mod/umac/base/ieee8
      break;
 diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.c qca-wifi-mod/umac/base/ieee80211_ucfg.c
 --- qca-wifi-org/umac/base/ieee80211_ucfg.c	2018-06-08 11:00:49.000000000 +0530
-+++ qca-wifi-mod/umac/base/ieee80211_ucfg.c	2018-10-05 13:01:12.192778359 +0530
++++ qca-wifi-mod/umac/base/ieee80211_ucfg.c	2018-10-14 23:29:17.414292228 +0530
 @@ -50,6 +50,27 @@
  #define HIGHEST_BASIC_RATE 24000
  #define THREE_HUNDRED_FIFTY_MBPS 350000
@@ -2093,7 +2098,7 @@ diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.c qca-wifi-mod/umac/base/ieee802
          retv = 0; /* success */
          break;
  
-@@ -3974,7 +3998,184 @@
+@@ -3974,7 +3998,190 @@
      case IEEE80211_PARAM_DFS_INFO_NOTIFY_APP:
          ic->ic_dfs_info_notify_channel_available = !!value;
          break;
@@ -2242,12 +2247,12 @@ diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.c qca-wifi-mod/umac/base/ieee802
 +	vap->kwn_tput_test_pkt_size = value;
 +	//printk(": Test PktSize: %d\n",vap->kwn_tput_test_pkt_size);
 +	break;
- 
++
 +    case IEEE80211_PARAM_KWN_TPUT_TEST_DIR:
 +	vap->kwn_tput_test_direction = value;
 +	//printk(": Test Direction: %d\n",vap->kwn_tput_test_direction);
 +	break;
-+
+ 
 +    case IEEE80211_PARAM_KWN_SET_PBB_B_VLANID: {
 +	struct net_device *eth_dev;
 +	eth_dev = dev_get_by_name(&init_net, "eth0");
@@ -2275,10 +2280,16 @@ diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.c qca-wifi-mod/umac/base/ieee802
 +		printk(": PBB MAC Flag: %d", value);
 +		break;
 +	}
++    case IEEE80211_PARAM_KWN_NOISE_FLOOR_OFFSET: 
++	{
++		vap->kwn_noise_floor_offset = value;
++		printk(": Noise Floor Offset: %d", value);
++		break;
++	}
      }
  
      if (retv == ENETRESET)
-@@ -5586,6 +5787,81 @@
+@@ -5586,6 +5793,84 @@
      case IEEE80211_PARAM_DFS_INFO_NOTIFY_APP:
          *value = ic->ic_dfs_info_notify_channel_available;
          break;
@@ -2357,10 +2368,13 @@ diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.c qca-wifi-mod/umac/base/ieee802
 +    case IEEE80211_PARAM_KWN_TPUT_TEST_DIR: 
 +        *value = vap->kwn_tput_test_direction;
 +        break;
++    case IEEE80211_PARAM_KWN_NOISE_FLOOR_OFFSET: 
++        *value = vap->kwn_noise_floor_offset;
++        break;
      }
  
      if (retv) {
-@@ -6582,12 +6858,15 @@
+@@ -6582,12 +6867,15 @@
      wlan_chan_t chan = wlan_node_get_chan(node);
      ieee80211_rate_info rinfo;
      u_int32_t jiffies_now=0, jiffies_delta=0, jiffies_assoc=0;
@@ -2376,7 +2390,7 @@ diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.c qca-wifi-mod/umac/base/ieee802
      len = sta_space(node, &ielen, vap);
      if (len > req->space) {
          return;
-@@ -6641,6 +6920,7 @@
+@@ -6641,6 +6929,7 @@
          si->isi_tx_rate_mcs = rinfo.mcs;
          si->isi_tx_rate_flags = rinfo.flags;
  #endif
@@ -2384,7 +2398,7 @@ diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.c qca-wifi-mod/umac/base/ieee802
  
      }
  
-@@ -6685,7 +6965,40 @@
+@@ -6685,7 +6974,40 @@
      si->isi_is_256qam = wlan_node_get_256qam_support(node);
      si->isi_rx_nss = wlan_node_get_rx_spatial(node);
      si->isi_tx_nss = wlan_node_get_tx_spatial(node);
@@ -2421,8 +2435,8 @@ diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.c qca-wifi-mod/umac/base/ieee802
 +    memcpy( si->isi_r_customer_name, node->customer_name, sizeof(node->customer_name) );
 +    si->isi_l_link_id = ic->ic_link_id;
 +    si->isi_r_link_id = node->link_id;
-+    si->isi_l_noise_floor = vap->kwn_local_noise_floor;
-+    si->isi_r_noise_floor = node->remote_noise_floor;
++    si->isi_l_noise_floor = vap->kwn_local_noise_floor + vap->kwn_noise_floor_offset;
++    si->isi_r_noise_floor = node->remote_noise_floor + vap->kwn_noise_floor_offset;
      cp = (u_int8_t *)(si+1);
  
      if(!wlan_node_getwpaie(vap, macaddr, ni_ie, &ni_ie_len)) {
@@ -2589,7 +2603,7 @@ diff -urN qca-wifi-org/umac/include/ieee80211_vap.h qca-wifi-mod/umac/include/ie
  #endif
 diff -urN qca-wifi-org/umac/include/ieee80211_var.h qca-wifi-mod/umac/include/ieee80211_var.h
 --- qca-wifi-org/umac/include/ieee80211_var.h	2018-06-08 11:00:49.000000000 +0530
-+++ qca-wifi-mod/umac/include/ieee80211_var.h	2018-09-21 16:09:23.244165428 +0530
++++ qca-wifi-mod/umac/include/ieee80211_var.h	2018-10-14 23:29:29.198223057 +0530
 @@ -1886,6 +1886,20 @@
      u_int32_t                           ic_whc_scaling_factor; /* scaling factor for WHC best uplink algorithm */
      u_int32_t                           device_id;   /* Device id from probe */
@@ -2629,7 +2643,7 @@ diff -urN qca-wifi-org/umac/include/ieee80211_var.h qca-wifi-mod/umac/include/ie
      u_int8_t                   iv_nss;                  /* Spatial Stream Count */
      u_int8_t                   iv_tx_stbc;              /* TX STBC Enable:1 Disable:0 */
      u_int8_t                   iv_rx_stbc;              /* RX STBC Enable:(1,2,3) Disable:0 */
-@@ -2908,6 +2926,26 @@
+@@ -2908,6 +2926,27 @@
      bool                       iv_wps_session;
      csa_deauth_type            iv_csa_deauth_mode; /* if set, sends deauth to all stations after CSA */
      u_int8_t                   iv_filter_ssid[IEEE80211_NWID_LEN+1]; /* Filter SSID from scan results */
@@ -2653,6 +2667,7 @@ diff -urN qca-wifi-org/umac/include/ieee80211_var.h qca-wifi-mod/umac/include/ie
 +    char                       kwn_eth_mac_addr[6];
 +    int16_t                    kwn_local_noise_floor;
 +    u_int8_t                   kwn_pbb_add_mac_flag;
++    u_int8_t                   kwn_noise_floor_offset;
  } IEEE80211VAP, *PIEEE80211VAP;
  
  #if QCN_IE

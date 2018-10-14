@@ -1892,6 +1892,9 @@ enable_qcawifi() {
 				iwpriv "$ifname" vhtmcs "$acrate" ;;
 		esac
 
+		config_get kwnnoiseoff "$device" kwnnoiseoff
+        iwpriv "$ifname" kwnnoiseoff "$kwnnoiseoff"
+
 		#config_get set11NRates "$vif" set11NRates
 		#[ -n "$set11NRates" ] && iwpriv "$ifname" set11NRates "$set11NRates"
 

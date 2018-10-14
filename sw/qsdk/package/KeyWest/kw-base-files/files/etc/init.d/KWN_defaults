@@ -17,6 +17,7 @@ start_service() {
     dgackdisable=$(uci get wireless.@wifi-iface[1].dgackdisable)
     amsdu1=$(uci get wireless.@wifi-iface[1].amsdu)
     ampdu1=$(uci get wireless.@wifi-iface[1].ampdu)
+    kwnnoiseoff1=$(uci get wireless.wifi1.kwnnoiseoff)
     
     if [ "$eth_timer" == "" ]
     then
@@ -61,6 +62,10 @@ start_service() {
     if [ "$ampdu1" == "" ]
     then
         uci set wireless.@wifi-iface[1].ampdu='64'
+    fi
+    if [ "$kwnnoiseoff1" == "" ]
+    then
+        uci set wireless.wifi1.kwnnoiseoff='15'
     fi
 #2.4 Radio Default values
     uci set wireless.wifi0.txchainmask='1'
