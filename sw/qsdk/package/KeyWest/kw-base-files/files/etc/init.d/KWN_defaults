@@ -68,8 +68,8 @@ start_service() {
         uci set wireless.wifi1.kwnnoiseoff='15'
     fi
 #2.4 Radio Default values
-    uci set wireless.wifi0.txchainmask='1'
-    uci set wireless.wifi0.rxchainmask='1'
+    uci set wireless.wifi0.txchainmask='3'
+    uci set wireless.wifi0.rxchainmask='3'
     uci set wireless.wifi0.rate='0'
     if [ "$hidden_radio0" == "" ]
     then
