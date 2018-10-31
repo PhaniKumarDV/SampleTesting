@@ -62,6 +62,11 @@ start_instance()
 	local realm="$(uci_get system.@system[0].hostname)"
 	local listen http https interpreter indexes path handler
 
+	config_get adminpwd main adminpwd
+	config_get userpwd main userpwd
+	config_get superpwd main superpwd
+	config_get pwdmodified main pwdmodified
+
 	procd_open_instance
 	procd_set_param respawn
 	procd_set_param stderr 1
@@ -141,6 +146,13 @@ start_instance()
 		[ -s "$file" ] && procd_append_param command -H "$file"
 	done
 
+    if [ "$pwdmodified" == "1" ]
+    then
+        ( echo "$adminpwd"; sleep 1; echo "$adminpwd" ) | passwd 'admin' >/dev/null 2>&1
+        ( echo "$userpwd"; sleep 1; echo "$userpwd" ) | passwd 'user' >/dev/null 2>&1
+        ( echo "$superpwd"; sleep 1; echo "$superpwd" ) | passwd 'superuser' >/dev/null 2>&1
+        uci set uhttpd.main.pwdmodified='0' 
+    fi
 	procd_close_instance
 }
 
