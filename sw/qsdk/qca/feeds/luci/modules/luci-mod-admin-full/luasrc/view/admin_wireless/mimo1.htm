@@ -16,6 +16,8 @@
 <div class="page-content">
 <script type="text/javascript" src="<%=resource%>/cbi.js"></script>
 <script type="text/javascript">
+var hwvalue = "<%=uciget('uci get wireless.wifi1.hwmode')%>";
+var bw = "<%=uciget('uci get wireless.wifi1.htmode')%>";
 var def = new Array(8);
 function save_def_value()
 {
@@ -85,6 +87,7 @@ function save_value()
     XHR.get('<%=luci.dispatcher.build_url("admin")%>/cfg_set' + '/' + setdata, null,
 	    function(x, data) {
 		    if (data) { 
+                location.href='<%=luci.dispatcher.build_url("admin/wireless/radio1/mimo1")%>';
 		    }
 	    }
     );
@@ -104,22 +107,65 @@ function returnoptions( min, total, value )
     return opt;
 }
 
-var spatial_stream;
-
-function updateparam( stream )
+function updateddrs( val )
 {
-    if( stream == 3 ) {
+    var stream = document.getElementById("spatial").value;
+    if( val == 1 ) {
         document.getElementById("mcs_idx").style.display = "none";
-        var str ="<input type='text' class='cbi-input-select' name='7' value='auto'>";
-        document.getElementById("rateid").innerHTML = str;
+        document.getElementById("min_mcs_idx").style.display = "block";
+        document.getElementById("max_mcs_idx").style.display = "block";
+    }
+    else {
+        document.getElementById("mcs_idx").style.display = "block";
+        document.getElementById("min_mcs_idx").style.display = "none";
+        document.getElementById("max_mcs_idx").style.display = "none";
+    }
+}
+
+
+function updateparam()
+{
+    var atpc = "<%=uciget('uci get wireless.wifi1.atpcstatus')%>";
+    if( atpc == 1 ) {
+       document.getElementById("power").style.display = "none";
+    }
+    else {
+       document.getElementById("power").style.display = "block";
+    }
+
+
+    var stream = "<%=uciget('uci get wireless.wifi1.spatialstream')%>";
+    var rate = "<%=uciget('uci get wireless.wifi1.ddrsrate')%>";
+    var minrate = "<%=uciget('uci get wireless.wifi1.ddrsminrate')%>";
+    var maxrate = "<%=uciget('uci get wireless.wifi1.ddrsmaxrate')%>";
+    var ddrs = document.getElementById("ddrsstatus").value;
+    var min = 0, total = 8;
+    if( stream == 3 ) {
+        //document.getElementById("mcs_idx").style.display = "none";
+        //var str ="<input type='text' class='cbi-input-select' name='106' value='auto'>";
+        //document.getElementById("rateid").innerHTML = str;
+        if( ddrs == 1 ) {
+            min = 0;
+            total = 8;
+            if( hwvalue == "11ac" )
+                total = 20;
+            if( hwvalue == "11na" )
+                total = 16;
+            var str ="<select class='cbi-input-select' name='107'>";
+            str += returnoptions( min, total, minrate );
+            str += "</select>";
+            document.getElementById("minrateid").innerHTML = str;
+            var str ="<select class='cbi-input-select' name='108'>";
+            str += returnoptions( min, total, maxrate );
+            str += "</select>";
+            document.getElementById("maxrateid").innerHTML = str;
+        }
         return;
     }
-    else
-        document.getElementById("mcs_idx").style.display = "block";
-    var hwvalue = "<%=uciget('uci get wireless.wifi1.hwmode')%>";
-    var bw = "<%=uciget('uci get wireless.wifi1.htmode')%>";
-    var rate = "<%=uciget('uci get wireless.wifi1.rate')%>";
-    var min = 0, total = 8;
+    else {
+        if( ddrs == 2 )
+            document.getElementById("mcs_idx").style.display = "block";
+    }
     if( hwvalue == "11ac" ) {
         total = 10;
         if( stream == 2 )
@@ -130,10 +176,18 @@ function updateparam( stream )
             min = 8;
         }
     }
-    var str ="<select class='cbi-input-select' name='7'>";
+    var str ="<select class='cbi-input-select' name='106'>";
     str += returnoptions( min, total, rate );
     str += "</select>";
     document.getElementById("rateid").innerHTML = str;
+    var str ="<select class='cbi-input-select' name='107'>";
+    str += returnoptions( min, total, minrate );
+    str += "</select>";
+    document.getElementById("minrateid").innerHTML = str;
+    var str ="<select class='cbi-input-select' name='108'>";
+    str += returnoptions( min, total, maxrate );
+    str += "</select>";
+    document.getElementById("maxrateid").innerHTML = str;
 }
 
 function getoptions( list, value )
@@ -162,34 +216,51 @@ function getoptions( list, value )
     <fieldset class="cbi-section">
        <form name="formTable">
           <div class="cbi-value">
+            <label class="cbi-value-title">DDRS Status</label>
+            <div class="cbi-value-field">
+               <select name="105" class="cbi-input-select" id="ddrsstatus">
+               <script type="text/javascript">
+                  var ddrs = "<%=uciget('uci get wireless.wifi1.ddrsstatus')%>";
+                  document.write("<option value='1' ");
+                  if( ddrs == 1 ) {
+                      document.write(" selected");
+                  }
+                  document.write(">Enable</option>");
+                  document.write("<option value='2' ");
+                  if( ddrs == 2 ) {
+                     document.write(" selected");
+                  }
+                  document.write(">Disable</option>");
+                </script>
+               </select>
+           </div>
+         </div>
+          <div class="cbi-value">
             <label class="cbi-value-title">Spatial Stream</label>
             <div class="cbi-value-field">
-               <select name="x" class="cbi-input-select" onchange="updateparam(this.value)">
+               <select name="109" id="spatial" class="cbi-input-select">
                <script type="text/javascript">
-                  var hwvalue = "<%=uciget('uci get wireless.wifi1.hwmode')%>";
-                  var rate = "<%=uciget('uci get wireless.wifi1.rate')%>";
+                  var stream = "<%=uciget('uci get wireless.wifi1.spatialstream')%>";
                   document.write("<option value='1' ");
-                  if( ( ( hwvalue == "11na" || hwvalue == "11a" ) && rate < 8 )  || 
-                      ( hwvalue == "11ac" && rate < 10 ) ) {
-                      spatial_stream = 1;
+                  if( stream == 1 ) {
                       document.write(" selected");
                   }
                   document.write(">Single</option>");
                   if( hwvalue != "11a" )
                   {
                       document.write("<option value='2' ");
-                      if( ( hwvalue == "11na" && rate >= 8 ) || ( hwvalue == "11ac" && rate >= 10 ) ) {
-                         spatial_stream = 2;
+                      if( stream == 2 ) {
                          document.write(" selected");
                       }
                       document.write(">Dual</option>");
+                      if( ddrs == 1 ) {
+                         document.write("<option value='3' ");
+                         if( stream == 3 ) {
+                            document.write(" selected");
+                         }
+                         document.write(">Auto</option>");
+                      }
                   }
-                  document.write("<option value='3' ");
-                  if( rate == 'auto' ) {
-                      spatial_stream = 3;
-                      document.write(" selected");
-                  }
-                  document.write(">Auto</option>");
                 </script>
                </select>
            </div>
@@ -199,10 +270,50 @@ function getoptions( list, value )
             <div class="cbi-value-field" id="rateid">
            </div>
          </div>
+          <div class="cbi-value" id="min_mcs_idx">
+            <label class="cbi-value-title">Min. Modulation Index</label>
+            <div class="cbi-value-field" id="minrateid">
+           </div>
+         </div>
+          <div class="cbi-value" id="max_mcs_idx">
+            <label class="cbi-value-title">Max. Modulation Index</label>
+            <div class="cbi-value-field" id="maxrateid">
+           </div>
+         </div>
           <div class="cbi-value">
+            <label class="cbi-value-title">DDRS Rate Incr. Timer</label>
+            <div class="cbi-value-field">
+              <input type="text" name="110" class="cbi-input-select" value="<%=uciget('uci get wireless.wifi1.ddrsinctimer')%>" >
+           </div>
+         </div>
+          <div class="cbi-value">
+            <label class="cbi-value-title">DDRS Rate Decr. Timer</label>
+            <div class="cbi-value-field">
+              <input type="text" name="111" class="cbi-input-select" value="<%=uciget('uci get wireless.wifi1.ddrsdectimer')%>" >
+           </div>
+         </div>
+          <div class="cbi-value">
+            <label class="cbi-value-title">ATPC Status</label>
+            <div class="cbi-value-field">
+              <select class="cbi-input-select" name="112">
+                 <script type="text/javascript">
+                 var atpc = "<%=uciget('uci get wireless.wifi1.atpcstatus')%>";
+                 document.write("<option value='1' ");
+                 if( atpc == "1" )
+                     document.write(" selected");
+                 document.write(">Enable</option>");
+                 document.write("<option value='2' ");
+                 if( atpc == "2" )
+                     document.write(" selected");
+                 document.write(">Disable</option>");
+                 </script>
+             </select>
+           </div>
+         </div>
+          <div class="cbi-value" id="power">
             <label class="cbi-value-title">Transmit Power</label>
             <div class="cbi-value-field">
-              <input type="text" name="8" class="cbi-input-select" value="<%=uciget('uci get wireless.wifi1.TXPowLim5G')%>" > &nbsp; (1-23) dBm
+              <input type="text" name="113" class="cbi-input-select" value="<%=uciget('uci get wireless.wifi1.atpcpower')%>" > &nbsp; (1-23) dBm
            </div>
          </div>
          <div class="cbi-value">
@@ -281,7 +392,9 @@ function getoptions( list, value )
 <input type="button" class="cbi-button" value="<%:Save%>" onclick="save_value()" />
 </div>
 <script type="text/javascript">
-updateparam(spatial_stream);
+var ddrs = "<%=uciget('uci get wireless.wifi1.ddrsstatus')%>";
+updateddrs(ddrs);
+updateparam();
 save_def_value();
 </script>
 </div>

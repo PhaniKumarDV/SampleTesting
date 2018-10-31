@@ -99,9 +99,8 @@ end
 
 function action_surveyclear()
     local data = {}
-    luci.sys.exec("iwpriv ath1 kwn_pbb_flag 1")
+    luci.sys.exec("iwpriv ath1 kwn_flag 4")
     luci.sys.exec("iwpriv ath1 s_scan_flush 1")
-    luci.sys.exec("iwpriv ath1 kwn_pbb_flag 0")
 	data = luci.sys.exec("iwlist ath1 ap")
 	luci.http.prepare_content("application/json")
 	luci.http.write_json(data)

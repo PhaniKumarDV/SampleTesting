@@ -18,6 +18,15 @@ start_service() {
     amsdu1=$(uci get wireless.@wifi-iface[1].amsdu)
     ampdu1=$(uci get wireless.@wifi-iface[1].ampdu)
     kwnnoiseoff1=$(uci get wireless.wifi1.kwnnoiseoff)
+    stream1=$(uci get wireless.wifi1.spatialstream)
+    ddrs1=$(uci get wireless.wifi1.ddrsstatus)
+    ddrsrate1=$(uci get wireless.wifi1.ddrsrate)
+    ddrsminrate1=$(uci get wireless.wifi1.ddrsminrate)
+    ddrsmaxrate1=$(uci get wireless.wifi1.ddrsmaxrate)
+    ddrsinctimer1=$(uci get wireless.wifi1.ddrsinctimer)
+    ddrsdectimer1=$(uci get wireless.wifi1.ddrsdectimer)
+    atpcstatus1=$(uci get wireless.wifi1.atpcstatus)
+    atpcpower1=$(uci get wireless.wifi1.atpcpower)
     
     if [ "$eth_timer" == "" ]
     then
@@ -66,6 +75,42 @@ start_service() {
     if [ "$kwnnoiseoff1" == "" ]
     then
         uci set wireless.wifi1.kwnnoiseoff='15'
+    fi
+    if [ "$stream1" == "" ]
+    then
+        uci set wireless.wifi1.spatialstream='3'
+    fi
+    if [ "$ddrs1" == "" ]
+    then
+        uci set wireless.wifi1.ddrsstatus='1'
+    fi
+    if [ "$ddrsrate1" == "" ]
+    then
+        uci set wireless.wifi1.ddrsrate='3'
+    fi
+    if [ "$ddrsminrate1" == "" ]
+    then
+        uci set wireless.wifi1.ddrsminrate='0'
+    fi
+    if [ "$ddrsmaxrate1" == "" ]
+    then
+        uci set wireless.wifi1.ddrsmaxrate='19'
+    fi
+    if [ "$ddrsinctimer1" == "" ]
+    then
+        uci set wireless.wifi1.ddrsinctimer='2'
+    fi
+    if [ "$ddrsdectimer1" == "" ]
+    then
+        uci set wireless.wifi1.ddrsdectimer='1'
+    fi
+    if [ "$atpcstatus1" == "" ]
+    then
+        uci set wireless.wifi1.atpcstatus='2'
+    fi
+    if [ "$atpcpower1" == "" ]
+    then
+        uci set wireless.wifi1.atpcpower='26'
     fi
 #2.4 Radio Default values
     uci set wireless.wifi0.txchainmask='3'

@@ -47,13 +47,11 @@ start_service() {
     iwpriv ath1 kwn_setherType $svlanethertype
 
 #addmac ioctl is used for link test, vlan bda and bsa
-#set tput dur to 0 and reset kwn_pbb_flag is set to 0
-    iwpriv ath1 kwn_tput_dur 0
-    iwpriv ath1 kwn_pbb_flag 1
+#set tput dur to 0 and reset kwn_flag is set to 0
+    iwpriv ath1 kwn_flag 2
     iwpriv ath1 addmac $bda
-    iwpriv ath1 kwn_pbb_flag 2
+    iwpriv ath1 kwn_flag 3
     iwpriv ath1 addmac $bsa
-    iwpriv ath1 kwn_pbb_flag 0
     iwpriv ath1 kwn_pbb_bvid $bvid
     iwpriv ath1 kwn_pbb_bisid $bisid
 

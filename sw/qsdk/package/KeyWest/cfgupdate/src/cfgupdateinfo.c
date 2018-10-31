@@ -62,6 +62,88 @@ int main()
 	return 0;
 }
 
+void kwn_sys_cmd_imp( const char* cmd, uint8_t* cmd_buf )
+{
+    FILE *fp = NULL;
+    uint8_t  a[33]={0};
+    uint8_t  *token;
+    uint16_t len;
+
+    fp = popen(cmd,"r");
+    if( fp == NULL )
+        return;
+    while( fgets(a, sizeof(a), fp) != NULL)
+    {
+        /*printf("%s",a);*/
+    }
+    pclose(fp);
+
+    token = strtok(a,"\n");
+    len = strlen(token);
+    memcpy(cmd_buf,token,len);
+    return;
+}
+
+void kwn_reset_datarate( int stream )
+{
+    uint8_t cmd[100];
+    uint8_t cmd_buf[50];
+    uint8_t min_srate = 0, max_srate = 9, min_drate = 10, max_drate = 19;
+    uint8_t srate = 3, drate = 13;
+
+    memset(cmd, '\0', sizeof(cmd));
+    memset(cmd_buf, '\0', sizeof(cmd_buf));
+    sprintf(cmd,"uci get wireless.wifi1.hwmode");
+    kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] ); 
+    if( !strcmp( cmd_buf, "11a" ) ) {
+        drate = 3;
+        min_srate = 0;
+        max_srate = 7;
+        min_drate = 0;
+        max_drate = 7;
+    }
+    if( !strcmp( cmd_buf, "11na" ) ) {
+        drate = 11;
+        min_srate = 0;
+        max_srate = 7;
+        min_drate = 8;
+        max_drate = 15;
+    }
+    if( stream == 1 ) {
+        sprintf(cmd,"uci set wireless.wifi1.ddrsrate='%d'",srate);
+        system(cmd);
+        sprintf(cmd,"uci set wireless.wifi1.ddrsminrate='%d'",min_srate);
+        system(cmd);
+        sprintf(cmd,"uci set wireless.wifi1.ddrsmaxrate='%d'",max_srate);
+        system(cmd);
+    }
+    else if( stream == 2 ) {
+        sprintf(cmd,"uci set wireless.wifi1.ddrsrate='%d'",drate);
+        system(cmd);
+        sprintf(cmd,"uci set wireless.wifi1.ddrsminrate='%d'",min_drate);
+        system(cmd);
+        sprintf(cmd,"uci set wireless.wifi1.ddrsmaxrate='%d'",max_drate);
+        system(cmd);
+    }
+    else {
+        sprintf(cmd,"uci set wireless.wifi1.ddrsrate='auto'");
+        system(cmd);
+        sprintf(cmd,"uci set wireless.wifi1.ddrsminrate='%d'",min_srate);
+        system(cmd);
+        sprintf(cmd,"uci set wireless.wifi1.ddrsmaxrate='%d'",max_drate);
+        system(cmd);
+    }
+}
+
+void kwn_reset_tx_params()
+{
+    int stream = 3; /* Auto */
+
+    system("uci set wireless.wifi1.rate='auto'");
+    system("uci set wireless.wifi1.ddrsstatus='1'");
+    kwn_reset_datarate( stream );
+}
+
 void cfg_set( char *type, char *value )
 {
     char cmd[500];
@@ -85,8 +167,8 @@ void cfg_set( char *type, char *value )
             break;
         case UCI_ID_RADIO1_OPMODE:
             sprintf(cmd,"uci set wireless.wifi1.hwmode='%s'",value);
-            system( cmd );
-            sprintf(cmd,"uci set wireless.wifi1.rate='auto'",value);
+            /* Reset Tx params */
+            kwn_reset_tx_params();
             break;
         case UCI_ID_RADIO1_BANDWIDTH:
             sprintf(cmd,"uci set wireless.wifi1.htmode='%s'",value);
@@ -450,6 +532,48 @@ void cfg_set( char *type, char *value )
             break;
         case UCI_ID_RADIO1_AMPDU:
             sprintf(cmd,"uci set wireless.@wifi-iface[1].ampdu='%s'",value);
+            break;
+        case UCI_ID_RADIO1_DDRS_STATUS:
+            {
+                int val = atoi(value);
+                int stream = 1;
+                if( val == 1 ) {
+                    stream = 3;
+                }
+                sprintf(cmd,"uci set wireless.wifi1.spatialstream='%d'",stream);
+                system(cmd);
+                kwn_reset_datarate( stream );
+                sprintf(cmd,"uci set wireless.wifi1.ddrsstatus='%s'",value);
+            }
+            break;
+        case UCI_ID_RADIO1_DDRS_RATE:
+            sprintf(cmd,"uci set wireless.wifi1.ddrsrate='%s'",value);
+            break;
+        case UCI_ID_RADIO1_DDRS_MIN_RATE:
+            sprintf(cmd,"uci set wireless.wifi1.ddrsminrate='%s'",value);
+            break;
+        case UCI_ID_RADIO1_DDRS_MAX_RATE:
+            sprintf(cmd,"uci set wireless.wifi1.ddrsmaxrate='%s'",value);
+            break;
+        case UCI_ID_RADIO1_DDRS_STREAM:
+            {
+                int val = atoi(value);
+
+                kwn_reset_datarate( val );
+                sprintf(cmd,"uci set wireless.wifi1.spatialstream='%s'",value);
+            }
+            break;
+        case UCI_ID_RADIO1_DDRS_RATE_INC_TIMER:
+            sprintf(cmd,"uci set wireless.wifi1.ddrsinctimer='%s'",value);
+            break;
+        case UCI_ID_RADIO1_DDRS_RATE_DEC_TIMER:
+            sprintf(cmd,"uci set wireless.wifi1.ddrsdectimer='%s'",value);
+            break;
+        case UCI_ID_RADIO1_ATPC_STATUS:
+            sprintf(cmd,"uci set wireless.wifi1.atpcstatus='%s'",value);
+            break;
+        case UCI_ID_RADIO1_ATPC_POWER:
+            sprintf(cmd,"uci set wireless.wifi1.atpcpower='%s'",value);
             break;
         default:
             break;

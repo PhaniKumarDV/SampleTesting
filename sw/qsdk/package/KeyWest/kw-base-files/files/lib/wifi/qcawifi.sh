@@ -1823,6 +1823,7 @@ enable_qcawifi() {
 
 		config_get rate "$device" rate
 		acrate=$rate
+        rate=0
 		case $rate in
 			0)
 				arate="6M"
@@ -1891,6 +1892,29 @@ enable_qcawifi() {
 			11ac)
 				iwpriv "$ifname" vhtmcs "$acrate" ;;
 		esac
+		config_get ddrsstatus "$device" ddrsstatus
+		config_get ddrsrate "$device" ddrsrate
+		config_get ddrsminrate "$device" ddrsminrate
+		config_get ddrsmaxrate "$device" ddrsmaxrate
+		config_get ddrsinctimer "$device" ddrsinctimer
+		config_get ddrsdectimer "$device" ddrsdectimer
+		config_get atpcstatus "$device" atpcstatus
+		config_get atpcpower "$device" atpcpower
+
+
+        if [ "$ddrsstatus" == "1" ]
+        then
+            iwpriv "$ifname" kwnddrsmin "$ddrsminrate"
+            iwpriv "$ifname" kwnddrsmax "$ddrsmaxrate"
+            iwpriv "$ifname" kwnddrsinc "$ddrsinctimer"
+            iwpriv "$ifname" kwnddrsdec "$ddrsdectimer"
+        else
+            iwpriv "$ifname" kwnddrsmin "$ddrsrate"
+            iwpriv "$ifname" kwnddrsmax "$ddrsrate"
+        fi
+        iwpriv "$ifname" kwnatpc "$atpcstatus"
+        iwpriv "$ifname" kwnatpcpow "$atpcpower"
+
 
 		config_get kwnnoiseoff "$device" kwnnoiseoff
         iwpriv "$ifname" kwnnoiseoff "$kwnnoiseoff"
