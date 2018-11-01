@@ -1892,6 +1892,7 @@ enable_qcawifi() {
 			11ac)
 				iwpriv "$ifname" vhtmcs "$acrate" ;;
 		esac
+		config_get spatialstream "$device" spatialstream
 		config_get ddrsstatus "$device" ddrsstatus
 		config_get ddrsrate "$device" ddrsrate
 		config_get ddrsminrate "$device" ddrsminrate
@@ -1902,6 +1903,7 @@ enable_qcawifi() {
 		config_get atpcpower "$device" atpcpower
 
 
+        iwpriv "$ifname" kwnstream "$spatialstream"
         if [ "$ddrsstatus" == "1" ]
         then
             iwpriv "$ifname" kwnddrsmin "$ddrsminrate"

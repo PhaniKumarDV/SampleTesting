@@ -97,6 +97,7 @@ void kwn_reset_datarate( int stream )
     kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] ); 
     if( !strcmp( cmd_buf, "11a" ) ) {
         drate = 3;
+        stream = 1;
         min_srate = 0;
         max_srate = 7;
         min_drate = 0;
@@ -109,6 +110,8 @@ void kwn_reset_datarate( int stream )
         min_drate = 8;
         max_drate = 15;
     }
+    sprintf(cmd,"uci set wireless.wifi1.spatialstream='%d'",stream);
+    system(cmd);
     if( stream == 1 ) {
         sprintf(cmd,"uci set wireless.wifi1.ddrsrate='%d'",srate);
         system(cmd);
@@ -139,7 +142,6 @@ void kwn_reset_tx_params()
 {
     int stream = 3; /* Auto */
 
-    system("uci set wireless.wifi1.rate='auto'");
     system("uci set wireless.wifi1.ddrsstatus='1'");
     kwn_reset_datarate( stream );
 }
@@ -167,6 +169,7 @@ void cfg_set( char *type, char *value )
             break;
         case UCI_ID_RADIO1_OPMODE:
             sprintf(cmd,"uci set wireless.wifi1.hwmode='%s'",value);
+            system( cmd );
             /* Reset Tx params */
             kwn_reset_tx_params();
             break;
@@ -540,8 +543,6 @@ void cfg_set( char *type, char *value )
                 if( val == 1 ) {
                     stream = 3;
                 }
-                sprintf(cmd,"uci set wireless.wifi1.spatialstream='%d'",stream);
-                system(cmd);
                 kwn_reset_datarate( stream );
                 sprintf(cmd,"uci set wireless.wifi1.ddrsstatus='%s'",value);
             }

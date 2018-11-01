@@ -107,22 +107,6 @@ function returnoptions( min, total, value )
     return opt;
 }
 
-function updateddrs( val )
-{
-    var stream = document.getElementById("spatial").value;
-    if( val == 1 ) {
-        document.getElementById("mcs_idx").style.display = "none";
-        document.getElementById("min_mcs_idx").style.display = "block";
-        document.getElementById("max_mcs_idx").style.display = "block";
-    }
-    else {
-        document.getElementById("mcs_idx").style.display = "block";
-        document.getElementById("min_mcs_idx").style.display = "none";
-        document.getElementById("max_mcs_idx").style.display = "none";
-    }
-}
-
-
 function updateparam()
 {
     var atpc = "<%=uciget('uci get wireless.wifi1.atpcstatus')%>";
@@ -133,38 +117,27 @@ function updateparam()
        document.getElementById("power").style.display = "block";
     }
 
-
     var stream = "<%=uciget('uci get wireless.wifi1.spatialstream')%>";
+    var ddrs = "<%=uciget('uci get wireless.wifi1.ddrsstatus')%>";
     var rate = "<%=uciget('uci get wireless.wifi1.ddrsrate')%>";
     var minrate = "<%=uciget('uci get wireless.wifi1.ddrsminrate')%>";
     var maxrate = "<%=uciget('uci get wireless.wifi1.ddrsmaxrate')%>";
-    var ddrs = document.getElementById("ddrsstatus").value;
     var min = 0, total = 8;
-    if( stream == 3 ) {
-        //document.getElementById("mcs_idx").style.display = "none";
-        //var str ="<input type='text' class='cbi-input-select' name='106' value='auto'>";
-        //document.getElementById("rateid").innerHTML = str;
-        if( ddrs == 1 ) {
-            min = 0;
-            total = 8;
-            if( hwvalue == "11ac" )
-                total = 20;
-            if( hwvalue == "11na" )
-                total = 16;
-            var str ="<select class='cbi-input-select' name='107'>";
-            str += returnoptions( min, total, minrate );
-            str += "</select>";
-            document.getElementById("minrateid").innerHTML = str;
-            var str ="<select class='cbi-input-select' name='108'>";
-            str += returnoptions( min, total, maxrate );
-            str += "</select>";
-            document.getElementById("maxrateid").innerHTML = str;
-        }
-        return;
+    if( ddrs == 1 ) {
+        document.getElementById("mcs_idx").style.display = "none";
+        document.getElementById("min_mcs_idx").style.display = "block";
+        document.getElementById("max_mcs_idx").style.display = "block";
     }
     else {
-        if( ddrs == 2 )
-            document.getElementById("mcs_idx").style.display = "block";
+        document.getElementById("mcs_idx").style.display = "block";
+        document.getElementById("min_mcs_idx").style.display = "none";
+        document.getElementById("max_mcs_idx").style.display = "none";
+    }
+    if( stream == 3 ) {
+        document.getElementById("mcs_idx").style.display = "none";
+        document.getElementById("min_mcs_idx").style.display = "none";
+        document.getElementById("max_mcs_idx").style.display = "none";
+        return;
     }
     if( hwvalue == "11ac" ) {
         total = 10;
@@ -175,6 +148,9 @@ function updateparam()
         if( stream == 2 ) {
             min = 8;
         }
+    }
+    if( hwvalue == "11a" ) {
+        document.getElementById("stream").style.display = "none";
     }
     var str ="<select class='cbi-input-select' name='106'>";
     str += returnoptions( min, total, rate );
@@ -235,7 +211,7 @@ function getoptions( list, value )
                </select>
            </div>
          </div>
-          <div class="cbi-value">
+          <div class="cbi-value" id="stream">
             <label class="cbi-value-title">Spatial Stream</label>
             <div class="cbi-value-field">
                <select name="109" id="spatial" class="cbi-input-select">
@@ -392,8 +368,6 @@ function getoptions( list, value )
 <input type="button" class="cbi-button" value="<%:Save%>" onclick="save_value()" />
 </div>
 <script type="text/javascript">
-var ddrs = "<%=uciget('uci get wireless.wifi1.ddrsstatus')%>";
-updateddrs(ddrs);
 updateparam();
 save_def_value();
 </script>
