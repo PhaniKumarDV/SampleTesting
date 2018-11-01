@@ -51,8 +51,9 @@
 var ind = <%=luci.http.write_json(entryind)%>;
 var freq = <%= luci.http.write_json(freq) %>;
 var hw = "<%=uciget('uci get wireless.wifi1.hwmode')%>";
-var tx_pow_ac = [ 23, 22, 22, 21, 21, 20, 19, 18, 17, 16 ];
-var tx_pow_n = [ 23, 22, 21, 20, 19, 18, 17, 16 ];
+/*                0   1   2   3   4   5   6   7   8   9   10  11  12  13  14  15  16  17  18  19 */
+var tx_pow_ac = [ 23, 22, 22, 21, 21, 20, 19, 18, 17, 16, 23, 22, 22, 21, 21, 20, 19, 18, 17, 16 ];
+var tx_pow_n  = [ 23, 22, 21, 20, 19, 18, 17, 16, 23, 22, 21, 20, 19, 18, 17, 16 ];
 var tx_pow = ( hw == "11ac" ? tx_pow_ac : tx_pow_n );
 var mac, timer;
 

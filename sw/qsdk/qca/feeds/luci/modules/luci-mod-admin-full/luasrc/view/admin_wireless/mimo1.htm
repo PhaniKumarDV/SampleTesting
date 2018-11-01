@@ -127,11 +127,15 @@ function updateparam()
         document.getElementById("mcs_idx").style.display = "none";
         document.getElementById("min_mcs_idx").style.display = "block";
         document.getElementById("max_mcs_idx").style.display = "block";
+        document.getElementById("inc_timer").style.display = "block";
+        document.getElementById("dec_timer").style.display = "block";
     }
     else {
         document.getElementById("mcs_idx").style.display = "block";
         document.getElementById("min_mcs_idx").style.display = "none";
         document.getElementById("max_mcs_idx").style.display = "none";
+        document.getElementById("inc_timer").style.display = "none";
+        document.getElementById("dec_timer").style.display = "none";
     }
     if( stream == 3 ) {
         document.getElementById("mcs_idx").style.display = "none";
@@ -256,13 +260,13 @@ function getoptions( list, value )
             <div class="cbi-value-field" id="maxrateid">
            </div>
          </div>
-          <div class="cbi-value">
+          <div class="cbi-value" id="inc_timer">
             <label class="cbi-value-title">DDRS Rate Incr. Timer</label>
             <div class="cbi-value-field">
               <input type="text" name="110" class="cbi-input-select" value="<%=uciget('uci get wireless.wifi1.ddrsinctimer')%>" >
            </div>
          </div>
-          <div class="cbi-value">
+          <div class="cbi-value" id="dec_timer">
             <label class="cbi-value-title">DDRS Rate Decr. Timer</label>
             <div class="cbi-value-field">
               <input type="text" name="111" class="cbi-input-select" value="<%=uciget('uci get wireless.wifi1.ddrsdectimer')%>" >
