@@ -1901,6 +1901,7 @@ enable_qcawifi() {
 		config_get ddrsdectimer "$device" ddrsdectimer
 		config_get atpcstatus "$device" atpcstatus
 		config_get atpcpower "$device" atpcpower
+        pow=`expr $atpcpower + 3`
 
 
         iwpriv "$ifname" kwnstream "$spatialstream"
@@ -1915,7 +1916,7 @@ enable_qcawifi() {
             iwpriv "$ifname" kwnddrsmax "$ddrsrate"
         fi
         iwpriv "$ifname" kwnatpc "$atpcstatus"
-        iwpriv "$ifname" kwnatpcpow "$atpcpower"
+        iwpriv "$ifname" kwnatpcpow "$pow"
 
 
 		config_get kwnnoiseoff "$device" kwnnoiseoff

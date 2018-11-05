@@ -110,8 +110,9 @@ start_service() {
     fi
     if [ "$atpcpower1" == "" ]
     then
-        uci set wireless.wifi1.atpcpower='26'
+        uci set wireless.wifi1.atpcpower='23'
     fi
+    uci set wireless.wifi1.enable_ol_stats='1'
 #2.4 Radio Default values
     uci set wireless.wifi0.txchainmask='3'
     uci set wireless.wifi0.rxchainmask='3'
