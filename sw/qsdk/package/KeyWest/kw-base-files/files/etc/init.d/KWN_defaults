@@ -111,7 +111,7 @@ start_service() {
     fi
     if [ "$atpcpower1" == "" ]
     then
-        uci set wireless.wifi1.atpcpower='23'
+        uci set wireless.wifi1.atpcpower='26'
     fi
     uci set wireless.wifi1.enable_ol_stats='1'
     if [ "$eth_mtu" == "" ]
