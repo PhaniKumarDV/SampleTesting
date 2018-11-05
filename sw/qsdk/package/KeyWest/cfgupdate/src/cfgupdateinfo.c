@@ -576,6 +576,9 @@ void cfg_set( char *type, char *value )
         case UCI_ID_RADIO1_ATPC_POWER:
             sprintf(cmd,"uci set wireless.wifi1.atpcpower='%s'",value);
             break;
+        case UCI_ID_ETHERNET_MTU:
+            sprintf(cmd,"uci set network.lan.mtu='%s'",value);
+            break;
         default:
             break;
     }

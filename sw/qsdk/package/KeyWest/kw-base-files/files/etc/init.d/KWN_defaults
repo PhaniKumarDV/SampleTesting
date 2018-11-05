@@ -27,7 +27,8 @@ start_service() {
     ddrsdectimer1=$(uci get wireless.wifi1.ddrsdectimer)
     atpcstatus1=$(uci get wireless.wifi1.atpcstatus)
     atpcpower1=$(uci get wireless.wifi1.atpcpower)
-    
+    eth_mtu=$(uci get network.lan.mtu)
+
     if [ "$eth_timer" == "" ]
     then
         uci set ethernet.ethernet.ethtimer='0'
@@ -113,6 +114,10 @@ start_service() {
         uci set wireless.wifi1.atpcpower='23'
     fi
     uci set wireless.wifi1.enable_ol_stats='1'
+    if [ "$eth_mtu" == "" ]
+    then
+        uci set network.lan.mtu='1500'
+    fi
 #2.4 Radio Default values
     uci set wireless.wifi0.txchainmask='3'
     uci set wireless.wifi0.rxchainmask='3'

@@ -95,6 +95,12 @@ function save_value()
             <input type="text" name="77" class="cbi-input-select" value="<%=uciget('uci get ethernet.ethernet.ethtimer')%>" > &nbsp; minutes
           </div>
         </div>
+        <div class="cbi-value" id="eth_mtu">
+          <label class="cbi-value-title">Ethernet MTU</label>
+          <div class="cbi-value-field">          
+            <input type="text" name="114" class="cbi-input-select" value="<%=uciget('uci get network.lan.mtu')%>" > &nbsp; bytes
+          </div>
+        </div>
     </form>
     </fieldset>
 </div>
