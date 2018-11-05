@@ -216,7 +216,7 @@ typedef struct
 typedef struct
 {
     uint8_t  ip[4];         /*   ipaddress -  4 bytes */
-    uint8_t  ip_type;       /*      iptype - 15 bytes */
+    uint8_t  ip_type;       /*      iptype -  1 bytes */
     uint8_t  ssid[33];      /*        ssid - 32 bytes */
     uint8_t  opmode;        /*      opmode -  5 bytes */
     uint8_t  bandwidth;     /*   bandwidth -  6 bytes */
