@@ -4,15 +4,13 @@ USE_PROCD=1
 
 start_service() {
     procd_open_instance
-
-    eth_timer=$(uci get ethernet.ethernet.ethtimer)
+#Wireless
+#RADIO 5
     tx_power_radio1=$(uci get wireless.wifi1.TXPowLim5G)
-    tx_power_radio2=$(uci get wireless.wifi0.TXPowLim2G)
     tx_chainmask_radio1=$(uci get wireless.wifi1.txchainmask)
     rx_chainmask_radio1=$(uci get wireless.wifi1.rxchainmask)
     shortgi_radio1=$(uci get wireless.@wifi-iface[1].shortgi)
     distance_radio1=$(uci get wireless.wifi1.distance)
-    hidden_radio0=$(uci get wireless.@wifi-iface[0].hidden)
     hidden_radio1=$(uci get wireless.@wifi-iface[1].hidden)
     dgackdisable=$(uci get wireless.@wifi-iface[1].dgackdisable)
     amsdu1=$(uci get wireless.@wifi-iface[1].amsdu)
@@ -27,6 +25,12 @@ start_service() {
     ddrsdectimer1=$(uci get wireless.wifi1.ddrsdectimer)
     atpcstatus1=$(uci get wireless.wifi1.atpcstatus)
     atpcpower1=$(uci get wireless.wifi1.atpcpower)
+    gain1=$(uci get wireless.wifi1.antennagain)
+#RADIO 2.4
+    tx_power_radio2=$(uci get wireless.wifi0.TXPowLim2G)
+    hidden_radio0=$(uci get wireless.@wifi-iface[0].hidden)
+#Ethernet
+    eth_timer=$(uci get ethernet.ethernet.ethtimer)
     eth_mtu=$(uci get network.lan.mtu)
 
     if [ "$eth_timer" == "" ]
@@ -113,11 +117,16 @@ start_service() {
     then
         uci set wireless.wifi1.atpcpower='26'
     fi
-    uci set wireless.wifi1.enable_ol_stats='1'
+    if [ "$gain1" == "" ]
+    then
+        uci set wireless.wifi1.antennagain='23'
+    fi
     if [ "$eth_mtu" == "" ]
     then
         uci set network.lan.mtu='1500'
     fi
+#5 Radio Default values
+    uci set wireless.wifi1.enable_ol_stats='1'
 #2.4 Radio Default values
     uci set wireless.wifi0.txchainmask='3'
     uci set wireless.wifi0.rxchainmask='3'

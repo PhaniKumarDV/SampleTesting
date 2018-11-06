@@ -52,8 +52,8 @@ var ind = <%=luci.http.write_json(entryind)%>;
 var freq = <%= luci.http.write_json(freq) %>;
 var hw = "<%=uciget('uci get wireless.wifi1.hwmode')%>";
 /*                0   1   2   3   4   5   6   7   8   9   10  11  12  13  14  15  16  17  18  19 */
-var tx_pow_ac = [ 23, 22, 22, 21, 21, 20, 19, 18, 17, 16, 23, 22, 22, 21, 21, 20, 19, 18, 17, 16 ];
-var tx_pow_n  = [ 23, 22, 21, 20, 19, 18, 17, 16, 23, 22, 21, 20, 19, 18, 17, 16 ];
+var tx_pow_ac = [ 23, 22, 22, 21, 21, 20, 20, 19, 18, 17, 23, 22, 22, 21, 21, 20, 20, 19, 18, 17 ];
+var tx_pow_n  = [ 23, 22, 21, 20, 20, 19, 18, 17, 23, 22, 21, 20, 20, 19, 18, 17 ];
 var tx_pow = ( hw == "11ac" ? tx_pow_ac : tx_pow_n );
 var mac, timer;
 
@@ -177,9 +177,9 @@ function getBaseLog(x, y) {
 						for( var j = 0; j < assoclist.length; j++ )
 						{
 							mac = assoclist[j].bssid;
-                            var tx_gain = document.getElementById("txgain").value;
+                            var tx_gain = assoclist[j].l_ant_gain;
                             var tx_loss = document.getElementById("txloss").value;
-                            var rx_gain = document.getElementById("rxgain").value;
+                            var rx_gain = assoclist[j].r_ant_gain;
                             var rx_loss = document.getElementById("rxloss").value;
                             var dis = distanceInKmBetweenEarthCoordinates(assoclist[j].local_lat,assoclist[j].local_long,assoclist[j].remote_lat,assoclist[j].remote_long);
                             dis = dis.toFixed(2);
@@ -219,6 +219,8 @@ function getBaseLog(x, y) {
 							document.getElementById("rem_cusname").innerHTML = assoclist[j].r_customer_name;
 							document.getElementById("loc_id").innerHTML = assoclist[j].l_link_id;
 							document.getElementById("rem_id").innerHTML = assoclist[j].r_link_id;
+                            //alert(assoclist[j].l_ant_gain);
+                            //alert(assoclist[j].r_ant_gain);
 						}
 					}
 				}
@@ -269,14 +271,10 @@ function getBaseLog(x, y) {
     <fieldset class="cbi-section">
         <table>
             <tr>
-                <td width="35%">Tx Loss&nbsp;<input type="text" class="cbi-input-select" id="txloss" style="width:100px;" value="0">&nbsp;dB</td>
-                <td width="35%">Tx Antenna Gain&nbsp;<input type="text" class="cbi-input-select" id="txgain" style="width:100px;" value="23">&nbsp;dBi</td>
-                <td width="35%">Path Loss<span id="pathloss" style="padding-left:50px;"></span>&nbsp;dB</td>
-            </tr>
-            <tr>
-                <td width="35%">Rx Loss&nbsp;<input type="text" class="cbi-input-select" id="rxloss" style="width:100px;" value="0">&nbsp;dB</td>
-                <td width="35%">Rx Antenna Gain&nbsp;<input type="text" class="cbi-input-select" id="rxgain" style="width:100px;" value="23">&nbsp;dBi</td>
-                <td width="35%">Rx Power&nbsp;<span id="recpow" style="padding-left:50px;"></span>&nbsp;dBm</td>
+                <td width="25%">Tx Loss&nbsp;<input type="text" class="cbi-input-select" id="txloss" style="width:80px;" value="0">&nbsp;dB</td>
+                <td width="25%">Rx Loss&nbsp;<input type="text" class="cbi-input-select" id="rxloss" style="width:80px;" value="0">&nbsp;dB</td>
+                <td width="25%">Path Loss<span id="pathloss" style="padding-left:10px;"></span>&nbsp;dB</td>
+                <td width="25%">Rx Power&nbsp;<span id="recpow" style="padding-left:10px;"></span>&nbsp;dBm</td>
             </tr>
         </table>
     </fieldset>

@@ -138,7 +138,9 @@ enum uci_cfg_id {
     UCI_ID_RADIO1_ATPC_STATUS =112,
     UCI_ID_RADIO1_ATPC_POWER =113,
     /* Ethernet MTU */
-    UCI_ID_ETHERNET_MTU = 114
+    UCI_ID_ETHERNET_MTU = 114,
+    /* Wireless */
+    UCI_ID_RADIO1_ANTENNA_GAIN = 115
 };
 
 typedef struct

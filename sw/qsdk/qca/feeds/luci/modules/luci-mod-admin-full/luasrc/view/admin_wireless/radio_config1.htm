@@ -260,6 +260,12 @@ function updatehidessid()
             </div>
           </div>
           <div class="cbi-value">
+            <label class="cbi-value-title">Antenna Gain</label>
+            <div class="cbi-value-field">
+              <input type="text" name="115" class="cbi-input-select" value="<%=uciget('uci get wireless.wifi1.antennagain')%>" > &nbsp; (0-23) dBi
+            </div>
+          </div>
+          <div class="cbi-value">
             <label class="cbi-value-title">Customer Name</label>
             <div class="cbi-value-field">
               <input type="text" name="13" class="cbi-input-select" value="<%=uciget('uci get wireless.wifi1.customername')%>" >

@@ -768,10 +768,12 @@ struct ieee80211_action_vht_gid_mgmt {
 #define IEEE80211_ACTION_TPC_REQUEST        2   /* Transmit Power control */
 #define IEEE80211_ACTION_TPC_REPORT         3
 #define IEEE80211_ACTION_CHAN_SWITCH        4   /* 802.11h Channel Switch Announcement */
-#define IEEE80211_ACTION_DYING_GASP         5   /*Dying Gasp*/
-#define IEEE80211_ACTION_LINK_PARAM         6   /*Link param*/
-#define IEEE80211_ACTION_NODE_STATS         7   /*Node Stats*/
-#define IEEE80211_ACTION_TPUT_TEST          8   /*Tput Test*/
+#define IEEE80211_ACTION_DYING_GASP         5   /* Dying Gasp */
+#define IEEE80211_ACTION_LINK_PARAM         6   /* Link param */
+#define IEEE80211_ACTION_NODE_STATS         7   /* Node Stats */
+#define IEEE80211_ACTION_TPUT_TEST          8   /* Tput Test */
+#define IEEE80211_ACTION_SCAN_ENTRIES       9   /* Scan Entries */
+#define IEEE80211_ACTION_TX_PARAMS          10  /* Tx params */
 
 /* HT actions */
 #define IEEE80211_ACTION_HT_TXCHWIDTH       0   /* recommended transmission channel width */
@@ -846,6 +848,36 @@ struct ieee80211_ie_op_mode_ntfy {
 
 #define DG_PKT_TYPE_INFORM 1
 #define DG_PKT_TYPE_ACK	   2
+#define KWN_SCAN_ENTRY_MAX 100
+
+struct ieee80211_tx_param {
+    int8_t  	chan;
+    int8_t  	txpower;
+    int8_t  	rate;
+} __packed;
+
+/* VHT - Tx params */
+struct ieee80211_action_vht_tx_params {
+    struct ieee80211_action    at_header;
+    struct ieee80211_tx_param  at_tx_param;
+} __packed;
+
+struct ieee80211_scan_actionentry {
+    u_int8_t  	channel; 
+    u_int16_t  	frequency; 
+    u_int8_t  	rssi; 
+} __packed;
+
+struct ieee80211_scan_actionentries {
+    u_int8_t  	count;
+    struct ieee80211_scan_actionentry entry[ KWN_SCAN_ENTRY_MAX ];
+} __packed;
+
+/* VHT - Scan Entries */
+struct ieee80211_action_vht_scan_entries {
+    struct ieee80211_action    at_header;
+    struct ieee80211_scan_actionentries at_scan_entry;
+} __packed;
 
 struct ieee80211_tput_test {
     u_int32_t  	ipv4;
@@ -863,8 +895,7 @@ struct ieee80211_action_vht_tput_test {
 
 struct ieee80211_node_stats {
     u_int32_t  	ipv4;
-    u_int8_t  	snr_a1; 
-    u_int8_t  	snr_a2; 
+    u_int8_t    snr_avg[ 2 ];
     u_int64_t   rx_tput_mbps;
     u_int32_t  	phy_err; 
     u_int32_t  	mpdu_err; 
@@ -884,6 +915,7 @@ struct ieee80211_link_param {
     u_int32_t  	dl_limit; 
     u_int8_t	link_id;
     u_int8_t	customer_name[32];
+    u_int8_t	antenna_gain;
 } __packed;
 
 /* VHT - exchange param */
@@ -2912,6 +2944,8 @@ struct ieee80211req_sta_info {
         int16_t   isi_l_noise_floor;
         int16_t   isi_r_noise_floor;
         u_int8_t  isi_kwn_tx_rate_mcs;
+        u_int8_t  isi_l_ant_gain;
+        u_int8_t  isi_r_ant_gain;
 
 };
 
