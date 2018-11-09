@@ -129,7 +129,7 @@ void kwn_reset_datarate( int stream )
         system(cmd);
     }
     else {
-        sprintf(cmd,"uci set wireless.wifi1.ddrsrate='auto'");
+        sprintf(cmd,"uci set wireless.wifi1.ddrsrate='3'");
         system(cmd);
         sprintf(cmd,"uci set wireless.wifi1.ddrsminrate='%d'",min_srate);
         system(cmd);
