@@ -1,7 +1,7 @@
 diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.c
 --- net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c	1970-01-01 05:30:00.000000000 +0530
-+++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.c	2018-11-09 12:19:51.559517744 +0530
-@@ -0,0 +1,2804 @@
++++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.c	2018-11-09 13:08:51.950782245 +0530
+@@ -0,0 +1,2832 @@
 +/****************************************************************************
 +*                                                                           *
 +*  File Name:           kwnmib.c                                           *
@@ -182,83 +182,87 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +  /* System Inventory MIBS */
 +  { 75   , ASN_OCTET_STR  , RONLY , var_SystemInvTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM_INV, KWN_SYSTEM_INV_SERIALNO } },
 +  { 76   , ASN_OCTET_STR  , RONLY , var_SystemInvTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM_INV, KWN_SYSTEM_INV_MODEL } },
-+  { 77   , ASN_OCTET_STR  , RONLY , var_SystemInvTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM_INV, KWN_SYSTEM_INV_VERSION } },
++  { 77   , ASN_INTEGER    , RONLY , var_SystemInvTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM_INV, KWN_SYSTEM_INV_RELNUM } },
++  { 78   , ASN_INTEGER    , RONLY , var_SystemInvTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM_INV, KWN_SYSTEM_INV_MAJNUM } },
++  { 79   , ASN_INTEGER    , RONLY , var_SystemInvTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM_INV, KWN_SYSTEM_INV_MINNUM } },
++  { 80   , ASN_INTEGER    , RONLY , var_SystemInvTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM_INV, KWN_SYSTEM_INV_PRODUCTID } },
++  { 81   , ASN_OCTET_STR  , RONLY , var_SystemInvTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM_INV, KWN_SYSTEM_INV_BUILDNO } },
 +  /* System Tftp MIBS */
-+  { 78   , ASN_OCTET_STR  , RWRITE, var_SystemTftpTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM_TFTP, KWN_SYSTEM_TFTP_FILENAME } },
-+  { 79   , ASN_INTEGER    , RWRITE, var_SystemTftpTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM_TFTP, KWN_SYSTEM_TFTP_FILETYPE } },
-+  { 80   , ASN_IPADDRESS  , RWRITE, var_SystemTftpTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM_TFTP, KWN_SYSTEM_TFTP_SERVERIP } },
-+  { 81   , ASN_INTEGER    , RONLY , var_SystemTftpTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM_TFTP, KWN_SYSTEM_TFTP_OPSTATUS } },
-+  { 82   , ASN_INTEGER    , RWRITE, var_SystemTftpTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM_TFTP, KWN_SYSTEM_TFTP_OPTYPE } },
++  { 82   , ASN_OCTET_STR  , RWRITE, var_SystemTftpTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM_TFTP, KWN_SYSTEM_TFTP_FILENAME } },
++  { 83   , ASN_INTEGER    , RWRITE, var_SystemTftpTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM_TFTP, KWN_SYSTEM_TFTP_FILETYPE } },
++  { 84   , ASN_IPADDRESS  , RWRITE, var_SystemTftpTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM_TFTP, KWN_SYSTEM_TFTP_SERVERIP } },
++  { 85   , ASN_INTEGER    , RONLY , var_SystemTftpTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM_TFTP, KWN_SYSTEM_TFTP_OPSTATUS } },
++  { 86   , ASN_INTEGER    , RWRITE, var_SystemTftpTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM_TFTP, KWN_SYSTEM_TFTP_OPTYPE } },
 +  /* Wireless Stats MIBS */
-+  { 83   , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_RADIO_INDEX } },
-+  { 84   , ASN_OCTET_STR  , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MACADDRESS } },
-+  { 85   , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_REMOTEPARTNERS } },
-+  { 86   , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_DATA_TXTOTALPACKETS } },
-+  { 87   , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_DATA_RXTOTALPACKETS } },
-+  { 88   , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_DATA_TXMULTICASTPACKETS } },
-+  { 89   , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_DATA_RXMULTICASTPACKETS } },
-+  { 90   , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_DATA_TXUNICASTPACKETS } },
-+  { 91   , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_DATA_RXUNICASTPACKETS } },
-+  { 92   , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_TXPACKETS } },
-+  { 93   , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_RXPACKETS } },
-+  { 94   , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_TXBEACONS } },
-+  { 95   , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_RXBEACONS } },
-+  { 96   , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_AUTHREQSENT } },
-+  { 97   , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_AUTHREQRECV } },
-+  { 98   , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_AUTHCNF } },
-+  { 99   , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_AUTHREJ } },
-+  { 100  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_DEAUTHREQSENT } },
-+  { 101  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_DEAUTHREQRECV } },
-+  { 102  , ASN_OCTET_STR  , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_AUTHRESLAST } },
-+  { 103  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_ASSOCREQSENT } },
-+  { 104  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_ASSOCREQRECV } },
-+  { 105  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_ASSOCCNF } },
-+  { 106  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_ASSOCREJ } },
-+  { 107  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_DEASSOCREQSENT } },
-+  { 108  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_DEASSOCREQRECV } },
-+  { 109  , ASN_OCTET_STR  , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_ASSOCRESLAST } },
-+  { 110  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MPDU_ERRORS } },
-+  { 111  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_PHY_ERRORS } },
++  { 87   , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_RADIO_INDEX } },
++  { 88   , ASN_OCTET_STR  , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MACADDRESS } },
++  { 89   , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_REMOTEPARTNERS } },
++  { 90   , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_DATA_TXTOTALPACKETS } },
++  { 91   , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_DATA_RXTOTALPACKETS } },
++  { 92   , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_DATA_TXMULTICASTPACKETS } },
++  { 93   , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_DATA_RXMULTICASTPACKETS } },
++  { 94   , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_DATA_TXUNICASTPACKETS } },
++  { 95   , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_DATA_RXUNICASTPACKETS } },
++  { 96   , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_TXPACKETS } },
++  { 97   , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_RXPACKETS } },
++  { 98   , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_TXBEACONS } },
++  { 99   , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_RXBEACONS } },
++  { 100  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_AUTHREQSENT } },
++  { 101  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_AUTHREQRECV } },
++  { 102  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_AUTHCNF } },
++  { 103  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_AUTHREJ } },
++  { 104  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_DEAUTHREQSENT } },
++  { 105  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_DEAUTHREQRECV } },
++  { 106  , ASN_OCTET_STR  , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_AUTHRESLAST } },
++  { 107  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_ASSOCREQSENT } },
++  { 108  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_ASSOCREQRECV } },
++  { 109  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_ASSOCCNF } },
++  { 110  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_ASSOCREJ } },
++  { 111  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_DEASSOCREQSENT } },
++  { 112  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_DEASSOCREQRECV } },
++  { 113  , ASN_OCTET_STR  , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_ASSOCRESLAST } },
++  { 114  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MPDU_ERRORS } },
++  { 115  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_PHY_ERRORS } },
 +  /* Ethernet Stats MIBS */
-+  { 112  , ASN_INTEGER    , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_INDEX } },
-+  { 113  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_STATUS } },
-+  { 114  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_MACADDRESS } },
-+  { 115  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_SPEED } },
-+  { 116  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_DUPLEX } },
-+  { 117  , ASN_INTEGER    , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_TXTOTALPACKETS } },
-+  { 118  , ASN_INTEGER    , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_RXTOTALPACKETS } },
-+  { 119  , ASN_INTEGER    , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_TXTOTALBYTES } },
-+  { 120  , ASN_INTEGER    , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_RXTOTALBYTES } },
-+  { 121  , ASN_INTEGER    , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_TXERRORS } },
-+  { 122  , ASN_INTEGER    , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_RXERRORS } },
++  { 116  , ASN_INTEGER    , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_INDEX } },
++  { 117  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_STATUS } },
++  { 118  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_MACADDRESS } },
++  { 119  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_SPEED } },
++  { 120  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_DUPLEX } },
++  { 121  , ASN_INTEGER    , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_TXTOTALPACKETS } },
++  { 122  , ASN_INTEGER    , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_RXTOTALPACKETS } },
++  { 123  , ASN_INTEGER    , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_TXTOTALBYTES } },
++  { 124  , ASN_INTEGER    , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_RXTOTALBYTES } },
++  { 125  , ASN_INTEGER    , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_TXERRORS } },
++  { 126  , ASN_INTEGER    , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_RXERRORS } },
 +  /* Assoc MIBS */
-+  { 123  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_RADIO_INDEX } },
-+  { 124  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_SEC_INDEX } },
-+  { 125  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_MAC } },
-+  { 126  , ASN_IPADDRESS  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_IP } },
-+  { 127  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_LAT } },
-+  { 128  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_LONG } },
-+  { 129  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_LAT } },
-+  { 130  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_LONG } },
-+  { 131  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_RX_RATE } },
-+  { 132  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_TX_RATE } },
-+  { 133  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_RX_TPUT } },
-+  { 134  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_TX_TPUT } },
-+  { 135  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_SNR_A1 } },
-+  { 136  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_SNR_A2 } },
-+  { 137  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_SNR_A1 } },
-+  { 138  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_SNR_A2 } },
-+  { 139  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_PHY_ERR } },
-+  { 140  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_PHY_ERR } },
-+  { 141  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_MPDU_ERR } },
-+  { 142  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_MPDU_ERR } },
-+  { 143  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_RETRIES } },
-+  { 144  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_RETRIES } },
-+  { 145  , ASN_INTEGER    , RWRITE, var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LINKTEST_DUR } },
-+  { 146  , ASN_INTEGER    , RWRITE, var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LINKTEST_DIR } },
-+  { 147  , ASN_INTEGER    , RWRITE, var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LINKTEST_START_STOP } },
-+  { 148  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_NOISE_FLOOR } },
-+  { 149  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_NOISE_FLOOR } },
++  { 127  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_RADIO_INDEX } },
++  { 128  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_SEC_INDEX } },
++  { 129  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_MAC } },
++  { 130  , ASN_IPADDRESS  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_IP } },
++  { 131  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_LAT } },
++  { 132  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_LONG } },
++  { 133  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_LAT } },
++  { 134  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_LONG } },
++  { 135  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_RX_RATE } },
++  { 136  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_TX_RATE } },
++  { 137  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_RX_TPUT } },
++  { 138  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_TX_TPUT } },
++  { 139  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_SNR_A1 } },
++  { 140  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_SNR_A2 } },
++  { 141  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_SNR_A1 } },
++  { 142  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_SNR_A2 } },
++  { 143  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_PHY_ERR } },
++  { 144  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_PHY_ERR } },
++  { 145  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_MPDU_ERR } },
++  { 146  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_MPDU_ERR } },
++  { 147  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_RETRIES } },
++  { 148  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_RETRIES } },
++  { 149  , ASN_INTEGER    , RWRITE, var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LINKTEST_DUR } },
++  { 150  , ASN_INTEGER    , RWRITE, var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LINKTEST_DIR } },
++  { 151  , ASN_INTEGER    , RWRITE, var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LINKTEST_START_STOP } },
++  { 152  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_NOISE_FLOOR } },
++  { 153  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_NOISE_FLOOR } },
 +};
 +
 +/****************************************************************************
@@ -1404,13 +1408,37 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +            }
 +        case KWN_SYSTEM_INV_MODEL:
 +            {
-+                sprintf( cmd, "cat /etc/model" );
++                sprintf( cmd, "uci get variant.variant.model" );
 +                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len, NULL );
 +                return ( u_char * ) res_str;
 +            }
-+        case KWN_SYSTEM_INV_VERSION:
++        case KWN_SYSTEM_INV_RELNUM:
 +            {
-+                sprintf( cmd, "cat /etc/firmware_version" );
++                sprintf( cmd, "uci get variant.variant.relnum" );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_SYSTEM_INV_MAJNUM:
++            {
++                sprintf( cmd, "uci get variant.variant.majnum" );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_SYSTEM_INV_MINNUM:
++            {
++                sprintf( cmd, "uci get variant.variant.minnum" );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_SYSTEM_INV_PRODUCTID:
++            {
++                sprintf( cmd, "uci get variant.variant.productid" );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_SYSTEM_INV_BUILDNO:
++            {
++                sprintf( cmd, "uci get variant.variant.buildno" );
 +                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len, NULL );
 +                return ( u_char * ) res_str;
 +            }
@@ -2808,8 +2836,8 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +}
 diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.h
 --- net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h	1970-01-01 05:30:00.000000000 +0530
-+++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.h	2018-11-09 12:18:06.074626418 +0530
-@@ -0,0 +1,366 @@
++++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.h	2018-11-09 13:09:09.886931564 +0530
+@@ -0,0 +1,370 @@
 +/****************************************************************************
 +*                                                                           *
 +*  File Name:           kwnmib.h                                      *
@@ -3001,7 +3029,11 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h net-snmp-5.4.4-mod/agent/mi
 +enum KWN_SYSTEM_INV {
 +    KWN_SYSTEM_INV_SERIALNO = 1,
 +    KWN_SYSTEM_INV_MODEL = 2,
-+    KWN_SYSTEM_INV_VERSION = 3
++    KWN_SYSTEM_INV_RELNUM = 3,
++    KWN_SYSTEM_INV_MAJNUM = 4,
++    KWN_SYSTEM_INV_MINNUM = 5,
++    KWN_SYSTEM_INV_PRODUCTID = 6,
++    KWN_SYSTEM_INV_BUILDNO = 7
 +};
 +
 +enum KWN_TRAP_CTRL {
@@ -3202,8 +3234,8 @@ diff -urN net-snmp-5.4.4-org/include/net-snmp/net-snmp-config.h.in net-snmp-5.4.
  
 diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWEST-MIB.mib
 --- net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib	1970-01-01 05:30:00.000000000 +0530
-+++ net-snmp-5.4.4-mod/mibs/KEYWEST-MIB.mib	2018-11-09 12:17:39.810404490 +0530
-@@ -0,0 +1,1842 @@
++++ net-snmp-5.4.4-mod/mibs/KEYWEST-MIB.mib	2018-11-09 13:05:32.017169734 +0530
+@@ -0,0 +1,1906 @@
 +------------------------------------------------------------------------
 +------------------------------------------------------------------------
 +--
@@ -3258,6 +3290,29 @@ diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWES
 +        STATUS      current
 +        DESCRIPTION "Monitor"
 +::= { objects 3 }
++
++products OBJECT-IDENTITY
++    STATUS      current
++    DESCRIPTION "Products of KeyWest Networks"
++::= { keywest 2 }
++
++ptp         OBJECT-IDENTITY 
++    STATUS      current
++    DESCRIPTION "Outdoor Point-to-Point Product."
++::= { products 1 }
++ptmp        OBJECT-IDENTITY 
++    STATUS      current
++    DESCRIPTION "Outdoor Point-to-MultiPoint Product."
++::= { products 2 }
++indoorap    OBJECT-IDENTITY 
++    STATUS      current
++    DESCRIPTION "Indoor Access-Point Product."
++::= { products 3 }
++outdoorap   OBJECT-IDENTITY 
++    STATUS      current
++    DESCRIPTION "Outdoor Access-Point Product."
++::= { products 4 }
++
 +------------------------------------------------------------------------
 +------------------------------------------------------------------------
 +wireless OBJECT-IDENTITY
@@ -4155,13 +4210,54 @@ diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWES
 +                     Model."
 +::= { sysInventory 2 }
 +
-+sysInventoryversion OBJECT-TYPE
++sysInventoryrelnum OBJECT-TYPE
++        SYNTAX      Integer32
++        MAX-ACCESS  read-only
++        STATUS      current
++        DESCRIPTION "This parameter is represents the 
++                     firmware release number."
++::= { sysInventory 3 }
++
++sysInventorymajnum OBJECT-TYPE
++        SYNTAX      Integer32
++        MAX-ACCESS  read-only
++        STATUS      current
++        DESCRIPTION "This parameter is represents the 
++                     firmware major number."
++::= { sysInventory 4 }
++
++sysInventoryminnum OBJECT-TYPE
++        SYNTAX      Integer32
++        MAX-ACCESS  read-only
++        STATUS      current
++        DESCRIPTION "This parameter is represents the 
++                     firmware minor number."
++::= { sysInventory 5 }
++
++sysInventoryproductid OBJECT-TYPE
++        SYNTAX      INTEGER {
++            ptp(1),
++            ptmp(2),
++            indoorap(3),
++            outdoorap(4)
++        }
++        MAX-ACCESS  read-only
++        STATUS      current
++        DESCRIPTION "This parameter is represents the 
++                     product ID
++                     '1' - PTP
++                     '2' - PTMP
++                     '3' - INDOORAP
++                     '4' - OUTDOORAP."
++::= { sysInventory 6 }
++
++sysInventorybuildno OBJECT-TYPE
 +        SYNTAX      DisplayString
 +        MAX-ACCESS  read-only
 +        STATUS      current
 +        DESCRIPTION "This parameter is represents the 
-+                     firmware version number."
-+::= { sysInventory 3 }
++                     build number."
++::= { sysInventory 7 }
 +
 +------------------------------------------------------------------------
 +------------------------------------------------------------------------
