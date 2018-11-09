@@ -669,7 +669,7 @@ header .switch-btn .logout i {margin-left:10px; vertical-align: top; float:right
 .sidebar ul.nav li .dropdown-menu li a:after { font-size: 14px!important; top: 14px!important;}
 body { padding-top: 110px; background:#f0f1f3; font-family: 'SegoeUI';  padding-left: 0;  padding-right: 0; padding-bottom: 0; }
 .container {width:100%; max-width:1300px; }
-.sidebar { width: 250px; float: left; background: #fff;  box-shadow: 0px 5px 24px 0px rgba(0, 0, 0, 0.21);    position: fixed;    min-height: 680px;
+.sidebar { width: 250px; float: left; background: #fff;  box-shadow: 0px 5px 24px 0px rgba(0, 0, 0, 0.21);    position: fixed;    min-height: 733px;
     top: 110px;  right: inherit;   -webkit-box-shadow: 0px 5px 24px 0px rgba(0, 0, 0, 0.21);  -moz-box-shadow: 0px 5px 24px 0px rgba(0, 0, 0, 0.21); margin-right: 25px;}
 .main-page { width: 100%; float: left; margin: 0; padding: 0;}
 .page-content { width: calc(100% - 260px);  margin-left: 275px;
@@ -677,7 +677,7 @@ body { padding-top: 110px; background:#f0f1f3; font-family: 'SegoeUI';  padding-
     width: -moz-calc(100% - 260px); width: -ms-calc(100% - 260px);
     box-shadow: 0px 5px 24px 0px rgba(0, 0, 0, 0.21);  -webkit-box-shadow: 0px 5px 24px 0px rgba(0, 0, 0, 0.21);
     -moz-box-shadow: 0px 5px 24px 0px rgba(0, 0, 0, 0.21); padding: 15px;
-    box-sizing: border-box; border: 0;  margin-top: 0px; position: relative; background:#fff;}
+    box-sizing: border-box; border: 0;  margin-top: 0px; position: relative; background:#fff; min-height:733px}
 .sidebar .list-group a { padding: 20px 25px;  font-size: 17px;  font-weight: 400; background-color: transparent; border: 0; border-bottom: 1px solid rgba(153, 153, 153, 0.29); color: #111; }
 .sidebar .list-group a:hover {background-color:transparent;  color: #3c763d;}
 .sidebar .list-group a i {margin-right:10px;}
@@ -739,7 +739,7 @@ header ul.nav { width: 250px; float: left; margin: 35px 0 0 100px;}
 .cbi-map .cbi-section-table-descr th {  border-top: 1px solid #ddd!important; }
 .border fieldset.cbi-section { border: 1px solid #c2c2c2;     padding: 25px 0 0 0;}
 .border .cbi-map-descr { font-size: 15px; font-weight: 400; padding-bottom: 20px; margin-bottom: 0;}
-.index fieldset.cbi-section.half { padding: 25px 10px;  position: relative;  border: 1px solid #c2c2c2; padding-bottom: 10px; min-height: 400px;
+.index fieldset.cbi-section.half { padding: 25px 10px;  position: relative;  border: 1px solid #c2c2c2; padding-bottom: 10px; min-height: 446px;
     box-sizing: border-box; width: 47%; float: none; margin: 0 1% 0px 1%; display: inline-block; vertical-align: top;}
 .index {text-align: center;}
 textarea#syslog {  width: 100%; padding: 20px; box-sizing: border-box; float: left; border-radius: 0; box-shadow: none; line-height: 1.5; font-size: 14px;    font-family: 'Roboto', sans-serif;

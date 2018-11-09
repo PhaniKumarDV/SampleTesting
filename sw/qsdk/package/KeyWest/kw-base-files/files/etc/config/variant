@@ -1,0 +1,8 @@
+config variant 'variant'
+    option model 'MAP100'
+    option relnum '1'
+    option majnum '0'
+    option minnum '0'
+#PTP-'1' PTMP-'2' INDOORAP-'3' OUTDOORAP-'4'
+    option productid '1' 
+    option buildno '106118'
