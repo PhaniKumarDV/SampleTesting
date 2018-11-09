@@ -1305,8 +1305,8 @@ diff -urN qca-wifi-org/offload/wlan/umac_offload_if/ol_if_scan.c qca-wifi-mod/of
                  ss->ss_all_chans[ss->ss_nallchans++] = c;
 diff -urN qca-wifi-org/os/linux/include/ieee80211_ioctl.h qca-wifi-mod/os/linux/include/ieee80211_ioctl.h
 --- qca-wifi-org/os/linux/include/ieee80211_ioctl.h	2018-06-08 11:00:42.000000000 +0530
-+++ qca-wifi-mod/os/linux/include/ieee80211_ioctl.h	2018-11-06 14:25:14.874569429 +0530
-@@ -1530,6 +1530,44 @@
++++ qca-wifi-mod/os/linux/include/ieee80211_ioctl.h	2018-11-09 12:07:41.157345986 +0530
+@@ -1530,6 +1530,45 @@
      IEEE80211_PARAM_TIMEOUTIE                  = 550,   /* set/get assoc comeback timeout value */
      IEEE80211_PARAM_PMF_ASSOC                  = 551,   /* enable/disable pmf support */
      IEEE80211_PARAM_DFS_INFO_NOTIFY_APP        = 552,   /* Enable the feature to notify dfs info to app */
@@ -1347,11 +1347,12 @@ diff -urN qca-wifi-org/os/linux/include/ieee80211_ioctl.h qca-wifi-mod/os/linux/
 +    IEEE80211_PARAM_KWN_DDRS_DECR_TIMER        = 587,	/* KWN Decr Timer */
 +    IEEE80211_PARAM_KWN_ATPC_STATUS            = 588,	/* KWN ATPC */
 +    IEEE80211_PARAM_KWN_ATPC_POWER             = 589,	/* KWN ATPC Power */
-+    IEEE80211_PARAM_KWN_ANTENNA_GAIN           = 590	/* KWN Antenna gain */
++    IEEE80211_PARAM_KWN_ANTENNA_GAIN           = 590,	/* KWN Antenna gain */
++    IEEE80211_PARAM_KWN_ALLOW_TAG_MGMT         = 591    /* Allow Tag Mgmt */
  };
  #define WOW_CUSTOM_PKT_LEN 102
  #define WOW_SYNC_PATTERN 0xFF
-@@ -2328,4 +2366,22 @@
+@@ -2328,4 +2367,22 @@
  };
  #endif
  
@@ -1376,7 +1377,7 @@ diff -urN qca-wifi-org/os/linux/include/ieee80211_ioctl.h qca-wifi-mod/os/linux/
  #endif /* _NET80211_IEEE80211_IOCTL_H_ */
 diff -urN qca-wifi-org/os/linux/src/ieee80211_wireless.c qca-wifi-mod/os/linux/src/ieee80211_wireless.c
 --- qca-wifi-org/os/linux/src/ieee80211_wireless.c	2018-06-08 11:00:40.000000000 +0530
-+++ qca-wifi-mod/os/linux/src/ieee80211_wireless.c	2018-11-06 14:25:28.998520296 +0530
++++ qca-wifi-mod/os/linux/src/ieee80211_wireless.c	2018-11-09 12:08:00.089505960 +0530
 @@ -106,6 +106,10 @@
  int ieee80211_authorise_local_peer(wlan_if_t vap, char *params);
  #endif
@@ -1569,7 +1570,7 @@ diff -urN qca-wifi-org/os/linux/src/ieee80211_wireless.c qca-wifi-mod/os/linux/s
  }
  
  /**
-@@ -14947,6 +15057,123 @@
+@@ -14947,6 +15057,125 @@
      IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1, 0, "dfs_notify" },
      { IEEE80211_PARAM_DFS_INFO_NOTIFY_APP,
      0, IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1, "g_dfs_notify" },
@@ -1688,12 +1689,14 @@ diff -urN qca-wifi-org/os/linux/src/ieee80211_wireless.c qca-wifi-mod/os/linux/s
 +    { IEEE80211_PARAM_KWN_ANTENNA_GAIN,
 +	    IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1, 0, "kwnantgain" },
 +    { IEEE80211_PARAM_KWN_ANTENNA_GAIN,
-+	    0, IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1, "g_kwnantgain" }
++	    0, IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1, "g_kwnantgain" },
++    { IEEE80211_PARAM_KWN_ALLOW_TAG_MGMT,
++	    IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1, 0, "kwn_tagmgmt" }
 +
  };
  
  static const iw_handler ieee80211_handlers[] = {
-@@ -14992,7 +15219,7 @@
+@@ -14992,7 +15221,7 @@
  #endif /* SIOCGIWSCAN */
      (iw_handler) ieee80211_ioctl_siwessid,      /* SIOCSIWESSID */
      (iw_handler) ieee80211_ioctl_giwessid,      /* SIOCGIWESSID */
@@ -1702,7 +1705,7 @@ diff -urN qca-wifi-org/os/linux/src/ieee80211_wireless.c qca-wifi-mod/os/linux/s
      (iw_handler) NULL,      /* SIOCGIWNICKN */
      (iw_handler) NULL,              /* -- hole -- */
      (iw_handler) NULL,              /* -- hole -- */
-@@ -15309,11 +15536,26 @@
+@@ -15309,11 +15538,26 @@
      {
  
      case SIOCG80211STATS:
@@ -2094,7 +2097,7 @@ diff -urN qca-wifi-org/os/linux/tools/athstats.c qca-wifi-mod/os/linux/tools/ath
      fprintf(fd,"ast_tx_xretries     :\t%u\n",tx->tx_xretry);
 diff -urN qca-wifi-org/qca_ol/osif_ol.c qca-wifi-mod/qca_ol/osif_ol.c
 --- qca-wifi-org/qca_ol/osif_ol.c	2018-06-08 11:00:50.000000000 +0530
-+++ qca-wifi-mod/qca_ol/osif_ol.c	2018-08-31 19:02:47.490721458 +0530
++++ qca-wifi-mod/qca_ol/osif_ol.c	2018-11-09 12:14:02.324566777 +0530
 @@ -106,6 +106,7 @@
  extern bool osif_pltfrm_deliver_data(os_if_t osif, wbuf_t wbuf);
  #endif
@@ -2229,7 +2232,7 @@ diff -urN qca-wifi-org/qca_ol/osif_ol.c qca-wifi-mod/qca_ol/osif_ol.c
  #endif
  
 +    /* If Packet started in Local, then Tag the packet with MgmtVLANID*/
-+    if ( vap->kwn_mgmt_vlan_id > 0 ) {
++    if ( vap->kwn_mgmt_vlan_id > 0 && vap->kwn_allow_tagged_mgmt ) {
 +	    eh = (struct ether_header *)(skb->data);
 +	    if ( memcmp ( vap->kwn_eth_mac_addr, eh->ether_shost, 6 ) == 0 ) {
 +		    skb = __vlan_put_tag( skb, htons(ETH_P_8021Q), vap->kwn_mgmt_vlan_id );
@@ -3042,8 +3045,8 @@ diff -urN qca-wifi-org/umac/base/ieee80211_node.c qca-wifi-mod/umac/base/ieee802
      OS_BEACON_WRITE_LOCK(&nt->nt_nodelock, &lock_state, flags);
 diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.c qca-wifi-mod/umac/base/ieee80211_ucfg.c
 --- qca-wifi-org/umac/base/ieee80211_ucfg.c	2018-06-08 11:00:49.000000000 +0530
-+++ qca-wifi-mod/umac/base/ieee80211_ucfg.c	2018-11-06 14:26:32.610297749 +0530
-@@ -50,6 +50,27 @@
++++ qca-wifi-mod/umac/base/ieee80211_ucfg.c	2018-11-09 12:13:58.820537168 +0530
+@@ -50,6 +50,28 @@
  #define HIGHEST_BASIC_RATE 24000
  #define THREE_HUNDRED_FIFTY_MBPS 350000
  
@@ -3051,6 +3054,7 @@ diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.c qca-wifi-mod/umac/base/ieee802
 +extern int edma_set_vid_bitmap(struct net_device *dev, int16_t vid, int16_t flags);
 +extern int edma_clear_vid_bitmap(struct net_device *dev, int16_t vid);
 +extern int edma_set_vlan_mode(struct net_device *dev, int8_t vlan_mode);
++extern int edma_set_allow_tagged_mgmt(struct net_device *dev, int8_t allow_tagged_mgmt);
 +extern int edma_set_allow_untagged(struct net_device *dev, int8_t allow_untagged);
 +extern int edma_set_allow_all_tagged_trunk( struct net_device *dev, int8_t allow_all );
 +extern int edma_set_access_vlan_id( struct net_device *dev, int16_t vlan_id );
@@ -3071,7 +3075,7 @@ diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.c qca-wifi-mod/umac/base/ieee802
  extern int ol_ath_ucfg_get_user_postion(wlan_if_t vaphandle, u_int32_t aid);
  extern int ol_ath_ucfg_get_peer_mumimo_tx_count(wlan_if_t vaphandle, u_int32_t aid);
  extern int ol_ath_ucfg_reset_peer_mumimo_tx_count(wlan_if_t vaphandle, u_int32_t aid);
-@@ -57,6 +78,8 @@
+@@ -57,6 +79,8 @@
  static struct ieee80211_channel* checkchan(wlan_if_t vaphandle,
                                            int channel, int secChanOffset);
  extern int ieee80211_rate_is_valid_basic(struct ieee80211vap *, u_int32_t);
@@ -3080,7 +3084,7 @@ diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.c qca-wifi-mod/umac/base/ieee802
  #if MESH_MODE_SUPPORT
  int ieee80211_add_localpeer(wlan_if_t vap, char *params);
  int ieee80211_authorise_local_peer(wlan_if_t vap, char *params);
-@@ -985,6 +1008,7 @@
+@@ -985,6 +1009,7 @@
      int i;
  #endif
      uint32_t fils_en_period = 0;
@@ -3088,7 +3092,7 @@ diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.c qca-wifi-mod/umac/base/ieee802
  
      if (osifp->is_delete_in_progress)
          return -EINVAL;
-@@ -2642,7 +2666,10 @@
+@@ -2642,7 +2667,10 @@
      case IEEE80211_IOC_SCAN_FLUSH:
          IEEE80211_DPRINTF(vap, IEEE80211_MSG_IOCTL, "set %s\n",
                          "IEEE80211_IOC_SCAN_FLUSH");
@@ -3100,7 +3104,7 @@ diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.c qca-wifi-mod/umac/base/ieee802
          retv = 0; /* success */
          break;
  
-@@ -3974,7 +4001,286 @@
+@@ -3974,7 +4002,297 @@
      case IEEE80211_PARAM_DFS_INFO_NOTIFY_APP:
          ic->ic_dfs_info_notify_channel_available = !!value;
          break;
@@ -3249,12 +3253,12 @@ diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.c qca-wifi-mod/umac/base/ieee802
 +	vap->kwn_tput_test_pkt_size = value;
 +	//printk(": Test PktSize: %d\n",vap->kwn_tput_test_pkt_size);
 +	break;
-+
+ 
 +    case IEEE80211_PARAM_KWN_TPUT_TEST_DIR:
 +	vap->kwn_tput_test_direction = value;
 +	//printk(": Test Direction: %d\n",vap->kwn_tput_test_direction);
 +	break;
- 
++
 +    case IEEE80211_PARAM_KWN_SET_PBB_B_VLANID: {
 +	struct net_device *eth_dev;
 +	eth_dev = dev_get_by_name(&init_net, "eth0");
@@ -3384,10 +3388,21 @@ diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.c qca-wifi-mod/umac/base/ieee802
 +        vap->kwn_antenna_gain = value;
 +        break;
 +    }
++    case IEEE80211_PARAM_KWN_ALLOW_TAG_MGMT: {
++	struct net_device *eth_dev;
++	eth_dev = dev_get_by_name(&init_net, "eth0");
++	if(eth_dev) {
++        vap->kwn_allow_tagged_mgmt = value;
++		edma_set_allow_tagged_mgmt(eth_dev, value);
++		printk(": Allow Tagged Mgmt: %d\n",value); 
++	}
++	dev_put(eth_dev);
++	}
++	break;
      }
  
      if (retv == ENETRESET)
-@@ -4018,6 +4324,7 @@
+@@ -4018,6 +4336,7 @@
      int *txpow_frm_subtype = value;
      u_int8_t frame_subtype;
      u_int8_t frame_type;
@@ -3395,7 +3410,7 @@ diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.c qca-wifi-mod/umac/base/ieee802
  #if ATH_SUPPORT_DFS
      int tmp;
  #endif
-@@ -5586,6 +5893,150 @@
+@@ -5586,6 +5905,150 @@
      case IEEE80211_PARAM_DFS_INFO_NOTIFY_APP:
          *value = ic->ic_dfs_info_notify_channel_available;
          break;
@@ -3546,7 +3561,7 @@ diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.c qca-wifi-mod/umac/base/ieee802
      }
  
      if (retv) {
-@@ -6582,12 +7033,15 @@
+@@ -6582,12 +7045,15 @@
      wlan_chan_t chan = wlan_node_get_chan(node);
      ieee80211_rate_info rinfo;
      u_int32_t jiffies_now=0, jiffies_delta=0, jiffies_assoc=0;
@@ -3562,7 +3577,7 @@ diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.c qca-wifi-mod/umac/base/ieee802
      len = sta_space(node, &ielen, vap);
      if (len > req->space) {
          return;
-@@ -6641,7 +7095,7 @@
+@@ -6641,7 +7107,7 @@
          si->isi_tx_rate_mcs = rinfo.mcs;
          si->isi_tx_rate_flags = rinfo.flags;
  #endif
@@ -3571,7 +3586,7 @@ diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.c qca-wifi-mod/umac/base/ieee802
      }
  
      memset(&rinfo, 0, sizeof(rinfo));
-@@ -6685,7 +7139,42 @@
+@@ -6685,7 +7151,42 @@
      si->isi_is_256qam = wlan_node_get_256qam_support(node);
      si->isi_rx_nss = wlan_node_get_rx_spatial(node);
      si->isi_tx_nss = wlan_node_get_tx_spatial(node);
@@ -3839,7 +3854,7 @@ diff -urN qca-wifi-org/umac/include/ieee80211_vap.h qca-wifi-mod/umac/include/ie
  #endif
 diff -urN qca-wifi-org/umac/include/ieee80211_var.h qca-wifi-mod/umac/include/ieee80211_var.h
 --- qca-wifi-org/umac/include/ieee80211_var.h	2018-06-08 11:00:49.000000000 +0530
-+++ qca-wifi-mod/umac/include/ieee80211_var.h	2018-11-06 14:26:52.082229219 +0530
++++ qca-wifi-mod/umac/include/ieee80211_var.h	2018-11-09 12:08:49.169920680 +0530
 @@ -1574,6 +1574,8 @@
      void                                (*ic_beacon_probe_template_update)(struct ieee80211_node *ni);
      int                                 (*ic_vap_set_param)(struct ieee80211vap *vap,
@@ -3888,7 +3903,7 @@ diff -urN qca-wifi-org/umac/include/ieee80211_var.h qca-wifi-mod/umac/include/ie
      u_int8_t                   iv_nss;                  /* Spatial Stream Count */
      u_int8_t                   iv_tx_stbc;              /* TX STBC Enable:1 Disable:0 */
      u_int8_t                   iv_rx_stbc;              /* RX STBC Enable:(1,2,3) Disable:0 */
-@@ -2908,8 +2928,40 @@
+@@ -2908,8 +2928,41 @@
      bool                       iv_wps_session;
      csa_deauth_type            iv_csa_deauth_mode; /* if set, sends deauth to all stations after CSA */
      u_int8_t                   iv_filter_ssid[IEEE80211_NWID_LEN+1]; /* Filter SSID from scan results */
@@ -3916,6 +3931,7 @@ diff -urN qca-wifi-org/umac/include/ieee80211_var.h qca-wifi-mod/umac/include/ie
 +    char                       kwn_rate_node_mac[6];
 +    struct kwn_link_txparam    kwn_txparam;
 +    u_int8_t                   kwn_antenna_gain;
++    u_int8_t                   kwn_allow_tagged_mgmt;
  } IEEE80211VAP, *PIEEE80211VAP;
  
 +/* KWN Flag */

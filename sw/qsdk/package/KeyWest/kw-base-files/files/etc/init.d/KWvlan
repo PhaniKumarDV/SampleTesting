@@ -21,6 +21,7 @@ start_service() {
     bsa=$(uci get vlan.vlan.bsa)
     bvid=$(uci get vlan.vlan.bvid)
     bisid=$(uci get vlan.vlan.bisid)
+    tagmgmt=$(uci get vlan.vlan.tagmgmt)
 
 
 # VLAN Disable: Mgmt vlan must be set to 0 since it is used 
@@ -54,6 +55,7 @@ start_service() {
     iwpriv ath1 addmac $bsa
     iwpriv ath1 kwn_pbb_bvid $bvid
     iwpriv ath1 kwn_pbb_bisid $bisid
+    iwpriv ath1 kwn_tagmgmt $tagmgmt
 
     procd_close_instance
 }

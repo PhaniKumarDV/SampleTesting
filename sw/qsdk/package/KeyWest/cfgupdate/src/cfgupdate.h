@@ -140,7 +140,9 @@ enum uci_cfg_id {
     /* Ethernet MTU */
     UCI_ID_ETHERNET_MTU = 114,
     /* Wireless */
-    UCI_ID_RADIO1_ANTENNA_GAIN = 115
+    UCI_ID_RADIO1_ANTENNA_GAIN = 115,
+    /* VLAN */
+    UCI_ID_VLAN_ALLOW_TAGGED_MGMT = 116
 };
 
 typedef struct

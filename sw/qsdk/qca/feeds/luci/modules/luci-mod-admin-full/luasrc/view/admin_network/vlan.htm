@@ -136,6 +136,7 @@ function updateparam()
     if( stat == 2 )
     {
         document.getElementById("modeid").style.display = "none";
+        document.getElementById("tagmgmt").style.display = "none";
         document.getElementById("mgmtvlan").style.display = "none";
         document.getElementById("accessvlan").style.display = "none";
         document.getElementById("trunkoption").style.display = "none";
@@ -152,6 +153,7 @@ function updateparam()
     else
     {
         document.getElementById("modeid").style.display = "block";
+        document.getElementById("tagmgmt").style.display = "block";
         document.getElementById("mgmtvlan").style.display = "block";
         hideparam();
     }
@@ -290,6 +292,24 @@ function hideparam()
                        document.write(" selected");
                     document.write(">MAC-in-MAC</option>");
                  }
+                 </script>
+              </select>
+            </div>
+          </div>
+          <div class="cbi-value" id="tagmgmt">
+            <label class="cbi-value-title">Allow Tag Mgmt</label>
+            <div class="cbi-value-field">
+              <select class="cbi-input-select" name="116">
+                 <script type="text/javascript">
+                 var opt = "<%=uciget('uci get vlan.vlan.tagmgmt')%>";
+                 document.write("<option value='1' ");
+                 if( opt == "1" )
+                     document.write(" selected");
+                 document.write(">Enable</option>");
+                 document.write("<option value='0' ");
+                 if( opt == "0" )
+                     document.write(" selected");
+                 document.write(">Disable</option>");
                  </script>
               </select>
             </div>
