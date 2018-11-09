@@ -1924,6 +1924,14 @@ enable_qcawifi() {
 
 		config_get antennagain "$device" antennagain
         iwpriv "$ifname" kwnantgain "$antennagain"
+
+		config_get assemfrag "$device" assemfrag
+		config_get maxsize "$device" maxsize
+		config_get fragsize "$device" fragsize
+        [ -n "$assemfrag" ] && iwpriv "$ifname" kwnassemfrag "$assemfrag"
+        [ -n "$maxsize" ] && iwpriv "$ifname" kwnpktsize "$maxsize"
+        [ -n "$fragsize" ] && iwpriv "$ifname" kwnfragsize "$fragsize"
+
 		#config_get set11NRates "$vif" set11NRates
 		#[ -n "$set11NRates" ] && iwpriv "$ifname" set11NRates "$set11NRates"
 

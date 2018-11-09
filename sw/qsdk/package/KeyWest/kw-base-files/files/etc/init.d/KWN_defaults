@@ -26,6 +26,9 @@ start_service() {
     atpcstatus1=$(uci get wireless.wifi1.atpcstatus)
     atpcpower1=$(uci get wireless.wifi1.atpcpower)
     gain1=$(uci get wireless.wifi1.antennagain)
+    frag1=$(uci get wireless.wifi1.assemfrag)
+    maxsize1=$(uci get wireless.wifi1.maxsize)
+    fragsize1=$(uci get wireless.wifi1.fragsize)
 #RADIO 2.4
     tx_power_radio2=$(uci get wireless.wifi0.TXPowLim2G)
     hidden_radio0=$(uci get wireless.@wifi-iface[0].hidden)
@@ -123,6 +126,18 @@ start_service() {
     then
         uci set wireless.wifi1.antennagain='23'
     fi
+    if [ "$frag1" == "" ]
+    then
+        uci set wireless.wifi1.assemfrag='0'
+    fi
+    if [ "$maxsize1" == "" ]
+    then
+        uci set wireless.wifi1.maxsize='1200'
+    fi
+    if [ "$fragsize1" == "" ]
+    then
+        uci set wireless.wifi1.fragsize='1000'
+    fi
     if [ "$eth_mtu" == "" ]
     then
         uci set network.lan.mtu='1500'
@@ -141,6 +156,7 @@ start_service() {
     then
         uci set wireless.@wifi-iface[0].hidden='1'
     fi
+    dmesg -n 1
 
     procd_close_instance
 }
