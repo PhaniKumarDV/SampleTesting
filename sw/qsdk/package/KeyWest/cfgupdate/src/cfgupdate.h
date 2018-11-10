@@ -142,7 +142,12 @@ enum uci_cfg_id {
     /* Wireless */
     UCI_ID_RADIO1_ANTENNA_GAIN = 115,
     /* VLAN */
-    UCI_ID_VLAN_ALLOW_TAGGED_MGMT = 116
+    UCI_ID_VLAN_ALLOW_TAGGED_MGMT = 116,
+    /* TFTP */
+    UCI_ID_TFTP_FILENAME = 117,
+    UCI_ID_TFTP_FILETYPE = 118,
+    UCI_ID_TFTP_SERVERIP = 119,
+    UCI_ID_TFTP_OPTYPE = 120
 };
 
 typedef struct

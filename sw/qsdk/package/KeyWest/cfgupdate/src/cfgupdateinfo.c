@@ -585,6 +585,25 @@ void cfg_set( char *type, char *value )
         case UCI_ID_VLAN_ALLOW_TAGGED_MGMT:
             sprintf(cmd,"uci set vlan.vlan.tagmgmt='%s'",value);
             break;
+        case UCI_ID_TFTP_FILENAME:
+            sprintf(cmd,"uci set tftp.tftp.filename='%s'",value);
+            break;
+        case UCI_ID_TFTP_FILETYPE:
+            sprintf(cmd,"uci set tftp.tftp.filetype='%s'",value);
+            break;
+        case UCI_ID_TFTP_SERVERIP:
+            sprintf(cmd,"uci set tftp.tftp.serverip='%s'",value);
+            break;
+        case UCI_ID_TFTP_OPTYPE:
+            {
+                unsigned char cmd2[30];
+                memset(cmd2, '\0', sizeof(cmd2));
+                sprintf(cmd,"uci set tftp.tftp.optype='%s'",value);
+                system( cmd );
+                sprintf(cmd2,"/usr/sbin/kwn_tftp");
+                system( cmd2 );
+                break;
+            }
         default:
             break;
     }

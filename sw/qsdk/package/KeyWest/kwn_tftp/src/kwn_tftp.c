@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include <sys/types.h>
 #include "kwn_tftp.h"
 
@@ -112,43 +113,56 @@ int main()
     printf("\nTftp Filetype  : %d",data.filetype);
     printf("\nTftp serverip  : %d.%d.%d.%d",data.serverip[0],data.serverip[1],data.serverip[2],data.serverip[3]);
     printf("\nTftp Optstatus : %d",data.opt_status);
-    printf("\nTftp Opttype   : %d",data.opt_type);
+    printf("\nTftp Opttype   : %d\n",data.opt_type);
 
     if ( data.opt_type == KWN_UPLOAD )
     {
         FILE *fin = NULL;
-        char config_up[50];
         unsigned char buff_up[200];
         unsigned char cmdimp[300];
+
+        memset(buff_up, '\0', sizeof(buff_up));
+        memset(cmdimp, '\0', sizeof(cmdimp));
+
+        memset( cmd, '\0', sizeof( cmd ) );
+        sprintf( cmd," uci set tftp.tftp.optype='0'");
+        system( cmd );
 
         memset(cmd, '\0', sizeof(cmd));
         sprintf(cmd,"uci set tftp.tftp.opstatus='%d'",KWN_UPLOAD_IN_PROGRESS);
         system(cmd);
 
-        memset(cmd, '\0', sizeof(cmd));
-        sprintf(cmd, "/usr/bin/tftp -gr %s %d.%d.%d.%d",data.filename,data.serverip[0],data.serverip[1],data.serverip[2],data.serverip[3]);
+        memset( cmd, '\0', sizeof( cmd ) );
+        sprintf( cmd, "tftp -g -r %s -l %s %d.%d.%d.%d", data.filename, KWN_NEW_CONFIG_FILE, data.serverip[0], data.serverip[1], data.serverip[2], data.serverip[3] );
+        printf(" %s\n",cmd );
         system( cmd );
 
-        sprintf(config_up, "/%s",data.filename);
-        fin = fopen(config_up,"r");
+        if( access( KWN_NEW_CONFIG_FILE, 0 ) == 0 ) {
+            fin = fopen( KWN_NEW_CONFIG_FILE, "r" );
 
-        while( fgets( buff_up, sizeof(buff_up), fin ) != NULL )
-        {
-            printf("%s",buff_up);
-            sprintf(cmdimp,"uci set %s",buff_up);
-            system(cmdimp);
+            while( fgets( buff_up, sizeof( buff_up ), fin ) != NULL )
+            {
+                printf("%s",buff_up);
+                sprintf( cmdimp, "uci set %s", buff_up );
+                system( cmdimp );
+            }
+            fclose( fin );
+            system("uci commit");
+            system("reload_config");
+
+            /*TO DO: sleep*/
+            sleep(20);
+            memset( cmd, '\0', sizeof( cmd ) );
+            sprintf( cmd," uci set tftp.tftp.opstatus='%d'", KWN_UPLOAD_SUCCESS );
+            system( cmd );
+
+            printf("\nUpload from remote to embedded device");
+            return 0;
         }
-        fclose(fin);
-        system("uci commit");
-        system("reload_config");
-
-        /*TO DO: sleep*/
-        sleep(20);
-        memset(cmd, '\0', sizeof(cmd));
-        sprintf(cmd,"uci set tftp.tftp.opstatus='%d'",KWN_UPLOAD_SUCCESS);
-        system(cmd);
-
-        printf("\nUpload from remote to embedded device");
+        memset( cmd, '\0', sizeof( cmd ) );
+        sprintf( cmd, "uci set tftp.tftp.opstatus='%d'", KWN_UPLOAD_FAILURE );
+        system( cmd );
+        printf("Upload from remote to embedded device is failed\n");
     }
     else
     {
@@ -158,14 +172,16 @@ int main()
         char config_down[50];
         unsigned char buff_down[200];
 
+        memset( cmd, '\0', sizeof( cmd ) );
+        sprintf( cmd," uci set tftp.tftp.optype='0'");
+        system( cmd );
         memset(cmd, '\0', sizeof(cmd));
         sprintf(cmd,"uci set tftp.tftp.opstatus='%d'",KWN_DOWNLOAD_IN_PROGRESS);
         system(cmd);
 
         sprintf(cmd_down,"uci show");
-        sprintf(config_down,"/%s",data.filename);
 
-        fp = fopen(config_down,"w+");
+        fp = fopen(KWN_CFG_FILE,"w+");
 
         fp1 = popen(cmd_down,"r");
 
@@ -177,7 +193,7 @@ int main()
         fclose(fp);
 
         memset(cmd, '\0', sizeof(cmd));
-        sprintf(cmd, "/usr/bin/tftp -pl %s %d.%d.%d.%d",data.filename,data.serverip[0],data.serverip[1],data.serverip[2],data.serverip[3]);
+        sprintf(cmd, "tftp -p -l /tmp/kwncfg.txt %d.%d.%d.%d",data.serverip[0],data.serverip[1],data.serverip[2],data.serverip[3]);
         system( cmd );
 
         /*TO DO: sleep*/
@@ -185,6 +201,9 @@ int main()
         memset(cmd, '\0', sizeof(cmd));
         sprintf(cmd,"uci set tftp.tftp.opstatus='%d'",KWN_DOWNLOAD_SUCCESS);
         system(cmd);
+        memset( cmd, '\0', sizeof( cmd ) );
+        sprintf( cmd," uci set tftp.tftp.opstatus='0'");
+        system( cmd );
 
         printf("\nRetrieve from embedded device\n");
     }

@@ -15,6 +15,7 @@ function index()
 	entry({"admin", "system", "services"}, template("admin_system/http"), _("Services"), 2)
 	entry({"admin", "system", "services", "telnet"}, template("admin_system/telnet"))
 	entry({"admin", "system", "services", "snmp"}, template("admin_system/snmp"))
+	entry({"admin", "system", "services", "tftp"}, template("admin_system/tftp"))
 	--entry({"admin", "system", "admin"}, cbi("admin_system/admin"), _("Administration"), 3)
 	entry({"admin", "system", "system", "logging"}, template("admin_system/logging"))
 

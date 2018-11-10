@@ -1,4 +1,6 @@
 
+#define KWN_CFG_FILE "/tmp/kwncfg.txt"
+#define KWN_NEW_CONFIG_FILE "/tmp/kwnnewcfg.txt"
 
 enum kwn_tftp_filetype
 {
@@ -21,6 +23,7 @@ enum kwn_tftp_operation_status
 
 enum kwn_tftp_operation_type
 {
+    KWN_NONE = 0,
     KWN_UPLOAD = 1,
     KWN_DOWNLOAD = 2
 };

@@ -1,0 +1,202 @@
+<%#
+ Copyright 2008-2009 Steven Barth <steven@midlink.org>
+ Copyright 2008-2015 Jo-Philipp Wich <jow@openwrt.org>
+ Licensed to the public under the Apache License 2.0.
+-%>
+
+<%-
+        function uciget(cmd)
+                local res = luci.util.exec(cmd)
+                local str = string.gsub(res, "\n", "")
+                return str
+        end
+-%>
+<%+header%>
+<style>
+.dot {
+    height: 10px;
+    width: 20px;
+    background-color: #AAA;
+    border-radius: 50px;
+    display: inline-block;
+}
+</style>
+<div class="page-content">
+<script type="text/javascript" src="<%=resource%>/cbi.js"></script>
+<script type="text/javascript">
+var def = new Array(8);
+function save_def_value()
+{
+    var f = document.formTable;
+    for (i=0; i<f.elements.length; i++)
+    {
+        def[i] = f.elements[i].value;
+    }
+}
+
+var myVar;
+function upgrade_retrieve(optype)
+{
+    document.getElementById('optype').value=optype;
+    if( optype == 1 ) {
+        document.getElementById('apply').style.display="none";
+        myVar = setInterval(inc,1000);
+        document.getElementById('dotbar').style.display="block";
+        document.getElementById('msg').innerHTML="Please wait while applying the configuration ...";
+    }
+    else {
+        document.getElementById('retrieve').style.display="none";
+        myVar = setInterval(inc,100);
+        document.getElementById('dotbar').style.display="block";
+        document.getElementById('msg').innerHTML="Please wait while retrieving the configuration ...";
+    }
+    var setdata = "";
+    var f = document.formTable;
+    for( i=0; i<f.elements.length; i++)
+    {
+        //if( def[i] != f.elements[i].value ) 
+        {
+            def[i] = f.elements[i].value;
+            setdata += f.elements[i].name + "=" + f.elements[i].value + "~";
+        }
+    }
+    XHR.get('<%=luci.dispatcher.build_url("admin")%>/cfg_set' + '/' + setdata, null,
+	    function(x, data) {
+		    if (data) { 
+		    }
+	    }
+    );
+}
+
+function show() {
+    if (document.getElementById('up').checked) {
+         document.getElementById('filename').style.display="block";
+         document.getElementById('apply').style.display="block";
+         document.getElementById('filetype').style.display="none";
+         document.getElementById('retrieve').style.display="none";
+    }
+    else {
+         document.getElementById('filetype').style.display="block";
+         document.getElementById('retrieve').style.display="block";
+         document.getElementById('filename').style.display="none";
+         document.getElementById('apply').style.display="none";
+         document.getElementById('dotbar').style.display="none";
+    }
+}
+
+var index = 0;
+function inc ()
+{
+    var optype;
+    if( document.getElementById("up").checked == true )
+        optype = 1;
+    else
+        optype =2;
+    index++;
+    document.getElementById("custom-style").innerHTML = ".dots .dot:nth-child( -n + " + index + "){background-color: #a5bc23;}"
+    if( index == 20 ) {
+        index = 0;
+        document.getElementById("custom-style").innerHTML = ".dots .dot:nth-child( -n + " + index + "){background-color: #a5bc23;}"
+        clearInterval(myVar);
+        if( optype == 1 ) {
+            alert("Configuration applied successfully");
+            document.getElementById("apply").style.display="block";
+        }
+        else {
+            alert("Configuration retrieved successfully");
+            document.getElementById("retrieve").style.display="block";
+        }
+        document.getElementById("dotbar").style.display="none";
+    }
+}
+</script>
+<h2><a id="content" name="content"><%: Services%></a></h2>
+<div class="cbi-map">
+    <ul class="cbi-tabmenu">
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=luci.dispatcher.build_url("admin/system/services")%>"><%:HTTP/HTTPS%></a></li>
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="telnet"><%:Telnet/SSH%></a></li>
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="snmp"><%:SNMP%></a></li>
+        <li style="margin-right:4px" class="cbi-tab"><a href="#"><%:TFTP%></a></li>
+    </ul>
+    <table style="width:400px;">
+        <tr>
+          <td style="width:20%;border-top:0px;">&nbsp;</td>
+          <td style="width:40%;border-top:0px;"><input type="radio" name="tft" class="cbi-input-select" id="up" onclick="show();" checked/>&nbsp;Upgrade</td>
+          <td style="width:40%;border-top:0px;"><input type="radio" name="tft" class="cbi-input-select" id="ret" onclick="show();">&nbsp;Retrieve</td>
+        </tr>
+    </table>
+    <fieldset class="cbi-section">
+       <form name="formTable">
+          <div class="cbi-value" id="serverip">
+            <label class="cbi-value-title">Server IP Address</label>
+            <div class="cbi-value-field">
+              <input type="text" name="119" class="cbi-input-select" value="<%=uciget('uci get tftp.tftp.serverip')%>" >
+            </div>
+          </div> 
+          <div class="cbi-value" id="filename">
+            <label class="cbi-value-title">File Name</label>
+            <div class="cbi-value-field">
+              <input type="text" name="117" class="cbi-input-select" value="<%=uciget('uci get tftp.tftp.filename')%>" >
+            </div>
+          </div>
+          <div class="cbi-value" id="filetype" style="display:none">
+            <label class="cbi-value-title">File Type</label>
+            <div class="cbi-value-field">
+              <select class="cbi-input-select" name="118">
+                 <script type="text/javascript">
+                 var value = "<%=uciget('uci get tftp.tftp.filetype')%>";
+                 document.write("<option value='1'");
+                 if( value == "1" )
+                     document.write("selected");
+                 document.write(">config file</option>");
+                 </script>
+              </select>
+            </div>
+          </div>
+          <div class="cbi-value" style="display:none">
+            <label class="cbi-value-title">OperationType</label>
+            <div class="cbi-value-field">
+              <input type="text" id="optype" name="120" class="cbi-input-select" value="<%=uciget('uci get tftp.tftp.optype')%>" >
+            </div>
+          </div>
+       </form>
+    </fieldset>
+          <div class="cbi-page-actions left" id="apply">
+            <input type="button" class="cbi-button" value="<%:Apply%>" onclick="upgrade_retrieve(1)">
+          </div>
+          <div class="cbi-page-actions left" id="retrieve" style="display:none">
+            <input type="button" class="cbi-button" value="<%:Retrieve%>" onclick="upgrade_retrieve(2)">
+          </div> 
+          <div class="cbi-value" id="dotbar" style="display:none">
+            <span id="msg"></span>
+            <div>&nbsp;</div>
+            <style id='custom-style'>.dots .dot:nth-child(-n + 5){background-color: #AAA;}</style>
+            <div class="dots">
+              <span class="dot"></span>
+              <span class="dot"></span>
+              <span class="dot"></span>
+              <span class="dot"></span>
+              <span class="dot"></span>
+              <span class="dot"></span>
+              <span class="dot"></span>
+              <span class="dot"></span>
+              <span class="dot"></span>
+              <span class="dot"></span>
+              <span class="dot"></span>
+              <span class="dot"></span>
+              <span class="dot"></span>
+              <span class="dot"></span>
+              <span class="dot"></span>
+              <span class="dot"></span>
+              <span class="dot"></span>
+              <span class="dot"></span>
+              <span class="dot"></span>
+              <span class="dot"></span>
+            </div>
+          </div>
+</div>
+<script type="text/javascript">
+save_def_value();
+</script>
+</div>
+<%+footer%>
