@@ -215,12 +215,12 @@ function getBaseLog(x, y) {
 							document.getElementById("rem_mpdu").innerHTML = assoclist[j].remote_mpdu_err;
 							document.getElementById("loc_retry").innerHTML = assoclist[j].local_retries;
 							document.getElementById("rem_retry").innerHTML = assoclist[j].remote_retries;
+							document.getElementById("loc_gain").innerHTML = assoclist[j].l_ant_gain;
+							document.getElementById("rem_gain").innerHTML = assoclist[j].r_ant_gain;
 							document.getElementById("loc_cusname").innerHTML = assoclist[j].l_customer_name;
 							document.getElementById("rem_cusname").innerHTML = assoclist[j].r_customer_name;
 							document.getElementById("loc_id").innerHTML = assoclist[j].l_link_id;
 							document.getElementById("rem_id").innerHTML = assoclist[j].r_link_id;
-                            //alert(assoclist[j].l_ant_gain);
-                            //alert(assoclist[j].r_ant_gain);
 						}
 					}
 				}
@@ -347,6 +347,11 @@ function getBaseLog(x, y) {
 				<td>Retries</td>
 				<td id="loc_retry"></td>
 				<td id="rem_retry"></td>
+			</tr>
+			<tr>
+				<td>Antenna Gain (dBi)</td>
+				<td id="loc_gain"></td>
+				<td id="rem_gain"></td>
 			</tr>
 			<tr>
 				<td>Customer Name</td>
