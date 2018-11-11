@@ -1,6 +1,6 @@
 
 #Set Rate dynamically
-
+: '
 rate=$(uci get wireless.wifi1.rate)
 acrate=$rate
 case $rate in
@@ -78,3 +78,29 @@ pow=$(uci get wireless.wifi1.TXPowLim5G)
 pow5G=`expr $pow + 3`
 pow5G=`expr $pow5G \* 2`
 iwpriv wifi1 TXPowLim5G $pow5G
+'
+
+		config_get spatialstream "$device" spatialstream
+		config_get ddrsstatus "$device" ddrsstatus
+		config_get ddrsrate "$device" ddrsrate
+		config_get ddrsminrate "$device" ddrsminrate
+		config_get ddrsmaxrate "$device" ddrsmaxrate
+		config_get ddrsinctimer "$device" ddrsinctimer
+		config_get ddrsdectimer "$device" ddrsdectimer
+		config_get atpcstatus "$device" atpcstatus
+		config_get atpcpower "$device" atpcpower
+
+        iwpriv "$ifname" kwnstream "$spatialstream"
+        if [ "$ddrsstatus" == "1" ]
+        then
+            iwpriv "$ifname" kwnddrsmin "$ddrsminrate"
+            iwpriv "$ifname" kwnddrsmax "$ddrsmaxrate"
+            iwpriv "$ifname" kwnddrsinc "$ddrsinctimer"
+            iwpriv "$ifname" kwnddrsdec "$ddrsdectimer"
+        else
+            iwpriv "$ifname" kwnddrsmin "$ddrsrate"
+            iwpriv "$ifname" kwnddrsmax "$ddrsrate"
+        fi
+        iwpriv "$ifname" kwnatpc "$atpcstatus"
+        iwpriv "$ifname" kwnatpcpow "$atpcpower"
+        #Disconnect link
