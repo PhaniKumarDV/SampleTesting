@@ -136,6 +136,16 @@ if( no_of_links > 1 )
     no_of_links = no_of_links - 1;
 else
     no_of_links = 0;
+
+var dyn_val = "<%=uciget("ifconfig br-lan | grep 'inet addr' | sed 's/          //'")%>";
+var val = dyn_val.split(" ");
+var ip = "0.0.0.0";
+if( val != "" )
+{
+    ip = val[1].split(":");
+    ip = ip[1];
+}
+
 	function progressbar(v, m)
 	{
 		var vn = parseInt(v) || 0;
@@ -384,7 +394,7 @@ function get_log()
         <% if eth_has_no_link then %>
                     <tr><td width="33%"><%:Ethernet status%></td><td><img src="<%=resource%>/icons/ethernet_disabled.png" /> Link is <%=eth1_status %> </td></tr>
         <% end %>
-		<tr><td width="33%"><%:IP Address%></td><td><%=uciget('uci get network.lan.ipaddr')%></td></tr>
+		<tr><td width="33%"><%:IP Address%></td><td><script type="text/javascript">document.write(ip)</script></td></tr>
 		<tr><td width="33%"><%:Customer Name%></td><td><%=uciget('uci get wireless.wifi1.customername')%></td></tr>
         <script type="text/javascript">
           var mode = "<%=uciget('uci get wireless.@wifi-iface[1].mode')%>";
