@@ -303,8 +303,7 @@ h2.dia-head { margin-left: 0; margin-right: 0; margin-bottom: 12px;}
 .cbi-section-node #cbi-network-globals-ula_prefix .cbi-value-field {margin-left:110px;}
 #cbi-network-globals {  padding-top: 20px;}
 .cbi-section .cbi-section-table .cbi-rowstyle-2 input.cbi-button:last-child {margin-right:0px;}
-.cbi-value-field select {border-radius: 0;
-height: 36px;line-height: 36px;padding: 0 8px;font-size: 14px;margin-bottom: 10px;background-color: #fff;background: transparent;}
+.cbi-value-field select {border-radius: 0;line-height: 36px;padding: 0 8px;font-size: 14px;background-color: #fff;background: transparent;}
 .cbi-section legend {margin: 0;background: #fff; font-size: 17px;padding-bottom: 10px;padding-top: 0;line-height: 1;color: #404040;}
 .cbi-map fieldset.cbi-section ul li a:hover {background: #a6bc20; color: #fff;}
 .cbi-section .cbi-tabmenu {margin: 10px 0 15px 0!important;}
