@@ -1,7 +1,7 @@
 diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.c
 --- net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c	1970-01-01 05:30:00.000000000 +0530
-+++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.c	2018-11-14 10:25:04.257986899 +0530
-@@ -0,0 +1,3111 @@
++++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.c	2018-11-14 15:27:11.794596477 +0530
+@@ -0,0 +1,3099 @@
 +/****************************************************************************
 +*                                                                           *
 +*  File Name:           kwnmib.c                                           *
@@ -1372,9 +1372,9 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +    switch ( (char) name[10] ) {
 +        case KWN_DHCP_SERVER:
 +            {
-+                sprintf( cmd, "uci get dhcp.lan.start" );
++                sprintf( cmd, "uci get dhcp.lan.ignore" );
 +                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
-+                if( res_val == -1 )
++                if( res_val == 1 )
 +                    res_val = 0;
 +                else
 +                    res_val = 1;
@@ -2791,23 +2791,11 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +                switch( (char) name[10] ) {
 +                    case KWN_DHCP_SERVER:
 +                        if( long_val == 1 ) {
-+                            sprintf( cmd, "uci set dhcp.lan=dhcp" );
-+                            system( cmd );
-+                            sprintf( cmd, "uci set dhcp.lan.interface='lan'" );
-+                            system( cmd );
-+                            sprintf( cmd, "uci set dhcp.lan.start='100'" );
-+                            system( cmd );
-+                            sprintf( cmd, "uci set dhcp.lan.limit='150'" );
-+                            system( cmd );
-+                            sprintf( cmd, "uci set dhcp.lan.leasetime='12h'" );
-+                            system( cmd );
-+                            sprintf( cmd, "uci set dhcp.lan.dhcpv6='server'" );
-+                            system( cmd );
-+                            sprintf( cmd, "uci set dhcp.lan.ra='server'" );
++                            sprintf( cmd, "uci set dhcp.lan.ignore='0'" );
 +                            system( cmd );
 +                        }
 +                        else if( long_val == 0 ) {
-+                            sprintf( cmd, "uci delete dhcp.lan" );
++                            sprintf( cmd, "uci set dhcp.lan.ignore='1'" );
 +                            system( cmd );
 +                        }
 +                        else
