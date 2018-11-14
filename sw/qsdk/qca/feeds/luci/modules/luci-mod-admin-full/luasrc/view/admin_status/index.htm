@@ -23,7 +23,8 @@
 	local eth1_duplex =  luci.sys.exec("ethtool eth0 | grep Duplex")
     local eth_has_link 
     local eth_has_no_link
-	local serial_no =  luci.sys.exec("fw_printenv | grep amigoserial | sed 's/amigoserial=//'")
+	local serial_no =  luci.sys.exec("fw_printenv -n amigoserial")
+	local model_name =  luci.sys.exec("fw_printenv -n model")
 
     local uci  = require "luci.model.uci".cursor()
     local currTemperature = uci:get_first("system", "system", "temperature")
@@ -381,7 +382,7 @@ function get_log()
 
 	<table width="100%" cellspacing="10">
 		<tr><td width="33%"><%:Hostname%></td><td><%=luci.sys.hostname() or "?"%></td></tr>
-		<tr><td width="33%"><%:Model%></td><td><%=uciget('uci get variant.variant.model')%></td></tr>
+		<tr><td width="33%"><%:Model%></td><td><%=model_name %></td></tr>
 		<tr><td width="33%"><%:Firmware Version%></td><td><%=uciget('uci get variant.variant.relnum')%>.<%=uciget('uci get variant.variant.majnum')%>.<%=uciget('uci get variant.variant.minnum')%> - <%=uciget('uci get variant.variant.buildno')%></td></tr>
 		<tr><td width="33%"><%:Serial Number%></td><td><%=serial_no %></td></tr>
 		<tr><td width="33%"><%:Local Time%></td><td id="localtime">-</td></tr>
