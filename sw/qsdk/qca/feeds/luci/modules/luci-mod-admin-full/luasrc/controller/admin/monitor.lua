@@ -32,7 +32,10 @@ function index()
 	entry({"admin", "monitor", "tools"}, template("admin_network/diagnostics"), _("Tools"), 4)
     if (string.match(mode,"ap") and string.match(wds,"1") ) then
 	    entry({"admin", "monitor", "tools", "sascan"}, call("action_sascan"))
-	    entry({"admin", "monitor", "tools", "saresult"}, call("action_saresult"))
+	    entry({"admin", "monitor", "tools", "startfreq"}, call("action_startfreq"), nil).leaf = true
+	    entry({"admin", "monitor", "tools", "endfreq"}, call("action_endfreq"), nil).leaf = true
+	    entry({"admin", "monitor", "tools", "stopscan"}, call("action_stopscan"), nil).leaf = true
+	    entry({"admin", "monitor", "tools", "saresult"}, call("action_saresult"), nil).leaf = true
     end
     if (string.match(mode,"sta") and string.match(wds,"1") ) then
 	    entry({"admin", "monitor", "tools", "survey"}, call("action_survey"))
@@ -81,8 +84,26 @@ function stoptool( mac )
 	luci.http.write_json(data)
 end
 
+function action_stopscan()
+   luci.sys.exec("iwpriv ath1 kwnstartscan 0")
+end
+
+function action_startfreq( freq )
+   luci.sys.exec("iwpriv ath1 kwnstartfreq "..freq)
+end
+
+function action_endfreq( freq )
+   luci.sys.exec("iwpriv ath1 kwnendfreq "..freq)
+   luci.sys.exec("iwpriv ath1 kwnscantime 2000")
+   luci.sys.exec("iwpriv ath1 kwnutiltime 500")
+   luci.sys.exec("iwpriv ath1 kwnstartscan 1")
+end
+
 function action_sascan()
-	local saresult = luci.sys.exec("wifitool ath1 acsreport")
+	local saresult = {}
+    luci.sys.exec("iwpriv ath1 kwn_flag 6")
+    saresult = luci.sys.exec("apstats -c")
+    luci.sys.exec("iwpriv ath1 kwn_flag 0")
 	luci.template.render("admin_monitor/sascan", {saresult=saresult})
 end
 
@@ -165,11 +186,12 @@ function action_eth_logtype( logtype )
 end
 
 function action_saresult()
-	luci.sys.exec("wifitool ath1 setchanlist 0")
-	luci.sys.exec("iwpriv ath1 acsreport 1")
-	luci.sys.exec("sleep 30")
-	local saresult = luci.sys.exec("wifitool ath1 acsreport")
-	luci.template.render("admin_monitor/sascan", {saresult=saresult})
+	local data = {}
+    luci.sys.exec("iwpriv ath1 kwn_flag 6")
+    data = luci.sys.exec("apstats -c")
+    luci.sys.exec("iwpriv ath1 kwn_flag 0")
+	luci.http.prepare_content("application/json")
+	luci.http.write_json(data)
 end
 
 function action_wireless1()

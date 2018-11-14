@@ -5,18 +5,108 @@
 -%>
 <%+header%>
 
+<%-
+    local iw = luci.sys.wifi.getiwinfo("wifi1.network1")
+    local freqlist = iw.freqlist
+-%>
 <script type="text/javascript">
+	var freqlist = <%= luci.http.write_json(freqlist) %>;
+    var start_freq = 0;
+    var end_freq = 0;
+	for (var i = 0; i < freqlist.length; i++) {
+        if( start_freq == 0 )
+            start_freq = freqlist[i].mhz;
+        else
+            end_freq = freqlist[i].mhz;
+    }
 function enable()
 {
     document.getElementById("s1").disabled=false;
 }
+function stop_scan()
+{
+    id = 1;
+    XHR.get('<%=luci.dispatcher.build_url("admin", "monitor","tools")%>/stopscan' + '/' + id, null,
+    function(x, data) {
+            document.getElementById("s1").innerHTML="<input type='button' class='cbi-button' value='Start' onclick='start_scan()' />";
+            document.getElementById("msg").innerHTML="";
+        if (data) { 
+        }
+    }
+    );
+}
 function start_scan()
 {
-    document.getElementById("s1").disabled=true;
-    setTimeout("enable()",30000);
-    document.getElementById("syslog").innerHTML="Scan is in progress....Wait for 30 Seconds";
-    location.href='<%=luci.dispatcher.build_url("admin/monitor/tools/saresult")%>';
+    var start = document.getElementById("start").value;
+    var end = document.getElementById("end").value;
+    document.getElementById("s1").innerHTML="<input type='button' class='cbi-button' value='Stop' onclick='stop_scan()' />";
+    document.getElementById("msg").innerHTML="Spectral scan is in progress...";
+    var scantable = document.getElementById('scan-list');
+            if( scantable ) {
+	            while (scantable.rows.length > 1)
+		            scantable.rows[1].parentNode.removeChild(scantable.rows[1]);
+            }
+    		XHR.get('<%=luci.dispatcher.build_url("admin", "monitor","tools")%>/startfreq' + '/' + start, null,
+			function(x, data) {
+				if (data) { 
+				}
+			}
+    		);
+            
+    		XHR.get('<%=luci.dispatcher.build_url("admin", "monitor","tools")%>/endfreq' + '/' + end, null,
+			function(x, data) {
+				if (data) { 
+				}
+			}
+    		);
 }
+
+var length = 0;
+
+function get_values( data )
+{
+    var values = data.split(",");
+    if( length != 0 && length == values.length ) {
+            document.getElementById("s1").innerHTML="<input type='button' class='cbi-button' value='Start' onclick='start_scan()' />";
+            document.getElementById("msg").innerHTML="";
+    }
+    length = values.length;
+    for( i = 0; i < values.length - 1; i++ )
+    {
+        var x = values[i].split("=");
+        var chan = x[0];
+        var freq =  x[1];
+        var util = x[2];
+        var scantable = document.getElementById('scan-list');
+        var tr = scantable.insertRow(-1);
+        tr.className = 'cbi-section-table-row cbi-rowstyle-2';
+        tr.insertCell(-1).innerHTML = chan;
+        tr.insertCell(-1).innerHTML = freq;
+        tr.insertCell(-1).innerHTML = util;
+    }
+}
+	XHR.poll(5, '<%=REQUEST_URI%>', { status: 1 },
+		function(x, info)
+        {
+            var id = 6;
+            XHR.get('<%=luci.dispatcher.build_url("admin", "monitor", "tools")%>/saresult/' + id, null,
+            function(x, data) {
+              if (data) { 
+                  var scantable = document.getElementById('scan-list');
+                  if( scantable ) {
+	                  while (scantable.rows.length > 1)
+		                  scantable.rows[1].parentNode.removeChild(scantable.rows[1]);
+                      if( data.length > 3 )
+                      {
+                          get_values( data );
+                      }
+                  }
+               }
+            }
+            );
+        }
+    );
+
 </script>
 <div class="page-content">
 <h2><a id="content" name="content"><%:Tools%></a></h2>
@@ -25,11 +115,38 @@ function start_scan()
         <li style="margin-right:4px" class="cbi-tab"><a href="#"><%:Spectrum Analyzer%></a></li>
         <li style="margin-right:4px" class="cbi-tab-disabled"><a href="linkcalc"><%:Link Calculator%></a></li>
     </ul>
-<div class="cbi-page-actions right">
-<input type="button" id="s1" class="cbi-button" value="<%:Scan%>" onclick="start_scan()" />
+
+<div class="cbi-map">
+    <fieldset class="cbi-section">
+       <form name="formTable">
+        <table>
+            <tr>
+                <td style="border-top:0px;" width="35%">Start Frequency&nbsp;<input type="text" class="cbi-input-select" id="start" style="width:100px;" value="">&nbsp;MHz</td>
+                <td style="border-top:0px;" width="35%">End Frequency&nbsp;<input type="text" class="cbi-input-select" id="end" style="width:100px;" value="">&nbsp;MHz</td>
+                <td style="border-top:0px;"><span id="s1" style="padding-left:0px;" class="cbi-page-actions right"><input type="button" class="cbi-button" value="Start" onclick="start_scan()" /></span></td>
+            </tr>
+        </table>
+        </form>
+    </fieldset>
+	<fieldset class="cbi-section">
+    <div id="msg"></div>
+		<table class="cbi-section-table" style="width:600px; margin:10px;" id="scan-list">
+			<tr class="cbi-section-table-titles">
+				<th class="cbi-section-table-cell"><%:Channel%></th>
+				<th class="cbi-section-table-cell"><%:Frequency%></th>
+				<th class="cbi-section-table-cell"><%:Utilization%></th>
+            </tr>
+        </table>
+    </fieldset>
 </div>
-<div id="content_saresult">
-<textarea readonly="readonly" wrap="off" style="width:100%; height:470px;" rows="<%=saresult:cmatch("\n")+2%>" id="syslog"><%=saresult:pcdata()%></textarea>
 </div>
+<script type="text/javascript">
+var res = <%=luci.http.write_json(saresult)%>;
+if( res. length > 3 ) {             
+        get_values( res );
+}
+document.getElementById("start").value = start_freq;
+document.getElementById("end").value = end_freq;
+</script>
 </div>
 <%+footer%>
