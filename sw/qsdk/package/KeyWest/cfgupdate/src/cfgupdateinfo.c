@@ -297,27 +297,7 @@ void cfg_set( char *type, char *value )
             sprintf(cmd,"uci set ethernet.ethernet.mode='%s'",value);
             break;
         case UCI_ID_DHCP_SERVER:
-            {
-                int val = atoi(value);
-                if( val == 0 ) {
-                    sprintf(cmd,"uci delete dhcp.lan");
-                }
-                else {
-                    sprintf(cmd,"uci set dhcp.lan=dhcp");
-                    system( cmd );
-                    sprintf(cmd,"uci set dhcp.lan.interface='lan'");
-                    system( cmd );
-                    sprintf(cmd,"uci set dhcp.lan.start='100'");
-                    system( cmd );
-                    sprintf(cmd,"uci set dhcp.lan.limit='150'");
-                    system( cmd );
-                    sprintf(cmd,"uci set dhcp.lan.leasetime='12h'");
-                    system( cmd );
-                    sprintf(cmd,"uci set dhcp.lan.dhcpv6='server'");
-                    system( cmd );
-                    sprintf(cmd,"uci set dhcp.lan.ra='server'");
-                }
-            }
+            sprintf(cmd,"uci set dhcp.lan.ignore='%s'",value);
             break;
         case UCI_ID_DHCP_START:
             sprintf(cmd,"uci set dhcp.lan.start='%s'",value);

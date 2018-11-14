@@ -423,12 +423,12 @@ dhcp_add() {
 	config_get_bool dynamicdhcp "$cfg" dynamicdhcp 1
 
 	leasetime="${leasetime:-12h}"
-	start="$(dhcp_calc "${start:-100}")"
-	limit="${limit:-150}"
-	[ "$limit" -gt 0 ] && limit=$((limit-1))
+	# start="$(dhcp_calc "${start:-100}")"
+	# limit="${limit:-150}"
+	#[ "$limit" -gt 0 ] && limit=$((limit-1))
 	eval "$(ipcalc.sh "${subnet%%/*}" $netmask $start $limit)"
 	if [ "$dynamicdhcp" = "0" ]; then END="static"; fi
-	xappend "--dhcp-range=$networkid,$START,$END,$NETMASK,$leasetime${options:+ $options}"
+	xappend "--dhcp-range=$networkid,$start,$limit,$NETMASK,$leasetime${options:+ $options}"
 
 	dhcp_option_add "$cfg" "$networkid"
 }

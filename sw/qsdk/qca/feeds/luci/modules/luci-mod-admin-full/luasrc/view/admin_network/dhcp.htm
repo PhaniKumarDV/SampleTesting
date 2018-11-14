@@ -61,16 +61,13 @@ function save_value()
             <div class="cbi-value-field">
               <select class="cbi-input-select" name="44">
                  <script type="text/javascript">
-                 var stat = 1;
-                 var start = "<%=uciget('uci get dhcp.lan.start')%>";
-                 if( start == "" )
-                     stat = 0;
-                 document.write("<option value='0' ");
-                 if( stat == "0" )
+                 var start = "<%=uciget('uci get dhcp.lan.ignore')%>";
+                 document.write("<option value='1' ");
+                 if( start == "1" )
                      document.write(" selected");
                  document.write(">Disable</option>");
-                 document.write("<option value='1' ");
-                 if( stat == "1" )
+                 document.write("<option value='0' ");
+                 if( start == "0" )
                      document.write(" selected");
                  document.write(">Enable</option>");
                  </script>
@@ -92,7 +89,7 @@ function save_value()
           <div class="cbi-value" id="timeid">
             <label class="cbi-value-title">Lease Time</label>
             <div class="cbi-value-field">
-              <input type="text" name="47" class="cbi-input-select" value="<%=uciget('uci get dhcp.lan.leasetime')%>" >
+              <input type="text" name="47" class="cbi-input-select" value="<%=uciget('uci get dhcp.lan.leasetime')%>" >&nbsp; ( 120 - 86400 ) Secs
             </div>
           </div>
     </form>
@@ -103,7 +100,7 @@ function save_value()
 <input type="button" class="cbi-button" value="<%:Save%>" onclick="save_value()" />
 </div>
 <script type="text/javascript">
-if( stat == 0 )
+if( start == 1 )
 {
     document.getElementById("startid").style.display="none";
     document.getElementById("limitid").style.display="none";

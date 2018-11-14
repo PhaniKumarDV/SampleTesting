@@ -156,6 +156,20 @@ start_service() {
     then
         uci set wireless.@wifi-iface[0].hidden='1'
     fi
+#DHCP
+    ignore=$(uci get dhcp.lan.ignore)
+    if [ "$ignore" == "" ]
+    then
+        uci set dhcp.lan=dhcp
+        uci set dhcp.lan.interface='lan'
+        uci set dhcp.lan.dhcpv6='server'
+        uci set dhcp.lan.ra='server'
+        uci set dhcp.lan.start='192.168.1.100'
+        uci set dhcp.lan.limit='192.168.1.150'
+        uci set dhcp.lan.leasetime='43200'
+        uci set dhcp.lan.ignore='1'
+    fi
+    
     dmesg -n 1
 
     procd_close_instance
