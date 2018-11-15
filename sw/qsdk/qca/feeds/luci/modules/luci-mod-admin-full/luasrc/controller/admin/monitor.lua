@@ -32,10 +32,12 @@ function index()
 	entry({"admin", "monitor", "tools"}, template("admin_network/diagnostics"), _("Tools"), 4)
     if (string.match(mode,"ap") and string.match(wds,"1") ) then
 	    entry({"admin", "monitor", "tools", "sascan"}, call("action_sascan"))
+	    entry({"admin", "monitor", "tools", "scantime"}, call("action_scantime"), nil).leaf = true
 	    entry({"admin", "monitor", "tools", "startfreq"}, call("action_startfreq"), nil).leaf = true
 	    entry({"admin", "monitor", "tools", "endfreq"}, call("action_endfreq"), nil).leaf = true
 	    entry({"admin", "monitor", "tools", "stopscan"}, call("action_stopscan"), nil).leaf = true
 	    entry({"admin", "monitor", "tools", "saresult"}, call("action_saresult"), nil).leaf = true
+	    entry({"admin", "monitor", "tools", "scanstate"}, call("action_scanstate"), nil).leaf = true
     end
     if (string.match(mode,"sta") and string.match(wds,"1") ) then
 	    entry({"admin", "monitor", "tools", "survey"}, call("action_survey"))
@@ -88,15 +90,18 @@ function action_stopscan()
    luci.sys.exec("iwpriv ath1 kwnstartscan 0")
 end
 
+function action_scantime( time )
+   luci.sys.exec("iwpriv ath1 kwnsatime "..time)
+   luci.sys.exec("iwpriv ath1 kwnutiltime 500")
+   luci.sys.exec("iwpriv ath1 kwnstartscan 1")
+end
+
 function action_startfreq( freq )
    luci.sys.exec("iwpriv ath1 kwnstartfreq "..freq)
 end
 
 function action_endfreq( freq )
    luci.sys.exec("iwpriv ath1 kwnendfreq "..freq)
-   luci.sys.exec("iwpriv ath1 kwnscantime 2000")
-   luci.sys.exec("iwpriv ath1 kwnutiltime 500")
-   luci.sys.exec("iwpriv ath1 kwnstartscan 1")
 end
 
 function action_sascan()
@@ -181,6 +186,12 @@ function action_eth_logtype( logtype )
 	if( string.match(logtype,"5") ) then
 		data = luci.util.exec("athstats -i wifi1")
 	end
+	luci.http.prepare_content("application/json")
+	luci.http.write_json(data)
+end
+
+function action_scanstate()
+    local data = luci.util.exec("iwpriv ath1 g_kwnstartscan | sed 's/ath1      g_kwnstartscan://'")
 	luci.http.prepare_content("application/json")
 	luci.http.write_json(data)
 end
