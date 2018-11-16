@@ -584,6 +584,9 @@ void cfg_set( char *type, char *value )
                 system( cmd2 );
                 break;
             }
+        case UCI_ID_TFTP_KEEPSET:
+            sprintf(cmd,"uci set tftp.tftp.keepset='%s'",value);
+            break;
         default:
             break;
     }

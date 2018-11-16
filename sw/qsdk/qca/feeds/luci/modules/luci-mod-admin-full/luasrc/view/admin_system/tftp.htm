@@ -37,10 +37,14 @@ function save_def_value()
 var myVar;
 function upgrade_retrieve(optype)
 {
+    var type_value  = document.getElementById("filetype").value;
     document.getElementById('optype').value=optype;
     if( optype == 1 ) {
         document.getElementById('apply').style.display="none";
-        myVar = setInterval(inc,1000);
+        if ( type_value == 1 )
+            myVar = setInterval(inc,1000);
+        else
+            myVar = setInterval(inc,22500);
         document.getElementById('dotbar').style.display="block";
         document.getElementById('msg').innerHTML="Please wait while applying the configuration ...";
     }
@@ -70,17 +74,27 @@ function upgrade_retrieve(optype)
 
 function show() {
     if (document.getElementById('up').checked) {
-         document.getElementById('filename').style.display="block";
+         var x = document.getElementById("filetype");
+         var len = document.getElementById("filetype").options.length;
+         if ( len == 1 ){
+             var option = document.createElement("option");
+             option.text = "image";
+             option.value = 2;
+             x.add(option);
+         }
+
          document.getElementById('apply').style.display="block";
-         document.getElementById('filetype').style.display="none";
          document.getElementById('retrieve').style.display="none";
     }
     else {
-         document.getElementById('filetype').style.display="block";
+         var x = document.getElementById("filetype");
+         var len = document.getElementById("filetype").options.length;
+         if ( len == 2 ){
+             x.remove(1);
+         }
          document.getElementById('retrieve').style.display="block";
-         document.getElementById('filename').style.display="none";
          document.getElementById('apply').style.display="none";
-         document.getElementById('dotbar').style.display="none";
+         document.getElementById('kepset').style.display="none";
     }
 }
 
@@ -109,7 +123,27 @@ function inc ()
         document.getElementById("dotbar").style.display="none";
     }
 }
+
+function updatekeepset()
+{
+    if( document.getElementById("keep2").checked == "1" )
+        document.getElementById("keep1").value = 1;
+    else
+        document.getElementById("keep1").value = 0;
+}
+
+function updateparam()
+{
+    var stat  = document.getElementById("filetype").value;
+    if ( stat == 2 )
+         document.getElementById('kepset').style.display="block";
+    else
+         document.getElementById('kepset').style.display="none";
+
+
+}
 </script>
+
 <h2><a id="content" name="content"><%: Services%></a></h2>
 <div class="cbi-map">
     <ul class="cbi-tabmenu">
@@ -139,18 +173,35 @@ function inc ()
               <input type="text" name="117" class="cbi-input-select" value="<%=uciget('uci get tftp.tftp.filename')%>" >
             </div>
           </div>
-          <div class="cbi-value" id="filetype" style="display:none">
+          <div class="cbi-value">
             <label class="cbi-value-title">File Type</label>
             <div class="cbi-value-field">
-              <select class="cbi-input-select" name="118">
+              <select class="cbi-input-select" id="filetype" name="118" onchange="updateparam()">
                  <script type="text/javascript">
                  var value = "<%=uciget('uci get tftp.tftp.filetype')%>";
                  document.write("<option value='1'");
                  if( value == "1" )
                      document.write("selected");
                  document.write(">config file</option>");
+                 document.write("<option value='2'");
+                 if( value == "2" )
+                     document.write("selected");
+                 document.write(">image</option>");
                  </script>
               </select>
+            </div>
+          </div>
+          <div class="cbi-value" id="kepset" style="display:none">
+            <label class="cbi-value-title">Keep Settings</label>
+            <div style="display:none"><input type="text" id="keep1" name="121" value="<%=uciget('uci get tftp.tftp.keepset')%>"></div>
+            <div class="cbi-value-field">
+                 <script type="text/javascript">
+                 var keep = "<%=uciget('uci get tftp.tftp.keepset')%>";
+                 document.write("<input type='checkbox' ");
+                 if( keep != "" )
+                     document.write(" checked");
+                 document.write(" id='keep2' class='cibi-input-select' onchange='updatekeepset()' >");
+              </script>
             </div>
           </div>
           <div class="cbi-value" style="display:none">
@@ -162,7 +213,7 @@ function inc ()
        </form>
     </fieldset>
           <div class="cbi-page-actions left" id="apply">
-            <input type="button" class="cbi-button" value="<%:Apply%>" onclick="upgrade_retrieve(1)">
+            <input type="button" class="cbi-button" value="<%:Upgrade%>" onclick="upgrade_retrieve(1)">
           </div>
           <div class="cbi-page-actions left" id="retrieve" style="display:none">
             <input type="button" class="cbi-button" value="<%:Retrieve%>" onclick="upgrade_retrieve(2)">

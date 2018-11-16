@@ -147,7 +147,8 @@ enum uci_cfg_id {
     UCI_ID_TFTP_FILENAME = 117,
     UCI_ID_TFTP_FILETYPE = 118,
     UCI_ID_TFTP_SERVERIP = 119,
-    UCI_ID_TFTP_OPTYPE = 120
+    UCI_ID_TFTP_OPTYPE = 120,
+    UCI_ID_TFTP_KEEPSET = 121
 };
 
 typedef struct
