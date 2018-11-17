@@ -1,0 +1,89 @@
+<%#
+ Copyright 2008 Steven Barth <steven@midlink.org>
+ Copyright 2008 Jo-Philipp Wich <jow@openwrt.org>
+ Licensed to the public under the Apache License 2.0.
+-%>
+
+<%+header%>
+<style>
+.dot {
+    height: 10px;
+    width: 20px;
+    background-color: #AAA;
+    border-radius: 50px;
+    display: inline-block;
+}
+</style>
+<div class="page-content">
+<script type="text/javascript" src="<%=resource%>/cbi.js"></script>
+<script type="text/javascript">
+var index = 0;
+var myVar;
+function inc ()
+{
+    var addr = "192.168.1.1";
+    index++;
+    document.getElementById("custom-style").innerHTML = ".dots .dot:nth-child( -n + " + index + "){background-color: #a5bc23;}"
+    if( index == 20 ) {
+       clearInterval( myVar );
+       //location.href = ('https:' == document.location.protocol ? 'https://' : 'http://') + '<%=addr or luci.http.getenv("SERVER_NAME")%>/';
+       //location.href='<%=luci.dispatcher.build_url("admin")%>';
+       location.href='http://192.168.1.1';
+    }
+}
+
+function performreset() 
+{
+    var type = 3;
+   document.getElementById("cont").style.display="none";
+   document.getElementById("reset").style.display="none";
+   document.getElementById("msg").innerHTML="Please wait while resetting configuration...";
+   document.getElementById("dotbar").style.display="block";
+   myVar = setInterval(inc,5000);
+    XHR.get('<%=luci.dispatcher.build_url("admin","system","flashops")%>/action_reset' + '/' + type, null,
+	    function(x, data) {
+		    if (data) { 
+		    }
+	    }
+    );
+}
+</script>
+<h2><a id="content" name="content"><%: Upgrade / Reset%></a></h2>
+<div class="cbi-map">
+    <ul class="cbi-tabmenu">
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=luci.dispatcher.build_url("admin/system/flashops")%>"><%:HTTP%></a></li>
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="tftp"><%:TFTP%></a></li>
+        <li style="margin-right:4px" class="cbi-tab"><a href="#"><%:Reset%></a></li>
+    </ul>
+    <p id="cont"><%:Factory reset the configuration of device%></p>
+    <div class="cbi-page-actions left" id="reset" style="padding-left:0px">
+        <input type="button" class="cbi-button" value="<%:Perform Reset%>" onclick="performreset()">
+    </div>
+    <div id="msg"></div>
+    <div id="dotbar" style="display:none">
+<style id='custom-style'>.dots .dot:nth-child(-n + 5){background-color: #AAA;}</style>
+<div class="dots">
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+</div>
+</div>
+</div>
+<%+footer%>

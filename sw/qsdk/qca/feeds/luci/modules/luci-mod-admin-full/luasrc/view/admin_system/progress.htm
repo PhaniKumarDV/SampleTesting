@@ -1,0 +1,69 @@
+<%#
+ Copyright 2008 Steven Barth <steven@midlink.org>
+ Copyright 2008 Jo-Philipp Wich <jow@openwrt.org>
+ Licensed to the public under the Apache License 2.0.
+-%>
+
+<%+header%>
+<style>
+.dot {
+    height: 10px;
+    width: 20px;
+    background-color: #AAA;
+    border-radius: 50px;
+    display: inline-block;
+}
+</style>
+<div class="page-content">
+<script type="text/javascript" src="<%=resource%>/cbi.js"></script>
+<script type="text/javascript">
+var index = 0;
+var myVar;
+   myVar = setInterval(inc,1000);
+function inc ()
+{
+    index++;
+    document.getElementById("custom-style").innerHTML = ".dots .dot:nth-child( -n + " + index + "){background-color: #a5bc23;}"
+    if( index == 20 ) {
+       clearInterval( myVar );
+       alert("Upgrade configuration successfully");
+       location.href='<%=luci.dispatcher.build_url("admin","system","flashops")%>';
+    }
+}
+
+</script>
+<h2><a id="content" name="content"><%: Upgrade / Reset%></a></h2>
+<div class="cbi-map">
+    <ul class="cbi-tabmenu">
+        <li style="margin-right:4px" class="cbi-tab"><a href="#"><%:HTTP%></a></li>
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=REQUEST_URI%>/tftp"><%:TFTP%></a></li>
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=REQUEST_URI%>/reset"><%:Reset%></a></li>
+    </ul>
+    <div id="msg">Upgrade configuration is in progress....</div>
+    <div id="dotbar">
+<style id='custom-style'>.dots .dot:nth-child(-n + 5){background-color: #AAA;}</style>
+<div class="dots">
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+</div>
+</div>
+</div>
+<%+footer%>

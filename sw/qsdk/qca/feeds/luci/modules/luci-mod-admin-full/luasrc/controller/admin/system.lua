@@ -15,7 +15,6 @@ function index()
 	entry({"admin", "system", "services"}, template("admin_system/http"), _("Services"), 2)
 	entry({"admin", "system", "services", "telnet"}, template("admin_system/telnet"))
 	entry({"admin", "system", "services", "snmp"}, template("admin_system/snmp"))
-	entry({"admin", "system", "services", "tftp"}, template("admin_system/tftp"))
 	--entry({"admin", "system", "admin"}, cbi("admin_system/admin"), _("Administration"), 3)
 	entry({"admin", "system", "system", "logging"}, template("admin_system/logging"))
 
@@ -38,6 +37,11 @@ function index()
 	--end
 
 	entry({"admin", "system", "flashops"}, call("action_flashops"), _("Upgrade / Reset"), 70)
+	entry({"admin", "system", "flashops", "action_reset"}, call("action_reset"), nil).leaf = true
+	entry({"admin", "system", "flashops", "tftp"}, template("admin_system/tftp"))
+	entry({"admin", "system", "flashops", "reset"}, template("admin_system/reset"))
+	entry({"admin", "system", "flashops", "progress"}, template("admin_system/progress"))
+
 	entry({"admin", "system", "flashops", "backupfiles"}, form("admin_system/backupfiles"))
 
 	--entry({"admin", "system", "reboot"}, call("action_reboot"), _("Reboot"), 90)
@@ -181,6 +185,20 @@ function action_packages()
 	end
 end
 
+function action_reset()
+	local sys = require "luci.sys"
+	local fs  = require "nixio.fs"
+	local reset_avail   = os.execute([[grep -E '"rootfs_data"|"ubi"' /proc/mtd >/dev/null 2>&1]]) == 0
+
+    luci.util.exec("/usr/sbin/sify_reboot_log.sh 4")
+	luci.template.render("admin_system/applyreboot", {
+			title = luci.i18n.translate("Erasing..."),
+			msg   = luci.i18n.translate("The system is erasing the configuration partition now and will reboot itself when finished."),
+			addr  = "192.168.1.1"
+	})
+	fork_exec("sleep 1; killall dropbear uhttpd; sleep 1; jffs2reset -y && reboot")
+end
+
 function action_flashops()
 	local sys = require "luci.sys"
 	local fs  = require "nixio.fs"
@@ -188,8 +206,11 @@ function action_flashops()
 	local upgrade_avail = fs.access("/lib/upgrade/platform.sh")
 	local reset_avail   = os.execute([[grep -E '"rootfs_data"|"ubi"' /proc/mtd >/dev/null 2>&1]]) == 0
 
-	local restore_cmd = "tar -xzC/ >/dev/null 2>&1"
-	local backup_cmd  = "sysupgrade --create-backup - 2>/dev/null"
+	--local restore_cmd = "tar -xzC/ >/dev/null 2>&1"
+	local restore_cmd = "/tmp/kwnhttpnewcfg.txt"
+	local unknown_cmd = "/tmp/unknown.txt"
+	--local backup_cmd  = "sysupgrade --create-backup - 2>/dev/null"
+	local backup_cmd  = "cat /tmp/kwnhttpcfg.txt - 2>/dev/null"
 	local image_tmp   = "/tmp/firmware.img"
 
 	local function image_supported()
@@ -229,8 +250,10 @@ function action_flashops()
 			if not fp then
 				if meta and meta.name == "image" then
 					fp = io.open(image_tmp, "w")
+				elseif meta and meta.name == "archive" then
+					fp = io.open(restore_cmd, "w")
 				else
-					fp = io.popen(restore_cmd, "w")
+					fp = io.popen(unknown_cmd, "w")
 				end
 			end
 			if chunk then
@@ -246,21 +269,37 @@ function action_flashops()
 		--
 		-- Assemble file list, generate backup
 		--
+		--local reader = ltn12_popen(backup_cmd)
+		--luci.http.header('Content-Disposition', 'attachment; filename="backup-%s-%s.tar.gz"' % {
+		--	luci.sys.hostname(), os.date("%Y-%m-%d")})
+		--luci.http.prepare_content("application/x-targz")
+		--luci.ltn12.pump.all(reader, luci.http.write)
+        -- New Config file for retrieve
+        luci.util.exec("uci set tftp.http.filetype='1'")
+        luci.util.exec("uci set tftp.http.optype='2'")
+        luci.util.exec("/usr/sbin/kwn_tftp")
 		local reader = ltn12_popen(backup_cmd)
-		luci.http.header('Content-Disposition', 'attachment; filename="backup-%s-%s.tar.gz"' % {
+		if reader then
+		    luci.http.header('Content-Disposition', 'attachment; filename="backup-%s-%s.txt"' % {
 			luci.sys.hostname(), os.date("%Y-%m-%d")})
-		luci.http.prepare_content("application/x-targz")
-		luci.ltn12.pump.all(reader, luci.http.write)
+			luci.http.prepare_content("text/plain")
+			luci.ltn12.pump.all(reader, luci.http.write)
+		end
 	elseif luci.http.formvalue("restore") then
+        --  New upgraded config file already copied in /tmp/kwnhttpnewcfg path
+            luci.util.exec("uci set tftp.http.filetype='1'")
+            luci.util.exec("uci set tftp.http.optype='1'")
+			luci.template.render("admin_system/progress")
+            luci.util.exec("/usr/sbin/kwn_tftp")
 		--
 		-- Unpack received .tar.gz
 		--
-		local upload = luci.http.formvalue("archive")
-		if upload and #upload > 0 then
-			luci.template.render("admin_system/applyreboot")
+		--local upload = luci.http.formvalue("archive")
+		--if upload and #upload > 0 then
+			--luci.template.render("admin_system/applyreboot")
             luci.util.exec("/usr/sbin/sify_reboot_log.sh 7")
-			luci.sys.reboot()
-		end
+			--luci.sys.reboot()
+		--end
 	elseif luci.http.formvalue("image") or luci.http.formvalue("step") then
 		--
 		-- Initiate firmware flash

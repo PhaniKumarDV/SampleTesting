@@ -8,6 +8,11 @@
 <div class="page-content flash flash-shop">
 <h2><a id="content" name="content"><%:Upgrade / Reset%></a></h2>
 
+    <ul class="cbi-tabmenu">
+        <li style="margin-right:4px" class="cbi-tab"><a href="#"><%:HTTP%></a></li>
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=REQUEST_URI%>/tftp"><%:TFTP%></a></li>
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=REQUEST_URI%>/reset"><%:Reset%></a></li>
+    </ul>
 <!--<ul class="cbi-tabmenu">
 	<li class="cbi-tab"><a href="#"><%:Actions%></a></li>
 	<li class="cbi-tab-disabled"><a href="<%=REQUEST_URI%>/backupfiles"><%:Configuration%></a></li>
@@ -20,22 +25,21 @@
 		<form method="post" action="<%=REQUEST_URI%>" enctype="multipart/form-data">
 			<!--<div class="cbi-section-descr"><%:Click "Generate archive" to download a tar archive of the current configuration files. To reset the firmware to its initial state, click "Perform reset" (only possible with squashfs images).%></div>-->
 			<div class="cbi-section-node">
-				<% if reset_avail then %>
+				<!--<% if reset_avail then %>
 				<div class="cbi-value cbi-value-last">
 					<label class="cbi-value-title"><%:Factory Default%>:</label>
 					<div class="cbi-value-field">
 						<input onclick="return confirm('<%:Really reset all changes?%>')" class="cbi-button cbi-button-reset" type="submit" name="reset" value="<%:Perform Reset%>" />
 					</div>
 				</div>
-				<% end %>
+				<% end %>-->
 				<div class="cbi-value<% if not reset_avail then %> cbi-value-last<% end %>">
-					<label class="cbi-value-title" for="image"><%:Download backup%>:</label>
+					<label class="cbi-value-title" for="image"><%:Config File%>:</label>
 					<div class="cbi-value-field">
-						<input class="cbi-button cbi-button-apply" type="submit" name="backup" value="<%:Generate archive%>" />
+						<input class="cbi-button cbi-button-apply" type="submit" name="backup" value="<%:Retrieve%>" />
 					</div>
 				</div>
 			</div>
-			<br />
 			<!--<div class="cbi-section-descr"><%:To restore configuration files, you can upload a previously generated backup archive here.%></div>-->
 			<div class="cbi-section-node">
 				<div class="cbi-value cbi-value-last">
@@ -49,7 +53,6 @@
 		</form>
 	</fieldset>
 
-	<br />
 
 	<fieldset class="cbi-section">
 		<legend><%:Upgrade Firmware %></legend>
@@ -67,7 +70,7 @@
 						<label class="cbi-value-title" for="image"><%:Image%>:</label>
 						<div class="cbi-value-field">
 							<input type="file" name="image" id="image" />
-							<input type="submit" class="cbi-button cbi-input-apply" value="<%:Flash image...%>" />
+							<input type="submit" class="cbi-button cbi-input-apply" value="<%:Upgrade%>" />
 						</div>
 					</div>
 				</div>
