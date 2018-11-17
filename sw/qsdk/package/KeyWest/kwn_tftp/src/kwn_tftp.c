@@ -4,12 +4,15 @@
 #include <sys/types.h>
 #include "kwn_tftp.h"
 
+kwn_tftp_config data;
+kwn_http_config ht_data;
+
 void kwn_sys_cmd_imp( const char* cmd, unsigned char* cmd_buf )
 {
     FILE *fp = NULL;
-    unsigned char  a[33]={0};
-    unsigned char  *token;
-    unsigned short len;
+    char  a[100]={0};
+    char  *token;
+    short int len;
 
     fp = popen(cmd,"r");
     if( fp == NULL )
@@ -23,6 +26,7 @@ void kwn_sys_cmd_imp( const char* cmd, unsigned char* cmd_buf )
     token = strtok(a,"\n");
     len = strlen(token);
     memcpy(cmd_buf,token,len);
+
     return;
 }
 
@@ -98,15 +102,302 @@ void kwn_get_tftp_config( kwn_tftp_config *dev_cfg )
     dev_cfg->opt_type = atoi(cmd_buf);
     printf("dev_cfg->opt_type Opt_Type: %d\n",dev_cfg->opt_type);
 
+    memset(cmd, '\0', sizeof(cmd));
+    memset(cmd_buf, '\0', sizeof(cmd_buf));
+    sprintf(cmd,"uci get tftp.tftp.keepset");
+    kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] );
+    dev_cfg->keep_set = atoi(cmd_buf);
+    printf("dev_cfg->keep_set Keep_set: %d\n",dev_cfg->keep_set);
+
+    return;
+}
+
+void kwn_get_http_config( kwn_http_config *dev_cfg )
+{
+    unsigned char  cmd[100];
+    unsigned char  cmd_buf[50];
+    unsigned short len = 0;
+
+    memset(cmd, '\0', sizeof(cmd));
+    memset(cmd_buf, '\0', sizeof(cmd_buf));
+    sprintf(cmd,"uci get tftp.http.filetype");
+    kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] );
+    dev_cfg->filetype = atoi(cmd_buf);
+    printf("dev_cfg->filetype Filetype: %d\n",dev_cfg->filetype);
+
+    memset(cmd, '\0', sizeof(cmd));
+    memset(cmd_buf, '\0', sizeof(cmd_buf));
+    sprintf(cmd,"uci get tftp.http.opstatus");
+    kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] );
+    dev_cfg->opt_status = atoi(cmd_buf);
+    printf("dev_cfg->opt_status Opt_Status: %d\n",dev_cfg->opt_status);
+
+    memset(cmd, '\0', sizeof(cmd));
+    memset(cmd_buf, '\0', sizeof(cmd_buf));
+    sprintf(cmd,"uci get tftp.http.optype");
+    kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] );
+    dev_cfg->opt_type = atoi(cmd_buf);
+    printf("dev_cfg->opt_type Opt_Type: %d\n",dev_cfg->opt_type);
+
+    return;
+}
+
+void kwn_config_upgrade( )
+{
+    printf("\n %s : %d\n",__func__,__LINE__);
+    FILE *fin = NULL;
+    char buff_up[200];
+    char cmdimp[300];
+    char cmd[100];
+
+    memset(buff_up, '\0', sizeof(buff_up));
+    memset(cmdimp, '\0', sizeof(cmdimp));
+
+    memset(cmd, '\0', sizeof(cmd));
+    sprintf(cmd,"uci set tftp.tftp.opstatus='%d'",KWN_UPLOAD_IN_PROGRESS);
+    system(cmd);
+
+    memset( cmd, '\0', sizeof( cmd ) );
+    sprintf( cmd, "tftp -g -r %s -l %s %d.%d.%d.%d", data.filename, KWN_NEW_CONFIG_FILE, data.serverip[0], data.serverip[1], data.serverip[2], data.serverip[3] );
+    printf(" %s\n",cmd );
+    system( cmd );
+
+    if( access( KWN_NEW_CONFIG_FILE, 0 ) == 0 ) {
+        fin = fopen( KWN_NEW_CONFIG_FILE, "r" );
+
+        while( fgets( buff_up, sizeof( buff_up ), fin ) != NULL )
+        {
+            printf("%s",buff_up);
+            sprintf( cmdimp, "uci set %s", buff_up );
+            system( cmdimp );
+        }
+        fclose( fin );
+        system("uci commit");
+        system("reload_config");
+
+        /*TO DO: sleep*/
+        sleep(20);
+        memset( cmd, '\0', sizeof( cmd ) );
+        sprintf( cmd," uci set tftp.tftp.opstatus='%d'", KWN_UPLOAD_SUCCESS );
+        system( cmd );
+
+        printf("\nUpload from remote to embedded device");
+        return;
+    }
+    memset( cmd, '\0', sizeof( cmd ) );
+    sprintf( cmd, "uci set tftp.tftp.opstatus='%d'", KWN_UPLOAD_FAILURE );
+    system( cmd );
+    printf("Upload from remote to embedded device is failed\n");
+
+    printf("\n %s : %d\n",__func__,__LINE__);
+    return;
+}
+
+void kwn_image_upgrade( )
+{
+    printf("\n %s : %d\n",__func__,__LINE__);
+    char cmd[100];
+    char cmd_buf[100];
+    char cmp[6]={'\0'};
+    char *tok;
+    int image_success = 1;
+
+    memset(cmd, '\0', sizeof(cmd));
+    sprintf(cmd,"uci set tftp.tftp.filetype='1'");
+    system(cmd);
+
+    memset(cmd, '\0', sizeof(cmd));
+    sprintf(cmd,"uci set tftp.tftp.opstatus='%d'",KWN_UPLOAD_IN_PROGRESS);
+    system(cmd);
+
+    memset( cmd, '\0', sizeof( cmd ) );
+    sprintf( cmd, "tftp -g -r %s -l %s %d.%d.%d.%d", data.filename, KWN_NEW_IMAGE_FILE, data.serverip[0], data.serverip[1], data.serverip[2], data.serverip[3] );
+    printf(" %s\n",cmd );
+    system( cmd );
+
+    memset( cmd, '\0', sizeof( cmd ) );
+    memset( cmd_buf, '\0', sizeof( cmd_buf ) );
+    sprintf( cmd, "sysupgrade -T %s", KWN_NEW_IMAGE_FILE );
+    printf(" %s\n",cmd );
+    kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0]);
+
+    tok=strtok(cmd_buf," ");
+
+    while( tok != NULL)
+    {
+        printf( " %s\n", tok );
+        memcpy(cmp,tok,sizeof(cmp));
+        printf("cmp: %s\n",cmp);
+        if( memcmp(cmp,"failed",sizeof(cmp)) == 0 ){
+            printf("Image check failure\n");
+            image_success=0;
+        }
+        tok = strtok(NULL, " ");
+    }
+
+    if( image_success ){
+        printf("\n %s : %d\n",__func__,__LINE__);
+        memset( cmd, '\0', sizeof( cmd ) );
+        if( data.keep_set == 1 ){
+            sprintf( cmd, "sysupgrade -c %s", KWN_NEW_IMAGE_FILE );
+            printf(" %s\n",cmd );
+        }else{
+            sprintf( cmd, "sysupgrade -n %s", KWN_NEW_IMAGE_FILE );
+            printf(" %s\n",cmd );
+        }
+
+        system( cmd );
+        memset( cmd, '\0', sizeof( cmd ) );
+        sprintf( cmd," uci set tftp.tftp.opstatus='%d'", KWN_UPLOAD_SUCCESS );
+        system( cmd );
+
+        printf("\nUpload from remote to embedded device");
+
+        return;
+    }
+    else
+        printf("Invalid image\n");
+
+    memset( cmd, '\0', sizeof( cmd ) );
+    sprintf( cmd," uci set tftp.tftp.opstatus='%d'", KWN_UPLOAD_FAILURE );
+    system( cmd );
+    printf("\nNot a valid image");
+
+    return;
+}
+
+void kwn_config_retrieve( )
+{
+    printf("\n %s : %d\n",__func__,__LINE__);
+    FILE *fp1 = NULL;
+    FILE *fp = NULL;
+    char cmd[100];
+    char buff_down[200];
+
+    memset(cmd, '\0', sizeof(cmd));
+    sprintf(cmd,"uci set tftp.tftp.opstatus='%d'",KWN_DOWNLOAD_IN_PROGRESS);
+    system(cmd);
+
+    memset(cmd, '\0', sizeof(cmd));
+    sprintf(cmd, "uci show");
+
+    fp = fopen(KWN_CFG_FILE,"w+");
+
+    fp1 = popen(cmd,"r");
+
+    while( fgets( buff_down, sizeof(buff_down), fp1 ) != NULL )
+    {
+        fprintf(fp,"%s",buff_down);
+    }
+    pclose(fp1);
+    fclose(fp);
+
+    memset(cmd, '\0', sizeof(cmd));
+    sprintf(cmd, "tftp -p -l /tmp/kwncfg.txt -r %s %d.%d.%d.%d",data.filename,data.serverip[0],data.serverip[1],data.serverip[2],data.serverip[3]);
+    system( cmd );
+
+    memset(cmd, '\0', sizeof(cmd));
+    sprintf(cmd,"uci set tftp.tftp.opstatus='%d'",KWN_DOWNLOAD_SUCCESS);
+    system(cmd);
+    memset( cmd, '\0', sizeof( cmd ) );
+    sprintf( cmd," uci set tftp.tftp.opstatus='0'");
+    system( cmd );
+
+    printf("\nRetrieve from embedded device\n");
+    printf("\n %s : %d\n",__func__,__LINE__);
+
+    return;
+}
+
+void kwn_http_config_upgrade()
+{
+    printf("\n %s : %d\n",__func__,__LINE__);
+    FILE *fin = NULL;
+    char buff_up[200];
+    char cmdimp[300];
+    char cmd[100];
+
+    if( access( KWN_HTTP_NEW_CONFIG_FILE, 0 ) == 0 ) {
+        fin = fopen( KWN_HTTP_NEW_CONFIG_FILE, "r" );
+
+        while( fgets( buff_up, sizeof( buff_up ), fin ) != NULL )
+        {
+            printf("%s",buff_up);
+            sprintf( cmdimp, "uci set %s", buff_up );
+            system( cmdimp );
+        }
+        fclose( fin );
+        system("uci commit");
+        system("reload_config");
+
+        //TO DO: sleep
+        sleep(20);
+        memset( cmd, '\0', sizeof( cmd ) );
+        sprintf( cmd," uci set tftp.tftp.opstatus='%d'", KWN_UPLOAD_SUCCESS );
+        system( cmd );
+
+        printf("\nUpload from remote to embedded device");
+        return;
+    }
+
+    memset( cmd, '\0', sizeof( cmd ) );
+    sprintf( cmd," uci set tftp.tftp.opstatus='%d'", KWN_UPLOAD_FAILURE );
+    system( cmd );
+    printf("\nFile not found");
+
+    return;
+}
+
+void kwn_http_config_retrieve()
+{
+    printf("\n %s : %d\n",__func__,__LINE__);
+
+    FILE *fp1 = NULL;
+    FILE *fp = NULL;
+    char cmd[100];
+    char buff_down[200];
+
+    memset(cmd, '\0', sizeof(cmd));
+    sprintf(cmd,"uci set tftp.tftp.opstatus='%d'",KWN_DOWNLOAD_IN_PROGRESS);
+    system(cmd);
+
+    memset(cmd, '\0', sizeof(cmd));
+    sprintf(cmd,"uci show");
+
+    fp = fopen(KWN_HTTP_CFG_FILE,"w+");
+
+    fp1 = popen(cmd,"r");
+
+    while( fgets( buff_down, sizeof(buff_down), fp1 ) != NULL )
+    {
+        fprintf(fp,"%s",buff_down);
+    }
+    pclose(fp1);
+    fclose(fp);
+
+    memset(cmd, '\0', sizeof(cmd));
+    sprintf(cmd,"uci set tftp.tftp.opstatus='%d'",KWN_DOWNLOAD_SUCCESS);
+    system(cmd);
+    memset( cmd, '\0', sizeof( cmd ) );
+    sprintf( cmd," uci set tftp.tftp.opstatus='0'");
+    system( cmd );
+
+    printf("\nRetrieve from embedded device\n");
+    printf("\n %s : %d\n",__func__,__LINE__);
+
+    printf("\nRetrieve from embedded device\n");
     return;
 }
 
 int main()
 {
     char cmd[100];
-    kwn_tftp_config data;
+
     memset(&data,'\0', sizeof(kwn_tftp_config));
     kwn_get_tftp_config(&data);
+
+    memset(&ht_data,'\0', sizeof(kwn_http_config));
+    kwn_get_http_config(&ht_data);
 
     printf("\n This module is to retreive and upload file using tftpboot \n");
     printf("\nTftp Filename  : %s",data.filename);
@@ -115,97 +406,104 @@ int main()
     printf("\nTftp Optstatus : %d",data.opt_status);
     printf("\nTftp Opttype   : %d\n",data.opt_type);
 
-    if ( data.opt_type == KWN_UPLOAD )
+    printf("\nHttp Filetype  : %d",ht_data.filetype);
+    printf("\nHttp Optstatus : %d",ht_data.opt_status);
+    printf("\nHttp Opttype   : %d\n",ht_data.opt_type);
+
+    switch( data.opt_type )
     {
-        FILE *fin = NULL;
-        unsigned char buff_up[200];
-        unsigned char cmdimp[300];
-
-        memset(buff_up, '\0', sizeof(buff_up));
-        memset(cmdimp, '\0', sizeof(cmdimp));
-
-        memset( cmd, '\0', sizeof( cmd ) );
-        sprintf( cmd," uci set tftp.tftp.optype='0'");
-        system( cmd );
-
-        memset(cmd, '\0', sizeof(cmd));
-        sprintf(cmd,"uci set tftp.tftp.opstatus='%d'",KWN_UPLOAD_IN_PROGRESS);
-        system(cmd);
-
-        memset( cmd, '\0', sizeof( cmd ) );
-        sprintf( cmd, "tftp -g -r %s -l %s %d.%d.%d.%d", data.filename, KWN_NEW_CONFIG_FILE, data.serverip[0], data.serverip[1], data.serverip[2], data.serverip[3] );
-        printf(" %s\n",cmd );
-        system( cmd );
-
-        if( access( KWN_NEW_CONFIG_FILE, 0 ) == 0 ) {
-            fin = fopen( KWN_NEW_CONFIG_FILE, "r" );
-
-            while( fgets( buff_up, sizeof( buff_up ), fin ) != NULL )
+        case KWN_UPLOAD:
             {
-                printf("%s",buff_up);
-                sprintf( cmdimp, "uci set %s", buff_up );
-                system( cmdimp );
+                switch( data.filetype )
+                {
+                    case KWN_CONFIG:
+                        {        
+                            kwn_config_upgrade();
+                            break;
+                        }
+                    case KWN_IMAGE:
+                        {
+                            kwn_image_upgrade();
+                            break;
+                        }
+                    default:
+                        {
+                            printf("\nInvalid File type\n");
+                            break;
+                        }
+                }
+                break;
             }
-            fclose( fin );
-            system("uci commit");
-            system("reload_config");
-
-            /*TO DO: sleep*/
-            sleep(20);
-            memset( cmd, '\0', sizeof( cmd ) );
-            sprintf( cmd," uci set tftp.tftp.opstatus='%d'", KWN_UPLOAD_SUCCESS );
-            system( cmd );
-
-            printf("\nUpload from remote to embedded device");
-            return 0;
-        }
-        memset( cmd, '\0', sizeof( cmd ) );
-        sprintf( cmd, "uci set tftp.tftp.opstatus='%d'", KWN_UPLOAD_FAILURE );
-        system( cmd );
-        printf("Upload from remote to embedded device is failed\n");
+        case KWN_DOWNLOAD:
+            {      
+                switch( data.filetype )
+                {
+                    case KWN_CONFIG:
+                        {
+                            kwn_config_retrieve();
+                            break;
+                        }
+                    default:
+                        {
+                            printf("\nInvalid File type\n");
+                            break;
+                        }
+                }
+                break;
+            }
+        default:
+            printf("\nInvalid Operation type\n");
+            break;
     }
-    else
+
+    switch( ht_data.opt_type )
     {
-        FILE *fp1 = NULL;
-        FILE *fp = NULL;
-        char cmd_down[10];
-        char config_down[50];
-        unsigned char buff_down[200];
-
-        memset( cmd, '\0', sizeof( cmd ) );
-        sprintf( cmd," uci set tftp.tftp.optype='0'");
-        system( cmd );
-        memset(cmd, '\0', sizeof(cmd));
-        sprintf(cmd,"uci set tftp.tftp.opstatus='%d'",KWN_DOWNLOAD_IN_PROGRESS);
-        system(cmd);
-
-        sprintf(cmd_down,"uci show");
-
-        fp = fopen(KWN_CFG_FILE,"w+");
-
-        fp1 = popen(cmd_down,"r");
-
-        while( fgets( buff_down, sizeof(buff_down), fp1 ) != NULL )
-        {
-            fprintf(fp,"%s",buff_down);
-        }
-        pclose(fp1);
-        fclose(fp);
-
-        memset(cmd, '\0', sizeof(cmd));
-        sprintf(cmd, "tftp -p -l /tmp/kwncfg.txt %d.%d.%d.%d",data.serverip[0],data.serverip[1],data.serverip[2],data.serverip[3]);
-        system( cmd );
-
-        /*TO DO: sleep*/
-        sleep(5);
-        memset(cmd, '\0', sizeof(cmd));
-        sprintf(cmd,"uci set tftp.tftp.opstatus='%d'",KWN_DOWNLOAD_SUCCESS);
-        system(cmd);
-        memset( cmd, '\0', sizeof( cmd ) );
-        sprintf( cmd," uci set tftp.tftp.opstatus='0'");
-        system( cmd );
-
-        printf("\nRetrieve from embedded device\n");
+        case KWN_UPLOAD:
+            {
+                switch( ht_data.filetype )
+                {
+                    case KWN_CONFIG:
+                        {        
+                            kwn_http_config_upgrade();
+                            break;
+                        }
+                    default:
+                        {
+                            printf("\nInvalid HTTP File type\n");
+                            break;
+                        }
+                }
+                break;
+            }
+        case KWN_DOWNLOAD:
+            {      
+                switch( data.filetype )
+                {
+                    case KWN_CONFIG:
+                        {
+                            kwn_http_config_retrieve();
+                            break;
+                        }
+                    default:
+                        {
+                            printf("\nInvalid File type\n");
+                            break;
+                        }
+                }
+                break;
+            }
+        default:
+            printf("\nInvalid Operation type\n");
+            break;
     }
+
+    memset( cmd, '\0', sizeof( cmd ) );
+    sprintf( cmd," uci set tftp.tftp.optype='0'");
+    system( cmd );
+
+    memset( cmd, '\0', sizeof( cmd ) );
+    sprintf( cmd," uci set tftp.http.optype='0'");
+    system( cmd );
+
     return 0;
 }

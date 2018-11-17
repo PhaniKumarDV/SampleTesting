@@ -1,6 +1,9 @@
 
 #define KWN_CFG_FILE "/tmp/kwncfg.txt"
 #define KWN_NEW_CONFIG_FILE "/tmp/kwnnewcfg.txt"
+#define KWN_HTTP_CFG_FILE "/tmp/kwnhttpcfg.txt"
+#define KWN_HTTP_NEW_CONFIG_FILE "/tmp/kwnhttpnewcfg.txt"
+#define KWN_NEW_IMAGE_FILE "/tmp/firmware.img"
 
 enum kwn_tftp_filetype
 {
@@ -35,4 +38,12 @@ typedef struct
     unsigned char serverip[4];
     unsigned char opt_status;
     unsigned char opt_type;
+    unsigned char keep_set;
 }__attribute__((packed)) kwn_tftp_config;
+
+typedef struct
+{
+    unsigned char filetype;
+    unsigned char opt_status;
+    unsigned char opt_type;
+}__attribute__((packed)) kwn_http_config;
