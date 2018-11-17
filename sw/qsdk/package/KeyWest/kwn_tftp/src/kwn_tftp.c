@@ -182,6 +182,9 @@ void kwn_config_upgrade( )
         system( cmd );
 
         printf("\nUpload from remote to embedded device");
+        memset( cmd, '\0', sizeof( cmd ) );
+        sprintf( cmd,"rm %s", KWN_NEW_IMAGE_FILE );
+        system( cmd );
         return;
     }
     memset( cmd, '\0', sizeof( cmd ) );
@@ -201,11 +204,7 @@ void kwn_image_upgrade( )
     char cmp[6]={'\0'};
     char *tok;
     int image_success = 1;
-
-    memset(cmd, '\0', sizeof(cmd));
-    sprintf(cmd,"uci set tftp.tftp.filetype='1'");
-    system(cmd);
-
+    
     memset(cmd, '\0', sizeof(cmd));
     sprintf(cmd,"uci set tftp.tftp.opstatus='%d'",KWN_UPLOAD_IN_PROGRESS);
     system(cmd);
