@@ -183,7 +183,7 @@ void kwn_config_upgrade( )
 
         printf("\nUpload from remote to embedded device");
         memset( cmd, '\0', sizeof( cmd ) );
-        sprintf( cmd,"rm %s", KWN_NEW_IMAGE_FILE );
+        sprintf( cmd,"rm %s", KWN_NEW_CONFIG_FILE );
         system( cmd );
         return;
     }
