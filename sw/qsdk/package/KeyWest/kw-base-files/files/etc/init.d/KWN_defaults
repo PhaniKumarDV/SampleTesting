@@ -37,6 +37,13 @@ start_service() {
     eth_mtu=$(uci get network.lan.mtu)
 #VLAN
     tagmgmt=$(uci get vlan.vlan.tagmgmt)
+#TFTP
+    tftpkeepset=$(uci get tftp.tftp.keepset)
+    http=$(uci get tftp.http)
+    httpfiletype=$(uci get tftp.http.filetype)
+    httpoptype=$(uci get tftp.http.optype)
+#VARIANT
+    maxsu=$(uci get variant.variant.maxsu)
 
     if [ "$eth_timer" == "" ]
     then
@@ -169,7 +176,24 @@ start_service() {
         uci set dhcp.lan.leasetime='43200'
         uci set dhcp.lan.ignore='1'
     fi
-    
+#TFTP
+    if [ "$tftpkeepset" == "" ]
+    then
+        uci set tftp.tftp.keepset='1'
+    fi
+    if [ "$http" == "" ]
+    then
+        uci set tftp.http='http'
+        uci set tftp.http.filetype='1'
+        uci set tftp.http.optype='0'
+    fi
+#VARIANT
+    uci set variant.variant.buildno='191118'
+    if [ "$maxsu" == "" ]
+    then
+        uci set variant.variant.maxsu ='1'
+    fi
+
     dmesg -n 1
 
     procd_close_instance

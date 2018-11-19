@@ -48,8 +48,9 @@
     if (string.match(eth1_status, "down")) then
         eth_has_no_link = true 
 	end
-
-
+    if (string.match(model_name,"")) then
+        model_name = luci.sys.exec("uci get variant.variant.model")
+    end
 
 	local has_dsl = fs.access("/etc/init.d/dsl_control")
 
