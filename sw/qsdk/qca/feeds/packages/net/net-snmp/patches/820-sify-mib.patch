@@ -1,7 +1,7 @@
 diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.c
 --- net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c	1970-01-01 05:30:00.000000000 +0530
-+++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.c	2018-11-17 22:15:23.456020900 +0530
-@@ -0,0 +1,3112 @@
++++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.c	2018-11-19 17:34:52.812945258 +0530
+@@ -0,0 +1,3115 @@
 +/****************************************************************************
 +*                                                                           *
 +*  File Name:           kwnmib.c                                           *
@@ -175,8 +175,8 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +  { 69   , ASN_INTEGER    , RWRITE, var_EthernetTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_ETHERNET, KWN_ETHERNET_MTU } },
 +  /* DHCP MIBS */
 +  { 70   , ASN_INTEGER    , RWRITE, var_DhcpTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_DHCP, KWN_DHCP_SERVER } },
-+  { 71   , ASN_INTEGER    , RWRITE, var_DhcpTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_DHCP, KWN_DHCP_START } },
-+  { 72   , ASN_INTEGER    , RWRITE, var_DhcpTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_DHCP, KWN_DHCP_LIMIT } },
++  { 71   , ASN_IPADDRESS  , RWRITE, var_DhcpTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_DHCP, KWN_DHCP_START_IP } },
++  { 72   , ASN_IPADDRESS  , RWRITE, var_DhcpTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_DHCP, KWN_DHCP_END_IP } },
 +  { 73   , ASN_INTEGER    , RWRITE, var_DhcpTable, 4, { KWN_SMAC, KWN_CONFIGURATION, KWN_DHCP, KWN_DHCP_LEASE_TIME } },
 +  /* System Management MIBS */
 +  { 74   , ASN_INTEGER    , RWRITE, var_SystemMgmtTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM_MGMT, KWN_SYSTEM_MGMT_APPLY } },
@@ -1381,17 +1381,17 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +                    res_val = 1;
 +                return ( u_char * ) &res_val;
 +            }
-+        case KWN_DHCP_START:
++        case KWN_DHCP_START_IP:
 +            {
 +                sprintf( cmd, "uci get dhcp.lan.start" );
-+                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
-+                return ( u_char * ) &res_val;
++                kwn_get_value( KWN_TYPE_IP_ADDRESS, &cmd[0], var_len, NULL );
++                return ( u_char * ) &res_ip;
 +            }
-+        case KWN_DHCP_LIMIT:
++        case KWN_DHCP_END_IP:
 +            {
 +                sprintf( cmd, "uci get dhcp.lan.limit" );
-+                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
-+                return ( u_char * ) &res_val;
++                kwn_get_value( KWN_TYPE_IP_ADDRESS, &cmd[0], var_len, NULL );
++                return ( u_char * ) &res_ip;
 +            }
 +        case KWN_DHCP_LEASE_TIME:
 +            {
@@ -2780,6 +2780,7 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +        u_char * statP, oid * name, size_t name_len )
 +{
 +    char cmd[100];
++    char ip[30];
 +    int val;
 +    long long_val;
 +    
@@ -2808,12 +2809,14 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +                        else
 +                            return SNMP_ERR_GENERR;
 +                        break;
-+                    case KWN_DHCP_START:
-+                        sprintf( cmd, "uci set dhcp.lan.start='%d'", long_val );
++                    case KWN_DHCP_START_IP:
++                        kwn_conv_uint32_to_ip( var_val, var_val_len, &ip[0] );
++                        sprintf( cmd, "uci set dhcp.lan.start='%s'", ip );
 +                        system( cmd );
 +                        break;
-+                    case KWN_DHCP_LIMIT:
-+                        sprintf( cmd, "uci set dhcp.lan.limit='%d'", long_val );
++                    case KWN_DHCP_END_IP:
++                        kwn_conv_uint32_to_ip( var_val, var_val_len, &ip[0] );
++                        sprintf( cmd, "uci set dhcp.lan.limit='%s'", ip );
 +                        system( cmd );
 +                        break;
 +                    case KWN_DHCP_LEASE_TIME:
@@ -3116,7 +3119,7 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +}
 diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.h
 --- net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h	1970-01-01 05:30:00.000000000 +0530
-+++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.h	2018-11-17 22:15:33.704006998 +0530
++++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.h	2018-11-19 17:34:24.681521112 +0530
 @@ -0,0 +1,391 @@
 +/****************************************************************************
 +*                                                                           *
@@ -3295,8 +3298,8 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h net-snmp-5.4.4-mod/agent/mi
 +
 +enum KWN_DHCP {
 +    KWN_DHCP_SERVER = 1,
-+    KWN_DHCP_START = 2,
-+    KWN_DHCP_LIMIT = 3,
++    KWN_DHCP_START_IP = 2,
++    KWN_DHCP_END_IP = 3,
 +    KWN_DHCP_LEASE_TIME = 4
 +};
 +
@@ -3535,8 +3538,8 @@ diff -urN net-snmp-5.4.4-org/include/net-snmp/net-snmp-config.h.in net-snmp-5.4.
  
 diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWEST-MIB.mib
 --- net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib	1970-01-01 05:30:00.000000000 +0530
-+++ net-snmp-5.4.4-mod/mibs/KEYWEST-MIB.mib	2018-11-17 22:15:59.419972977 +0530
-@@ -0,0 +1,2042 @@
++++ net-snmp-5.4.4-mod/mibs/KEYWEST-MIB.mib	2018-11-19 17:25:43.730223889 +0530
+@@ -0,0 +1,2049 @@
 +------------------------------------------------------------------------
 +------------------------------------------------------------------------
 +--
@@ -4474,21 +4477,20 @@ diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWES
 +        DEFVAL      { disable }
 +::= { dhcp 1 }
 +
-+dhcpStart OBJECT-TYPE
-+        SYNTAX      Integer32
++dhcpStartIP OBJECT-TYPE
++        SYNTAX      IpAddress
 +        MAX-ACCESS  read-write
 +        STATUS      current
 +        DESCRIPTION "This parameter is used to configure DHCP
-+                     Server Start Range. Defualt value is 100."
++                     Server Start IP Address."
 +::= { dhcp 2 }
 +
-+dhcpLimit OBJECT-TYPE
-+        SYNTAX      Integer32
++dhcpEndIP OBJECT-TYPE
++        SYNTAX      IpAddress
 +        MAX-ACCESS  read-write
 +        STATUS      current
 +        DESCRIPTION "This parameter is used to configure DHCP
-+                     Server End Limit Range. Default value is 
-+                     150."
++                     Server End IP Address."
 +::= { dhcp 3 }
 +
 +dhcpLeaseTime OBJECT-TYPE
@@ -4496,7 +4498,7 @@ diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWES
 +        MAX-ACCESS  read-write
 +        STATUS      current
 +        DESCRIPTION "This parameter is used to configure DHCP 
-+                     Server Lease Time. Default value is 12h."
++                     Server Lease Time in seconds."
 +::= { dhcp 4 }
 +
 +------------------------------------------------------------------------
@@ -4766,6 +4768,7 @@ diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWES
 +
 +tftpOperationtype OBJECT-TYPE
 +        SYNTAX      INTEGER {
++            none(0),
 +            upload(1),
 +            download(2)
 +        }
@@ -4774,16 +4777,23 @@ diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWES
 +        DESCRIPTION "This parameter is used to configure
 +                     the tftp Operation Type. It is 
 +                     configured as:-
++                     '0' - NONE
 +                     '1' - UPLOAD
 +                     '2' - DOWNLOAD."
 +::= { tftp 5 }
 +
 +tftpKeepSet OBJECT-TYPE
-+        SYNTAX      Integer32
++        SYNTAX      INTEGER {
++            disable(0),
++            enable(1)
++        }
 +        MAX-ACCESS  read-write
 +        STATUS      current
 +        DESCRIPTION "This parameter is used to check 
-+                     Keepsettings enabled or disabled."
++                     Keepsettings enabled or disabled.
++                     It is configured as:-
++                     '0' - DISABLE
++                     '1' - ENABLE."
 +::= { tftp 6 }
 +
 +------------------------------------------------------------------------
