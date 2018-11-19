@@ -24,7 +24,6 @@
     local eth_has_link 
     local eth_has_no_link
 	local serial_no =  luci.sys.exec("fw_printenv -n amigoserial")
-	local model_name =  luci.sys.exec("fw_printenv -n model")
 
     local uci  = require "luci.model.uci".cursor()
     local currTemperature = uci:get_first("system", "system", "temperature")
@@ -48,9 +47,6 @@
     if (string.match(eth1_status, "down")) then
         eth_has_no_link = true 
 	end
-    if (string.match(model_name,"")) then
-        model_name = luci.sys.exec("uci get variant.variant.model")
-    end
 
 	local has_dsl = fs.access("/etc/init.d/dsl_control")
 
@@ -187,6 +183,33 @@ function get_links()
             else
                data = 0;
 			document.getElementById("links_id").innerHTML=data;
+		}
+	}
+    );
+}
+function get_desc()
+{
+    var id = 1;
+    XHR.get('<%=luci.dispatcher.build_url("admin")%>/get_descr' + '/' + id, null,
+	function(x, data) {
+		if (data) {
+            var model_uci = "<%=uciget('uci get variant.variant.model')%>"
+            var prod_uci = "<%=uciget('uci get variant.variant.productid')%>"
+            var rel_num = "<%=uciget('uci get variant.variant.relnum')%>"
+            var maj_num = "<%=uciget('uci get variant.variant.majnum')%>"
+            var min_num = "<%=uciget('uci get variant.variant.minnum')%>"
+            var build_no = "<%=uciget('uci get variant.variant.buildno')%>"
+            var m = data.split("=");
+            var model_name=model_uci, prod_type=prod_uci;
+            if( m[0] != "" ) {
+                model_name = m[0];
+            }
+            if( m[1] != "" ) {
+                prod_type = m[1];
+            }
+            prod_type = ( prod_type == 1 ? "PTP" : "PTMP" );
+            var str = model_name + " - " + prod_type + " - " + rel_num + "." + maj_num + "." + min_num + " ( " + build_no + " )";
+			document.getElementById("desc").innerHTML=str;
 		}
 	}
     );
@@ -383,8 +406,7 @@ function get_log()
 
 	<table width="100%" cellspacing="10">
 		<tr><td width="33%"><%:Hostname%></td><td><%=luci.sys.hostname() or "?"%></td></tr>
-		<tr><td width="33%"><%:Model%></td><td><%=model_name %></td></tr>
-		<tr><td width="33%"><%:Firmware Version%></td><td><%=uciget('uci get variant.variant.relnum')%>.<%=uciget('uci get variant.variant.majnum')%>.<%=uciget('uci get variant.variant.minnum')%> - <%=uciget('uci get variant.variant.buildno')%></td></tr>
+		<tr><td width="33%"><%:Product Description%></td><td id="desc"></td></tr>
 		<tr><td width="33%"><%:Serial Number%></td><td><%=serial_no %></td></tr>
 		<tr><td width="33%"><%:Local Time%></td><td id="localtime">-</td></tr>
 		<tr><td width="33%"><%:Uptime%></td><td id="uptime">-</td></tr>
@@ -407,6 +429,9 @@ function get_log()
 		<tr><td width="33%"><%:Remote Partners%></td><td id="links_id"><script type="text/javascript">document.write(no_of_links)</script></td></tr>
 	</table>
 </fieldset>
+<script type="text/javascript">
+get_desc();
+</script>
 <% if has_wifi then %>
 <fieldset class="cbi-section half">
 	<legend><%:Wireless%></legend>

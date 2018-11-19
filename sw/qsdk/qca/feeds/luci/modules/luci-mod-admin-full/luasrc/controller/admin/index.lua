@@ -26,6 +26,7 @@ function index()
 	entry({"admin", "home"}, call("action_index"), _("Home"), 10)
     entry({"admin", "eventlog"}, call("action_eventlog"), nil).leaf = true
     entry({"admin", "clr_eventlog"}, call("action_clr_eventlog"), nil).leaf = true
+    entry({"admin", "get_descr"}, call("action_get_descr"), nil).leaf = true
     entry({"admin", "no_of_links"}, call("action_links"), nil).leaf = true
 	entry({"admin", "apply"}, call("action_apply"), _("Apply"), 88)
 	entry({"admin", "reboot"}, call("action_reboot"), _("Reboot"), 89)
@@ -119,4 +120,16 @@ function action_logout()
 	end
 
 	luci.http.redirect(luci.dispatcher.build_url())
+end
+
+function action_get_descr()
+    local res =  luci.util.exec("fw_printenv -n model")
+    local model_name = string.gsub(res, "\n", "")
+    res = luci.util.exec("fw_printenv -n producttype")
+    local product_type = string.gsub(res, "\n", "")
+    local data
+
+    data = model_name.."=".. product_type
+    luci.http.prepare_content("application/json")
+	luci.http.write_json(data)
 end
