@@ -127,13 +127,6 @@ void kwn_get_http_config( kwn_http_config *dev_cfg )
 
     memset(cmd, '\0', sizeof(cmd));
     memset(cmd_buf, '\0', sizeof(cmd_buf));
-    sprintf(cmd,"uci get tftp.http.opstatus");
-    kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] );
-    dev_cfg->opt_status = atoi(cmd_buf);
-    printf("dev_cfg->opt_status Opt_Status: %d\n",dev_cfg->opt_status);
-
-    memset(cmd, '\0', sizeof(cmd));
-    memset(cmd_buf, '\0', sizeof(cmd_buf));
     sprintf(cmd,"uci get tftp.http.optype");
     kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] );
     dev_cfg->opt_type = atoi(cmd_buf);
@@ -298,9 +291,6 @@ void kwn_config_retrieve( )
     memset(cmd, '\0', sizeof(cmd));
     sprintf(cmd,"uci set tftp.tftp.opstatus='%d'",KWN_DOWNLOAD_SUCCESS);
     system(cmd);
-    memset( cmd, '\0', sizeof( cmd ) );
-    sprintf( cmd," uci set tftp.tftp.opstatus='0'");
-    system( cmd );
 
     printf("\nRetrieve from embedded device\n");
     printf("\n %s : %d\n",__func__,__LINE__);
@@ -377,9 +367,6 @@ void kwn_http_config_retrieve()
     memset(cmd, '\0', sizeof(cmd));
     sprintf(cmd,"uci set tftp.tftp.opstatus='%d'",KWN_DOWNLOAD_SUCCESS);
     system(cmd);
-    memset( cmd, '\0', sizeof( cmd ) );
-    sprintf( cmd," uci set tftp.tftp.opstatus='0'");
-    system( cmd );
 
     printf("\nRetrieve from embedded device\n");
     printf("\n %s : %d\n",__func__,__LINE__);
@@ -406,7 +393,6 @@ int main()
     printf("\nTftp Opttype   : %d\n",data.opt_type);
 
     printf("\nHttp Filetype  : %d",ht_data.filetype);
-    printf("\nHttp Optstatus : %d",ht_data.opt_status);
     printf("\nHttp Opttype   : %d\n",ht_data.opt_type);
 
     switch( data.opt_type )

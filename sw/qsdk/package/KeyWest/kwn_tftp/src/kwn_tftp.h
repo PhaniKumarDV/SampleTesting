@@ -44,6 +44,5 @@ typedef struct
 typedef struct
 {
     unsigned char filetype;
-    unsigned char opt_status;
     unsigned char opt_type;
 }__attribute__((packed)) kwn_http_config;
