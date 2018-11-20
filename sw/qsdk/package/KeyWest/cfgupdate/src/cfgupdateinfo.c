@@ -84,9 +84,45 @@ void kwn_sys_cmd_imp( const char* cmd, uint8_t* cmd_buf )
     return;
 }
 
+void kwn_country_change( int coun )
+{
+#define RUSSIA   5011
+#define INDIA_UL 5016
+#define INDIA_L  5017
+    
+    char cmd[100];
+    uint8_t cmd_buf[50];
+    int def_chan = 165;
+
+    memset(cmd, '\0', sizeof(cmd));
+    memset(cmd_buf, '\0', sizeof(cmd_buf));
+    sprintf(cmd,"uci get wireless.@wifi-iface[1].mode");
+    kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] ); 
+    if( strcmp( cmd_buf, "ap" ) ) {
+        return;
+    }
+    switch( coun )
+    {
+        case RUSSIA:
+            def_chan = 100; /* 200 to 183 */
+            break;
+        case INDIA_UL:
+            def_chan = 170; /* 165 to 175 */
+            break;
+        case INDIA_L:
+            def_chan = 160; /* 145 to 175 */
+            break;
+        default:
+            break;
+    }
+    memset( cmd, '\0', sizeof( cmd ) );
+    sprintf( cmd, "uci set wireless.wifi1.channel='%d'",def_chan );
+    system( cmd );
+}
+
 void kwn_reset_datarate( int stream )
 {
-    uint8_t cmd[100];
+    char cmd[100];
     uint8_t cmd_buf[50];
     uint8_t min_srate = 0, max_srate = 9, min_drate = 10, max_drate = 19;
     uint8_t srate = 3, drate = 13;
@@ -165,7 +201,12 @@ void cfg_set( char *type, char *value )
             sprintf(cmd,"uci set wireless.@wifi-iface[1].ssid='%s'",value);
             break;
         case UCI_ID_RADIO1_COUNTRY:
-            sprintf(cmd,"uci set wireless.wifi1.country='%s'",value);
+            {
+                int val = atoi( value );
+                sprintf(cmd,"uci set wireless.wifi1.country='%s'",value);
+                system(cmd);
+                kwn_country_change( val );
+            }
             break;
         case UCI_ID_RADIO1_OPMODE:
             sprintf(cmd,"uci set wireless.wifi1.hwmode='%s'",value);
@@ -576,12 +617,9 @@ void cfg_set( char *type, char *value )
             break;
         case UCI_ID_TFTP_OPTYPE:
             {
-                unsigned char cmd2[30];
-                memset(cmd2, '\0', sizeof(cmd2));
                 sprintf(cmd,"uci set tftp.tftp.optype='%s'",value);
                 system( cmd );
-                sprintf(cmd2,"/usr/sbin/kwn_tftp");
-                system( cmd2 );
+                system("/usr/sbin/kwn_tftp");
                 break;
             }
         case UCI_ID_TFTP_KEEPSET:
