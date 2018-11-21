@@ -1,7 +1,7 @@
 diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.c
 --- net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c	1970-01-01 05:30:00.000000000 +0530
-+++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.c	2018-11-20 11:25:00.586557891 +0530
-@@ -0,0 +1,3214 @@
++++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.c	2018-11-21 18:14:19.326599287 +0530
+@@ -0,0 +1,4238 @@
 +/****************************************************************************
 +*                                                                           *
 +*  File Name:           kwnmib.c                                           *
@@ -81,6 +81,14 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +  WriteMethod        systemmgmtwriteMethod;
 +  WriteMethod        systeminfowriteMethod;
 +  WriteMethod        systemtftpwriteMethod;
++  WriteMethod        systemntpwriteMethod;
++  WriteMethod        systemgpswriteMethod;
++  WriteMethod        systemdyinggaspwriteMethod;
++  WriteMethod        systemledswriteMethod;
++  WriteMethod        systemlogwriteMethod;
++  WriteMethod        systemhttpwriteMethod;
++  WriteMethod        systemtelnetsshwriteMethod;
++  WriteMethod        systemsnmpwriteMethod;
 +  WriteMethod        assocwriteMethod;
 +
 +/****************************************************************************
@@ -208,76 +216,115 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +  { 97   , ASN_INTEGER    , RONLY , var_SystemTftpTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM_TFTP, KWN_SYSTEM_TFTP_OPSTATUS } },
 +  { 98   , ASN_INTEGER    , RWRITE, var_SystemTftpTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM_TFTP, KWN_SYSTEM_TFTP_OPTYPE } },
 +  { 99   , ASN_INTEGER    , RWRITE, var_SystemTftpTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM_TFTP, KWN_SYSTEM_TFTP_KEEPSET } },
++  /* System NTP MIBS */
++  { 100  , ASN_INTEGER    , RWRITE, var_SystemNtpTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM_NTP, KWN_SYSTEM_NTP_STATUS } },
++  { 101  , ASN_IPADDRESS  , RWRITE, var_SystemNtpTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM_NTP, KWN_SYSTEM_NTP_SERVERIP } },
++  { 102  , ASN_OCTET_STR  , RWRITE, var_SystemNtpTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM_NTP, KWN_SYSTEM_NTP_TIMEZONE } },
++  { 103  , ASN_OCTET_STR  , RONLY , var_SystemNtpTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM_NTP, KWN_SYSTEM_NTP_LOCALTIME } },
++  /* System GPS MIBS */
++  { 104  , ASN_INTEGER    , RWRITE, var_SystemGpsTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM_GPS, KWN_SYSTEM_GPSSTATUS } },
++  { 105  , ASN_INTEGER    , RWRITE, var_SystemGpsTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM_GPS, KWN_SYSTEM_GPSINTERVAL } },
++  /* System DYING GASP MIBS */
++  { 106  , ASN_INTEGER    , RWRITE, var_SystemDyingGaspTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM_DYING_GASP, KWN_SYSTEM_DYINGGASPSTATUS } },
++  { 107  , ASN_INTEGER    , RWRITE, var_SystemDyingGaspTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM_DYING_GASP, KWN_SYSTEM_DYINGGASPACK } },
++  /* System LEDS MIBS */
++  { 108  , ASN_INTEGER    , RWRITE, var_SystemLedsTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM_LEDS, KWN_SYSTEM_LEDSSTATUS } },
++  /* System Logging MIBS */
++  { 109  , ASN_IPADDRESS  , RWRITE, var_SystemLoggingTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM_LOG, KWN_SYSTEM_SYSLOGSERVERIP } },
++  { 110  , ASN_INTEGER    , RWRITE, var_SystemLoggingTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM_LOG, KWN_SYSTEM_SYSLOGSERVERPORT } },
++  { 111  , ASN_INTEGER    , RWRITE, var_SystemLoggingTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM_LOG, KWN_SYSTEM_TEMPLOGSTATUS } },
++  { 112  , ASN_INTEGER    , RWRITE, var_SystemLoggingTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM_LOG, KWN_SYSTEM_TEMPLOGINTERVAL } },
++  /* System HTTP MIBS */
++  { 113  , ASN_OCTET_STR  , RWRITE, var_SystemHttpTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM_HTTP, KWN_SYSTEM_HTTP_ADMINPASS } },
++  { 114  , ASN_OCTET_STR  , RWRITE, var_SystemHttpTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM_HTTP, KWN_SYSTEM_HTTP_USERPASS } },
++  { 115  , ASN_OCTET_STR  , RWRITE, var_SystemHttpTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM_HTTP, KWN_SYSTEM_HTTP_SUPERUSERPASS } },
++  { 116  , ASN_INTEGER    , RWRITE, var_SystemHttpTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM_HTTP, KWN_SYSTEM_HTTP_HTTPSTATUS } },
++  { 117  , ASN_INTEGER    , RWRITE, var_SystemHttpTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM_HTTP, KWN_SYSTEM_HTTP_HTTPPORT } },
++  { 118  , ASN_INTEGER    , RWRITE, var_SystemHttpTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM_HTTP, KWN_SYSTEM_HTTP_HTTPSSTATUS } },
++  { 119  , ASN_INTEGER    , RWRITE, var_SystemHttpTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM_HTTP, KWN_SYSTEM_HTTP_HTTPSPORT } },
++  /* System Telnet / SSH MIBS */
++  { 120  , ASN_INTEGER    , RWRITE, var_SystemTelnetSSHTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM_TELNETSSH, KWN_SYSTEM_TELNETSSH_TELNETSTATUS } },
++  { 121  , ASN_INTEGER    , RWRITE, var_SystemTelnetSSHTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM_TELNETSSH, KWN_SYSTEM_TELNETSSH_TELNETPORT } },
++  { 122  , ASN_INTEGER    , RWRITE, var_SystemTelnetSSHTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM_TELNETSSH, KWN_SYSTEM_TELNETSSH_TELNETSESSIONS } },
++  { 123  , ASN_INTEGER    , RWRITE, var_SystemTelnetSSHTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM_TELNETSSH, KWN_SYSTEM_TELNETSSH_SSHSTATUS} },
++  { 124  , ASN_INTEGER    , RWRITE, var_SystemTelnetSSHTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM_TELNETSSH, KWN_SYSTEM_TELNETSSH_SSHPORT } },
++  { 125  , ASN_INTEGER    , RWRITE, var_SystemTelnetSSHTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM_TELNETSSH, KWN_SYSTEM_TELNETSSH_SSHSESSIONS } },
++  /* System SNMP MIBS */
++  { 126  , ASN_OCTET_STR  , RWRITE, var_SystemSnmpTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM_SNMP, KWN_SYSTEM_SNMP_STATUS } },
++  { 127  , ASN_OCTET_STR  , RWRITE, var_SystemSnmpTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM_SNMP, KWN_SYSTEM_SNMP_VERSION } },
++  { 128  , ASN_OCTET_STR  , RWRITE, var_SystemSnmpTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM_SNMP, KWN_SYSTEM_SNMP_READWRITEPASS } },
++  { 129  , ASN_IPADDRESS  , RWRITE, var_SystemSnmpTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM_SNMP, KWN_SYSTEM_SNMP_TRAPHOSTIPADDRESS } },
++  { 130  , ASN_OCTET_STR  , RWRITE, var_SystemSnmpTable, 4, { KWN_SMAC, KWN_MANAGEMENT, KWN_SYSTEM_SNMP, KWN_SYSTEM_SNMP_TRAPHOSTPASS } },
 +  /* Wireless Stats MIBS */
-+  { 100  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_RADIO_INDEX } },
-+  { 101  , ASN_OCTET_STR  , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MACADDRESS } },
-+  { 102  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_REMOTEPARTNERS } },
-+  { 103  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_DATA_TXTOTALPACKETS } },
-+  { 104  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_DATA_RXTOTALPACKETS } },
-+  { 105  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_DATA_TXMULTICASTPACKETS } },
-+  { 106  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_DATA_RXMULTICASTPACKETS } },
-+  { 107  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_DATA_TXUNICASTPACKETS } },
-+  { 108  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_DATA_RXUNICASTPACKETS } },
-+  { 109  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_TXPACKETS } },
-+  { 110  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_RXPACKETS } },
-+  { 111  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_TXBEACONS } },
-+  { 112  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_RXBEACONS } },
-+  { 113  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_AUTHREQSENT } },
-+  { 114  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_AUTHREQRECV } },
-+  { 115  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_AUTHCNF } },
-+  { 116  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_AUTHREJ } },
-+  { 117  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_DEAUTHREQSENT } },
-+  { 118  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_DEAUTHREQRECV } },
-+  { 119  , ASN_OCTET_STR  , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_AUTHRESLAST } },
-+  { 120  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_ASSOCREQSENT } },
-+  { 121  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_ASSOCREQRECV } },
-+  { 122  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_ASSOCCNF } },
-+  { 123  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_ASSOCREJ } },
-+  { 124  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_DEASSOCREQSENT } },
-+  { 125  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_DEASSOCREQRECV } },
-+  { 126  , ASN_OCTET_STR  , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_ASSOCRESLAST } },
-+  { 127  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MPDU_ERRORS } },
-+  { 128  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_PHY_ERRORS } },
++  { 131  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_RADIO_INDEX } },
++  { 132  , ASN_OCTET_STR  , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MACADDRESS } },
++  { 133  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_REMOTEPARTNERS } },
++  { 134  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_DATA_TXTOTALPACKETS } },
++  { 135  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_DATA_RXTOTALPACKETS } },
++  { 136  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_DATA_TXMULTICASTPACKETS } },
++  { 137  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_DATA_RXMULTICASTPACKETS } },
++  { 138  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_DATA_TXUNICASTPACKETS } },
++  { 139  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_DATA_RXUNICASTPACKETS } },
++  { 140  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_TXPACKETS } },
++  { 141  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_RXPACKETS } },
++  { 142  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_TXBEACONS } },
++  { 143  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_RXBEACONS } },
++  { 144  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_AUTHREQSENT } },
++  { 145  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_AUTHREQRECV } },
++  { 146  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_AUTHCNF } },
++  { 147  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_AUTHREJ } },
++  { 148  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_DEAUTHREQSENT } },
++  { 149  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_DEAUTHREQRECV } },
++  { 150  , ASN_OCTET_STR  , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_AUTHRESLAST } },
++  { 151  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_ASSOCREQSENT } },
++  { 152  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_ASSOCREQRECV } },
++  { 153  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_ASSOCCNF } },
++  { 154  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_ASSOCREJ } },
++  { 155  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_DEASSOCREQSENT } },
++  { 156  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_DEASSOCREQRECV } },
++  { 157  , ASN_OCTET_STR  , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_ASSOCRESLAST } },
++  { 158  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MPDU_ERRORS } },
++  { 159  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_PHY_ERRORS } },
 +  /* Ethernet Stats MIBS */
-+  { 129  , ASN_INTEGER    , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_INDEX } },
-+  { 130  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_STATUS } },
-+  { 131  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_MACADDRESS } },
-+  { 132  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_SPEED } },
-+  { 133  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_DUPLEX } },
-+  { 134  , ASN_INTEGER    , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_TXTOTALPACKETS } },
-+  { 135  , ASN_INTEGER    , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_RXTOTALPACKETS } },
-+  { 136  , ASN_INTEGER    , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_TXTOTALBYTES } },
-+  { 137  , ASN_INTEGER    , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_RXTOTALBYTES } },
-+  { 138  , ASN_INTEGER    , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_TXERRORS } },
-+  { 139  , ASN_INTEGER    , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_RXERRORS } },
++  { 160  , ASN_INTEGER    , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_INDEX } },
++  { 161  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_STATUS } },
++  { 162  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_MACADDRESS } },
++  { 163  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_SPEED } },
++  { 164  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_DUPLEX } },
++  { 165  , ASN_INTEGER    , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_TXTOTALPACKETS } },
++  { 166  , ASN_INTEGER    , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_RXTOTALPACKETS } },
++  { 167  , ASN_INTEGER    , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_TXTOTALBYTES } },
++  { 168  , ASN_INTEGER    , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_RXTOTALBYTES } },
++  { 169  , ASN_INTEGER    , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_TXERRORS } },
++  { 170  , ASN_INTEGER    , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_RXERRORS } },
 +  /* Assoc MIBS */
-+  { 140  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_RADIO_INDEX } },
-+  { 141  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_SEC_INDEX } },
-+  { 142  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_MAC } },
-+  { 143  , ASN_IPADDRESS  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_IP } },
-+  { 144  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_LAT } },
-+  { 145  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_LONG } },
-+  { 146  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_LAT } },
-+  { 147  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_LONG } },
-+  { 148  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_RX_RATE } },
-+  { 149  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_TX_RATE } },
-+  { 150  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_RX_TPUT } },
-+  { 151  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_TX_TPUT } },
-+  { 152  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_SNR_A1 } },
-+  { 153  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_SNR_A2 } },
-+  { 154  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_SNR_A1 } },
-+  { 155  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_SNR_A2 } },
-+  { 156  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_PHY_ERR } },
-+  { 157  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_PHY_ERR } },
-+  { 158  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_MPDU_ERR } },
-+  { 159  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_MPDU_ERR } },
-+  { 160  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_RETRIES } },
-+  { 161  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_RETRIES } },
-+  { 162  , ASN_INTEGER    , RWRITE, var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LINKTEST_DUR } },
-+  { 163  , ASN_INTEGER    , RWRITE, var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LINKTEST_DIR } },
-+  { 164  , ASN_INTEGER    , RWRITE, var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LINKTEST_START_STOP } },
-+  { 165  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_NOISE_FLOOR } },
-+  { 166  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_NOISE_FLOOR } },
++  { 171  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_RADIO_INDEX } },
++  { 172  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_SEC_INDEX } },
++  { 173  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_MAC } },
++  { 174  , ASN_IPADDRESS  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_IP } },
++  { 175  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_LAT } },
++  { 176  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_LONG } },
++  { 177  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_LAT } },
++  { 178  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_LONG } },
++  { 179  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_RX_RATE } },
++  { 180  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_TX_RATE } },
++  { 181  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_RX_TPUT } },
++  { 182  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_TX_TPUT } },
++  { 183  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_SNR_A1 } },
++  { 184  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_SNR_A2 } },
++  { 185  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_SNR_A1 } },
++  { 186  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_SNR_A2 } },
++  { 187  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_PHY_ERR } },
++  { 188  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_PHY_ERR } },
++  { 189  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_MPDU_ERR } },
++  { 190  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_MPDU_ERR } },
++  { 191  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_RETRIES } },
++  { 192  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_RETRIES } },
++  { 193  , ASN_INTEGER    , RWRITE, var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LINKTEST_DUR } },
++  { 194  , ASN_INTEGER    , RWRITE, var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LINKTEST_DIR } },
++  { 195  , ASN_INTEGER    , RWRITE, var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LINKTEST_START_STOP } },
++  { 196  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_NOISE_FLOOR } },
++  { 197  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_NOISE_FLOOR } },
 +};
 +
 +/****************************************************************************
@@ -1473,10 +1520,6 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +            {
 +                sprintf( cmd, "uci get dhcp.lan.ignore" );
 +                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
-+                if( res_val == 1 )
-+                    res_val = 0;
-+                else
-+                    res_val = 1;
 +                return ( u_char * ) &res_val;
 +            }
 +        case KWN_DHCP_START_IP:
@@ -1801,6 +1844,469 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +                sprintf( cmd, "uci get tftp.tftp.keepset" );
 +                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
 +                return ( u_char * ) &res_val;
++            }
++        default:
++            ERROR_MSG ( "" );
++    }
++    return NULL;
++}
++
++/****************************************************************************
++ *                                                                          *
++ *   var_SystemNtpTable() -                                                 *
++ *                                                                          *
++ ****************************************************************************/
++unsigned char *
++var_SystemNtpTable ( struct variable *vp, 
++        oid     *name, 
++        size_t  *length, 
++        int     exact, 
++        size_t  *var_len, 
++        WriteMethod **write_method)
++{
++    char cmd[100];
++
++    if ( header_generic ( vp, name, length, exact, var_len, write_method )
++            == MATCH_FAILED )
++        return NULL;
++
++    memset( res_str, '\0', sizeof( res_str ) );
++    res_val = 0;
++    res_ip = 0;
++    *length = vp->namelen + 1;
++    *write_method = systemntpwriteMethod;
++
++    switch ( (char) name[10] ) {
++        case KWN_SYSTEM_NTP_STATUS:
++            {
++                sprintf( cmd, "uci get system.ntp.enabled" );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_SYSTEM_NTP_SERVERIP:
++            {
++                sprintf( cmd, "uci get system.ntp.server" );
++                kwn_get_value( KWN_TYPE_IP_ADDRESS, &cmd[0], var_len, NULL );
++                return ( u_char * ) &res_ip;
++            }
++        case KWN_SYSTEM_NTP_TIMEZONE:
++            {
++                sprintf( cmd, "uci get system.@system[0].timezone" );
++                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len, NULL );
++                return ( u_char * ) res_str;
++            }
++        case KWN_SYSTEM_NTP_LOCALTIME:
++            {
++                sprintf( cmd, "date" );
++                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len, NULL );
++                return ( u_char * ) res_str;
++            }
++        default:
++            ERROR_MSG ( "" );
++    }
++    return NULL;
++}
++
++/****************************************************************************
++ *                                                                          *
++ *   var_SystemGpsTable() -                                                 *
++ *                                                                          *
++ ****************************************************************************/
++unsigned char *
++var_SystemGpsTable ( struct variable *vp, 
++        oid     *name, 
++        size_t  *length, 
++        int     exact, 
++        size_t  *var_len, 
++        WriteMethod **write_method)
++{
++    char cmd[100];
++
++    if ( header_generic ( vp, name, length, exact, var_len, write_method )
++            == MATCH_FAILED )
++        return NULL;
++
++    memset( res_str, '\0', sizeof( res_str ) );
++    res_val = 0;
++    *length = vp->namelen + 1;
++    *write_method = systemgpswriteMethod;
++
++    switch ( (char) name[10] ) {
++        case KWN_SYSTEM_GPSSTATUS:
++            {
++                sprintf( cmd, "uci get system.gps.status" );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_SYSTEM_GPSINTERVAL:
++            {
++                sprintf( cmd, "uci get system.gps.interval" );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
++                return ( u_char * ) &res_val;
++            }
++        default:
++            ERROR_MSG ( "" );
++    }
++    return NULL;
++}
++
++/****************************************************************************
++ *                                                                          *
++ *   var_SystemDyingGaspTable() -                                           *
++ *                                                                          *
++ ****************************************************************************/
++unsigned char *
++var_SystemDyingGaspTable ( struct variable *vp, 
++        oid     *name, 
++        size_t  *length, 
++        int     exact, 
++        size_t  *var_len, 
++        WriteMethod **write_method)
++{
++    char cmd[100];
++
++    if ( header_generic ( vp, name, length, exact, var_len, write_method )
++            == MATCH_FAILED )
++        return NULL;
++
++    memset( res_str, '\0', sizeof( res_str ) );
++    res_val = 0;
++    *length = vp->namelen + 1;
++    *write_method = systemdyinggaspwriteMethod;
++
++    switch ( (char) name[10] ) {
++        case KWN_SYSTEM_DYINGGASPSTATUS:
++            {
++                sprintf( cmd, "uci get wireless.@wifi-iface[1].dyinggasp" );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_SYSTEM_DYINGGASPACK:
++            {
++                sprintf( cmd, "uci get wireless.@wifi-iface[1].dgackdisable" );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
++                return ( u_char * ) &res_val;
++            }
++        default:
++            ERROR_MSG ( "" );
++    }
++    return NULL;
++}
++
++/****************************************************************************
++ *                                                                          *
++ *   var_SystemLedsTable() -                                                *
++ *                                                                          *
++ ****************************************************************************/
++unsigned char *
++var_SystemLedsTable ( struct variable *vp, 
++        oid     *name, 
++        size_t  *length, 
++        int     exact, 
++        size_t  *var_len, 
++        WriteMethod **write_method)
++{
++    char cmd[100];
++
++    if ( header_generic ( vp, name, length, exact, var_len, write_method )
++            == MATCH_FAILED )
++        return NULL;
++
++    memset( res_str, '\0', sizeof( res_str ) );
++    res_val = 0;
++    *length = vp->namelen + 1;
++    *write_method = systemledswriteMethod;
++
++    switch ( (char) name[10] ) {
++        case KWN_SYSTEM_LEDSSTATUS:
++            {
++                sprintf( cmd, "uci get system.led.status" );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
++                return ( u_char * ) &res_val;
++            }
++        default:
++            ERROR_MSG ( "" );
++    }
++    return NULL;
++}
++
++/****************************************************************************
++ *                                                                          *
++ *   var_SystemLoggingTable() -                                             *
++ *                                                                          *
++ ****************************************************************************/
++unsigned char *
++var_SystemLoggingTable ( struct variable *vp, 
++        oid     *name, 
++        size_t  *length, 
++        int     exact, 
++        size_t  *var_len, 
++        WriteMethod **write_method)
++{
++    char cmd[100];
++
++    if ( header_generic ( vp, name, length, exact, var_len, write_method )
++            == MATCH_FAILED )
++        return NULL;
++
++    memset( res_str, '\0', sizeof( res_str ) );
++    res_val = 0;
++    res_ip = 0;
++    *length = vp->namelen + 1;
++    *write_method = systemlogwriteMethod;
++
++    switch ( (char) name[10] ) {
++        case KWN_SYSTEM_SYSLOGSERVERIP:
++            {
++                sprintf( cmd, "uci get system.@system[0].log_ip" );
++                kwn_get_value( KWN_TYPE_IP_ADDRESS, &cmd[0], var_len, NULL );
++                return ( u_char * ) &res_ip;
++            }        
++        case KWN_SYSTEM_SYSLOGSERVERPORT:
++            {
++                sprintf( cmd, "uci get system.@system[0].log_port" );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
++                return ( u_char * ) &res_val;
++            }        
++        case KWN_SYSTEM_TEMPLOGSTATUS:
++            {
++                sprintf( cmd, "uci get system.@system[0].templogstatus" );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
++                return ( u_char * ) &res_val;
++            }        
++        case KWN_SYSTEM_TEMPLOGINTERVAL:
++            {
++                sprintf( cmd, "uci get system.@system[0].temploginterval" );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
++                return ( u_char * ) &res_val;
++            }
++        default:
++            ERROR_MSG ( "" );
++    }
++    return NULL;
++}
++
++/****************************************************************************
++ *                                                                          *
++ *   var_SystemHttpTable() -                                                *
++ *                                                                          *
++ ****************************************************************************/
++unsigned char *
++var_SystemHttpTable ( struct variable *vp, 
++        oid     *name, 
++        size_t  *length, 
++        int     exact, 
++        size_t  *var_len, 
++        WriteMethod **write_method)
++{
++    char cmd[100];
++
++    if ( header_generic ( vp, name, length, exact, var_len, write_method )
++            == MATCH_FAILED )
++        return NULL;
++
++    memset( res_str, '\0', sizeof( res_str ) );
++    res_val = 0;
++    *length = vp->namelen + 1;
++    *write_method = systemhttpwriteMethod;
++
++    switch ( (char) name[10] ) {
++        case KWN_SYSTEM_HTTP_ADMINPASS:
++            {
++                sprintf( res_str, "******" );
++                *var_len = strlen( res_str );
++                return ( u_char * ) res_str;
++            }
++        case KWN_SYSTEM_HTTP_USERPASS:
++            {
++                sprintf( res_str, "******" );
++                *var_len = strlen( res_str );
++                return ( u_char * ) res_str;
++            }
++        case KWN_SYSTEM_HTTP_SUPERUSERPASS:
++            {
++                sprintf( res_str, "******" );
++                *var_len = strlen( res_str );
++                return ( u_char * ) res_str;
++            }
++        case KWN_SYSTEM_HTTP_HTTPSTATUS:
++            {
++                sprintf( cmd, "uci get uhttpd.main.listen_http" );
++                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len, NULL );
++                if( memcmp( res_str, "-NA-", 4 ) != 0 )
++                    res_val = 1;    
++                else
++                    res_val = 0;
++                *var_len = sizeof ( long );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_SYSTEM_HTTP_HTTPPORT:
++            {
++                uint8_t  *token;
++                sprintf( cmd, "uci get uhttpd.main.listen_http" );
++                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len, NULL );
++                token = strtok( res_str , ":" );
++                while( token != NULL)
++                {
++                    res_val = (long)atoi(token);
++                    token = strtok(NULL, ":");
++                }
++                *var_len = sizeof ( long );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_SYSTEM_HTTP_HTTPSSTATUS:
++            {
++                sprintf( cmd, "uci get uhttpd.main.listen_https" );
++                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len, NULL );
++                if( memcmp( res_str, "-NA-", 4 ) != 0 )
++                    res_val = 1;    
++                else
++                    res_val = 0;
++                *var_len = sizeof ( long );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_SYSTEM_HTTP_HTTPSPORT:
++            {
++                uint8_t  *token;
++                sprintf( cmd, "uci get uhttpd.main.listen_https" );
++                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len, NULL );
++                token = strtok( res_str , ":" );
++                while( token != NULL)
++                {
++                    res_val = (long)atoi(token);
++                    token = strtok(NULL, ":");
++                }
++                *var_len = sizeof ( long );
++                return ( u_char * ) &res_val;
++            }
++        default:
++            ERROR_MSG ( "" );
++    }
++    return NULL;
++}
++
++/****************************************************************************
++ *                                                                          *
++ *   var_SystemTelnetSSHTable() -                                           *
++ *                                                                          *
++ ****************************************************************************/
++unsigned char *
++var_SystemTelnetSSHTable ( struct variable *vp, 
++        oid     *name, 
++        size_t  *length, 
++        int     exact, 
++        size_t  *var_len, 
++        WriteMethod **write_method)
++{
++    char cmd[100];
++
++    if ( header_generic ( vp, name, length, exact, var_len, write_method )
++            == MATCH_FAILED )
++        return NULL;
++
++    memset( res_str, '\0', sizeof( res_str ) );
++    res_val = 0;
++    *length = vp->namelen + 1;
++    *write_method = systemtelnetsshwriteMethod;
++
++    switch ( (char) name[10] ) {
++        case KWN_SYSTEM_TELNETSSH_TELNETSTATUS:
++            {
++                sprintf( cmd, "uci get telnetssh.telnet.status" );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_SYSTEM_TELNETSSH_TELNETPORT:
++            {
++                sprintf( cmd, "uci get telnetssh.telnet.port" );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_SYSTEM_TELNETSSH_TELNETSESSIONS:
++            {
++                sprintf( cmd, "uci get telnetssh.telnet.sessions" );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_SYSTEM_TELNETSSH_SSHSTATUS:
++            {
++                sprintf( cmd, "uci get telnetssh.ssh.status" );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_SYSTEM_TELNETSSH_SSHPORT:
++            {
++                sprintf( cmd, "uci get telnetssh.ssh.port" );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_SYSTEM_TELNETSSH_SSHSESSIONS:
++            {
++                sprintf( cmd, "uci get telnetssh.ssh.sessions" );
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
++                return ( u_char * ) &res_val;
++            }
++        default:
++            ERROR_MSG ( "" );
++    }
++    return NULL;
++}
++
++/****************************************************************************
++ *                                                                          *
++ *   var_SystemSnmpTable() -                                                *
++ *                                                                          *
++ ****************************************************************************/
++unsigned char *
++var_SystemSnmpTable ( struct variable *vp, 
++        oid     *name, 
++        size_t  *length, 
++        int     exact, 
++        size_t  *var_len, 
++        WriteMethod **write_method)
++{
++    char cmd[100];
++
++    if ( header_generic ( vp, name, length, exact, var_len, write_method )
++            == MATCH_FAILED )
++        return NULL;
++
++    memset( res_str, '\0', sizeof( res_str ) );
++    res_val = 0;
++    res_ip = 0;
++    *length = vp->namelen + 1;
++    *write_method = systemsnmpwriteMethod;
++
++    switch ( (char) name[10] ) {
++        case KWN_SYSTEM_SNMP_STATUS:
++            {
++                sprintf( cmd, "uci get snmpd.public_access.version" );
++                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len, NULL );
++                return ( u_char * ) res_str;
++            }
++        case KWN_SYSTEM_SNMP_VERSION:
++            {
++                sprintf( cmd, "uci get snmpd.public_access.version" );
++                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len, NULL );
++                return ( u_char * ) res_str;
++            }
++        case KWN_SYSTEM_SNMP_READWRITEPASS:
++            {
++                sprintf( res_str, "******" );
++                *var_len = strlen( res_str );
++                return ( u_char * ) res_str;
++            }
++        case KWN_SYSTEM_SNMP_TRAPHOSTIPADDRESS:
++            {
++                sprintf( cmd, "uci get snmpd.trapaddress.host" );
++                kwn_get_value( KWN_TYPE_IP_ADDRESS, &cmd[0], var_len, NULL );
++                return ( u_char * ) &res_ip;
++            }
++        case KWN_SYSTEM_SNMP_TRAPHOSTPASS:
++            {
++                sprintf( res_str, "******" );
++                *var_len = strlen( res_str );
++                return ( u_char * ) res_str;
 +            }
 +        default:
 +            ERROR_MSG ( "" );
@@ -2897,16 +3403,8 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +            {
 +                switch( (char) name[10] ) {
 +                    case KWN_DHCP_SERVER:
-+                        if( long_val == 1 ) {
-+                            sprintf( cmd, "uci set dhcp.lan.ignore='0'" );
-+                            system( cmd );
-+                        }
-+                        else if( long_val == 0 ) {
-+                            sprintf( cmd, "uci set dhcp.lan.ignore='1'" );
-+                            system( cmd );
-+                        }
-+                        else
-+                            return SNMP_ERR_GENERR;
++                        sprintf( cmd, "uci set dhcp.lan.ignore='%d'", long_val );
++                        system( cmd );
 +                        break;
 +                    case KWN_DHCP_START_IP:
 +                        kwn_conv_uint32_to_ip( var_val, var_val_len, &ip[0] );
@@ -3135,6 +3633,532 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +}
 +
 +int
++systemntpwriteMethod( int action,
++        u_char * var_val,
++        u_char var_val_type,
++        size_t var_val_len,
++        u_char * statP, oid * name, size_t name_len )
++{
++    char cmd[100];
++    char ip[30];
++    long long_val;
++    
++    if ( var_val_type == ASN_INTEGER ) {
++        long_val = *( (long *) var_val );
++    }
++
++    var_val[var_val_len] = '\0';
++    switch( action ) {
++        case RESERVE1:             /* Check values for acceptability */
++            break;
++        case RESERVE2:             /* Allocate memory and similar resources */
++            break;
++        case ACTION:               /* Perform the SET action (if reversible) */
++            {
++                switch( (char) name[10] ) {
++                    case KWN_SYSTEM_NTP_STATUS:
++                        {
++                            sprintf( cmd, "uci set system.ntp.enabled='%d'", long_val );
++                            system( cmd );
++                            break;
++                        }
++                    case KWN_SYSTEM_NTP_SERVERIP:
++                        {
++                            kwn_conv_uint32_to_ip( var_val, var_val_len, &ip[0] );
++                            sprintf( cmd, "uci set system.ntp.server='%s'", ip );
++                            system( cmd );
++                            break;
++                        }
++                    case KWN_SYSTEM_NTP_TIMEZONE:
++                        {
++                            sprintf( cmd, "uci set system.@system[0].timezone='%s'", var_val );
++                            system( cmd );
++                            break;
++                        }
++                    default:
++                        return SNMP_ERR_GENERR;
++                }
++            }
++            break;
++        case UNDO:                 /* Reverse the SET action and free resources */
++            break;
++        case COMMIT:
++            snmp_save_persistent( netsnmp_ds_get_string( NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_APPTYPE ) );
++            (void) snmp_call_callbacks( SNMP_CALLBACK_LIBRARY, SNMP_CALLBACK_STORE_DATA, NULL );
++            snmp_clean_persistent( netsnmp_ds_get_string( NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_APPTYPE ) );
++            break;
++        case FREE:                 /* Free any resources allocated */
++            break;
++    }
++    return SNMP_ERR_NOERROR;
++}
++
++int
++systemgpswriteMethod( int action,
++        u_char * var_val,
++        u_char var_val_type,
++        size_t var_val_len,
++        u_char * statP, oid * name, size_t name_len )
++{
++    char cmd[100];
++    long long_val;
++    
++    if ( var_val_type == ASN_INTEGER ) {
++        long_val = *( (long *) var_val );
++    }
++
++    var_val[var_val_len] = '\0';
++    switch( action ) {
++        case RESERVE1:             /* Check values for acceptability */
++            break;
++        case RESERVE2:             /* Allocate memory and similar resources */
++            break;
++        case ACTION:               /* Perform the SET action (if reversible) */
++            {
++                switch( (char) name[10] ) {
++                    case KWN_SYSTEM_GPSSTATUS:
++                        {
++                            sprintf( cmd, "uci set system.gps.status='%d'", long_val );
++                            system( cmd );
++                            break;
++                        }
++                    case KWN_SYSTEM_GPSINTERVAL:
++                        {
++                            sprintf( cmd, "uci set system.gps.interval='%d'", long_val );
++                            system( cmd );
++                            break;
++                        }
++                    default:
++                        return SNMP_ERR_GENERR;
++                }
++            }
++            break;
++        case UNDO:                 /* Reverse the SET action and free resources */
++            break;
++        case COMMIT:
++            snmp_save_persistent( netsnmp_ds_get_string( NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_APPTYPE ) );
++            (void) snmp_call_callbacks( SNMP_CALLBACK_LIBRARY, SNMP_CALLBACK_STORE_DATA, NULL );
++            snmp_clean_persistent( netsnmp_ds_get_string( NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_APPTYPE ) );
++            break;
++        case FREE:                 /* Free any resources allocated */
++            break;
++    }
++    return SNMP_ERR_NOERROR;
++}
++
++int
++systemdyinggaspwriteMethod( int action,
++        u_char * var_val,
++        u_char var_val_type,
++        size_t var_val_len,
++        u_char * statP, oid * name, size_t name_len )
++{
++    char cmd[100];
++    long long_val;
++    
++    if ( var_val_type == ASN_INTEGER ) {
++        long_val = *( (long *) var_val );
++    }
++
++    var_val[var_val_len] = '\0';
++    switch( action ) {
++        case RESERVE1:             /* Check values for acceptability */
++            break;
++        case RESERVE2:             /* Allocate memory and similar resources */
++            break;
++        case ACTION:               /* Perform the SET action (if reversible) */
++            {
++                switch( (char) name[10] ) {
++                    case KWN_SYSTEM_DYINGGASPSTATUS:
++                        {
++                            sprintf( cmd, "uci set wireless.@wifi-iface[1].dyinggasp='%d'", long_val );
++                            system( cmd );
++                            break;
++                        }
++                    case KWN_SYSTEM_DYINGGASPACK:
++                        {
++                            sprintf( cmd, "uci set wireless.@wifi-iface[1].dgackdisable='%d'", long_val );
++                            system( cmd );
++                            break;
++                        }
++                    default:
++                        return SNMP_ERR_GENERR;
++                }
++            }
++            break;
++        case UNDO:                 /* Reverse the SET action and free resources */
++            break;
++        case COMMIT:
++            snmp_save_persistent( netsnmp_ds_get_string( NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_APPTYPE ) );
++            (void) snmp_call_callbacks( SNMP_CALLBACK_LIBRARY, SNMP_CALLBACK_STORE_DATA, NULL );
++            snmp_clean_persistent( netsnmp_ds_get_string( NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_APPTYPE ) );
++            break;
++        case FREE:                 /* Free any resources allocated */
++            break;
++    }
++    return SNMP_ERR_NOERROR;
++}
++
++int
++systemledswriteMethod( int action,
++        u_char * var_val,
++        u_char var_val_type,
++        size_t var_val_len,
++        u_char * statP, oid * name, size_t name_len )
++{
++    char cmd[100];
++    long long_val;
++    
++    if ( var_val_type == ASN_INTEGER ) {
++        long_val = *( (long *) var_val );
++    }
++
++    var_val[var_val_len] = '\0';
++    switch( action ) {
++        case RESERVE1:             /* Check values for acceptability */
++            break;
++        case RESERVE2:             /* Allocate memory and similar resources */
++            break;
++        case ACTION:               /* Perform the SET action (if reversible) */
++            {
++                switch( (char) name[10] ) {
++                    case KWN_SYSTEM_LEDSSTATUS:
++                        {
++                            sprintf( cmd, "uci set system.led.status='%d'", long_val );
++                            system( cmd );
++                            break;
++                        }
++                    default:
++                        return SNMP_ERR_GENERR;
++                }
++            }
++            break;
++        case UNDO:                 /* Reverse the SET action and free resources */
++            break;
++        case COMMIT:
++            snmp_save_persistent( netsnmp_ds_get_string( NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_APPTYPE ) );
++            (void) snmp_call_callbacks( SNMP_CALLBACK_LIBRARY, SNMP_CALLBACK_STORE_DATA, NULL );
++            snmp_clean_persistent( netsnmp_ds_get_string( NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_APPTYPE ) );
++            break;
++        case FREE:                 /* Free any resources allocated */
++            break;
++    }
++    return SNMP_ERR_NOERROR;
++}
++
++int
++systemlogwriteMethod( int action,
++        u_char * var_val,
++        u_char var_val_type,
++        size_t var_val_len,
++        u_char * statP, oid * name, size_t name_len )
++{
++    char cmd[100];
++    char ip[30];
++    long long_val;
++    
++    if ( var_val_type == ASN_INTEGER ) {
++        long_val = *( (long *) var_val );
++    }
++
++    var_val[var_val_len] = '\0';
++    switch( action ) {
++        case RESERVE1:             /* Check values for acceptability */
++            break;
++        case RESERVE2:             /* Allocate memory and similar resources */
++            break;
++        case ACTION:               /* Perform the SET action (if reversible) */
++            {
++                switch( (char) name[10] ) {
++                    case KWN_SYSTEM_SYSLOGSERVERIP:
++                        {
++                            kwn_conv_uint32_to_ip( var_val, var_val_len, &ip[0] );
++                            sprintf( cmd, "uci set system.@system[0].log_ip='%s'", ip );
++                            system( cmd );
++                            break;
++                        }
++                    case KWN_SYSTEM_SYSLOGSERVERPORT:
++                        {
++                            sprintf( cmd, "uci set system.@system[0].log_port='%d'", long_val );
++                            system( cmd );
++                            break;
++                        }
++                    case KWN_SYSTEM_TEMPLOGSTATUS:
++                        {
++                            sprintf( cmd, "uci set system.@system[0].templogstatus='%d'", long_val );
++                            system( cmd );
++                            break;
++                        }
++                    case KWN_SYSTEM_TEMPLOGINTERVAL:
++                        {
++                            sprintf( cmd, "uci set system.@system[0].temploginterval='%d'", long_val );
++                            system( cmd );
++                            break;
++                        }
++                    default:
++                        return SNMP_ERR_GENERR;
++                }
++            }
++            break;
++        case UNDO:                 /* Reverse the SET action and free resources */
++            break;
++        case COMMIT:
++            snmp_save_persistent( netsnmp_ds_get_string( NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_APPTYPE ) );
++            (void) snmp_call_callbacks( SNMP_CALLBACK_LIBRARY, SNMP_CALLBACK_STORE_DATA, NULL );
++            snmp_clean_persistent( netsnmp_ds_get_string( NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_APPTYPE ) );
++            break;
++        case FREE:                 /* Free any resources allocated */
++            break;
++    }
++    return SNMP_ERR_NOERROR;
++}
++
++int
++systemhttpwriteMethod( int action,
++        u_char * var_val,
++        u_char var_val_type,
++        size_t var_val_len,
++        u_char * statP, oid * name, size_t name_len )
++{
++    char cmd[100];
++    long long_val;
++    
++    if ( var_val_type == ASN_INTEGER ) {
++        long_val = *( (long *) var_val );
++    }
++
++    var_val[var_val_len] = '\0';
++    switch( action ) {
++        case RESERVE1:             /* Check values for acceptability */
++            break;
++        case RESERVE2:             /* Allocate memory and similar resources */
++            break;
++        case ACTION:               /* Perform the SET action (if reversible) */
++            {
++                switch( (char) name[10] ) {
++                    case KWN_SYSTEM_HTTP_ADMINPASS:
++                        {
++                            system("uci set uhttpd.main.pwdmodified='1'");
++                            sprintf( cmd, "uci set uhttpd.main.adminpwd='%s'", var_val );
++                            system( cmd );
++                            break;
++                        }
++                    case KWN_SYSTEM_HTTP_USERPASS:
++                        {
++                            system("uci set uhttpd.main.pwdmodified='1'");
++                            sprintf( cmd, "uci set uhttpd.main.userpwd='%s'", var_val );
++                            system( cmd );
++                            break;
++                        }
++                    case KWN_SYSTEM_HTTP_SUPERUSERPASS:
++                        {
++                            system("uci set uhttpd.main.pwdmodified='1'");
++                            sprintf( cmd, "uci set uhttpd.main.superpwd='%s'", var_val );
++                            system( cmd );
++                            break;
++                        }
++                    case KWN_SYSTEM_HTTP_HTTPSTATUS:
++                        {
++                            if( long_val == 0 ) {
++                                sprintf( cmd, "uci delete uhttpd.main.listen_http");
++                            }
++                            else {
++                                sprintf( cmd, "uci set uhttpd.main.listen_http='0.0.0.0:80'");
++                            }
++                            system( cmd );
++                            break;
++                        }
++                    case KWN_SYSTEM_HTTP_HTTPPORT:
++                        {
++                            sprintf( cmd, "uci set uhttpd.main.listen_http='0.0.0.0:%d'", long_val );
++                            system( cmd );
++                            break;
++                        }
++                    case KWN_SYSTEM_HTTP_HTTPSSTATUS:
++                        {
++                            if( long_val == 0 ) {
++                                sprintf( cmd, "uci delete uhttpd.main.listen_https");
++                            }
++                            else {
++                                sprintf( cmd, "uci set uhttpd.main.listen_https='0.0.0.0:443'");
++                            }
++                            system( cmd );
++                            break;
++                        }
++                    case KWN_SYSTEM_HTTP_HTTPSPORT:
++                        {
++                            sprintf( cmd, "uci set uhttpd.main.listen_https='0.0.0.0:%d'", long_val );
++                            system( cmd );
++                            break;
++                        }
++                    default:
++                        return SNMP_ERR_GENERR;
++                }
++            }
++            break;
++        case UNDO:                 /* Reverse the SET action and free resources */
++            break;
++        case COMMIT:
++            snmp_save_persistent( netsnmp_ds_get_string( NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_APPTYPE ) );
++            (void) snmp_call_callbacks( SNMP_CALLBACK_LIBRARY, SNMP_CALLBACK_STORE_DATA, NULL );
++            snmp_clean_persistent( netsnmp_ds_get_string( NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_APPTYPE ) );
++            break;
++        case FREE:                 /* Free any resources allocated */
++            break;
++    }
++    return SNMP_ERR_NOERROR;
++}
++
++int
++systemtelnetsshwriteMethod( int action,
++        u_char * var_val,
++        u_char var_val_type,
++        size_t var_val_len,
++        u_char * statP, oid * name, size_t name_len )
++{
++    char cmd[100];
++    long long_val;
++    
++    if ( var_val_type == ASN_INTEGER ) {
++        long_val = *( (long *) var_val );
++    }
++
++    var_val[var_val_len] = '\0';
++    switch( action ) {
++        case RESERVE1:             /* Check values for acceptability */
++            break;
++        case RESERVE2:             /* Allocate memory and similar resources */
++            break;
++        case ACTION:               /* Perform the SET action (if reversible) */
++            {
++                switch( (char) name[10] ) {
++                    case KWN_SYSTEM_TELNETSSH_TELNETSTATUS:
++                        {
++                            sprintf( cmd, "uci set telnetssh.telnet.status='%d'", long_val );
++                            system( cmd );
++                            break;
++                        }
++                    case KWN_SYSTEM_TELNETSSH_TELNETPORT:
++                        {
++                            sprintf( cmd, "uci set telnetssh.telnet.port='%d'", long_val );
++                            system( cmd );
++                            break;
++                        }
++                    case KWN_SYSTEM_TELNETSSH_TELNETSESSIONS:
++                        {
++                            sprintf( cmd, "uci set telnetssh.telnet.sessions='%d'", long_val );
++                            system( cmd );
++                            break;
++                        }
++                    case KWN_SYSTEM_TELNETSSH_SSHSTATUS:
++                        {
++                            sprintf( cmd, "uci set telnetssh.ssh.status='%d'", long_val );
++                            system( cmd );
++                            break;
++                        }
++                    case KWN_SYSTEM_TELNETSSH_SSHPORT:
++                        {
++                            sprintf( cmd, "uci set telnetssh.ssh.port='%d'", long_val );
++                            system( cmd );
++                            break;
++                        }
++                    case KWN_SYSTEM_TELNETSSH_SSHSESSIONS:
++                        {
++                            sprintf( cmd, "uci set telnetssh.ssh.sessions='%d'", long_val );
++                            system( cmd );
++                            break;
++                        }
++                    default:
++                        return SNMP_ERR_GENERR;
++                }
++            }
++            break;
++        case UNDO:                 /* Reverse the SET action and free resources */
++            break;
++        case COMMIT:
++            snmp_save_persistent( netsnmp_ds_get_string( NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_APPTYPE ) );
++            (void) snmp_call_callbacks( SNMP_CALLBACK_LIBRARY, SNMP_CALLBACK_STORE_DATA, NULL );
++            snmp_clean_persistent( netsnmp_ds_get_string( NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_APPTYPE ) );
++            break;
++        case FREE:                 /* Free any resources allocated */
++            break;
++    }
++    return SNMP_ERR_NOERROR;
++}
++
++int
++systemsnmpwriteMethod( int action,
++        u_char * var_val,
++        u_char var_val_type,
++        size_t var_val_len,
++        u_char * statP, oid * name, size_t name_len )
++{
++    char cmd[100];
++    char ip[30];
++    long long_val;
++    
++    if ( var_val_type == ASN_INTEGER ) {
++        long_val = *( (long *) var_val );
++    }
++
++    var_val[var_val_len] = '\0';
++    switch( action ) {
++        case RESERVE1:             /* Check values for acceptability */
++            break;
++        case RESERVE2:             /* Allocate memory and similar resources */
++            break;
++        case ACTION:               /* Perform the SET action (if reversible) */
++            {
++                switch( (char) name[10] ) {
++                    case KWN_SYSTEM_SNMP_STATUS:
++                        {
++                            sprintf( cmd, "uci set snmpd.public_access.version='%s'", var_val );
++                            system( cmd );
++                            break;
++                        }
++                    case KWN_SYSTEM_SNMP_VERSION:
++                        {
++                            sprintf( cmd, "uci set snmpd.public_access.version='%s'", var_val );
++                            system( cmd );
++                            break;
++                        }
++                    case KWN_SYSTEM_SNMP_READWRITEPASS:
++                        {
++                            sprintf( cmd, "uci set snmpd.public.community='%s'", var_val );
++                            system( cmd );
++                            break;
++                        }
++                    case KWN_SYSTEM_SNMP_TRAPHOSTIPADDRESS:
++                        {
++                            kwn_conv_uint32_to_ip( var_val, var_val_len, &ip[0] );
++                            sprintf( cmd, "uci set snmpd.trapaddress.host='%s'", ip );
++                            system( cmd );
++                            break;
++                        }
++                    case KWN_SYSTEM_SNMP_TRAPHOSTPASS:
++                        {
++                            sprintf( cmd, "uci set snmpd.trapaddress.paswd='%s'", var_val );
++                            system( cmd );
++                            break;
++                        }
++                    default:
++                        return SNMP_ERR_GENERR;
++                }
++            }
++            break;
++        case UNDO:                 /* Reverse the SET action and free resources */
++            break;
++        case COMMIT:
++            snmp_save_persistent( netsnmp_ds_get_string( NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_APPTYPE ) );
++            (void) snmp_call_callbacks( SNMP_CALLBACK_LIBRARY, SNMP_CALLBACK_STORE_DATA, NULL );
++            snmp_clean_persistent( netsnmp_ds_get_string( NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_APPTYPE ) );
++            break;
++        case FREE:                 /* Free any resources allocated */
++            break;
++    }
++    return SNMP_ERR_NOERROR;
++}
++int
 +assocwriteMethod( int action,
 +        u_char * var_val,
 +        u_char var_val_type,
@@ -3218,8 +4242,8 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +}
 diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.h
 --- net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h	1970-01-01 05:30:00.000000000 +0530
-+++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.h	2018-11-20 10:31:13.408977206 +0530
-@@ -0,0 +1,392 @@
++++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.h	2018-11-21 18:15:42.183038266 +0530
+@@ -0,0 +1,463 @@
 +/****************************************************************************
 +*                                                                           *
 +*  File Name:           kwnmib.h                                      *
@@ -3265,6 +4289,14 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h net-snmp-5.4.4-mod/agent/mi
 +FindVarMethod var_SystemInfoTable;
 +FindVarMethod var_SystemInvTable;
 +FindVarMethod var_SystemTftpTable;
++FindVarMethod var_SystemNtpTable;
++FindVarMethod var_SystemGpsTable;
++FindVarMethod var_SystemDyingGaspTable;
++FindVarMethod var_SystemLedsTable;
++FindVarMethod var_SystemLoggingTable;
++FindVarMethod var_SystemHttpTable;
++FindVarMethod var_SystemTelnetSSHTable;
++FindVarMethod var_SystemSnmpTable;
 +FindVarMethod var_WirelessStatsTable;
 +FindVarMethod var_EthernetStatsTable;
 +FindVarMethod var_AssocTable;
@@ -3408,7 +4440,15 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h net-snmp-5.4.4-mod/agent/mi
 +    KWN_SYSTEM_INFO = 2,
 +    KWN_SYSTEM_INV = 3,
 +    KWN_TRAP_CTRL = 4,
-+    KWN_SYSTEM_TFTP = 5
++    KWN_SYSTEM_TFTP = 5,
++    KWN_SYSTEM_NTP = 6,
++    KWN_SYSTEM_GPS = 7,
++    KWN_SYSTEM_DYING_GASP = 8,
++    KWN_SYSTEM_LEDS = 9,
++    KWN_SYSTEM_LOG = 10,
++    KWN_SYSTEM_HTTP = 11,
++    KWN_SYSTEM_TELNETSSH = 12,
++    KWN_SYSTEM_SNMP = 13
 +};
 +
 +enum KWN_SYSTEM_MGMT {
@@ -3450,6 +4490,61 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h net-snmp-5.4.4-mod/agent/mi
 +    KWN_SYSTEM_TFTP_OPSTATUS = 4,
 +    KWN_SYSTEM_TFTP_OPTYPE = 5,
 +    KWN_SYSTEM_TFTP_KEEPSET = 6
++};
++
++enum KWN_SYSTEM_NTP {
++    KWN_SYSTEM_NTP_STATUS = 1,
++    KWN_SYSTEM_NTP_SERVERIP = 2,
++    KWN_SYSTEM_NTP_TIMEZONE = 3,
++    KWN_SYSTEM_NTP_LOCALTIME = 4
++};
++
++enum KWN_SYSTEM_GPS {
++    KWN_SYSTEM_GPSSTATUS = 1,
++    KWN_SYSTEM_GPSINTERVAL = 2
++};
++
++enum KWN_SYSTEM_DYING_GASP {
++    KWN_SYSTEM_DYINGGASPSTATUS = 1,
++    KWN_SYSTEM_DYINGGASPACK = 2
++};
++
++enum KWN_SYSTEM_LEDS {
++    KWN_SYSTEM_LEDSSTATUS = 1
++};
++
++enum KWN_SYSTEM_LOG {
++    KWN_SYSTEM_SYSLOGSERVERIP = 1,
++    KWN_SYSTEM_SYSLOGSERVERPORT = 2,
++    KWN_SYSTEM_TEMPLOGSTATUS = 3,
++    KWN_SYSTEM_TEMPLOGINTERVAL = 4
++};
++
++enum KWN_SYSTEM_HTTP {
++    KWN_SYSTEM_HTTP_ADMINPASS = 1,
++    KWN_SYSTEM_HTTP_USERPASS = 2,
++    KWN_SYSTEM_HTTP_SUPERUSERPASS = 3,
++    KWN_SYSTEM_HTTP_HTTPSTATUS = 4,
++    KWN_SYSTEM_HTTP_HTTPPORT = 5,
++    KWN_SYSTEM_HTTP_HTTPSSTATUS = 6,
++    KWN_SYSTEM_HTTP_HTTPSPORT = 7
++};
++
++enum KWN_SYSTEM_TELNETSSH {
++    KWN_SYSTEM_TELNETSSH_TELNETSTATUS = 1,
++    KWN_SYSTEM_TELNETSSH_TELNETPORT = 2,
++    KWN_SYSTEM_TELNETSSH_TELNETSESSIONS = 3,
++    KWN_SYSTEM_TELNETSSH_SSHSTATUS = 4,
++    KWN_SYSTEM_TELNETSSH_SSHPORT = 5,
++    KWN_SYSTEM_TELNETSSH_SSHSESSIONS = 6
++};
++
++enum KWN_SYSTEM_SNMP {
++    KWN_SYSTEM_SNMP_STATUS = 1,
++    KWN_SYSTEM_SNMP_VERSION = 2,
++    KWN_SYSTEM_SNMP_READWRITEPASS = 3,
++    KWN_SYSTEM_SNMP_TRAPHOSTIPADDRESS = 4,
++    KWN_SYSTEM_SNMP_TRAPHOSTPASS = 5
 +};
 +
 +enum KWN_MONITOR {
@@ -3638,8 +4733,8 @@ diff -urN net-snmp-5.4.4-org/include/net-snmp/net-snmp-config.h.in net-snmp-5.4.
  
 diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWEST-MIB.mib
 --- net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib	1970-01-01 05:30:00.000000000 +0530
-+++ net-snmp-5.4.4-mod/mibs/KEYWEST-MIB.mib	2018-11-20 10:31:52.605118033 +0530
-@@ -0,0 +1,2059 @@
++++ net-snmp-5.4.4-mod/mibs/KEYWEST-MIB.mib	2018-11-21 18:13:05.838220533 +0530
+@@ -0,0 +1,2409 @@
 +------------------------------------------------------------------------
 +------------------------------------------------------------------------
 +--
@@ -4575,15 +5670,15 @@ diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWES
 +
 +dhcpServer OBJECT-TYPE
 +        SYNTAX      INTEGER {
-+            disable (0),
-+            enable  (1)
++            disable (1),
++            enable  (0)
 +        }
 +        MAX-ACCESS  read-write
 +        STATUS      current
 +        DESCRIPTION "This parameter represents the DHCP Server
 +                     Status. It can be configured as 
-+                     '0' - Disable
-+                     '1' - Enable."
++                     '1' - Disable
++                     '0' - Enable."
 +        DEFVAL      { disable }
 +::= { dhcp 1 }
 +
@@ -4835,14 +5930,16 @@ diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWES
 +
 +tftpFiletype OBJECT-TYPE
 +        SYNTAX      INTEGER {
-+            configfile(1)
++            configfile(1),
++            firmwareimage(2)
 +        }
 +        MAX-ACCESS  read-write
 +        STATUS      current
 +        DESCRIPTION "This parameter is used to 
 +                     configure the tftp filetype.
 +                     It is configured as below
-+                     '1' - configfile."
++                     '1' - Config File
++                     '2' - Firmware Image."
 +::= { tftp 2 }
 +
 +tftpServerip OBJECT-TYPE
@@ -4905,6 +6002,354 @@ diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWES
 +                     '0' - DISABLE
 +                     '1' - ENABLE."
 +::= { tftp 6 }
++
++------------------------------------------------------------------------
++------------------------------------------------------------------------
++
++ntp OBJECT-IDENTITY
++     STATUS current
++     DESCRIPTION "NTP Parameters"
++::= { management 6 }
++
++ntpStatus OBJECT-TYPE
++        SYNTAX      INTEGER {
++            disable(0),
++            enable(1)
++        }
++        MAX-ACCESS  read-write
++        STATUS      current
++        DESCRIPTION "This parameter is used to enable 
++                     or disable the NTP Status."
++::= { ntp 1 }
++
++ntpServerIP OBJECT-TYPE
++        SYNTAX      IpAddress
++        MAX-ACCESS  read-write
++        STATUS      current
++        DESCRIPTION "This parameter is used to 
++                     configure the NTP ServerIP Address."
++::= { ntp 2 }
++
++ntpTimeZone OBJECT-TYPE
++        SYNTAX      DisplayString
++        MAX-ACCESS  read-write
++        STATUS      current
++        DESCRIPTION "This parameter is used to 
++                     configure the Timezone."
++::= { ntp 3 }
++
++ntpLocalTime OBJECT-TYPE
++        SYNTAX      DisplayString
++        MAX-ACCESS  read-only
++        STATUS      current
++        DESCRIPTION "This parameter is used to 
++                     display the local time."
++::= { ntp 4 }
++
++------------------------------------------------------------------------
++------------------------------------------------------------------------
++
++gps OBJECT-IDENTITY
++     STATUS current
++     DESCRIPTION "GPS Parameters"
++::= { management 7 }
++
++gpsStatus OBJECT-TYPE
++        SYNTAX      INTEGER {
++            disable(0),
++            enable(1)
++        }
++        MAX-ACCESS  read-write
++        STATUS      current
++        DESCRIPTION "This parameter is used to enable 
++                     or disable the GPS Status."
++::= { gps 1 }
++
++gpsInterval OBJECT-TYPE
++        SYNTAX      Integer32
++        MAX-ACCESS  read-write
++        STATUS      current
++        DESCRIPTION "This parameter is used to configure
++                     GPS Interval in Seconds."
++::= { gps 2 }
++
++------------------------------------------------------------------------
++------------------------------------------------------------------------
++
++dyingGasp OBJECT-IDENTITY
++     STATUS current
++     DESCRIPTION "DYING GASP Parameters"
++::= { management 8 }
++
++dyingGaspStatus OBJECT-TYPE
++        SYNTAX      INTEGER {
++            enable(1),
++            disable(2)
++        }
++        MAX-ACCESS  read-write
++        STATUS      current
++        DESCRIPTION "This parameter is used to enable 
++                     or disable the Dying GASP Status."
++::= { dyingGasp 1 }
++
++dyingGaspAck OBJECT-TYPE
++        SYNTAX      INTEGER {
++            disable(1),
++            enable(0)
++        }
++        MAX-ACCESS  read-write
++        STATUS      current
++        DESCRIPTION "This parameter is used to enable 
++                     or disable the Dying GASP ACK ."
++::= { dyingGasp 2 }
++
++------------------------------------------------------------------------
++------------------------------------------------------------------------
++
++leds OBJECT-IDENTITY
++     STATUS current
++     DESCRIPTION "LED Parameters"
++::= { management 9 }
++
++ledsStatus OBJECT-TYPE
++        SYNTAX      INTEGER {
++            disable(0),
++            enable(1)
++        }
++        MAX-ACCESS  read-write
++        STATUS      current
++        DESCRIPTION "This parameter is used to enable 
++                     or disable the LEDS."
++::= { leds 1 }
++
++------------------------------------------------------------------------
++------------------------------------------------------------------------
++
++log OBJECT-IDENTITY
++    STATUS current
++    DESCRIPTION "Log Parameters"
++::= { management 10 }
++
++syslogServerIP OBJECT-TYPE
++        SYNTAX      IpAddress
++        MAX-ACCESS  read-write
++        STATUS      current
++        DESCRIPTION "This parameter is used to configure
++                     the Syslog ServerIP Address."
++::= { log 1 }
++
++syslogServerPort OBJECT-TYPE
++        SYNTAX      Integer32
++        MAX-ACCESS  read-write
++        STATUS      current
++        DESCRIPTION "This parameter is used to configure
++                     the Syslog server Port number."
++::= { log 2 }
++
++tempLogStatus OBJECT-TYPE
++        SYNTAX      INTEGER {
++            disable(0),
++            enable(1)
++        }
++        MAX-ACCESS  read-write
++        STATUS      current
++        DESCRIPTION "This parameter is used to enable 
++                     or disable the temperature log."
++::= { log 3 }
++
++tempLogInterval OBJECT-TYPE
++        SYNTAX      Integer32
++        MAX-ACCESS  read-write
++        STATUS      current
++        DESCRIPTION "This parameter is used to configure
++                     Temperature Log Interval in Seconds."
++::= { log 4 }
++
++------------------------------------------------------------------------
++------------------------------------------------------------------------
++
++http OBJECT-IDENTITY
++     STATUS current
++     DESCRIPTION "HTTP/HTTPS Parameters"
++::= { management 11 }
++
++adminPassword OBJECT-TYPE
++        SYNTAX      DisplayString
++        MAX-ACCESS  read-write
++        STATUS      current
++        DESCRIPTION "This parameter is used to configure
++                     and retrieve the Http admin password."
++::= { http 1 }
++
++userPassword OBJECT-TYPE
++        SYNTAX      DisplayString
++        MAX-ACCESS  read-write
++        STATUS      current
++        DESCRIPTION "This parameter is used to configure
++                     and retrieve the Http user password."
++::= { http 2 }
++
++superUserPassword OBJECT-TYPE
++        SYNTAX      DisplayString
++        MAX-ACCESS  read-write
++        STATUS      current
++        DESCRIPTION "This parameter is used to configure and
++                     retrieve the Http super user password."
++::= { http 3 }
++
++httpStatus OBJECT-TYPE
++        SYNTAX      INTEGER {
++            disable(0),
++            enable(1)
++        }
++        MAX-ACCESS  read-write
++        STATUS      current
++        DESCRIPTION "This parameter is used to enable 
++                     or disable the HTTP."
++::= { http 4 }
++
++httpPort OBJECT-TYPE
++        SYNTAX      Integer32
++        MAX-ACCESS  read-write
++        STATUS      current
++        DESCRIPTION "This parameter is used to configure
++                     the HTTP Port number."
++::= { http 5 }
++
++httpsStatus OBJECT-TYPE
++        SYNTAX      INTEGER {
++            disable(0),
++            enable(1)
++        }
++        MAX-ACCESS  read-write
++        STATUS      current
++        DESCRIPTION "This parameter is used to enable 
++                     or disable the HTTPS."
++::= { http 6 }
++
++httpsPort OBJECT-TYPE
++        SYNTAX      Integer32
++        MAX-ACCESS  read-write
++        STATUS      current
++        DESCRIPTION "This parameter is used to configure
++                     the HTTPS Port number."
++::= { http 7 }
++
++------------------------------------------------------------------------
++------------------------------------------------------------------------
++
++telnetssh OBJECT-IDENTITY
++     STATUS current
++     DESCRIPTION "Telnet/SSH Parameters"
++::= { management 12 }
++
++telnetStatus OBJECT-TYPE
++        SYNTAX      INTEGER {
++            disable(0),
++            enable(1)
++        }
++        MAX-ACCESS  read-write
++        STATUS      current
++        DESCRIPTION "This parameter is used to enable 
++                     or disable the Telnet."
++::= { telnetssh 1 }
++
++telnetPort OBJECT-TYPE
++        SYNTAX      Integer32
++        MAX-ACCESS  read-write
++        STATUS      current
++        DESCRIPTION "This parameter is used to configure
++                     the Telnet Port number."
++::= { telnetssh 2 }
++
++telnetSessions OBJECT-TYPE
++        SYNTAX      Integer32
++        MAX-ACCESS  read-write
++        STATUS      current
++        DESCRIPTION "This parameter is used to configure
++                     the Telnet Sessions."
++::= { telnetssh 3 }
++
++sshStatus OBJECT-TYPE
++        SYNTAX      INTEGER {
++            disable(0),
++            enable(1)
++        }
++        MAX-ACCESS  read-write
++        STATUS      current
++        DESCRIPTION "This parameter is used to enable 
++                     or disable the SSH."
++::= { telnetssh 4 }
++
++sshPort OBJECT-TYPE
++        SYNTAX      Integer32
++        MAX-ACCESS  read-write
++        STATUS      current
++        DESCRIPTION "This parameter is used to configure
++                     the SSH Port number."
++::= { telnetssh 5 }
++
++sshSessions OBJECT-TYPE
++        SYNTAX      Integer32
++        MAX-ACCESS  read-write
++        STATUS      current
++        DESCRIPTION "This parameter is used to configure
++                     the SSH Sessions."
++::= { telnetssh 6 }
++
++------------------------------------------------------------------------
++------------------------------------------------------------------------
++
++snmp OBJECT-IDENTITY
++     STATUS current
++     DESCRIPTION "SNMP Parameters"
++::= { management 13 }
++
++snmpStatus OBJECT-TYPE
++        SYNTAX      DisplayString
++        MAX-ACCESS  read-write
++        STATUS      current
++        DESCRIPTION "This parameter is used to enable 
++                     or disable the SNMP. 
++                     It is configured as -
++                     any  - checked
++                     none - unchecked."
++::= { snmp 1 }
++
++snmpVersion OBJECT-TYPE
++        SYNTAX      DisplayString
++        MAX-ACCESS  read-write
++        STATUS      current
++        DESCRIPTION "This parameter is used to configure 
++                     the SNMP Version. 
++                     It is configured as -
++                     v1  - SNMPv1
++                     any - SNMPv1-v2c."
++::= { snmp 2 }
++
++readWritePassword OBJECT-TYPE
++        SYNTAX      DisplayString
++        MAX-ACCESS  read-write
++        STATUS      current
++        DESCRIPTION "This parameter is used to configure
++                     and retrieve the Read/Write password."
++::= { snmp 3 }
++
++snmpTrapHostIPAddress OBJECT-TYPE
++        SYNTAX      IpAddress
++        MAX-ACCESS  read-write
++        STATUS      current
++        DESCRIPTION "This parameter is used to configure
++                     the SNMP Trap Host IP Address."
++::= { snmp 4 }
++
++snmpTrapHostPassword OBJECT-TYPE
++        SYNTAX      DisplayString
++        MAX-ACCESS  read-write
++        STATUS      current
++        DESCRIPTION "This parameter is used to configure and
++                     retrieve the SNMP Trap Host password."
++::= { snmp 5 }
 +
 +------------------------------------------------------------------------
 +------------------------------------------------------------------------
