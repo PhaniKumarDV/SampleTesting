@@ -65,6 +65,7 @@ function save_value()
     XHR.get('<%=luci.dispatcher.build_url("admin")%>/cfg_set' + '/' + setdata, null,
 	    function(x, data) {
 		    if (data) { 
+                location.href='<%=luci.dispatcher.build_url("admin/system/services")%>';
 		    }
 	    }
     );
@@ -75,6 +76,27 @@ function updatehttp()
         document.getElementById("http1").value = 1;
     else
         document.getElementById("http1").value = 0;
+}
+function updatehttps()
+{
+    if( document.getElementById("https2").checked == "1" )
+        document.getElementById("https1").value = 1;
+    else
+        document.getElementById("https1").value = 0;
+}
+function updatehttpport()
+{
+    if( document.getElementById("http2").checked == "1" ) 
+        document.getElementById("httpport").style.display="block";
+    else
+        document.getElementById("httpport").style.display="none";
+}
+function updatehttpsport()
+{
+    if( document.getElementById("https2").checked == "1" )
+        document.getElementById("httpsport").style.display="block";
+    else
+        document.getElementById("httpsport").style.display="none";
 }
 
 </script>
@@ -118,12 +140,11 @@ function updatehttp()
               </script>
             </div>
           </div>
-          <div class="cbi-value">
+          <div class="cbi-value" style="display:none" id="httpport">
             <label class="cbi-value-title">HTTP Port</label>
             <div class="cbi-value-field">
               <script type="text/javascript">
                   var http_port = "<%=uciget('uci get uhttpd.main.listen_http')%>";
-                  http_port = "0.0.0.0:80";
                   http_port = http_port.split("0.0.0.0:");
                   http_port = http_port[1];
                   document.write("<input type='text' name='95' class='cbi-input-select' ");
@@ -135,14 +156,28 @@ function updatehttp()
           </div>
           <div class="cbi-value">
             <label class="cbi-value-title">Enable HTTPS</label>
-            <div style="display:none"><input type="text" id="gps1" name="96" value="<%=uciget('uci get uhttpd.main.listen_https')%>"></div>
+            <div style="display:none"><input type="text" id="https1" name="96" value="<%=uciget('uci get uhttpd.main.listen_https')%>"></div>
             <div class="cbi-value-field">
                  <script type="text/javascript">
-                 var gps = "<%=uciget('uci get system.gps.status')%>";
+                 var https = "<%=uciget('uci get uhttpd.main.listen_https')%>";
                  document.write("<input type='checkbox' ");
-                 if( gps == 1 )
+                 if( https != "" )
                      document.write(" checked");
-                 document.write(" id='gps2' class='cibi-input-select' onchange='updategps()' >");
+                 document.write(" id='https2' class='cibi-input-select' onchange='updatehttps()' >");
+              </script>
+            </div>
+          </div>
+          <div class="cbi-value" style="display:none" id="httpsport">
+            <label class="cbi-value-title">HTTPS Port</label>
+            <div class="cbi-value-field">
+              <script type="text/javascript">
+                  var https_port = "<%=uciget('uci get uhttpd.main.listen_https')%>";
+                  https_port = https_port.split("0.0.0.0:");
+                  https_port = https_port[1];
+                  document.write("<input type='text' name='97' class='cbi-input-select' ");
+                  document.write("value='");
+                  document.write(https_port);
+                  document.write("'>");
               </script>
             </div>
           </div>
@@ -154,6 +189,8 @@ function updatehttp()
 <input type="button" class="cbi-button" value="<%:Save%>" onclick="save_value()" />
 </div>
 <script type="text/javascript">
+updatehttpport();
+updatehttpsport();
 save_def_value();
 </script>
 </div>
