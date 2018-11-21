@@ -28,6 +28,7 @@ function index()
     entry({"admin", "clr_eventlog"}, call("action_clr_eventlog"), nil).leaf = true
     entry({"admin", "get_descr"}, call("action_get_descr"), nil).leaf = true
     entry({"admin", "no_of_links"}, call("action_links"), nil).leaf = true
+    entry({"admin", "stats"}, call("action_stats"), nil).leaf = true
 	entry({"admin", "apply"}, call("action_apply"), _("Apply"), 88)
 	entry({"admin", "reboot"}, call("action_reboot"), _("Reboot"), 89)
 	entry({"admin", "logout"}, call("action_logout"), _("Logout"), 90)
@@ -40,8 +41,46 @@ end
 
 function action_links()
 	local data = {}
+    local link1 = {}
+    local link2 = {}
 
-    data = luci.sys.exec("wlanconfig ath1 list sta | wc -l")
+    local res = luci.sys.exec("wlanconfig ath1 list sta | wc -l")
+    link1 = string.gsub(res, "\n", "")
+    res = luci.sys.exec("wlanconfig ath0 list sta | wc -l")
+    link2 = string.gsub(res, "\n", "")
+    data = link1.."="..link2
+	luci.http.prepare_content("application/json")
+	luci.http.write_json(data)
+end
+
+function action_stats()
+	local data = {}
+    local res = luci.util.exec("iwpriv ath1 g_kwn_ethtxpkt | sed 's/ath1      g_kwn_ethtxpkt://'")
+    local ethtxpkt = string.gsub(res, "\n", "")
+    res = luci.util.exec("iwpriv ath1 g_kwn_ethrxpkt | sed 's/ath1      g_kwn_ethrxpkt://'")
+    local ethrxpkt = string.gsub(res, "\n", "")
+    res = luci.util.exec("athstats -i wifi1 | grep tx: | sed 's/tx://'")
+    local da1txpkt = string.gsub(res, "\n", "")
+    res = luci.util.exec("athstats -i wifi1 | grep rx: | sed 's/rx://'")
+    local da1rxpkt = string.gsub(res, "\n", "")
+    res = luci.util.exec("athstats -i wifi1 | grep ast_tx_packets: | sed 's/ast_tx_packets://'")
+    local mg1txpkt = string.gsub(res, "\n", "")
+    res = luci.util.exec("athstats -i wifi1 | grep ast_rx_packets: | sed 's/ast_rx_packets://'")
+    local mg1rxpkt = string.gsub(res, "\n", "")
+    res = luci.util.exec("athstats -i wifi0 | grep tx: | sed 's/tx://'")
+    local da2txpkt = string.gsub(res, "\n", "")
+    res = luci.util.exec("athstats -i wifi0 | grep rx: | sed 's/rx://'")
+    local da2rxpkt = string.gsub(res, "\n", "")
+    res = luci.util.exec("athstats -i wifi0 | grep ast_tx_packets: | sed 's/ast_tx_packets://'")
+    local mg2txpkt = string.gsub(res, "\n", "")
+    res = luci.util.exec("athstats -i wifi0 | grep ast_rx_packets: | sed 's/ast_rx_packets://'")
+    local mg2rxpkt = string.gsub(res, "\n", "")
+    local wi1txpkt = da1txpkt + mg1txpkt
+    local wi1rxpkt = da1rxpkt + mg1rxpkt
+    local wi2txpkt = da2txpkt + mg2txpkt
+    local wi2rxpkt = da2rxpkt + mg2rxpkt
+
+    data = ethtxpkt.."="..ethrxpkt.."="..wi1txpkt.."="..wi1rxpkt.."="..wi2txpkt.."="..wi2rxpkt
 	luci.http.prepare_content("application/json")
 	luci.http.write_json(data)
 end

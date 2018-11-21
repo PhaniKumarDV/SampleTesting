@@ -121,20 +121,28 @@
                 local str = string.gsub(res, "\n", "")
                 return str
         end
-        local links = luci.sys.exec("wlanconfig ath1 list sta | wc -l")
-        links = string.gsub(links, "\n", "")
+    eth1_status = string.gsub(eth1_status, "\n", "")
+    eth1_speed = string.gsub(eth1_speed, "\n", "")
+    eth1_duplex = string.gsub(eth1_duplex, "\n", "")
 -%>
 
 <%+header%>
 
+<style type="text/css">
+.up_icon
+{
+    border: 1px solid #a5bc23;
+    background-color: #a5bc23;
+} 
+.down_icon
+{
+    border: 1px solid #C1C1BF;
+    background-color: #C1C1BF;
+}
+</style>
 <script type="text/javascript" src="<%=resource%>/cbi.js"></script>
 <script type="text/javascript">//<![CDATA[
-var no_of_links = "<%=links%>";
-if( no_of_links > 1 )
-    no_of_links = no_of_links - 1;
-else
-    no_of_links = 0;
-
+var eth1_status = "<%=eth1_status %>";
 var dyn_val = "<%=uciget("ifconfig br-lan | grep 'inet addr' | sed 's/          //'")%>";
 var val = dyn_val.split(" ");
 var ip = "0.0.0.0";
@@ -178,11 +186,24 @@ function get_links()
     XHR.get('<%=luci.dispatcher.build_url("admin", "no_of_links")%>/' + id, null,
 	function(x, data) {
 		if (data) { 
-            if( data > 1 )
-               data = data - 1;
-            else
-               data = 0;
-			document.getElementById("links_id").innerHTML=data;
+            var l = data.split("=");
+            var l1 = ( ( l[0] > 1 ) ? ( l[0] - 1 ) : 0 );
+            var l2 = ( ( l[1] > 1 ) ? ( l[1] - 1 ) : 0 );
+			document.getElementById("links1").innerHTML = l1;
+			document.getElementById("links2").innerHTML = l2;
+		}
+	}
+    );
+    XHR.get('<%=luci.dispatcher.build_url("admin", "stats")%>/' + id, null,
+	function(x, data) {
+		if (data) { 
+            var s = data.split("=");
+            document.getElementById("ethtx").innerHTML = s[0];
+            document.getElementById("ethrx").innerHTML = s[1];
+            document.getElementById("wi1tx").innerHTML = s[2];
+            document.getElementById("wi1rx").innerHTML = s[3];
+            document.getElementById("wi2tx").innerHTML = s[4];
+            document.getElementById("wi2rx").innerHTML = s[5];
 		}
 	}
     );
@@ -231,31 +252,16 @@ function get_log()
 	XHR.poll(5, '<%=REQUEST_URI%>', { status: 1 },
 		function(x, info)
 		{
-            get_log();
+            //get_log();
             get_links();
 			<% if has_wifi then %>
 			var assoclist = [ ];
 
-			var ws = document.getElementById('wifi_status_table');
-			if (ws)
 			{
-				var wsbody = ws.rows[0].parentNode;
-				while (ws.rows.length > 0)
-					wsbody.deleteRow(0);
-
 				for (var didx = 0; didx < info.wifinets.length; didx++)
 				{
 					var dev = info.wifinets[didx];
 
-					var tr = wsbody.insertRow(-1);
-					var td;
-
-					td = tr.insertCell(-1);
-					td.width     = "33%";
-					td.innerHTML = dev.name;
-					td.style.verticalAlign = "top";
-
-					td = tr.insertCell(-1);
 
 					var s = '';
 
@@ -294,7 +300,22 @@ function get_log()
 								net.channel, net.frequency,
 								(net.bitrate * 1000) || '?'
 						);
-
+                        if( didx == 1 ) {
+                            document.getElementById("mac1").innerHTML = "<%=uciget('uci get wireless.wifi1.macaddr')%>"; 
+                            document.getElementById("mode1").innerHTML = net.mode; 
+                            document.getElementById("opmode1").innerHTML = "<%=uciget('uci get wireless.wifi1.hwmode')%>";
+                            document.getElementById("ssid1").innerHTML = net.ssid;
+                            var freq = net.frequency * 1000;
+                            document.getElementById("chan1").innerHTML = net.channel + " ( " + freq + " MHz )"
+                        }
+                        else {
+                            document.getElementById("mac2").innerHTML = "<%=uciget('uci get wireless.wifi0.macaddr')%>"; 
+                            document.getElementById("mode2").innerHTML = net.mode; 
+                            document.getElementById("opmode2").innerHTML = "<%=uciget('uci get wireless.wifi0.hwmode')%>";
+                            document.getElementById("ssid2").innerHTML = net.ssid;
+                            var freq = net.frequency * 1000;
+                            document.getElementById("chan2").innerHTML = net.channel + " ( " + freq + " MHz )"
+                        }
 						if (is_assoc)
 						{
 							s += String.format(
@@ -338,7 +359,6 @@ function get_log()
 					if (!s)
 						s = '<em><%:No information available%></em>';
 
-					td.innerHTML = s;
 				}
 			}
 
@@ -400,72 +420,74 @@ function get_log()
 <div class="main-page"> 
 <div class="sidebar"> <%+sidebar%></div>                                                                                                                                   
 <div class="page-content index">
-<h2><a id="content" name="content"><%:Status%></a></h2>
-<fieldset class="cbi-section half one">
+<h2><a id="content" name="content"><%:Summary%></a></h2>
+<fieldset class="cbi-section half one" style="min-height:250px;">
 	<legend><%:System%></legend>
 
 	<table width="100%" cellspacing="10">
-		<tr><td width="33%"><%:Hostname%></td><td><%=luci.sys.hostname() or "?"%></td></tr>
+		<tr><td width="33%"><%:Host Name%></td><td><%=luci.sys.hostname() or "?"%></td></tr>
 		<tr><td width="33%"><%:Product Description%></td><td id="desc"></td></tr>
 		<tr><td width="33%"><%:Serial Number%></td><td><%=serial_no %></td></tr>
 		<tr><td width="33%"><%:Local Time%></td><td id="localtime">-</td></tr>
 		<tr><td width="33%"><%:Uptime%></td><td id="uptime">-</td></tr>
 		<tr><td width="33%">Temperature</td><td><%=currTemperature%> &#8451;</td></tr>
-		<tr><td width="33%"><%:Ethernet MAC%></td><td><%=eth_mac%></td></tr>
-        <% if eth_has_link then %>
-		    <tr><td width="33%"><%:Ethernet status%></td><td><img src="<%=resource%>/icons/ethernet.png" /> Link is <%=eth1_status %>  <%=eth1_speed %> <%=eth1_duplex %></td></tr>
-        <% end %>
-        <% if eth_has_no_link then %>
-                    <tr><td width="33%"><%:Ethernet status%></td><td><img src="<%=resource%>/icons/ethernet_disabled.png" /> Link is <%=eth1_status %> </td></tr>
-        <% end %>
-		<tr><td width="33%"><%:IP Address%></td><td><script type="text/javascript">document.write(ip)</script></td></tr>
-		<tr><td width="33%"><%:Customer Name%></td><td><%=uciget('uci get wireless.wifi1.customername')%></td></tr>
-        <script type="text/javascript">
-          var mode = "<%=uciget('uci get wireless.@wifi-iface[1].mode')%>";
-          if( mode == "sta" )
-		     document.write("<tr><td width='33%'><%:Link Id%></td><td><%=uciget('uci get wireless.wifi1.linkid')%></td></tr>");
-        </script>
 		<tr><td width="33%"><%:GPS Coordinates%></td><td><%=uciget('uci get system.gps.latitude')%>' <%=uciget('uci get system.gps.longitude')%>''</td></tr>
-		<tr><td width="33%"><%:Remote Partners%></td><td id="links_id"><script type="text/javascript">document.write(no_of_links)</script></td></tr>
 	</table>
 </fieldset>
 <script type="text/javascript">
 get_desc();
 </script>
-<% if has_wifi then %>
-<fieldset class="cbi-section half">
-	<legend><%:Wireless%></legend>
+<fieldset class="cbi-section half one" style="min-height:250px;">
+	<legend><%:Network%></legend>
 
-	<table id="wifi_status_table" width="100%" cellspacing="10">
-		<tr><td><em><%:Collecting data...%></em></td></tr>
+	<table width="100%" cellspacing="10">
+		<tr><td width="33%"><%:Ethernet MAC%></td><td><%=eth_mac%></td></tr>
+		<tr><td width="33%"><%:Ethernet Status%></td><td>
+        <script type="text/javascript">
+        if( eth1_status == "up" ) {
+            var str = "Link: Up <%=eth1_speed %> <%=eth1_duplex %>";
+            document.write(str);
+        }
+        else
+            document.write(" Link: Down ");
+        </script>
+        </td></tr>
+		<tr><td width="33%"><%:IP Address%></td><td><script type="text/javascript">document.write(ip)</script></td></tr>
+		<tr><td width="33%"><%:Customer Name%></td><td><%=uciget('uci get wireless.wifi1.customername')%></td></tr>
+		<tr><td width="33%"><%:Link Id%></td><td>
+        <script type="text/javascript">
+          var mode = "<%=uciget('uci get wireless.@wifi-iface[1].mode')%>";
+          var link_id = "-";
+          if( mode == "sta" )
+              link_id = "<%=uciget('uci get wireless.wifi1.linkid')%>";
+          document.write(link_id);
+        </script>
+        </td></tr>
 	</table>
-
 </fieldset>
 <div>&nbsp;</div>
 
-
-
-<div class="cbi-page-actions left" style="margin:-19px 0px 0px -148px;">
-<span style="color:#a5bc23;font-size:17px; font-weight:400;font-family:SegoeUI-Semibold;margin-right:690px;">EVENT LOG</span>
-<input type="button" id="s3" class="cbi-button" value="<%:Clear%>" onclick="clear_log()" />
-</div>
-
-<div id="content_wifi1stats">
-<textarea readonly="readonly" wrap="off" style="width:950px; height:145px;" rows="<%=eventlog:cmatch("\n")+2%>" id="result"><%=eventlog:pcdata()%></textarea>
-</div>
-<% end %>
-
-<%-
-	local incdir = util.libpath() .. "/view/admin_status/index/"
-	if fs.access(incdir) then
-		local inc
-		for inc in fs.dir(incdir) do
-			if inc:match("%.htm$") then
-				include("admin_status/index/" .. inc:gsub("%.htm$", ""))
-			end
-		end
-	end
--%>
+<fieldset class="cbi-section half one" style="min-height:250px;">
+	<legend><%:Wireless%></legend>
+	<table width="100%" cellspacing="10">
+       <tr><td></td><td style="color:#a5bc23"><b>5GHz Radio<b></td><td style="color:#a5bc23"><b>2.4GHz Radio<b></td></tr>
+       <tr><td style="padding-top:10px;">MAC</td><td id="mac1" style="padding-top:10px;">-</td><td id="mac2" style="padding-top:10px;">-</td></tr>
+       <tr><td>Radio Mode</td><td id="mode1">-</td><td id="mode2">-</td></tr>
+       <tr><td>Operational Mode</td><td id="opmode1">-</td><td id="opmode2">-</td></tr>
+       <tr><td>SSID</td><td id="ssid1">-</td><td id="ssid2">-</td></tr>
+       <tr><td>Channel</td><td id="chan1">-</td><td id="chan2">-</td></tr>
+       <tr><td>Remote Partners</td><td id="links1">-</td><td id="links2">-</td></tr>
+    </table>
+</fieldset>
+<fieldset class="cbi-section half one" style="min-height:250px;">
+	<legend><%:Statistics%></legend>
+	<table width="100%" cellspacing="10">
+       <tr><td></td><td style="color:#a5bc23"><b>Tx<b></td><td style="color:#a5bc23"><b>Rx<b></td><td>&nbsp;</td></tr>
+       <tr><td style="padding-top:10px;">Ethernet</td><td id="ethtx" style="padding-top:10px;">-</td><td id="ethrx" style="padding-top:10px;">-</td><td>&nbsp;</td></tr>
+       <tr><td>5GHz Radio</td><td id="wi1tx">-</td><td id="wi1rx">-</td><td>&nbsp;</td></tr>
+       <tr><td>2.4GHz Radio</td><td id="wi2tx">-</td><td id="wi2rx">-</td><td>&nbsp;</td></tr>
+    </table>
+</fieldset>
 </div>
 </div>
 <%+footer%>
