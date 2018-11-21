@@ -2493,8 +2493,8 @@ diff -urN qca-wifi-org/os/linux/tools/athstats.c qca-wifi-mod/os/linux/tools/ath
      fprintf(fd,"ast_tx_xretries     :\t%u\n",tx->tx_xretry);
 diff -urN qca-wifi-org/qca_ol/osif_ol.c qca-wifi-mod/qca_ol/osif_ol.c
 --- qca-wifi-org/qca_ol/osif_ol.c	2018-06-08 11:00:50.000000000 +0530
-+++ qca-wifi-mod/qca_ol/osif_ol.c	2018-11-09 17:57:14.219337311 +0530
-@@ -106,6 +106,15 @@
++++ qca-wifi-mod/qca_ol/osif_ol.c	2018-11-21 18:38:00.264974853 +0530
+@@ -106,6 +106,16 @@
  extern bool osif_pltfrm_deliver_data(os_if_t osif, wbuf_t wbuf);
  #endif
  
@@ -2504,13 +2504,14 @@ diff -urN qca-wifi-org/qca_ol/osif_ol.c qca-wifi-mod/qca_ol/osif_ol.c
 +struct kwn_frag_params {
 +    uint16_t kwn_frag_flags;
 +    uint16_t kwn_tot_len;
++    uint16_t kwn_pkt_pad;
 +};
 +#define KWN_LOG_PKT 0
 +
  #if UMAC_VOW_DEBUG
  static inline void
  osif_ol_hadrstart_vap_vow_debug(osif_dev  *osdev, struct sk_buff *skb){
-@@ -460,7 +469,15 @@
+@@ -460,7 +470,15 @@
  }
  #endif /*end of ATH_DATA_RX_INFO_EN*/
  
@@ -2526,7 +2527,7 @@ diff -urN qca-wifi-org/qca_ol/osif_ol.c qca-wifi-mod/qca_ol/osif_ol.c
  
  #if QCA_NSS_PLATFORM
  void
-@@ -469,10 +486,11 @@
+@@ -469,10 +487,11 @@
      struct net_device *dev = OSIF_TO_NETDEV(osif);
      osif_dev  *osdev = (osif_dev *)osif;
      int nwifi = ((osif_dev *)osif)->nss_nwifi;
@@ -2540,7 +2541,7 @@ diff -urN qca-wifi-org/qca_ol/osif_ol.c qca-wifi-mod/qca_ol/osif_ol.c
  
  #if QCA_OL_VLAN_WAR
      struct net_device *comdev;
-@@ -482,6 +500,8 @@
+@@ -482,6 +501,8 @@
      scn = ath_netdev_priv(comdev);
  #endif /* QCA_OL_VLAN_WAR */
  
@@ -2549,7 +2550,7 @@ diff -urN qca-wifi-org/qca_ol/osif_ol.c qca-wifi-mod/qca_ol/osif_ol.c
      while (skb_list) {
          struct sk_buff *skb;
          skb = skb_list;
-@@ -569,7 +589,128 @@
+@@ -569,7 +590,129 @@
  	}
  #endif  /* HOST_SW_LRO_ENABLE */
  
@@ -2605,81 +2606,82 @@ diff -urN qca-wifi-org/qca_ol/osif_ol.c qca-wifi-mod/qca_ol/osif_ol.c
 +        continue;
 +    }
 +
-+    /* Re-assembly */
-+    if ( skb->len > 20 &&
-+            (memcmp( &skb->data[sizeof(struct ether_header)], kwn_frag_dsap, sizeof(kwn_frag_dsap)) == 0 )) {
-+        struct kwn_frag_params *kparams;
-+        kparams = (struct kwn_frag_params *)&skb->data[sizeof(struct ether_header) + sizeof(kwn_frag_dsap)];
-+        if ( ntohs(kparams->kwn_frag_flags) == 0 ) {
-+            if ( last_skb != NULL ) {
-+                struct sk_buff *nskb;
-+                struct ether_header *neth;
-+                struct ether_header *oeth;
-+                int offset = 0;
-+                int ooffset = 0;
-+                int nskb_reserve = 64;
-+                int elen = sizeof(struct ether_header);
-+                int flen = sizeof(struct kwn_frag_params) + sizeof(kwn_frag_dsap);
-+                int nskb_max_len = last_skb->len + skb->len - elen - (2 * flen);
++    /* KWN: Extra Padding */
++    if ( vap->kwn_assem_frag == 2 ) {
++        if ( skb->len > 20 &&
++                (memcmp( &skb->data[sizeof(struct ether_header)], kwn_frag_dsap, sizeof(kwn_frag_dsap)) == 0 )) {
++            struct kwn_frag_params *kparams;
++            int elen = sizeof(struct ether_header);
++            int flen = sizeof(struct kwn_frag_params) + sizeof(kwn_frag_dsap);
++            int pull_len = 0;
 +
-+                /* Create a packet */
-+                nskb = dev_alloc_skb ( nskb_max_len + nskb_reserve );
-+                if ( nskb == NULL ) {
-+                    break;
-+                }
++            kparams = (struct kwn_frag_params *)&skb->data[sizeof(struct ether_header) + sizeof(kwn_frag_dsap)];
++            pull_len += (elen + flen + ntohs(kparams->kwn_pkt_pad));
++            skb_pull(skb, pull_len); 
++        }
++    } else if ( vap->kwn_assem_frag == 1 ) {
++        /* Re-assembly */
++        if ( skb->len > 20 &&
++                (memcmp( &skb->data[sizeof(struct ether_header)], kwn_frag_dsap, sizeof(kwn_frag_dsap)) == 0 )) {
++            struct kwn_frag_params *kparams;
++            kparams = (struct kwn_frag_params *)&skb->data[sizeof(struct ether_header) + sizeof(kwn_frag_dsap)];
++            if ( ntohs(kparams->kwn_frag_flags) == 0 ) {
++                if ( last_skb != NULL ) {
++                    struct sk_buff *nskb;
++                    struct ether_header *neth;
++                    struct ether_header *oeth;
++                    int offset = 0;
++                    int ooffset = 0;
++                    int nskb_reserve = 64;
++                    int elen = sizeof(struct ether_header);
++                    int flen = sizeof(struct kwn_frag_params) + sizeof(kwn_frag_dsap);
++                    int nskb_max_len = last_skb->len + skb->len - elen - (2 * flen);
 +
-+                /* Fill the skb content */
-+                offset = 0;
-+                skb_reserve( nskb, nskb_reserve );
-+                skb_put( nskb, nskb_max_len );
-+
-+                /* Reset to ZERO */
-+                memset( &nskb->data[ offset ], 0, nskb_max_len );
-+                nskb->dev = skb->dev;
-+
-+                neth = ( struct ether_header * ) &nskb->data[ offset ];
-+                oeth = ( struct ether_header * )  &skb->data[ offset ];
-+                IEEE80211_ADDR_COPY( neth->ether_dhost, oeth->ether_dhost );
-+                IEEE80211_ADDR_COPY( neth->ether_shost, oeth->ether_shost );
-+                neth->ether_type = oeth->ether_type;
-+                offset += elen;
-+                ooffset += elen;
-+
-+                /* Payload : New Offset will be ahead by 6 bytes compared with old Offset */
-+                memcpy(&nskb->data[ offset  ], &last_skb->data[ offset + flen ], (last_skb->len - elen - flen));
-+                offset += (last_skb->len - elen - flen);
-+
-+                memcpy(&nskb->data[ offset  ], &skb->data[ ooffset + flen ], (skb->len - elen - flen));
-+#if KWN_LOG_PKT
-+                {
-+                    int i = 0;
-+                    /* Log new skb */
-+                    for ( i = 0; i < nskb->len; i++ ) {
-+                        if ( i % 20 == 0 ) 
-+                            printk("\n");
-+                        printk(" %x", nskb->data[i]);
++                    /* Create a packet */
++                    nskb = dev_alloc_skb ( nskb_max_len + nskb_reserve );
++                    if ( nskb == NULL ) {
++                        break;
 +                    }
-+                    printk("\n");
-+                    printk(": Len: %d ( %d %d )", nskb->len, last_skb->len, skb->len);
-+                    printk("\n");
++
++                    /* Fill the skb content */
++                    offset = 0;
++                    skb_reserve( nskb, nskb_reserve );
++                    skb_put( nskb, nskb_max_len );
++
++                    /* Reset to ZERO */
++                    memset( &nskb->data[ offset ], 0, nskb_max_len );
++                    nskb->dev = skb->dev;
++
++                    neth = ( struct ether_header * ) &nskb->data[ offset ];
++                    oeth = ( struct ether_header * )  &skb->data[ offset ];
++                    IEEE80211_ADDR_COPY( neth->ether_dhost, oeth->ether_dhost );
++                    IEEE80211_ADDR_COPY( neth->ether_shost, oeth->ether_shost );
++                    neth->ether_type = oeth->ether_type;
++                    offset += elen;
++                    ooffset += elen;
++
++                    /* Payload : New Offset will be ahead by 6 bytes compared with old Offset */
++                    memcpy(&nskb->data[ offset  ], &last_skb->data[ offset + flen ], (last_skb->len - elen - flen));
++                    offset += (last_skb->len - elen - flen);
++
++                    memcpy(&nskb->data[ offset  ], &skb->data[ ooffset + flen ], (skb->len - elen - flen));
++                    osif_send_to_nss(osif, nskb, nwifi);
++                    dev_kfree_skb_any( last_skb );
++                    last_skb = NULL;
++                    dev_kfree_skb_any( skb );
++                    continue;
 +                }
-+#endif
-+                osif_send_to_nss(osif, nskb, nwifi);
-+                dev_kfree_skb_any( last_skb );
-+                last_skb = NULL;
-+                dev_kfree_skb_any( skb );
++            } else {
++                last_skb = skb;
 +                continue;
 +            }
-+        } else {
-+            last_skb = skb;
-+            continue;
 +        }
 +    }
 +    osif_send_to_nss(osif, skb, nwifi);
      }
  
  #if HOST_SW_LRO_ENABLE
-@@ -834,10 +975,25 @@
+@@ -834,10 +977,25 @@
      osdev = ath_netdev_priv(dev);
      vap = osdev->os_if;
      iv_stats = wlan_get_stats(vap);
@@ -2705,7 +2707,7 @@ diff -urN qca-wifi-org/qca_ol/osif_ol.c qca-wifi-mod/qca_ol/osif_ol.c
      qdf_nbuf_count_inc(skb);
      if (qdf_unlikely((dev->flags & (IFF_RUNNING|IFF_UP)) != (IFF_RUNNING|IFF_UP))) {
  	    goto bad1;
-@@ -968,9 +1124,136 @@
+@@ -968,9 +1126,156 @@
      }
  #endif
  
@@ -2719,8 +2721,7 @@ diff -urN qca-wifi-org/qca_ol/osif_ol.c qca-wifi-mod/qca_ol/osif_ol.c
 +		    }
 +	    }
 +    }
- 
--    osdev->iv_vap_send(osdev->iv_txrx_handle, skb);
++
 +    /* KWN: AMSDU at Host */
 +    if ( vap->kwn_assem_frag == 1 ) {
 +        if ( skb->len < vap->kwn_max_pkt_size ) {
@@ -2740,19 +2741,7 @@ diff -urN qca-wifi-org/qca_ol/osif_ol.c qca-wifi-mod/qca_ol/osif_ol.c
 +            int ooffset = 0;
 +            int flen = sizeof(kwn_frag_dsap) + sizeof(struct kwn_frag_params);
 +            int elen = sizeof(struct ether_header);
-+#if KWN_LOG_PKT
-+            {
-+                int i = 0;
-+                /* Log old packet */
-+                for ( i = 0; i < skb->len; i++ ) {
-+                    if ( i % 20 == 0 ) {
-+                        printk("\n");
-+                    }
-+                    printk(" %x",skb->data[i]);
-+                }
-+                printk(" skb->len: %d\n", skb->len);
-+            }
-+#endif
++
 +            oskb_max_len = skb->len;
 +            for ( ; nskb_max_len > 0 ; ) {
 +
@@ -2762,7 +2751,7 @@ diff -urN qca-wifi-org/qca_ol/osif_ol.c qca-wifi-mod/qca_ol/osif_ol.c
 +                if ( nskb == NULL ) {
 +                    break;
 +                }
- 
++
 +                /* Fill the skb content */
 +                offset = 0;
 +                skb_reserve( nskb, eth_reserve );
@@ -2782,7 +2771,8 @@ diff -urN qca-wifi-org/qca_ol/osif_ol.c qca-wifi-mod/qca_ol/osif_ol.c
 +                if ( oskb_max_len > vap->kwn_max_pkt_size ) {
 +                    ooffset +=  elen;
 +                }
-+
+ 
+-    osdev->iv_vap_send(osdev->iv_txrx_handle, skb);
 +                /* DSAP + Flags */
 +                memcpy(&nskb->data[ offset ], kwn_frag_dsap, sizeof(kwn_frag_dsap));
 +                kparams = (struct kwn_frag_params *)&nskb->data[ offset + sizeof(kwn_frag_dsap) ];
@@ -2793,7 +2783,7 @@ diff -urN qca-wifi-org/qca_ol/osif_ol.c qca-wifi-mod/qca_ol/osif_ol.c
 +                    kparams->kwn_frag_flags = htons(0);
 +                    kparams->kwn_tot_len = htons(0);
 +                }
-+
+ 
 +                /* Payload : New Offset will be ahead by 6 bytes compared with old Offset */
 +                memcpy(&nskb->data[ offset + flen ], &skb->data[ ooffset ], nskb_max_len);
 +
@@ -2807,36 +2797,68 @@ diff -urN qca-wifi-org/qca_ol/osif_ol.c qca-wifi-mod/qca_ol/osif_ol.c
 +
 +                /* Pull the first 24 bytes */
 +                skb_pull( nskb, 24 );
-+#if KWN_LOG_PKT
-+                {
-+                    int i = 0;
-+                    /* Log new skb */
-+                    for ( i = 0; i < nskb->len; i++ ) {
-+                        if ( i % 20 == 0 ) 
-+                            printk("\n");
-+                        printk(" %x", nskb->data[i]);
-+                    }
-+                    printk("\n: NMax: %d OMax: %d Len: %d", nskb_max_len, oskb_max_len, nskb->len);
-+                }
-+#endif
 +            }
 +            /* Drop the original packet */
 +            if (skb != NULL)
 +                qdf_nbuf_free(skb);
 +        }     
 +    } else if ( vap->kwn_assem_frag == 2 ) {
-+        if ( skb->len < 1400 ) {
-+            /* Tx packet immediately */
-+            osdev->iv_vap_send(osdev->iv_txrx_handle, skb);
-+            goto out;
-+        } else {
-+
-+            /* KWN: Assemble into Jumbo Frame */
-+            if ( last_tx_skb == NULL ) {
-+                last_tx_skb = skb;
-+                goto out;
-+            }
++        /* */
++        struct sk_buff *nskb;
++        struct ether_header *neth;
++        struct ether_header *oeth;
++        struct kwn_frag_params *kparams;
++        int flen = sizeof(kwn_frag_dsap) + sizeof(struct kwn_frag_params);
++        int elen = sizeof(struct ether_header);
++        int pad = vap->kwn_max_pkt_size - skb->len;
++        int offset = 0;
++        int eth_reserve = 64;
++        int pkt_size = 0;
++        
++        if ( pad < 0 ) {
++            pad = 0;
 +        }
++        
++        /* Create a packet */
++        pkt_size = elen + flen + skb->len + pad;
++        nskb = dev_alloc_skb ( pkt_size + eth_reserve );
++        if ( nskb == NULL ) {
++            goto bad;
++        }
++
++        /* Fill the skb content */
++        offset = 0;
++        skb_reserve( nskb, eth_reserve );
++        skb_put( nskb, pkt_size );
++        /* Reset to ZERO */
++        memset( &nskb->data[ offset ], 0, pkt_size );
++        nskb->dev = skb->dev;
++
++        /* Ethernet Header */
++        neth = ( struct ether_header * ) &nskb->data[ offset ];
++        oeth = ( struct ether_header * )  &skb->data[ offset ];
++        IEEE80211_ADDR_COPY( neth->ether_dhost, oeth->ether_dhost );
++        IEEE80211_ADDR_COPY( neth->ether_shost, oeth->ether_shost );
++        neth->ether_type = oeth->ether_type;
++        offset += elen;
++
++        /* DSAP + Flags */
++        memcpy(&nskb->data[ offset ], kwn_frag_dsap, sizeof(kwn_frag_dsap));
++        kparams = (struct kwn_frag_params *)&nskb->data[ offset + sizeof(kwn_frag_dsap) ];
++        kparams->kwn_frag_flags = htons(0);
++        kparams->kwn_tot_len = htons(skb->len);
++        kparams->kwn_pkt_pad = htons(pad);
++        
++        offset += flen + pad;
++
++        /* Copy the Original packet into New Packet */
++        memcpy(&nskb->data[ offset ], &skb->data[ 0 ], skb->len);
++
++        /* TX Pkt */
++        osdev->iv_vap_send(osdev->iv_txrx_handle, nskb);
++        /* Drop the original packet */
++        if (skb != NULL)
++            qdf_nbuf_free(skb);
 +    } else {
 +        osdev->iv_vap_send(osdev->iv_txrx_handle, skb);
 +    }
