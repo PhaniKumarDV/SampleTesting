@@ -625,6 +625,9 @@ void cfg_set( char *type, char *value )
         case UCI_ID_TFTP_KEEPSET:
             sprintf(cmd,"uci set tftp.tftp.keepset='%s'",value);
             break;
+        case UCI_ID_RADIO1_DDRS_INCR_THRLD:
+            sprintf(cmd,"uci set wireless.wifi1.ddrsincthrld='%s'",value);
+            break;
         default:
             break;
     }

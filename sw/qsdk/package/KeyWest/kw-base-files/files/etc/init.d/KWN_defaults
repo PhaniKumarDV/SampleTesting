@@ -23,6 +23,7 @@ start_service() {
     ddrsmaxrate1=$(uci get wireless.wifi1.ddrsmaxrate)
     ddrsinctimer1=$(uci get wireless.wifi1.ddrsinctimer)
     ddrsdectimer1=$(uci get wireless.wifi1.ddrsdectimer)
+    ddrsincthrld1=$(uci get wireless.wifi1.ddrsincthrld)
     atpcstatus1=$(uci get wireless.wifi1.atpcstatus)
     atpcpower1=$(uci get wireless.wifi1.atpcpower)
     gain1=$(uci get wireless.wifi1.antennagain)
@@ -95,7 +96,7 @@ start_service() {
     fi
     if [ "$stream1" == "" ]
     then
-        uci set wireless.wifi1.spatialstream='3'
+        uci set wireless.wifi1.spatialstream='1'
     fi
     if [ "$ddrs1" == "" ]
     then
@@ -111,7 +112,7 @@ start_service() {
     fi
     if [ "$ddrsmaxrate1" == "" ]
     then
-        uci set wireless.wifi1.ddrsmaxrate='19'
+        uci set wireless.wifi1.ddrsmaxrate='9'
     fi
     if [ "$ddrsinctimer1" == "" ]
     then
@@ -120,6 +121,17 @@ start_service() {
     if [ "$ddrsdectimer1" == "" ]
     then
         uci set wireless.wifi1.ddrsdectimer='1'
+    fi
+    if [ "$ddrsincthrld1" == "" ]
+    then
+        uci set wireless.wifi1.ddrsincthrld='3'
+    fi
+# Auto Stream is not supported in current release...for upgrade support restting to single
+    if [ $stream1 -eq "3" ]; then
+        uci set wireless.wifi1.spatialstream='1'
+        uci set wireless.wifi1.ddrsminrate='0'
+        uci set wireless.wifi1.ddrsmaxrate='9'
+        uci set wireless.wifi1.ddrsrate='3'
     fi
     if [ "$atpcstatus1" == "" ]
     then

@@ -129,6 +129,7 @@ function updateparam()
         document.getElementById("max_mcs_idx").style.display = "block";
         document.getElementById("inc_timer").style.display = "block";
         document.getElementById("dec_timer").style.display = "block";
+        document.getElementById("inc_thrld").style.display = "block";
     }
     else {
         document.getElementById("mcs_idx").style.display = "block";
@@ -136,6 +137,7 @@ function updateparam()
         document.getElementById("max_mcs_idx").style.display = "none";
         document.getElementById("inc_timer").style.display = "none";
         document.getElementById("dec_timer").style.display = "none";
+        document.getElementById("inc_thrld").style.display = "none";
     }
     if( stream == 3 ) {
         document.getElementById("mcs_idx").style.display = "none";
@@ -233,13 +235,13 @@ function getoptions( list, value )
                          document.write(" selected");
                       }
                       document.write(">Dual</option>");
-                      if( ddrs == 1 ) {
+                      /*if( ddrs == 1 ) {
                          document.write("<option value='3' ");
                          if( stream == 3 ) {
                             document.write(" selected");
                          }
                          document.write(">Auto</option>");
-                      }
+                      }*/
                   }
                 </script>
                </select>
@@ -270,6 +272,12 @@ function getoptions( list, value )
             <label class="cbi-value-title">DDRS Rate Decr. Timer</label>
             <div class="cbi-value-field">
               <input type="text" name="111" class="cbi-input-select" value="<%=uciget('uci get wireless.wifi1.ddrsdectimer')%>" >&nbsp; (1-10) sec
+           </div>
+         </div>
+          <div class="cbi-value" id="inc_thrld">
+            <label class="cbi-value-title">DDRS Rate Incr. Threshold</label>
+            <div class="cbi-value-field">
+              <input type="text" name="122" class="cbi-input-select" value="<%=uciget('uci get wireless.wifi1.ddrsincthrld')%>" >&nbsp; (1-10) dB
            </div>
          </div>
           <div class="cbi-value">

@@ -148,7 +148,9 @@ enum uci_cfg_id {
     UCI_ID_TFTP_FILETYPE = 118,
     UCI_ID_TFTP_SERVERIP = 119,
     UCI_ID_TFTP_OPTYPE = 120,
-    UCI_ID_TFTP_KEEPSET = 121
+    UCI_ID_TFTP_KEEPSET = 121,
+    /* Wireless */
+    UCI_ID_RADIO1_DDRS_INCR_THRLD =122
 };
 
 typedef struct

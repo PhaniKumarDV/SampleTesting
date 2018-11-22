@@ -1754,73 +1754,7 @@ enable_qcawifi() {
                         iwpriv "$ifname" athnewind 1
                 fi
 
-		local net_cfg bridge
-		net_cfg="$(find_net_config "$vif")"
-		[ -z "$net_cfg" -o "$isolate" = 1 -a "$mode" = "wrap" ] || {
-                        [ -f /sys/class/net/${ifname}/parent ] && { \
-				bridge="$(bridge_interface "$net_cfg")"
-				config_set "$vif" bridge "$bridge"
-                        }
-		}
-
-		case "$mode" in
-			ap|wrap|ap_monitor|ap_smart_monitor|mesh|ap_lp_iot)
-
-
-				iwpriv "$ifname" ap_bridge "$((isolate^1))"
-
-				config_get_bool l2tif "$vif" l2tif
-				[ -n "$l2tif" ] && iwpriv "$ifname" l2tif "$l2tif"
-
-				if [ -n "$start_wapid" ]; then
-					wapid_setup_vif "$vif" || {
-						echo "enable_qcawifi($device): Failed to set up wapid for interface $ifname" >&2
-						ifconfig "$ifname" down
-						wlanconfig "$ifname" destroy
-						continue
-					}
-				fi
-
-				if [ -n "$start_hostapd" ] && eval "type hostapd_setup_vif" 2>/dev/null >/dev/null; then
-					hostapd_setup_vif "$vif" atheros no_nconfig || {
-						echo "enable_qcawifi($device): Failed to set up hostapd for interface $ifname" >&2
-						# make sure this wifi interface won't accidentally stay open without encryption
-						ifconfig "$ifname" down
-						wlanconfig "$ifname" destroy
-						continue
-					}
-				fi
-			;;
-			wds|sta)
-				if eval "type wpa_supplicant_setup_vif" 2>/dev/null >/dev/null; then
-					wpa_supplicant_setup_vif "$vif" athr || {
-						echo "enable_qcawifi($device): Failed to set up wpa_supplicant for interface $ifname" >&2
-						ifconfig "$ifname" down
-						wlanconfig "$ifname" destroy
-						continue
-					}
-				fi
-			;;
-			adhoc)
-				if eval "type wpa_supplicant_setup_vif" 2>/dev/null >/dev/null; then
-					wpa_supplicant_setup_vif "$vif" athr || {
-						echo "enable_qcawifi($device): Failed to set up wpa"
-						ifconfig "$ifname" down
-						wlanconfig "$ifname" destroy
-						continue
-					}
-				fi
-		esac
-
-		[ -z "$bridge" -o "$isolate" = 1 -a "$mode" = "wrap" ] || {
-                        [ -f /sys/class/net/${ifname}/parent ] && { \
-				start_net "$ifname" "$net_cfg"
-                        }
-		}
-
-		ifconfig "$ifname" up
-		set_wifi_up "$vif" "$ifname"
-
+########################## KWN Changes #############################
 		config_get rate "$device" rate
 		acrate=$rate
         rate=0
@@ -1899,6 +1833,7 @@ enable_qcawifi() {
 		config_get ddrsmaxrate "$device" ddrsmaxrate
 		config_get ddrsinctimer "$device" ddrsinctimer
 		config_get ddrsdectimer "$device" ddrsdectimer
+		config_get ddrsincthrld "$device" ddrsincthrld
 		config_get atpcstatus "$device" atpcstatus
 		config_get atpcpower "$device" atpcpower
         #pow=`expr $atpcpower + 3`
@@ -1911,6 +1846,7 @@ enable_qcawifi() {
             iwpriv "$ifname" kwnddrsmax "$ddrsmaxrate"
             iwpriv "$ifname" kwnddrsinc "$ddrsinctimer"
             iwpriv "$ifname" kwnddrsdec "$ddrsdectimer"
+            iwpriv "$ifname" kwnincthrld "$ddrsincthrld"
         else
             iwpriv "$ifname" kwnddrsmin "$ddrsrate"
             iwpriv "$ifname" kwnddrsmax "$ddrsrate"
@@ -1942,6 +1878,76 @@ enable_qcawifi() {
 		[ -n "$ullmt" ] && iwpriv "$ifname" ul_limit "$ullmt"
 		config_get dllmt "$vif" dllmt
 		[ -n "$dllmt" ] && iwpriv "$ifname" dl_limit "$dllmt"
+
+########################## KWN Changes #############################
+
+		local net_cfg bridge
+		net_cfg="$(find_net_config "$vif")"
+		[ -z "$net_cfg" -o "$isolate" = 1 -a "$mode" = "wrap" ] || {
+                        [ -f /sys/class/net/${ifname}/parent ] && { \
+				bridge="$(bridge_interface "$net_cfg")"
+				config_set "$vif" bridge "$bridge"
+                        }
+		}
+
+		case "$mode" in
+			ap|wrap|ap_monitor|ap_smart_monitor|mesh|ap_lp_iot)
+
+
+				iwpriv "$ifname" ap_bridge "$((isolate^1))"
+
+				config_get_bool l2tif "$vif" l2tif
+				[ -n "$l2tif" ] && iwpriv "$ifname" l2tif "$l2tif"
+
+				if [ -n "$start_wapid" ]; then
+					wapid_setup_vif "$vif" || {
+						echo "enable_qcawifi($device): Failed to set up wapid for interface $ifname" >&2
+						ifconfig "$ifname" down
+						wlanconfig "$ifname" destroy
+						continue
+					}
+				fi
+
+				if [ -n "$start_hostapd" ] && eval "type hostapd_setup_vif" 2>/dev/null >/dev/null; then
+					hostapd_setup_vif "$vif" atheros no_nconfig || {
+						echo "enable_qcawifi($device): Failed to set up hostapd for interface $ifname" >&2
+						# make sure this wifi interface won't accidentally stay open without encryption
+						ifconfig "$ifname" down
+						wlanconfig "$ifname" destroy
+						continue
+					}
+				fi
+			;;
+			wds|sta)
+				if eval "type wpa_supplicant_setup_vif" 2>/dev/null >/dev/null; then
+					wpa_supplicant_setup_vif "$vif" athr || {
+						echo "enable_qcawifi($device): Failed to set up wpa_supplicant for interface $ifname" >&2
+						ifconfig "$ifname" down
+						wlanconfig "$ifname" destroy
+						continue
+					}
+				fi
+			;;
+			adhoc)
+				if eval "type wpa_supplicant_setup_vif" 2>/dev/null >/dev/null; then
+					wpa_supplicant_setup_vif "$vif" athr || {
+						echo "enable_qcawifi($device): Failed to set up wpa"
+						ifconfig "$ifname" down
+						wlanconfig "$ifname" destroy
+						continue
+					}
+				fi
+		esac
+
+		[ -z "$bridge" -o "$isolate" = 1 -a "$mode" = "wrap" ] || {
+                        [ -f /sys/class/net/${ifname}/parent ] && { \
+				start_net "$ifname" "$net_cfg"
+                        }
+		}
+
+		ifconfig "$ifname" up
+		set_wifi_up "$vif" "$ifname"
+
 		config_get_bool vht_11ng "$vif" vht_11ng
 		[ -n "$vht_11ng" ] && iwpriv "$ifname" vht_11ng "$vht_11ng"
 
