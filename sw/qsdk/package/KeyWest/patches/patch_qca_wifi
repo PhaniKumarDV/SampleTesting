@@ -104,7 +104,7 @@ diff -urN qca-wifi-org/include/_ieee80211.h qca-wifi-mod/include/_ieee80211.h
      IEEE80211_VENDOR_IE_PARAM_UPDATE,
 diff -urN qca-wifi-org/include/ieee80211.h qca-wifi-mod/include/ieee80211.h
 --- qca-wifi-org/include/ieee80211.h	2018-06-08 11:00:50.000000000 +0530
-+++ qca-wifi-mod/include/ieee80211.h	2018-11-14 14:14:52.102492795 +0530
++++ qca-wifi-mod/include/ieee80211.h	2018-11-22 17:48:57.153122739 +0530
 @@ -768,6 +768,12 @@
  #define IEEE80211_ACTION_TPC_REQUEST        2   /* Transmit Power control */
  #define IEEE80211_ACTION_TPC_REPORT         3
@@ -244,7 +244,7 @@ diff -urN qca-wifi-org/include/ieee80211.h qca-wifi-mod/include/ieee80211.h
  
  struct ieee80211_clone_params {
  	char		icp_name[IEEE80211_MAX_IFNAME];	/* device name */
-@@ -2745,6 +2856,17 @@
+@@ -2745,6 +2856,18 @@
      u_int8_t icp_mataddr[IEEE80211_ADDR_LEN];    /* optional MAT address */
  };
  
@@ -252,6 +252,7 @@ diff -urN qca-wifi-org/include/ieee80211.h qca-wifi-mod/include/ieee80211.h
 +    u_int8_t  channel;
 +    u_int16_t frequency;
 +    u_int8_t  utility;
++    int16_t   noise;
 +};
 +
 +struct kwn_sa_scan_result {
@@ -262,7 +263,7 @@ diff -urN qca-wifi-org/include/ieee80211.h qca-wifi-mod/include/ieee80211.h
  #define	    IEEE80211_CLONE_BSSID       0x0001		/* allocate unique mac/bssid */
  #define	    IEEE80211_NO_STABEACONS	    0x0002		/* Do not setup the station beacon timers */
  #define    IEEE80211_CLONE_WDS          0x0004      /* enable WDS processing */
-@@ -2813,6 +2935,32 @@
+@@ -2813,6 +2936,32 @@
          u_int8_t isi_tx_rate_mcs;
          u_int8_t isi_tx_rate_flags;
  #endif
@@ -389,8 +390,16 @@ diff -urN qca-wifi-org/offload/wlan/include/ol_if_athvar.h qca-wifi-mod/offload/
  
 diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_ath.c qca-wifi-mod/offload/wlan/lmac_offload_if/ol_if_ath.c
 --- qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_ath.c	2018-06-08 11:00:45.000000000 +0530
-+++ qca-wifi-mod/offload/wlan/lmac_offload_if/ol_if_ath.c	2018-11-15 11:18:19.298277696 +0530
-@@ -4488,7 +4488,7 @@
++++ qca-wifi-mod/offload/wlan/lmac_offload_if/ol_if_ath.c	2018-11-22 17:49:41.457273669 +0530
+@@ -196,6 +196,7 @@
+ int ol_ath_peer_mumimo_tx_count_event_handler (ol_scn_t scn, u_int8_t *data, u_int16_t datalen);
+ int ol_ath_peer_gid_userpos_list_event_handler (ol_scn_t scn, u_int8_t *data, u_int16_t datalen);
+ int ol_ath_pdev_caldata_version_check_event_handler (ol_scn_t scn, u_int8_t *data, u_int16_t datalen);
++void kwn_get_ol_stats( struct ieee80211vap *vap, struct ieee80211com *ic );
+ 
+ #if QCA_AIRTIME_FAIRNESS
+ int ol_ath_atf_peer_stats_event_handler(ol_scn_t scn, u_int8_t *data, u_int16_t datalen);
+@@ -4488,7 +4489,7 @@
      param.cfreq1 = 0;
      param.cfreq2 = 0;
      if((chan_mode == IEEE80211_MODE_11AC_VHT80) ||(chan_mode == IEEE80211_MODE_11AC_VHT160) || (chan_mode == IEEE80211_MODE_11AC_VHT80_80)) {
@@ -399,7 +408,7 @@ diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_ath.c qca-wifi-mod/off
                  param.cfreq1 = ieee80211_ieee2mhz(&scn->sc_ic,
                                                            chan->ic_vhtop_ch_freq_seg1, IEEE80211_CHAN_2GHZ);
              else
-@@ -5221,7 +5221,7 @@
+@@ -5221,7 +5222,7 @@
                  return ((freq * 10) +
                      (((freq % 5) == 2) ? 5 : 0) - 49400)/5;
              } else if (freq > 4900) {
@@ -408,7 +417,7 @@ diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_ath.c qca-wifi-mod/off
              } else {
                  return 15 + ((freq - 2512) / 20);
              }
-@@ -6743,6 +6743,149 @@
+@@ -6743,6 +6744,153 @@
      OS_SET_TIMER(&ic->ic_inact_timer, IEEE80211_SESSION_WAIT*1000);
  }
  
@@ -481,6 +490,8 @@ diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_ath.c qca-wifi-mod/off
 +            utility = ( u_int8_t ) ( vap->kwnchanutil_info.total / vap->kwnchanutil_info.count );
 +            ic->kwn_scan.sa_result.sa_entry[ic->kwn_scan.next_chan - 1].utility = ( u_int8_t ) ( ( utility * 100 ) / 255 );
 +        }
++        kwn_get_ol_stats( vap, ic );
++        ic->kwn_scan.sa_result.sa_entry[ic->kwn_scan.next_chan - 1].noise = vap->kwn_local_noise_floor;
 +        ic->kwn_scan.sa_result.cnt = ic->kwn_scan.next_chan;
 +        ic->kwn_scan.scan_vap = NULL;
 +        OS_CANCEL_TIMER(&ic->kwn_scan.util_timer);
@@ -511,6 +522,8 @@ diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_ath.c qca-wifi-mod/off
 +            utility = ( u_int8_t ) ( vap->kwnchanutil_info.total / vap->kwnchanutil_info.count );
 +            ic->kwn_scan.sa_result.sa_entry[ic->kwn_scan.next_chan - 1].utility = ( u_int8_t ) ( ( utility * 100 ) / 255 );
 +        }
++        kwn_get_ol_stats( vap, ic );
++        ic->kwn_scan.sa_result.sa_entry[ic->kwn_scan.next_chan - 1].noise = vap->kwn_local_noise_floor;
 +    }
 +    ic->kwn_scan.curr_freq = curr_freq;
 +    memset( &vap->kwnchanutil_info, 0, sizeof( struct kwn_chanutil_info ) );
@@ -558,7 +571,7 @@ diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_ath.c qca-wifi-mod/off
  static int
  ol_ath_set_mgmt_retry_limit(struct ieee80211com *ic , u_int8_t limit)
  {
-@@ -7156,6 +7299,7 @@
+@@ -7156,6 +7304,7 @@
      ic->ic_atf_logging = 0;
  
      ic->ic_bestUL_hyst = BEST_UL_HYST_DEF;
@@ -566,7 +579,7 @@ diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_ath.c qca-wifi-mod/off
  
      return EOK;
  }
-@@ -8133,6 +8277,8 @@
+@@ -8133,6 +8282,8 @@
                                                  ol_ath_esp_estimate_event_handler, WMI_RX_UMAC_CTX);
  #endif
  
@@ -575,7 +588,7 @@ diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_ath.c qca-wifi-mod/off
  #if OL_ATH_SUPPORT_LED
          if (scn->target_version == AR9888_REV2_VERSION || scn->target_version == AR9887_REV1_VERSION) {
              scn->scn_led_gpio = PEREGRINE_LED_GPIO ;
-@@ -8475,6 +8621,8 @@
+@@ -8475,6 +8626,8 @@
      u_int32_t num_mem_chunks;
      ic = &scn->sc_ic;
  
@@ -2373,7 +2386,7 @@ diff -urN qca-wifi-org/os/linux/tools/80211stats.c qca-wifi-mod/os/linux/tools/8
  }
 diff -urN qca-wifi-org/os/linux/tools/apstats.c qca-wifi-mod/os/linux/tools/apstats.c
 --- qca-wifi-org/os/linux/tools/apstats.c	2018-06-08 11:00:39.000000000 +0530
-+++ qca-wifi-mod/os/linux/tools/apstats.c	2018-11-14 14:17:47.222492319 +0530
++++ qca-wifi-mod/os/linux/tools/apstats.c	2018-11-22 17:50:19.969403955 +0530
 @@ -95,7 +95,7 @@
  #endif
  
@@ -2425,7 +2438,7 @@ diff -urN qca-wifi-org/os/linux/tools/apstats.c qca-wifi-mod/os/linux/tools/apst
 +    memcpy( &sa_result, ( struct kwn_sa_scan_result *)buf, sizeof( struct kwn_sa_scan_result ) );
 +    for( i = 0; i< sa_result.cnt; i++ )
 +    {
-+        printf("%d=%d=%d,",sa_result.sa_entry[i].channel,sa_result.sa_entry[i].frequency,sa_result.sa_entry[i].utility);
++        printf("%d=%d=%d=%d,",sa_result.sa_entry[i].channel,sa_result.sa_entry[i].frequency,sa_result.sa_entry[i].utility,sa_result.sa_entry[i].noise);
 +    }
 +    return 0;
 +}
