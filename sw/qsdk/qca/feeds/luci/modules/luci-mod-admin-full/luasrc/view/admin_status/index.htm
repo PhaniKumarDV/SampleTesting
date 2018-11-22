@@ -198,12 +198,10 @@ function get_links()
 	function(x, data) {
 		if (data) { 
             var s = data.split("=");
-            document.getElementById("ethtx").innerHTML = s[0];
-            document.getElementById("ethrx").innerHTML = s[1];
-            document.getElementById("wi1tx").innerHTML = s[2];
-            document.getElementById("wi1rx").innerHTML = s[3];
-            document.getElementById("wi2tx").innerHTML = s[4];
-            document.getElementById("wi2rx").innerHTML = s[5];
+			document.getElementById("ethtx").innerHTML = s[6] > (1000 * 1000) ? (s[6] / ( 1000 * 1000 )).toFixed(2) : 0;
+			document.getElementById("ethrx").innerHTML = s[7] > (1000 * 1000) ? (s[7] / ( 1000 * 1000 )).toFixed(2) : 0;
+			document.getElementById("wi1tx").innerHTML = s[8] > (1000 * 1000) ? (s[8] / ( 1000 * 1000 )).toFixed(2) : 0;
+			document.getElementById("wi1rx").innerHTML = s[9] > (1000 * 1000) ? (s[9] / ( 1000 * 1000 )).toFixed(2) : 0;
 		}
 	}
     );
@@ -471,7 +469,7 @@ get_desc();
 	<legend><%:Wireless%></legend>
 	<table width="100%" cellspacing="10">
        <tr><td></td><td style="color:#a5bc23"><b>5GHz Radio<b></td><td style="color:#a5bc23"><b>2.4GHz Radio<b></td></tr>
-       <tr><td style="padding-top:10px;">MAC</td><td id="mac1" style="padding-top:10px;">-</td><td id="mac2" style="padding-top:10px;">-</td></tr>
+       <tr><td style="padding-top:10px;">MAC Address</td><td id="mac1" style="padding-top:10px;">-</td><td id="mac2" style="padding-top:10px;">-</td></tr>
        <tr><td>Radio Mode</td><td id="mode1">-</td><td id="mode2">-</td></tr>
        <tr><td>Operational Mode</td><td id="opmode1">-</td><td id="opmode2">-</td></tr>
        <tr><td>SSID</td><td id="ssid1">-</td><td id="ssid2">-</td></tr>
@@ -482,7 +480,7 @@ get_desc();
 <fieldset class="cbi-section half one" style="min-height:250px;">
 	<legend><%:Statistics%></legend>
 	<table width="100%" cellspacing="10">
-       <tr><td></td><td style="color:#a5bc23"><b>Tx<b></td><td style="color:#a5bc23"><b>Rx<b></td><td>&nbsp;</td></tr>
+       <tr><td></td><td style="color:#a5bc23"><b>Tx (Mbps)<b></td><td style="color:#a5bc23"><b>Rx (Mbps)<b></td><td>&nbsp;</td></tr>
        <tr><td style="padding-top:10px;">Ethernet</td><td id="ethtx" style="padding-top:10px;">-</td><td id="ethrx" style="padding-top:10px;">-</td><td>&nbsp;</td></tr>
        <tr><td>5GHz Radio</td><td id="wi1tx">-</td><td id="wi1rx">-</td><td>&nbsp;</td></tr>
        <tr><td>2.4GHz Radio</td><td id="wi2tx">-</td><td id="wi2rx">-</td><td>&nbsp;</td></tr>

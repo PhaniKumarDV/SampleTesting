@@ -1,7 +1,7 @@
 diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
 --- qca-edma-org/edma.c	2018-07-09 14:25:58.833210000 +0530
-+++ qca-edma-mod/edma.c	2018-11-21 18:33:47.847577070 +0530
-@@ -26,6 +26,236 @@
++++ qca-edma-mod/edma.c	2018-11-22 12:41:03.990095663 +0530
+@@ -26,6 +26,258 @@
  extern u8 edma_per_prec_stats_enable;
  extern u32 edma_iad_stats_enable;
  
@@ -21,9 +21,11 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
 +EXPORT_SYMBOL(edma_get_tx_pkts);
 +EXPORT_SYMBOL(edma_get_tx_errors);
 +EXPORT_SYMBOL(edma_get_tx_bytes);
++EXPORT_SYMBOL(edma_get_tx_thrpt);
 +EXPORT_SYMBOL(edma_get_rx_pkts);
 +EXPORT_SYMBOL(edma_get_rx_errors);
 +EXPORT_SYMBOL(edma_get_rx_bytes);
++EXPORT_SYMBOL(edma_get_rx_thrpt);
 +EXPORT_SYMBOL(edma_set_pbb_da_mac);
 +EXPORT_SYMBOL(edma_set_pbb_sa_mac);
 +EXPORT_SYMBOL(edma_set_pbb_bvid);
@@ -56,6 +58,16 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
 +	return value;
 +}
 +
++uint64_t edma_get_tx_thrpt( struct net_device *dev )
++{
++	struct edma_adapter *adapter = netdev_priv(dev);
++	struct edma_common_info *edma_cinfo = adapter->edma_cinfo;
++    unsigned long value;
++
++    value = edma_cinfo->kwn_tx_tput_mbps;
++	return value;
++}
++
 +uint64_t edma_get_rx_pkts( struct net_device *dev )
 +{
 +	struct edma_adapter *adapter = netdev_priv(dev);
@@ -80,6 +92,16 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
 +    unsigned long value;
 +
 +    value = adapter->stats.rx_bytes;
++	return value;
++}
++
++uint64_t edma_get_rx_thrpt( struct net_device *dev )
++{
++	struct edma_adapter *adapter = netdev_priv(dev);
++	struct edma_common_info *edma_cinfo = adapter->edma_cinfo;
++    unsigned long value;
++
++    value = edma_cinfo->kwn_rx_tput_mbps;
 +	return value;
 +}
 +
@@ -238,7 +260,7 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
  /* edma_skb_priority_offset()
   *	get edma skb priority
   */
-@@ -777,15 +1007,153 @@
+@@ -777,19 +1029,175 @@
  #endif
  			edma_receive_checksum(rd, skb);
  
@@ -399,7 +421,29 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
  			/* Update rx statistics */
  			adapter->stats.rx_packets++;
  			adapter->stats.rx_bytes += length;
-@@ -1324,7 +1692,6 @@
+ 
++            /* Calculate rx throughput */
++            edma_cinfo->rx_offer_pkt_cnt++;
++            edma_cinfo->rx_offer_pkt_bytes_cnt += length;
++
++            if ( edma_cinfo->kwn_rx_tput_last_jiffies == 0 ) {
++                edma_cinfo->kwn_rx_tput_last_jiffies = jiffies;
++            } else {
++                if ( (jiffies - edma_cinfo->kwn_rx_tput_last_jiffies) >= 1000 )
++                {
++                    edma_cinfo->kwn_rx_tput_mbps = edma_cinfo->rx_offer_pkt_cnt > 0 ?
++                        ( (edma_cinfo->rx_offer_pkt_bytes_cnt * 8)) : 0;
++                    edma_cinfo->kwn_rx_tput_last_jiffies = jiffies;
++                    edma_cinfo->rx_offer_pkt_cnt = 0;
++                    edma_cinfo->rx_offer_pkt_bytes_cnt = 0;
++                    //printk(": RX Tput: %llu\n",edma_cinfo->kwn_rx_tput_mbps);
++                }
++            }
++
+ 			/* Check if we reached refill threshold */
+ 			if (cleaned_count == EDMA_RX_BUFFER_WRITE) {
+ 				ret_count = edma_alloc_rx_buf(edma_cinfo, erdr, cleaned_count, queue_id);
+@@ -1324,7 +1732,6 @@
  		word3 |= (1 << EDMA_TX_INS_CVLAN);
  		word3 |= (adapter->default_vlan_tag) << EDMA_TX_CVLAN_TAG_SHIFT;
  	}
@@ -407,7 +451,7 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
  	if (packet_is_rstp) {
  		word3 |= dp_bitmap << EDMA_TPD_PORT_BITMAP_SHIFT;
  		word3 |= from_cpu << EDMA_TPD_FROM_CPU_SHIFT;
-@@ -1535,6 +1902,40 @@
+@@ -1535,6 +1942,40 @@
  	return __EDMA_LINKDOWN;
  }
  
@@ -448,7 +492,7 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
  /* edma_adjust_link()
   *	check for edma link status
   */
-@@ -1551,12 +1952,14 @@
+@@ -1551,12 +1992,14 @@
  
  	if (status == __EDMA_LINKUP && adapter->link_state == __EDMA_LINKDOWN) {
  		dev_info(&adapter->pdev->dev, "%s: GMAC Link is up with phy_speed=%d\n", netdev->name, phydev->speed);
@@ -463,7 +507,7 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
  		adapter->link_state = __EDMA_LINKDOWN;
  		netif_carrier_off(netdev);
  		netif_tx_stop_all_queues(netdev);
-@@ -1590,6 +1993,7 @@
+@@ -1590,6 +2033,7 @@
  	unsigned int flags_transmit = 0;
  	bool packet_is_rstp = false;
  	struct netdev_queue *nq = NULL;
@@ -471,7 +515,7 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
  
  	if (skb_shinfo(skb)->nr_frags) {
  		nr_frags_first = skb_shinfo(skb)->nr_frags;
-@@ -1652,12 +2056,150 @@
+@@ -1652,12 +2096,150 @@
  		return NETDEV_TX_BUSY;
  	}
  
@@ -625,12 +669,28 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
  		flags_transmit |= EDMA_VLAN_TX_TAG_INSERT_FLAG;
  	else if (adapter->default_vlan_tag)
  		flags_transmit |= EDMA_VLAN_TX_TAG_INSERT_DEFAULT_FLAG;
-@@ -1682,7 +2224,14 @@
- 	/* update tx statistics */
+@@ -1683,6 +2265,30 @@
  	adapter->stats.tx_packets++;
  	adapter->stats.tx_bytes += skb->len;
-+	goto netdev_okay;
  
++    edma_cinfo->tx_offer_pkt_cnt++;
++    edma_cinfo->tx_offer_pkt_bytes_cnt += skb->len;
++
++    if ( edma_cinfo->kwn_tx_tput_last_jiffies == 0 ) {
++        edma_cinfo->kwn_tx_tput_last_jiffies = jiffies;
++    } else {
++        if ( (jiffies - edma_cinfo->kwn_tx_tput_last_jiffies) >= 1000 )
++        {
++            edma_cinfo->kwn_tx_tput_mbps = edma_cinfo->tx_offer_pkt_cnt > 0 ?
++                ( (edma_cinfo->tx_offer_pkt_bytes_cnt * 8)) : 0;
++            edma_cinfo->kwn_tx_tput_last_jiffies = jiffies;
++            edma_cinfo->tx_offer_pkt_cnt = 0;
++            edma_cinfo->tx_offer_pkt_bytes_cnt = 0;
++            //printk(": Tx Tput: %llu\n",edma_cinfo->kwn_tx_tput_mbps);
++        }
++    }
++	goto netdev_okay;
++
 +drop1:
 +	dev_kfree_skb_any(skb);
 +drop:
@@ -642,7 +702,7 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
  	return NETDEV_TX_OK;
 diff -urN qca-edma-org/edma.h qca-edma-mod/edma.h
 --- qca-edma-org/edma.h	2018-07-09 14:25:58.833210000 +0530
-+++ qca-edma-mod/edma.h	2018-11-09 12:14:42.452905853 +0530
++++ qca-edma-mod/edma.h	2018-11-22 12:42:28.424971222 +0530
 @@ -44,6 +44,12 @@
  #include <linux/if_pppox.h>
  #include "ess_edma.h"
@@ -656,7 +716,7 @@ diff -urN qca-edma-org/edma.h qca-edma-mod/edma.h
  #define EDMA_CPU_CORES_SUPPORTED 4
  #define EDMA_MAX_PORTID_SUPPORTED 5
  #define EDMA_MAX_VLAN_SUPPORTED  EDMA_MAX_PORTID_SUPPORTED
-@@ -393,6 +399,21 @@
+@@ -393,6 +399,29 @@
  	struct edma_per_cpu_queues_info edma_percpu_info[CONFIG_NR_CPUS]; /* per cpu information */
  	spinlock_t stats_lock; /* protect edma stats area for updation */
  	u32 num_cores;
@@ -675,10 +735,18 @@ diff -urN qca-edma-org/edma.h qca-edma-mod/edma.h
 +	int16_t pbb_bvid;		/* PBB: B-VLAN-ID */
 +	int32_t pbb_isid;		/* PBB: B-I-SID */
 +	int8_t allow_tagged_mgmt;	/* Allow Tagged Mgmt */
++	uint64_t tx_offer_pkt_cnt;       /* no of pkts offered to umac for Tx */
++	uint64_t tx_offer_pkt_bytes_cnt; /* no of bytes offered to umac for Tx*/
++	uint64_t kwn_tx_tput_mbps;
++	uint64_t kwn_tx_tput_last_jiffies;
++	uint64_t rx_offer_pkt_cnt;
++	uint64_t rx_offer_pkt_bytes_cnt;
++	uint64_t kwn_rx_tput_mbps;
++	uint64_t kwn_rx_tput_last_jiffies;
  };
  
  /* transimit packet descriptor (tpd) ring */
-@@ -473,6 +494,16 @@
+@@ -473,6 +502,16 @@
  	__be16 proto;
  };
  
@@ -695,7 +763,7 @@ diff -urN qca-edma-org/edma.h qca-edma-mod/edma.h
  int edma_alloc_queues_tx(struct edma_common_info *edma_cinfo);
  int edma_alloc_queues_rx(struct edma_common_info *edma_cinfo);
  int edma_open(struct net_device *netdev);
-@@ -547,4 +578,27 @@
+@@ -547,4 +586,29 @@
  void edma_iad_process_flow(struct edma_common_info *edma_cinfo,
  			   struct sk_buff *skb, u8 dir, u8 precedence);
  
@@ -715,9 +783,11 @@ diff -urN qca-edma-org/edma.h qca-edma-mod/edma.h
 +uint64_t edma_get_tx_pkts( struct net_device *dev );
 +uint64_t edma_get_tx_errors( struct net_device *dev );
 +uint64_t edma_get_tx_bytes( struct net_device *dev );
++uint64_t edma_get_tx_thrpt( struct net_device *dev );
 +uint64_t edma_get_rx_pkts( struct net_device *dev );
 +uint64_t edma_get_rx_errors( struct net_device *dev );
 +uint64_t edma_get_rx_bytes( struct net_device *dev );
++uint64_t edma_get_rx_thrpt( struct net_device *dev );
 +int edma_set_pbb_da_mac( struct net_device *dev, uint8_t *mac );
 +int edma_set_pbb_sa_mac( struct net_device *dev, uint8_t *mac );
 +int edma_set_pbb_bvid( struct net_device *dev, int16_t vlan_id );
