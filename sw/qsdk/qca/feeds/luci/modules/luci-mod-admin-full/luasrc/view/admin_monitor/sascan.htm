@@ -8,8 +8,14 @@
 <%-
     local iw = luci.sys.wifi.getiwinfo("wifi1.network1")
     local freqlist = iw.freqlist
+        function uciget(cmd)
+                local res = luci.util.exec(cmd)
+                local str = string.gsub(res, "\n", "")
+                return str
+        end
 -%>
 <script type="text/javascript">
+    var noise_off = "<%=uciget('uci get wireless.wifi1.kwnnoiseoff')%>";
 	var freqlist = <%= luci.http.write_json(freqlist) %>;
     var start_freq = 0;
     var end_freq = 0;
@@ -79,14 +85,15 @@ function get_values( data )
         var chan = x[0];
         var freq =  x[1];
         var util = x[2];
-        var noise = x[3];
+        var noise = x[3].split("-");
+        noise = parseInt( noise[1] );
         var scantable = document.getElementById('scan-list');
         var tr = scantable.insertRow(-1);
         tr.className = 'cbi-section-table-row cbi-rowstyle-2';
         tr.insertCell(-1).innerHTML = chan;
         tr.insertCell(-1).innerHTML = freq;
         tr.insertCell(-1).innerHTML = util;
-        tr.insertCell(-1).innerHTML = noise;
+        tr.insertCell(-1).innerHTML = noise_off - noise;
     }
 }
 	XHR.poll(5, '<%=REQUEST_URI%>', { status: 1 },
