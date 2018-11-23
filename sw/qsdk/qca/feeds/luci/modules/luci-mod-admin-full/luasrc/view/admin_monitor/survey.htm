@@ -6,25 +6,28 @@
 <%+header%>
 
 <script type="text/javascript">
-function get_values( val )
+function get_values( data )
 {
     var surveytable = document.getElementById('survey-list');
-    var b = val.split("@");
-    for( i=0; i<( b.length - 1); i++)
+    var values = data.split(",");
+    for( i=0; i<( values.length - 1); i++)
     {
-        var a1 = b[i].split("SSID=");
-        var mac = a1[0].split("MAC=");
-        mac = mac[1];
-        var a2 = a1[1].split("Quality=");
-        var ssid = a2[0];
-        var a3 = a2[1].split("Signal=");
-        var a4 = a3[1].split("Noise=");
-        var signal = a4[0];
-        var noise = a4[1];
+        var x = values[i].split("@");
+        var mac = x[0];
+        var ssid =  x[1];
+        var chan = x[2];
+        var freq = x[3];
+        var qual = x[4];
+        var y = qual.split("Signal=");
+        var z = y[1].split("Noise=");
+        var signal = z[0];
+        var noise = z[1];
         var tr = surveytable.insertRow(-1);
         tr.className = 'cbi-section-table-row cbi-rowstyle-2';
         tr.insertCell(-1).innerHTML = ssid;
         tr.insertCell(-1).innerHTML = mac;
+        tr.insertCell(-1).innerHTML = chan;
+        tr.insertCell(-1).innerHTML = freq;
         tr.insertCell(-1).innerHTML = signal;
         tr.insertCell(-1).innerHTML = noise;
     }
@@ -74,15 +77,17 @@ function clear_scan()
         <li style="margin-right:4px" class="cbi-tab"><a href="#"><%:Site Survey%></a></li>
         <li style="margin-right:4px" class="cbi-tab-disabled"><a href="linkcalc"><%:Link Calculator%></a></li>
     </ul>
-<div class="cbi-page-actions right" style="padding:11px 360px 2px 150px;">
+<div class="cbi-page-actions right" style="padding:11px 220px 2px 150px;">
 <input type="button" id="s1" class="cbi-button" value="<%:Clear%>" onclick="clear_scan()" />
 </div>
 <div class="cbi-map">
 	<fieldset class="cbi-section">
-		<table class="cbi-section-table" style="width:600px; margin:10px;" id="survey-list">
+		<table class="cbi-section-table" style="width:750px; margin:10px;" id="survey-list">
 			<tr class="cbi-section-table-titles">
 				<th class="cbi-section-table-cell"><%:SSID%></th>
 				<th class="cbi-section-table-cell"><%:MAC Address%></th>
+				<th class="cbi-section-table-cell"><%:Channel%></th>
+				<th class="cbi-section-table-cell"><%:Frequency (MHz)%></th>
 				<th class="cbi-section-table-cell"><%:RSSI (dBm)%></th>
 				<th class="cbi-section-table-cell"><%:Noise (dBm)%></th>
             </tr>
