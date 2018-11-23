@@ -1948,6 +1948,22 @@ enable_qcawifi() {
 		ifconfig "$ifname" up
 		set_wifi_up "$vif" "$ifname"
 
+####################### ISSUE: add ath interface to bridge manually ###########################
+
+        case "$ifname" in
+        ath0)
+            brctl addif br-kwlan ath0
+            ;;
+        ath1)
+            brctl addif br-lan ath1
+            ;;
+        *)
+            echo "############### Invalid interface" > /dev/console
+            ;;
+        esac
+
+###############################################################################################
+
 		config_get_bool vht_11ng "$vif" vht_11ng
 		[ -n "$vht_11ng" ] && iwpriv "$ifname" vht_11ng "$vht_11ng"
 
