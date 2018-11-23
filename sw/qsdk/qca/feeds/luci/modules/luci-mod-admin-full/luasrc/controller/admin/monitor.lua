@@ -340,7 +340,14 @@ function action_conflog()
 end
 
 function action_syslog()
-	local syslog = luci.sys.syslog()
+    local data = {}
+
+    if string.len(string.sub(luci.util.exec("cat /etc/wifi_packet_logs"),1,-2) ) > 5 then
+        data = luci.sys.exec("cat /etc/wifi_packet_logs")
+    else
+        data = "Wireless Log file is empty."
+    end
+	local syslog = data
 	luci.template.render("admin_monitor/syslog", {syslog=syslog})
 end
 
