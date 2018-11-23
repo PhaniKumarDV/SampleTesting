@@ -146,10 +146,16 @@ var eth1_status = "<%=eth1_status %>";
 var dyn_val = "<%=uciget("ifconfig br-lan | grep 'inet addr' | sed 's/          //'")%>";
 var val = dyn_val.split(" ");
 var ip = "0.0.0.0";
+var gw = "0.0.0.0";
+var mask = "0.0.0.0";
 if( val != "" )
 {
     ip = val[1].split(":");
     ip = ip[1];
+    gw = val[3].split(":");
+    gw = gw[1];
+    mask = val[5].split(":");
+    mask = mask[1]
 }
 
 	function progressbar(v, m)
@@ -300,7 +306,7 @@ function get_log()
 						);
                         if( didx == 1 ) {
                             document.getElementById("mac1").innerHTML = "<%=uciget('uci get wireless.wifi1.macaddr')%>"; 
-                            document.getElementById("mode1").innerHTML = net.mode; 
+                            document.getElementById("mode1").innerHTML = "<b>"+net.mode+"<b>"; 
                             document.getElementById("opmode1").innerHTML = "<%=uciget('uci get wireless.wifi1.hwmode')%>";
                             document.getElementById("ssid1").innerHTML = net.ssid;
                             var freq = net.frequency * 1000;
@@ -308,7 +314,7 @@ function get_log()
                         }
                         else {
                             document.getElementById("mac2").innerHTML = "<%=uciget('uci get wireless.wifi0.macaddr')%>"; 
-                            document.getElementById("mode2").innerHTML = net.mode; 
+                            document.getElementById("mode2").innerHTML = "<b>" +net.mode +"<b>"; 
                             document.getElementById("opmode2").innerHTML = "<%=uciget('uci get wireless.wifi0.hwmode')%>";
                             document.getElementById("ssid2").innerHTML = net.ssid;
                             var freq = net.frequency * 1000;
@@ -451,6 +457,8 @@ get_desc();
         </script>
         </td></tr>
 		<tr><td width="33%"><%:IP Address%></td><td><script type="text/javascript">document.write(ip)</script></td></tr>
+		<tr><td width="33%"><%:Subnet Mask%></td><td><script type="text/javascript">document.write(mask)</script></td></tr>
+		<tr><td width="33%"><%:Gateway IP%></td><td><script type="text/javascript">document.write(gw)</script></td></tr>
 		<tr><td width="33%"><%:Customer Name%></td><td><%=uciget('uci get wireless.wifi1.customername')%></td></tr>
 		<tr><td width="33%"><%:Link Id%></td><td>
         <script type="text/javascript">
@@ -468,7 +476,7 @@ get_desc();
 <fieldset class="cbi-section half one" style="min-height:250px;">
 	<legend><%:Wireless%></legend>
 	<table width="100%" cellspacing="10">
-       <tr><td></td><td style="color:#a5bc23"><b>5GHz Radio<b></td><td style="color:#a5bc23"><b>2.4GHz Radio<b></td></tr>
+       <tr><td></td><td style="color:#a5bc23"><b>5 GHz<b></td><td style="color:#a5bc23"><b>2.4 GHz<b></td></tr>
        <tr><td style="padding-top:10px;">MAC Address</td><td id="mac1" style="padding-top:10px;">-</td><td id="mac2" style="padding-top:10px;">-</td></tr>
        <tr><td>Radio Mode</td><td id="mode1">-</td><td id="mode2">-</td></tr>
        <tr><td>Operational Mode</td><td id="opmode1">-</td><td id="opmode2">-</td></tr>
@@ -478,12 +486,12 @@ get_desc();
     </table>
 </fieldset>
 <fieldset class="cbi-section half one" style="min-height:250px;">
-	<legend><%:Statistics%></legend>
+	<legend><%:Throughput%></legend>
 	<table width="100%" cellspacing="10">
-       <tr><td></td><td style="color:#a5bc23"><b>Tx (Mbps)<b></td><td style="color:#a5bc23"><b>Rx (Mbps)<b></td><td>&nbsp;</td></tr>
+       <tr><td style="color:#a5bc23">( Mbps )</td><td style="color:#a5bc23"><b>TX<b></td><td style="color:#a5bc23"><b>RX<b></td><td>&nbsp;</td></tr>
        <tr><td style="padding-top:10px;">Ethernet</td><td id="ethtx" style="padding-top:10px;">-</td><td id="ethrx" style="padding-top:10px;">-</td><td>&nbsp;</td></tr>
-       <tr><td>5GHz Radio</td><td id="wi1tx">-</td><td id="wi1rx">-</td><td>&nbsp;</td></tr>
-       <tr><td>2.4GHz Radio</td><td id="wi2tx">-</td><td id="wi2rx">-</td><td>&nbsp;</td></tr>
+       <tr><td>5 GHz</td><td id="wi1tx">-</td><td id="wi1rx">-</td><td>&nbsp;</td></tr>
+       <tr><td>2.4 GHz</td><td id="wi2tx">-</td><td id="wi2rx">-</td><td>&nbsp;</td></tr>
     </table>
 </fieldset>
 </div>
