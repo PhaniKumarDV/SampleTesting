@@ -84,7 +84,7 @@ void kwn_sys_cmd_imp( const char* cmd, uint8_t* cmd_buf )
     return;
 }
 
-void kwn_country_change( int coun )
+void kwn_reset_channel()
 {
 #define RUSSIA   5011
 #define INDIA_UL 5016
@@ -93,12 +93,23 @@ void kwn_country_change( int coun )
     char cmd[100];
     uint8_t cmd_buf[50];
     int def_chan = 165;
+    int coun;
 
+    /* Get Country */
+    memset(cmd, '\0', sizeof(cmd));
+    memset(cmd_buf, '\0', sizeof(cmd_buf));
+    sprintf(cmd,"uci get wireless.wifi1.country");
+    kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] ); 
+    coun = atoi( cmd_buf );
+
+    /* Get Radio Mode */
     memset(cmd, '\0', sizeof(cmd));
     memset(cmd_buf, '\0', sizeof(cmd_buf));
     sprintf(cmd,"uci get wireless.@wifi-iface[1].mode");
     kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] ); 
-    if( strcmp( cmd_buf, "ap" ) ) {
+
+    if( !strcmp( cmd_buf, "sta" ) ) {
+        system("uci set wireless.wifi1.channel='auto'");
         return;
     }
     switch( coun )
@@ -196,17 +207,16 @@ void cfg_set( char *type, char *value )
     {
         case UCI_ID_RADIO1_MODE:
             sprintf(cmd,"uci set wireless.@wifi-iface[1].mode='%s'",value);
+            system( cmd );
+            kwn_reset_channel();
             break;
         case UCI_ID_RADIO1_SSID:
             sprintf(cmd,"uci set wireless.@wifi-iface[1].ssid='%s'",value);
             break;
         case UCI_ID_RADIO1_COUNTRY:
-            {
-                int val = atoi( value );
-                sprintf(cmd,"uci set wireless.wifi1.country='%s'",value);
-                system(cmd);
-                kwn_country_change( val );
-            }
+            sprintf(cmd,"uci set wireless.wifi1.country='%s'",value);
+            system(cmd);
+            kwn_reset_channel();
             break;
         case UCI_ID_RADIO1_OPMODE:
             sprintf(cmd,"uci set wireless.wifi1.hwmode='%s'",value);
