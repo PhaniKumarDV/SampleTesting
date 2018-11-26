@@ -21,6 +21,7 @@
 	local eth1_status =  luci.sys.exec("cat /sys/class/net/eth0/operstate")
 	local eth1_speed =  luci.sys.exec("ethtool eth0 | grep Speed")
 	local eth1_duplex =  luci.sys.exec("ethtool eth0 | grep Duplex")
+    local gw = luci.sys.exec("ip route get 1 | awk '{print $NF;exit}'")
     local eth_has_link 
     local eth_has_no_link
 	local serial_no =  luci.sys.exec("fw_printenv -n amigoserial")
@@ -124,6 +125,7 @@
     eth1_status = string.gsub(eth1_status, "\n", "")
     eth1_speed = string.gsub(eth1_speed, "\n", "")
     eth1_duplex = string.gsub(eth1_duplex, "\n", "")
+    gw = string.gsub(gw, "\n", "")
 -%>
 
 <%+header%>
@@ -143,17 +145,15 @@
 <script type="text/javascript" src="<%=resource%>/cbi.js"></script>
 <script type="text/javascript">//<![CDATA[
 var eth1_status = "<%=eth1_status %>";
+var gw = "<%=gw %>";
 var dyn_val = "<%=uciget("ifconfig br-lan | grep 'inet addr' | sed 's/          //'")%>";
 var val = dyn_val.split(" ");
 var ip = "0.0.0.0";
-var gw = "0.0.0.0";
 var mask = "0.0.0.0";
 if( val != "" )
 {
     ip = val[1].split(":");
     ip = ip[1];
-    gw = val[3].split(":");
-    gw = gw[1];
     mask = val[5].split(":");
     mask = mask[1]
 }

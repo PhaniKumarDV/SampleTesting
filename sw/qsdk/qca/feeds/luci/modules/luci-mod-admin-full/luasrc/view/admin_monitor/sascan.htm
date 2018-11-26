@@ -86,14 +86,14 @@ function get_values( data )
         var freq =  x[1];
         var util = x[2];
         var noise = x[3].split("-");
-        noise = parseInt( noise[1] );
+        noise = ( noise == 0 ? 0 : parseInt( noise[1] ) );
         var scantable = document.getElementById('scan-list');
         var tr = scantable.insertRow(-1);
         tr.className = 'cbi-section-table-row cbi-rowstyle-2';
         tr.insertCell(-1).innerHTML = chan;
         tr.insertCell(-1).innerHTML = freq;
         tr.insertCell(-1).innerHTML = util;
-        tr.insertCell(-1).innerHTML = noise_off - noise;
+        tr.insertCell(-1).innerHTML = noise == 0 ? 0 : noise_off - noise;
     }
 }
 	XHR.poll(5, '<%=REQUEST_URI%>', { status: 1 },
@@ -157,9 +157,9 @@ function get_values( data )
 		<table class="cbi-section-table" style="width:600px; margin:10px;" id="scan-list">
 			<tr class="cbi-section-table-titles">
 				<th class="cbi-section-table-cell"><%:Channel%></th>
-				<th class="cbi-section-table-cell"><%:Frequency%></th>
-				<th class="cbi-section-table-cell"><%:Utilization%></th>
-				<th class="cbi-section-table-cell"><%:Noise%></th>
+				<th class="cbi-section-table-cell"><%:Frequency (MHz)%></th>
+				<th class="cbi-section-table-cell"><%:Utilization (%)%></th>
+				<th class="cbi-section-table-cell"><%:Noise (dBm)%></th>
             </tr>
         </table>
     </fieldset>
