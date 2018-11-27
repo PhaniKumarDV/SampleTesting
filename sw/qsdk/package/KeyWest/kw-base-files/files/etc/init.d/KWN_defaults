@@ -30,6 +30,7 @@ start_service() {
     frag1=$(uci get wireless.wifi1.assemfrag)
     maxsize1=$(uci get wireless.wifi1.maxsize)
     fragsize1=$(uci get wireless.wifi1.fragsize)
+    shaping1=$(uci get wireless.@wifi-iface[1].shaping)
 #RADIO 2.4
     tx_power_radio2=$(uci get wireless.wifi0.TXPowLim2G)
     hidden_radio0=$(uci get wireless.@wifi-iface[0].hidden)
@@ -156,6 +157,10 @@ start_service() {
     if [ "$fragsize1" == "" ]
     then
         uci set wireless.wifi1.fragsize='1000'
+    fi
+    if [ "$shaping1" == "" ]
+    then
+        uci set wireless.@wifi-iface[1].shaping='0'
     fi
     if [ "$eth_mtu" == "" ]
     then

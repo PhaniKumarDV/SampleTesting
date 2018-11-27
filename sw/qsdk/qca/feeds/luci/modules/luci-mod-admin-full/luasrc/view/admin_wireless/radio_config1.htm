@@ -228,12 +228,32 @@ function updatehidessid()
              </select>
            </div>
          </div>
-                <div class="cbi-value">
+         <div class="cbi-value">
             <label class="cbi-value-title">Distance</label>
             <div class="cbi-value-field">
               <input type="text" name="73" class="cbi-input-select" value="<%=uciget('uci get wireless.wifi1.distance')%>" > &nbsp; Km
             </div>
           </div>
+          <div class="cbi-value">
+            <label class="cbi-value-title">Traffic Shaping</label>
+            <div class="cbi-value-field">
+               <select name="123" class="cbi-input-select">
+               <script type="text/javascript">
+                  var shaping = "<%=uciget('uci get wireless.@wifi-iface[1].shaping')%>";
+                  document.write("<option value='1' ");
+                  if( shaping == 1 ) {
+                      document.write(" selected");
+                  }
+                  document.write(">Enable</option>");
+                  document.write("<option value='0' ");
+                  if( shaping == 0 ) {
+                     document.write(" selected");
+                  }
+                  document.write(">Disable</option>");
+                </script>
+               </select>
+           </div>
+         </div>
           <div class="cbi-value">
             <label class="cbi-value-title">Uplink Limit</label>
             <div class="cbi-value-field">

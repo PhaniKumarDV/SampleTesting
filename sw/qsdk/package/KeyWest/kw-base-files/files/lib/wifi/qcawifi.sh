@@ -1878,6 +1878,8 @@ enable_qcawifi() {
 		[ -n "$ullmt" ] && iwpriv "$ifname" ul_limit "$ullmt"
 		config_get dllmt "$vif" dllmt
 		[ -n "$dllmt" ] && iwpriv "$ifname" dl_limit "$dllmt"
+		config_get shaping "$vif" shaping
+		[ -n "$dllmt" ] && iwpriv "$ifname" kwnshaping "$shaping"
 
 ########################## KWN Changes #############################
 

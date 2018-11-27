@@ -150,7 +150,8 @@ enum uci_cfg_id {
     UCI_ID_TFTP_OPTYPE = 120,
     UCI_ID_TFTP_KEEPSET = 121,
     /* Wireless */
-    UCI_ID_RADIO1_DDRS_INCR_THRLD =122
+    UCI_ID_RADIO1_DDRS_INCR_THRLD =122,
+    UCI_ID_RADIO1_TRAFFIC_SHAPING =123
 };
 
 typedef struct
