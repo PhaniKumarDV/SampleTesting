@@ -916,6 +916,9 @@ struct ieee80211_link_param {
     u_int8_t	link_id;
     u_int8_t	customer_name[32];
     u_int8_t	antenna_gain;
+    u_int8_t    kwn_assem_frag;
+    u_int16_t   kwn_max_pkt_size;
+    u_int16_t   kwn_frag_pkt_size;
 } __packed;
 
 /* VHT - exchange param */
@@ -2842,6 +2845,7 @@ struct atfgrouptable{
 // Factor used to convert airtime between user space and driver
 #define ATF_AIRTIME_CONVERSION_FACTOR 10
 #define IEEE80211_MAX_IFNAME 16
+#define KWN_SA_CHAN_MAX      250
 
 struct ieee80211_clone_params {
 	char		icp_name[IEEE80211_MAX_IFNAME];	/* device name */
@@ -2850,6 +2854,18 @@ struct ieee80211_clone_params {
     u_int8_t icp_bssid[IEEE80211_ADDR_LEN];    /* optional mac/bssid address */
         int32_t         icp_vapid;             /* vap id for MAC addr req */
     u_int8_t icp_mataddr[IEEE80211_ADDR_LEN];    /* optional MAT address */
+};
+
+struct kwn_sa_scan_entries {
+    u_int8_t  channel;
+    u_int16_t frequency;
+    u_int8_t  utility;
+    int16_t   noise;
+};
+
+struct kwn_sa_scan_result {
+    struct kwn_sa_scan_entries sa_entry[ KWN_SA_CHAN_MAX ];
+    u_int8_t cnt;
 };
 
 #define	    IEEE80211_CLONE_BSSID       0x0001		/* allocate unique mac/bssid */
@@ -2946,6 +2962,8 @@ struct ieee80211req_sta_info {
         u_int8_t  isi_kwn_tx_rate_mcs;
         u_int8_t  isi_l_ant_gain;
         u_int8_t  isi_r_ant_gain;
+        u_int32_t isi_l_bw_limit;
+        u_int32_t isi_r_bw_limit;
 
 };
 

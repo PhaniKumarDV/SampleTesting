@@ -112,7 +112,7 @@ diff -urN qca-wifi-org/include/_ieee80211.h qca-wifi-mod/include/_ieee80211.h
      IEEE80211_VENDOR_IE_PARAM_UPDATE,
 diff -urN qca-wifi-org/include/ieee80211.h qca-wifi-mod/include/ieee80211.h
 --- qca-wifi-org/include/ieee80211.h	2018-06-08 11:00:50.000000000 +0530
-+++ qca-wifi-mod/include/ieee80211.h	2018-11-22 17:48:57.153122739 +0530
++++ qca-wifi-mod/include/ieee80211.h	2018-11-27 12:49:07.920516002 +0530
 @@ -768,6 +768,12 @@
  #define IEEE80211_ACTION_TPC_REQUEST        2   /* Transmit Power control */
  #define IEEE80211_ACTION_TPC_REPORT         3
@@ -271,7 +271,7 @@ diff -urN qca-wifi-org/include/ieee80211.h qca-wifi-mod/include/ieee80211.h
  #define	    IEEE80211_CLONE_BSSID       0x0001		/* allocate unique mac/bssid */
  #define	    IEEE80211_NO_STABEACONS	    0x0002		/* Do not setup the station beacon timers */
  #define    IEEE80211_CLONE_WDS          0x0004      /* enable WDS processing */
-@@ -2813,6 +2936,32 @@
+@@ -2813,6 +2936,34 @@
          u_int8_t isi_tx_rate_mcs;
          u_int8_t isi_tx_rate_flags;
  #endif
@@ -301,6 +301,8 @@ diff -urN qca-wifi-org/include/ieee80211.h qca-wifi-mod/include/ieee80211.h
 +        u_int8_t  isi_kwn_tx_rate_mcs;
 +        u_int8_t  isi_l_ant_gain;
 +        u_int8_t  isi_r_ant_gain;
++        u_int32_t isi_l_bw_limit;
++        u_int32_t isi_r_bw_limit;
  
  };
  
@@ -3832,7 +3834,7 @@ diff -urN qca-wifi-org/umac/base/ieee80211_node.c qca-wifi-mod/umac/base/ieee802
      OS_BEACON_WRITE_LOCK(&nt->nt_nodelock, &lock_state, flags);
 diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.c qca-wifi-mod/umac/base/ieee80211_ucfg.c
 --- qca-wifi-org/umac/base/ieee80211_ucfg.c	2018-06-08 11:00:49.000000000 +0530
-+++ qca-wifi-mod/umac/base/ieee80211_ucfg.c	2018-11-27 11:42:25.629603517 +0530
++++ qca-wifi-mod/umac/base/ieee80211_ucfg.c	2018-11-27 12:49:47.608280496 +0530
 @@ -50,6 +50,30 @@
  #define HIGHEST_BASIC_RATE 24000
  #define THREE_HUNDRED_FIFTY_MBPS 350000
@@ -4539,7 +4541,7 @@ diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.c qca-wifi-mod/umac/base/ieee802
      }
  
      memset(&rinfo, 0, sizeof(rinfo));
-@@ -6685,7 +7317,42 @@
+@@ -6685,7 +7317,44 @@
      si->isi_is_256qam = wlan_node_get_256qam_support(node);
      si->isi_rx_nss = wlan_node_get_rx_spatial(node);
      si->isi_tx_nss = wlan_node_get_tx_spatial(node);
@@ -4580,6 +4582,8 @@ diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.c qca-wifi-mod/umac/base/ieee802
 +    si->isi_r_noise_floor = node->remote_noise_floor + vap->kwn_noise_floor_offset;
 +    si->isi_l_ant_gain = vap->kwn_antenna_gain;
 +    si->isi_r_ant_gain = node->kwn_antenna_gain;
++    si->isi_l_bw_limit = ( vap->iv_opmode == IEEE80211_M_HOSTAP ? vap->kwn_final_dl_limit : vap->kwn_final_ul_limit );
++    si->isi_r_bw_limit = ( vap->iv_opmode == IEEE80211_M_HOSTAP ? vap->kwn_final_ul_limit : vap->kwn_final_dl_limit );
      cp = (u_int8_t *)(si+1);
  
      if(!wlan_node_getwpaie(vap, macaddr, ni_ie, &ni_ie_len)) {

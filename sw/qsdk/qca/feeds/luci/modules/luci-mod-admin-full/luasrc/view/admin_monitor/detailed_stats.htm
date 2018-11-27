@@ -51,6 +51,7 @@
 var ind = <%=luci.http.write_json(entryind)%>;
 var freq = <%= luci.http.write_json(freq) %>;
 var hw = "<%=uciget('uci get wireless.wifi1.hwmode')%>";
+var shaping = "<%=uciget('uci get wireless.@wifi-iface[1].shaping')%>";
 /*                0   1   2   3   4   5   6   7   8   9   10  11  12  13  14  15  16  17  18  19 */
 var tx_pow_ac = [ 23, 22, 22, 21, 21, 20, 20, 19, 18, 17, 23, 22, 22, 21, 21, 20, 20, 19, 18, 17 ];
 var tx_pow_n  = [ 23, 22, 21, 20, 20, 19, 18, 17, 23, 22, 21, 20, 20, 19, 18, 17 ];
@@ -221,6 +222,8 @@ function getBaseLog(x, y) {
 							document.getElementById("rem_cusname").innerHTML = assoclist[j].r_customer_name;
 							document.getElementById("loc_id").innerHTML = assoclist[j].l_link_id;
 							document.getElementById("rem_id").innerHTML = assoclist[j].r_link_id;
+							document.getElementById("loc_limit").innerHTML = assoclist[j].l_bw_limit > (1000) ? (assoclist[j].l_bw_limit / ( 1000 )).toFixed(2) : 0;
+							document.getElementById("rem_limit").innerHTML = assoclist[j].r_bw_limit > (1000) ? (assoclist[j].r_bw_limit / ( 1000 )).toFixed(2) : 0;
 						}
 					}
 				}
@@ -333,6 +336,11 @@ function getBaseLog(x, y) {
 				<td id="loc_tput"></td>
 				<td id="rem_tput"></td>
 			</tr>
+			<tr id="bw_limit">
+				<td>Bandwidth Limit (Mbps)</td>
+				<td id="loc_limit"></td>
+				<td id="rem_limit"></td>
+			</tr>
 			<tr>
 				<td>Phy Errors</td>
 				<td id="loc_phy"></td>
@@ -366,5 +374,9 @@ function getBaseLog(x, y) {
 		</table>
 	</fieldset>
 </div>
+<script type="text/javascript">
+if( shaping == 0 )
+    document.getElementById("bw_limit").style.display = "none";
+</script>
 </div>
 <%+footer%>
