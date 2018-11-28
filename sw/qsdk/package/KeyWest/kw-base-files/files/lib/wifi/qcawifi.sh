@@ -1881,6 +1881,14 @@ enable_qcawifi() {
 		config_get shaping "$vif" shaping
 		[ -n "$dllmt" ] && iwpriv "$ifname" kwnshaping "$shaping"
 
+		config_get dcsstatus "$device" dcsstatus
+		config_get dcsthrld "$device" dcsthrld
+		config_get dcstime "$device" dcstime
+		config_get blint "$device" blint
+		[ -n "$dcsstatus" ] && iwpriv "$ifname" kwndcsstatus "$dcsstatus"
+		[ -n "$dcsthrld" ] && iwpriv "$ifname" kwndcsthrld "$dcsthrld"
+		[ -n "$dcstime" ] && iwpriv "$ifname" kwndcstime "$dcstime"
+		[ -n "$blint" ] && iwpriv "$ifname" kwnblint "$blint"
 ########################## KWN Changes #############################
 
 		local net_cfg bridge

@@ -31,6 +31,10 @@ start_service() {
     maxsize1=$(uci get wireless.wifi1.maxsize)
     fragsize1=$(uci get wireless.wifi1.fragsize)
     shaping1=$(uci get wireless.@wifi-iface[1].shaping)
+    dcsstatus1=$(uci get wireless.wifi1.dcsstatus)
+    dcsthrld1=$(uci get wireless.wifi1.dcsthrld)
+    dcstime1=$(uci get wireless.wifi1.dcstime)
+    blint1=$(uci get wireless.wifi1.blint)
 #RADIO 2.4
     tx_power_radio2=$(uci get wireless.wifi0.TXPowLim2G)
     hidden_radio0=$(uci get wireless.@wifi-iface[0].hidden)
@@ -162,10 +166,28 @@ start_service() {
     then
         uci set wireless.@wifi-iface[1].shaping='0'
     fi
+    if [ "$dcsstatus1" == "" ]
+    then
+        uci set wireless.wifi1.dcsstatus='0'
+    fi
+    if [ "$dcsthrld1" == "" ]
+    then
+        uci set wireless.wifi1.dcsthrld='0'
+    fi
+    if [ "$dcstime1" == "" ]
+    then
+        uci set wireless.wifi1.dcstime='30'
+    fi
+    if [ "$blint1" == "" ]
+    then
+        uci set wireless.wifi1.blint='1800'
+    fi
+#Ethernet
     if [ "$eth_mtu" == "" ]
     then
         uci set network.lan.mtu='1500'
     fi
+#VLAN
     if [ "$tagmgmt" == "" ]
     then
         uci set vlan.vlan.tagmgmt='0'

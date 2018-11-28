@@ -54,6 +54,7 @@
 
 <script type="text/javascript" src="<%=resource%>/cbi.js"></script>
 <script type="text/javascript">
+    var radiomode = "<%=uciget('uci get wireless.@wifi-iface[1].mode')%>";
 	var freqlist = <%= luci.http.write_json(freqlist) %>;
     var modelist = [ "ap=Outdoor Base", "sta=Outdoor Subscriber" ];
     var hwlist = [ "11a=Legacy", "11na=11NA", "11ac=11AC" ];
@@ -169,7 +170,12 @@ function updatehidessid()
         <li style="margin-right:4px" class="cbi-tab"><a href="#"><%:Properties%></a></li>
         <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=REQUEST_URI%>/mimo1"><%:MIMO%></a></li>
         <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=REQUEST_URI%>/security1"><%:Security%></a></li>
-        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=REQUEST_URI%>/macacl1"><%:MAC ACL%></a></li>
+        <script type="text/javascript">
+        if( radiomode == "ap" ) {
+           document.write("<li style='margin-right:4px' class='cbi-tab-disabled'><a href='<%=REQUEST_URI%>/macacl1'><%:MAC ACL%></a></li>");
+           document.write("<li style='margin-right:4px' class='cbi-tab-disabled'><a href='<%=REQUEST_URI%>/dcs1'><%:DCS%></a></li>");
+        }
+        </script>
     </ul>
     <fieldset class="cbi-section">
        <form name="formTable">

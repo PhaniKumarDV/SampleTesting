@@ -16,6 +16,7 @@
 <div class="page-content">
 <script type="text/javascript" src="<%=resource%>/cbi.js"></script>
 <script type="text/javascript">
+var radiomode = "<%=uciget('uci get wireless.@wifi-iface[1].mode')%>";
 var hwvalue = "<%=uciget('uci get wireless.wifi1.hwmode')%>";
 var bw = "<%=uciget('uci get wireless.wifi1.htmode')%>";
 var def = new Array(8);
@@ -193,7 +194,12 @@ function getoptions( list, value )
         <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=luci.dispatcher.build_url("admin/wireless/radio1")%>"><%:Properties%></a></li>
         <li style="margin-right:4px" class="cbi-tab"><a href="#"><%:MIMO%></a></li>
         <li style="margin-right:4px" class="cbi-tab-disabled"><a href="security1"><%:Security%></a></li>
-        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="macacl1"><%:MAC ACL%></a></li>
+        <script type="text/javascript">
+        if( radiomode == "ap" ) {
+            document.write("<li style='margin-right:4px' class='cbi-tab-disabled'><a href='macacl1'><%:MAC ACL%></a></li>");
+            document.write("<li style='margin-right:4px' class='cbi-tab-disabled'><a href='dcs1'><%:DCS%></a></li>");
+        }
+        </script>
     </ul>
     <fieldset class="cbi-section">
        <form name="formTable">

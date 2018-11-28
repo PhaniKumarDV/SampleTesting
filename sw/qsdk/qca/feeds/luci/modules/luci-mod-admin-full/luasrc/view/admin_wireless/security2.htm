@@ -15,6 +15,7 @@
 <div class="page-content">
 <script type="text/javascript" src="<%=resource%>/cbi.js"></script>
 <script type="text/javascript">
+var radiomode = "<%=uciget('uci get wireless.@wifi-iface[0].mode')%>";
 var def = new Array(8);
 function save_def_value()
 {
@@ -78,7 +79,10 @@ function hidekey(value)
     <ul class="cbi-tabmenu">
         <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=luci.dispatcher.build_url("admin/wireless/radio2")%>"><%:Properties%></a></li>
         <li style="margin-right:4px" class="cbi-tab"><a href="#">Security</a></li>
-        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="macacl2"><%:MAC ACL%></a></li>
+        <script type="text/javascript">
+        if( radiomode == "ap" )
+            document.write("<li style='margin-right:4px' class='cbi-tab-disabled'><a href='macacl2'><%:MAC ACL%></a></li>");
+        </script>
     </ul>
     <fieldset class="cbi-section">
        <form name="formTable">
