@@ -630,6 +630,7 @@ void cfg_set( char *type, char *value )
                 sprintf(cmd,"uci set tftp.tftp.optype='%s'",value);
                 system( cmd );
                 system("/usr/sbin/kwn_tftp");
+                sprintf(cmd,"uci set tftp.tftp.optype='0'");
                 break;
             }
         case UCI_ID_TFTP_KEEPSET:
