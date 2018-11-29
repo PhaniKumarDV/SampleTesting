@@ -860,8 +860,7 @@ void kwn_get_assoclist( kwn_wireless_stats *list )
         list->sta[num].remote_snr_a1 = si->isi_remote_snr_a1;
         list->sta[num].local_snr_a2 = si->isi_local_snr_a2;
         list->sta[num].remote_snr_a2 = si->isi_remote_snr_a2;
-        kwn_conv_uint32_to_ip(si->isi_ip_addr, &list->sta[num].r_ip[0]);
-        //list->sta[num].r_ip = si->isi_ip_addr;
+        kwn_conv_str_to_ip( &si->isi_ip_addr[0], &list->sta[num].r_ip[0] );
 #if 0
         printf(" station mac = %2.2X:%2.2X:%2.2X:%2.2X:%2.2X:%2.2X\n",
                 list->sta[num].mac[0],

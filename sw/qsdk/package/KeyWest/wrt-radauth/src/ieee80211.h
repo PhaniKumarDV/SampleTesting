@@ -851,7 +851,7 @@ struct ieee80211_ie_op_mode_ntfy {
 #define KWN_SCAN_ENTRY_MAX 100
 
 struct ieee80211_tx_param {
-    int8_t  	chan;
+    int16_t  	chan;
     int8_t  	txpower;
     int8_t  	rate;
 } __packed;
@@ -880,7 +880,7 @@ struct ieee80211_action_vht_scan_entries {
 } __packed;
 
 struct ieee80211_tput_test {
-    u_int32_t  	ipv4;
+    u_int8_t  	ipv4[20];
     u_int8_t  	start_stop; 
     u_int32_t  	duration; 
     u_int32_t  	pkt_size; 
@@ -894,7 +894,7 @@ struct ieee80211_action_vht_tput_test {
 } __packed;
 
 struct ieee80211_node_stats {
-    u_int32_t  	ipv4;
+    u_int8_t  	ipv4[20];
     u_int8_t    snr_avg[ 2 ];
     u_int64_t   rx_tput_mbps;
     u_int32_t  	phy_err; 
@@ -910,7 +910,7 @@ struct ieee80211_action_vht_node_stats {
 } __packed;
 
 struct ieee80211_link_param {
-    u_int32_t  	ipv4;
+    u_int8_t  	ipv4[20];
     u_int32_t  	ul_limit; 
     u_int32_t  	dl_limit; 
     u_int8_t	link_id;
@@ -932,7 +932,7 @@ struct ieee80211_dying_gasp_ie {
     u_int8_t	link_id;
     u_int16_t	seq_no;
     u_long   	ts;
-    u_int32_t  	ipv4;
+    u_int8_t  	ipv4[20];
     u_int8_t	customer_name[32];
     
 } __packed;
@@ -2844,8 +2844,8 @@ struct atfgrouptable{
 
 // Factor used to convert airtime between user space and driver
 #define ATF_AIRTIME_CONVERSION_FACTOR 10
-#define IEEE80211_MAX_IFNAME 16
-#define KWN_SA_CHAN_MAX      250
+#define IEEE80211_MAX_IFNAME          16
+#define KWN_CHAN_MAX                  250
 
 struct ieee80211_clone_params {
 	char		icp_name[IEEE80211_MAX_IFNAME];	/* device name */
@@ -2856,6 +2856,19 @@ struct ieee80211_clone_params {
     u_int8_t icp_mataddr[IEEE80211_ADDR_LEN];    /* optional MAT address */
 };
 
+struct kwn_acs_entries {
+    u_int8_t  channel;
+    u_int16_t frequency;
+    u_int8_t  utility;
+    u_int8_t  blacklist;
+    u_int64_t jiffies;
+};
+
+struct kwn_acs_result {
+    struct kwn_acs_entries acs_entry[ KWN_CHAN_MAX ];
+    u_int8_t cnt;
+};
+
 struct kwn_sa_scan_entries {
     u_int8_t  channel;
     u_int16_t frequency;
@@ -2864,7 +2877,7 @@ struct kwn_sa_scan_entries {
 };
 
 struct kwn_sa_scan_result {
-    struct kwn_sa_scan_entries sa_entry[ KWN_SA_CHAN_MAX ];
+    struct kwn_sa_scan_entries sa_entry[ KWN_CHAN_MAX ];
     u_int8_t cnt;
 };
 
@@ -2946,7 +2959,7 @@ struct ieee80211req_sta_info {
         u_int8_t isi_local_snr_a2;        /* Local SNR A2 */
         u_int8_t isi_remote_snr_a1;        /* Remote SNR A1 */
         u_int8_t isi_remote_snr_a2;        /* Remote SNR A2 */
-        u_int32_t  isi_ip_addr;
+        u_int8_t  isi_ip_addr[20];
         u_int32_t isi_local_phy_err;        /* Local Phy Err */
         u_int32_t isi_remote_phy_err;       /* Remote Phy Err */
         u_int32_t isi_local_mpdu_err;       /* Local MPDU Err */

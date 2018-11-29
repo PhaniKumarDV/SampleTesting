@@ -1,6 +1,6 @@
 diff -urN libiwinfo-2015-06-01_org/include/iwinfo.h libiwinfo-2015-06-01_mod/include/iwinfo.h
 --- libiwinfo-2015-06-01_org/include/iwinfo.h	2018-07-09 13:57:34.289239779 +0530
-+++ libiwinfo-2015-06-01_mod/include/iwinfo.h	2018-11-27 12:33:59.915942897 +0530
++++ libiwinfo-2015-06-01_mod/include/iwinfo.h	2018-11-29 13:08:50.988709966 +0530
 @@ -102,6 +102,30 @@
      char local_long[32];
      char remote_lat[32];
@@ -11,7 +11,7 @@ diff -urN libiwinfo-2015-06-01_org/include/iwinfo.h libiwinfo-2015-06-01_mod/inc
 +	uint8_t local_snr_a2;
 +	uint8_t remote_snr_a1;
 +	uint8_t remote_snr_a2;
-+	uint32_t ip_addr;
++	uint8_t ip_addr[20];
 +	uint32_t local_phy_err;
 +	uint32_t remote_phy_err;
 +	uint32_t local_mpdu_err;
@@ -34,32 +34,18 @@ diff -urN libiwinfo-2015-06-01_org/include/iwinfo.h libiwinfo-2015-06-01_mod/inc
  struct iwinfo_txpwrlist_entry {
 diff -urN libiwinfo-2015-06-01_org/iwinfo_lua.c libiwinfo-2015-06-01_mod/iwinfo_lua.c
 --- libiwinfo-2015-06-01_org/iwinfo_lua.c	2018-07-09 13:58:03.333239283 +0530
-+++ libiwinfo-2015-06-01_mod/iwinfo_lua.c	2018-11-27 12:35:05.327375587 +0530
-@@ -254,6 +254,7 @@
- 	int i, len;
- 	char rv[IWINFO_BUFSIZE];
- 	char macstr[18];
-+	char ip[18];
- 	const char *ifname = luaL_checkstring(L, 1);
- 	struct iwinfo_assoclist_entry *e;
- 
-@@ -269,9 +270,15 @@
- 			sprintf(macstr, "%02X:%02X:%02X:%02X:%02X:%02X",
- 				e->mac[0], e->mac[1], e->mac[2],
- 				e->mac[3], e->mac[4], e->mac[5]);
-+			sprintf(ip, "%d.%d.%d.%d",
-+				(e->ip_addr & 0xFF), (e->ip_addr >> 8) & 0xFF,
-+				(e->ip_addr >> 16 ) & 0xFF,(e->ip_addr >> 24) & 0xFF);
++++ libiwinfo-2015-06-01_mod/iwinfo_lua.c	2018-11-29 13:09:33.136340974 +0530
+@@ -272,6 +272,9 @@
  
  			lua_newtable(L);
  
-+			lua_pushstring(L, ip);
++			lua_pushstring(L, e->ip_addr);
 +			lua_setfield(L, -2, "ip_addr");
 +
  			lua_pushnumber(L, e->signal);
  			lua_setfield(L, -2, "signal");
  
-@@ -305,6 +312,75 @@
+@@ -305,6 +308,75 @@
  			lua_pushstring(L, e->remote_long);
  			lua_setfield(L, -2, "remote_long");
  
@@ -137,7 +123,7 @@ diff -urN libiwinfo-2015-06-01_org/iwinfo_lua.c libiwinfo-2015-06-01_mod/iwinfo_
  				lua_pushnumber(L, e->rx_rate.mcs);
 diff -urN libiwinfo-2015-06-01_org/iwinfo_qcawifi.c libiwinfo-2015-06-01_mod/iwinfo_qcawifi.c
 --- libiwinfo-2015-06-01_org/iwinfo_qcawifi.c	2018-07-09 13:58:28.057238861 +0530
-+++ libiwinfo-2015-06-01_mod/iwinfo_qcawifi.c	2018-11-27 12:34:37.203619733 +0530
++++ libiwinfo-2015-06-01_mod/iwinfo_qcawifi.c	2018-11-29 13:09:11.268532032 +0530
 @@ -799,6 +799,31 @@
  			memcpy(entry.local_long, si->isi_l_longitude+5, sizeof(entry.local_long));
  			memcpy(entry.remote_lat, si->isi_r_latitude+5, sizeof(entry.local_long));
@@ -148,7 +134,7 @@ diff -urN libiwinfo-2015-06-01_org/iwinfo_qcawifi.c libiwinfo-2015-06-01_mod/iwi
 +			entry.remote_snr_a1 = si->isi_remote_snr_a1;
 +			entry.local_snr_a2 = si->isi_local_snr_a2;
 +			entry.remote_snr_a2 = si->isi_remote_snr_a2;
-+			entry.ip_addr = si->isi_ip_addr;
++			memcpy(entry.ip_addr, si->isi_ip_addr, sizeof(si->isi_ip_addr));
 +			entry.local_phy_err = si->isi_local_phy_err;
 +			entry.remote_phy_err = si->isi_remote_phy_err;
 +			entry.local_mpdu_err = si->isi_local_mpdu_err;
