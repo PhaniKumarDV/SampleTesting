@@ -187,7 +187,7 @@ void kwn_reset_datarate( int stream )
 
 void kwn_reset_tx_params()
 {
-    int stream = 3; /* Auto */
+    int stream = 1; /* Single */
 
     system("uci set wireless.wifi1.ddrsstatus='1'");
     kwn_reset_datarate( stream );
@@ -572,7 +572,7 @@ void cfg_set( char *type, char *value )
                 int val = atoi(value);
                 int stream = 1;
                 if( val == 1 ) {
-                    stream = 3;
+                    stream = 1;
                 }
                 kwn_reset_datarate( stream );
                 sprintf(cmd,"uci set wireless.wifi1.ddrsstatus='%s'",value);

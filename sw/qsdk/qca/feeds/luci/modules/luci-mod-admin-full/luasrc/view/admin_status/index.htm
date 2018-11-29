@@ -145,6 +145,33 @@
 <script type="text/javascript" src="<%=resource%>/cbi.js"></script>
 <script type="text/javascript">//<![CDATA[
 var eth1_status = "<%=eth1_status %>";
+var eth1_speed = "<%=eth1_speed %>";
+var eth1_duplex = "<%=eth1_duplex %>";
+var dns = "<%=uciget('uci get network.lan.dns')%>";
+var dhcp = "<%=uciget('uci get network.lan.proto')%>";
+var country = "<%=uciget('uci get wireless.wifi1.country')%>";
+var shaping = "<%=uciget('uci get wireless.@wifi-iface[1].shaping')%>";
+var ullmt = "<%=uciget('uci get wireless.@wifi-iface[1].ullmt')%>";
+var dllmt = "<%=uciget('uci get wireless.@wifi-iface[1].dllmt')%>";
+eth1_speed = eth1_speed.split("Speed:");
+eth1_speed = eth1_speed[1];
+eth1_duplex = eth1_duplex.split("Duplex:");
+eth1_duplex = eth1_duplex[1];
+ullmt = ullmt > 1000 ? (ullmt / 1000) : 0;
+dllmt = dllmt > 1000 ? (dllmt / 1000) : 0;
+shaping = ( shaping == 0 ? "Disabled" : "Enabled" );
+dhcp = ( dhcp == "static" ? "Disabled" : "Enabled" );
+if( dns == "" )
+    dns = "0.0.0.0";
+if( country == 5016 ) {
+    country = "INDIA UL";
+}
+else if( country == 5017 ) {
+    country = "INDIA L";
+}
+else {
+    country = "RUSSIA";
+}
 var gw = "<%=gw %>";
 var dyn_val = "<%=uciget("ifconfig br-lan | grep 'inet addr' | sed 's/          //'")%>";
 var val = dyn_val.split(" ");
@@ -308,17 +335,42 @@ function get_log()
                             document.getElementById("mac1").innerHTML = "<%=uciget('uci get wireless.wifi1.macaddr')%>"; 
                             document.getElementById("mode1").innerHTML = "<b>"+net.mode+"<b>"; 
                             document.getElementById("opmode1").innerHTML = "<%=uciget('uci get wireless.wifi1.hwmode')%>";
+                            document.getElementById("bw1").innerHTML = "<%=uciget('uci get wireless.wifi1.htmode')%>";
                             document.getElementById("ssid1").innerHTML = net.ssid;
                             var freq = net.frequency * 1000;
                             document.getElementById("chan1").innerHTML = net.channel + " ( " + freq + " MHz )"
+                            var ddrs1 = "<%=uciget('uci get wireless.wifi1.ddrsstatus')%>";
+                            document.getElementById("ddrs1").innerHTML = ( ddrs1 == 1 ? "Enabled" : "Disabled" );
+                            if( ddrs1 == 2 ) {
+                                 document.getElementById("rate1").innerHTML = "MCS" + "<%=uciget('uci get wireless.wifi1.ddrsrate')%>";
+                            }
+                            var atpc1 = "<%=uciget('uci get wireless.wifi1.atpcstatus')%>";
+                            document.getElementById("atpc1").innerHTML = ( atpc1 == 1 ? "Enabled" : "Disabled" );
+                            if( atpc1 == 2 ) {
+                                 document.getElementById("pow1").innerHTML = "<%=uciget('uci get wireless.wifi1.atpcpower')%>" + " dBm";
+                            }
+                            document.getElementById("dis1").innerHTML = "<%=uciget('uci get wireless.wifi1.distance')%>" + " Km";
+                            var enc = "None";
+                            if( net.encryption != "None" ) 
+                                enc = "WPA2-PSK"
+                            document.getElementById("sec1").innerHTML = enc;
                         }
                         else {
                             document.getElementById("mac2").innerHTML = "<%=uciget('uci get wireless.wifi0.macaddr')%>"; 
                             document.getElementById("mode2").innerHTML = "<b>" +net.mode +"<b>"; 
                             document.getElementById("opmode2").innerHTML = "<%=uciget('uci get wireless.wifi0.hwmode')%>";
+                            document.getElementById("bw2").innerHTML = "<%=uciget('uci get wireless.wifi0.htmode')%>";
                             document.getElementById("ssid2").innerHTML = net.ssid;
                             var freq = net.frequency * 1000;
                             document.getElementById("chan2").innerHTML = net.channel + " ( " + freq + " MHz )"
+                            document.getElementById("ddrs2").innerHTML = "Enabled";
+                            document.getElementById("atpc2").innerHTML = "Disabled";
+                            document.getElementById("pow2").innerHTML = "<%=uciget('uci get wireless.wifi0.TXPowLim2G')%>" + " dBm";
+                            document.getElementById("dis2").innerHTML = "300 m";
+                            var enc = "none";
+                            if( net.encryption != "None" ) 
+                                enc = "WPA2-PSK"
+                            document.getElementById("sec2").innerHTML = enc;
                         }
 						if (is_assoc)
 						{
@@ -425,42 +477,81 @@ function get_log()
 <div class="sidebar"> <%+sidebar%></div>                                                                                                                                   
 <div class="page-content index">
 <h2><a id="content" name="content"><%:Summary%></a></h2>
-<fieldset class="cbi-section half one" style="min-height:250px;">
-	<legend><%:System%></legend>
 
+<table>
+<tr>
+<td style="border-top:0px;">
+<fieldset class="cbi-section" style="width:450px;min-height:230px;padding:20px 20px;">
+	<legend><%:System%></legend>
 	<table width="100%" cellspacing="10">
-		<tr><td width="33%"><%:Host Name%></td><td><%=luci.sys.hostname() or "?"%></td></tr>
-		<tr><td width="33%"><%:Product Description%></td><td id="desc"></td></tr>
-		<tr><td width="33%"><%:Serial Number%></td><td><%=serial_no %></td></tr>
-		<tr><td width="33%"><%:Local Time%></td><td id="localtime">-</td></tr>
-		<tr><td width="33%"><%:Uptime%></td><td id="uptime">-</td></tr>
-		<tr><td width="33%">Temperature</td><td><%=currTemperature%> &#8451;</td></tr>
-		<tr><td width="33%"><%:GPS Coordinates%></td><td><%=uciget('uci get system.gps.latitude')%>' <%=uciget('uci get system.gps.longitude')%>''</td></tr>
+		<tr><td width="35%"><%:Host Name%></td><td><%=luci.sys.hostname() or "?"%></td></tr>
+		<tr><td width="38%"><%:Description%></td><td id="desc"></td></tr>
+		<tr><td width="35%"><%:Serial Number%></td><td><%=serial_no %></td></tr>
+		<tr><td width="35%"><%:Local Time%></td><td id="localtime">-</td></tr>
+		<tr><td width="35%"><%:Uptime%></td><td id="uptime">-</td></tr>
+		<tr><td width="35%">Temperature</td><td><%=currTemperature%> &#8451;</td></tr>
+		<tr><td width="35%"><%:GPS Coordinates%></td><td><%=uciget('uci get system.gps.latitude')%>' <%=uciget('uci get system.gps.longitude')%>''</td></tr>
+		<tr><td width="35%"><%:Customer Name%></td><td><%=uciget('uci get wireless.wifi1.customername')%></td></tr>
+		<tr><td width="35%"><%:Country%></td><td><script type="text/javascript">document.write(country)</script></td></tr>
 	</table>
 </fieldset>
-<script type="text/javascript">
-get_desc();
-</script>
-<fieldset class="cbi-section half one" style="min-height:250px;">
-	<legend><%:Network%></legend>
-
+</td>
+<td rowspan="2" style="border-top:0px;">
+<fieldset class="cbi-section" style="width:450px;height:690px;padding:20px 20px;">
+	<legend><%:Wireless%></legend>
 	<table width="100%" cellspacing="10">
-		<tr><td width="33%"><%:Ethernet MAC%></td><td><%=eth_mac%></td></tr>
-		<tr><td width="33%"><%:Ethernet Status%></td><td>
+       <tr><td></td><td style="color:#a5bc23"><b>5 GHz<b></td><td style="color:#a5bc23"><b>2.4 GHz<b></td></tr>
+       <tr><td style="padding-top:10px;">MAC</td><td id="mac1" style="padding-top:10px;">-</td><td id="mac2" style="padding-top:10px;">-</td></tr>
+       <tr><td>Radio Mode</td><td id="mode1">-</td><td id="mode2">-</td></tr>
+       <tr><td>Operational Mode</td><td id="opmode1">-</td><td id="opmode2">-</td></tr>
+       <tr><td>Bandwidth</td><td id="bw1">-</td><td id="bw2">-</td></tr>
+       <tr><td>SSID</td><td id="ssid1">-</td><td id="ssid2">-</td></tr>
+       <tr><td>Channel</td><td id="chan1">-</td><td id="chan2">-</td></tr>
+       <tr><td>DDRS</td><td id="ddrs1">-</td><td id="ddrs2">-</td></tr>
+       <tr><td>Data Rate</td><td id="rate1">-</td><td id="rate2">-</td></tr>
+       <tr><td>ATPC</td><td id="atpc1">-</td><td id="atpc2">-</td></tr>
+       <tr><td>Tx Power</td><td id="pow1">-</td><td id="pow2">-</td></tr>
+       <tr><td>Security</td><td id="sec1">-</td><td id="sec2">-</td></tr>
+       <tr><td>Distance</td><td id="dis1">-</td><td id="dis2">-</td></tr>
+       <tr><td>Remote Partners</td><td id="links1">-</td><td id="links2">-</td></tr>
+       <tr><td>&nbsp;</td><td></td><td></td></tr>
+       <tr><td>&nbsp;</td><td></td><td></td></tr>
+    </table>
+    <table width="100%" cellspacing="10">
+       <tr><td width="35%" style="color:#a5bc23">( Mbps )</td><td width="33%" style="color:#a5bc23"><b>TX<b></td><td style="color:#a5bc23"><b>RX<b></td><td>&nbsp;</td></tr>
+       <tr><td style="padding-top:10px;">Ethernet</td><td id="ethtx" style="padding-top:10px;">-</td><td id="ethrx" style="padding-top:10px;">-</td><td>&nbsp;</td></tr>
+       <tr><td>5 GHz</td><td id="wi1tx">-</td><td id="wi1rx">-</td><td>&nbsp;</td></tr>
+       <tr><td>2.4 GHz</td><td id="wi2tx">-</td><td id="wi2rx">-</td><td>&nbsp;</td></tr>
+    </table>
+</fieldset>
+</td>
+</tr>
+<tr>
+<td style="border-top:0px;">
+<fieldset class="cbi-section" style="width:450px;min-height:230px;padding:20px 20px;">
+	<legend><%:Network%></legend>
+	<table width="100%" cellspacing="10">
+		<tr><td width="35%"><%:Ethernet MAC%></td><td><%=eth_mac%></td></tr>
+		<tr><td width="35%"><%:Ethernet Status%></td><td>
         <script type="text/javascript">
         if( eth1_status == "up" ) {
-            var str = "Link: Up <%=eth1_speed %> <%=eth1_duplex %>";
+            var str = "Up " + eth1_speed + " Duplex: " + eth1_duplex;
             document.write(str);
         }
         else
-            document.write(" Link: Down ");
+            document.write(" Down ");
         </script>
         </td></tr>
-		<tr><td width="33%"><%:IP Address%></td><td><script type="text/javascript">document.write(ip)</script></td></tr>
-		<tr><td width="33%"><%:Subnet Mask%></td><td><script type="text/javascript">document.write(mask)</script></td></tr>
-		<tr><td width="33%"><%:Gateway IP%></td><td><script type="text/javascript">document.write(gw)</script></td></tr>
-		<tr><td width="33%"><%:Customer Name%></td><td><%=uciget('uci get wireless.wifi1.customername')%></td></tr>
-		<tr><td width="33%"><%:Link Id%></td><td>
+		<tr><td width="35%"><%:IP Address%></td><td><script type="text/javascript">document.write(ip)</script></td></tr>
+		<tr><td width="35%"><%:Subnet Mask%></td><td><script type="text/javascript">document.write(mask)</script></td></tr>
+		<tr><td width="35%"><%:Gateway IP%></td><td><script type="text/javascript">document.write(gw)</script></td></tr>
+		<tr><td width="35%"><%:DNS IP%></td><td><script type="text/javascript">document.write(dns)</script></td></tr>
+		<tr><td width="35%"><%:DHCP Client%></td><td><script type="text/javascript">document.write(dhcp)</script></td></tr>
+		<tr><td width="35%"><%:Routing Mode%></td><td>Disabled</td></tr>
+		<tr><td width="35%"><%:Traffic Shaping%></td><td><script type="text/javascript">document.write(shaping)</script></td></tr>
+		<tr><td width="35%"><%:Uplink Limit%></td><td><script type="text/javascript">document.write(ullmt)</script>&nbsp;Mbps</td></tr>
+		<tr><td width="35%"><%:Downlink Limit%></td><td><script type="text/javascript">document.write(dllmt)</script>&nbsp;Mbps</td></tr>
+		<tr><td width="35%"><%:Link Id%></td><td>
         <script type="text/javascript">
           var mode = "<%=uciget('uci get wireless.@wifi-iface[1].mode')%>";
           var link_id = "-";
@@ -471,29 +562,12 @@ get_desc();
         </td></tr>
 	</table>
 </fieldset>
-<div>&nbsp;</div>
-
-<fieldset class="cbi-section half one" style="min-height:250px;">
-	<legend><%:Wireless%></legend>
-	<table width="100%" cellspacing="10">
-       <tr><td></td><td style="color:#a5bc23"><b>5 GHz<b></td><td style="color:#a5bc23"><b>2.4 GHz<b></td></tr>
-       <tr><td style="padding-top:10px;">MAC Address</td><td id="mac1" style="padding-top:10px;">-</td><td id="mac2" style="padding-top:10px;">-</td></tr>
-       <tr><td>Radio Mode</td><td id="mode1">-</td><td id="mode2">-</td></tr>
-       <tr><td>Operational Mode</td><td id="opmode1">-</td><td id="opmode2">-</td></tr>
-       <tr><td>SSID</td><td id="ssid1">-</td><td id="ssid2">-</td></tr>
-       <tr><td>Channel</td><td id="chan1">-</td><td id="chan2">-</td></tr>
-       <tr><td>Remote Partners</td><td id="links1">-</td><td id="links2">-</td></tr>
-    </table>
-</fieldset>
-<fieldset class="cbi-section half one" style="min-height:250px;">
-	<legend><%:Throughput%></legend>
-	<table width="100%" cellspacing="10">
-       <tr><td style="color:#a5bc23">( Mbps )</td><td style="color:#a5bc23"><b>TX<b></td><td style="color:#a5bc23"><b>RX<b></td><td>&nbsp;</td></tr>
-       <tr><td style="padding-top:10px;">Ethernet</td><td id="ethtx" style="padding-top:10px;">-</td><td id="ethrx" style="padding-top:10px;">-</td><td>&nbsp;</td></tr>
-       <tr><td>5 GHz</td><td id="wi1tx">-</td><td id="wi1rx">-</td><td>&nbsp;</td></tr>
-       <tr><td>2.4 GHz</td><td id="wi2tx">-</td><td id="wi2rx">-</td><td>&nbsp;</td></tr>
-    </table>
-</fieldset>
+</td>
+</tr>
+</table>
 </div>
+<script type="text/javascript">
+get_desc();
+</script>
 </div>
 <%+footer%>
