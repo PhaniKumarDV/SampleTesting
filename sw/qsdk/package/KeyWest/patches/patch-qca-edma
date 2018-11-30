@@ -1,7 +1,7 @@
 diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
 --- qca-edma-org/edma.c	2018-07-09 14:25:58.833210000 +0530
-+++ qca-edma-mod/edma.c	2018-11-27 13:00:22.456331416 +0530
-@@ -26,6 +26,258 @@
++++ qca-edma-mod/edma.c	2018-11-30 17:37:11.345212731 +0530
+@@ -26,6 +26,278 @@
  extern u8 edma_per_prec_stats_enable;
  extern u32 edma_iad_stats_enable;
  
@@ -30,6 +30,8 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
 +EXPORT_SYMBOL(edma_set_pbb_sa_mac);
 +EXPORT_SYMBOL(edma_set_pbb_bvid);
 +EXPORT_SYMBOL(edma_set_pbb_isid);
++EXPORT_SYMBOL(edma_set_suservice);
++EXPORT_SYMBOL(edma_set_sukbps);
 +
 +uint64_t edma_get_tx_pkts( struct net_device *dev )
 +{
@@ -257,10 +259,28 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
 +	return 0;
 +}
 +
++int edma_set_suservice( struct net_device *dev, uint8_t suservice )
++{
++	struct edma_adapter *adapter = netdev_priv(dev);
++	struct edma_common_info *edma_cinfo = adapter->edma_cinfo;
++	printk(": @@@@@@@@@ SU Service : %d\n",suservice );
++	edma_cinfo->kwn_suservice = suservice;
++	return 0;
++}
++
++int edma_set_sukbps( struct net_device *dev, uint32_t kbps )
++{
++	struct edma_adapter *adapter = netdev_priv(dev);
++	struct edma_common_info *edma_cinfo = adapter->edma_cinfo;
++	printk(": @@@@@@@@@ SU Dflt kbps : %d\n",kbps );
++	edma_cinfo->kwn_sukbps = kbps;
++	return 0;
++}
++
  /* edma_skb_priority_offset()
   *	get edma skb priority
   */
-@@ -777,19 +1029,212 @@
+@@ -777,19 +1049,223 @@
  #endif
  			edma_receive_checksum(rd, skb);
  
@@ -469,18 +489,29 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
 +                if ( (jiffies - edma_cinfo->kwn_rx_tput_last_jiffies) >= 1000 )
 +                {
 +                    edma_cinfo->kwn_rx_tput_mbps = edma_cinfo->rx_offer_pkt_cnt > 0 ?
-+                        ( (edma_cinfo->rx_offer_pkt_bytes_cnt * 8)) : 0;
++                        ( ( ( edma_cinfo->rx_offer_pkt_bytes_cnt - edma_cinfo->rx_byte_drop_cnt )* 8)) : 0;
 +                    edma_cinfo->kwn_rx_tput_last_jiffies = jiffies;
 +                    edma_cinfo->rx_offer_pkt_cnt = 0;
 +                    edma_cinfo->rx_offer_pkt_bytes_cnt = 0;
++                    edma_cinfo->rx_byte_drop_cnt = 0;
 +                    //printk(": RX Tput: %llu\n",edma_cinfo->kwn_rx_tput_mbps);
++                }
++                else 
++                {
++                    if( !edma_cinfo->kwn_suservice ) {
++                        if( edma_cinfo->rx_offer_pkt_bytes_cnt > ( (edma_cinfo->kwn_sukbps * 1000 ) / 8 ) ) {
++                            edma_cinfo->rx_byte_drop_cnt += length;
++							dev_kfree_skb_any( skb );
++                            continue;
++                        }
++                    }
 +                }
 +            }
 +
  			/* Check if we reached refill threshold */
  			if (cleaned_count == EDMA_RX_BUFFER_WRITE) {
  				ret_count = edma_alloc_rx_buf(edma_cinfo, erdr, cleaned_count, queue_id);
-@@ -1324,7 +1769,6 @@
+@@ -1324,7 +1800,6 @@
  		word3 |= (1 << EDMA_TX_INS_CVLAN);
  		word3 |= (adapter->default_vlan_tag) << EDMA_TX_CVLAN_TAG_SHIFT;
  	}
@@ -488,7 +519,7 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
  	if (packet_is_rstp) {
  		word3 |= dp_bitmap << EDMA_TPD_PORT_BITMAP_SHIFT;
  		word3 |= from_cpu << EDMA_TPD_FROM_CPU_SHIFT;
-@@ -1535,6 +1979,40 @@
+@@ -1535,6 +2010,40 @@
  	return __EDMA_LINKDOWN;
  }
  
@@ -529,7 +560,7 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
  /* edma_adjust_link()
   *	check for edma link status
   */
-@@ -1551,12 +2029,14 @@
+@@ -1551,12 +2060,14 @@
  
  	if (status == __EDMA_LINKUP && adapter->link_state == __EDMA_LINKDOWN) {
  		dev_info(&adapter->pdev->dev, "%s: GMAC Link is up with phy_speed=%d\n", netdev->name, phydev->speed);
@@ -544,7 +575,7 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
  		adapter->link_state = __EDMA_LINKDOWN;
  		netif_carrier_off(netdev);
  		netif_tx_stop_all_queues(netdev);
-@@ -1590,6 +2070,7 @@
+@@ -1590,6 +2101,7 @@
  	unsigned int flags_transmit = 0;
  	bool packet_is_rstp = false;
  	struct netdev_queue *nq = NULL;
@@ -552,7 +583,7 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
  
  	if (skb_shinfo(skb)->nr_frags) {
  		nr_frags_first = skb_shinfo(skb)->nr_frags;
-@@ -1652,12 +2133,163 @@
+@@ -1652,12 +2164,163 @@
  		return NETDEV_TX_BUSY;
  	}
  
@@ -719,7 +750,7 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
  		flags_transmit |= EDMA_VLAN_TX_TAG_INSERT_FLAG;
  	else if (adapter->default_vlan_tag)
  		flags_transmit |= EDMA_VLAN_TX_TAG_INSERT_DEFAULT_FLAG;
-@@ -1683,6 +2315,30 @@
+@@ -1683,6 +2346,30 @@
  	adapter->stats.tx_packets++;
  	adapter->stats.tx_bytes += skb->len;
  
@@ -752,7 +783,7 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
  	return NETDEV_TX_OK;
 diff -urN qca-edma-org/edma.h qca-edma-mod/edma.h
 --- qca-edma-org/edma.h	2018-07-09 14:25:58.833210000 +0530
-+++ qca-edma-mod/edma.h	2018-11-22 12:42:28.424971222 +0530
++++ qca-edma-mod/edma.h	2018-11-30 17:37:22.393170126 +0530
 @@ -44,6 +44,12 @@
  #include <linux/if_pppox.h>
  #include "ess_edma.h"
@@ -766,7 +797,7 @@ diff -urN qca-edma-org/edma.h qca-edma-mod/edma.h
  #define EDMA_CPU_CORES_SUPPORTED 4
  #define EDMA_MAX_PORTID_SUPPORTED 5
  #define EDMA_MAX_VLAN_SUPPORTED  EDMA_MAX_PORTID_SUPPORTED
-@@ -393,6 +399,29 @@
+@@ -393,6 +399,32 @@
  	struct edma_per_cpu_queues_info edma_percpu_info[CONFIG_NR_CPUS]; /* per cpu information */
  	spinlock_t stats_lock; /* protect edma stats area for updation */
  	u32 num_cores;
@@ -793,10 +824,13 @@ diff -urN qca-edma-org/edma.h qca-edma-mod/edma.h
 +	uint64_t rx_offer_pkt_bytes_cnt;
 +	uint64_t kwn_rx_tput_mbps;
 +	uint64_t kwn_rx_tput_last_jiffies;
++    uint64_t rx_byte_drop_cnt;
++    uint8_t kwn_suservice;
++	uint32_t kwn_sukbps;
  };
  
  /* transimit packet descriptor (tpd) ring */
-@@ -473,6 +502,16 @@
+@@ -473,6 +505,16 @@
  	__be16 proto;
  };
  
@@ -813,7 +847,7 @@ diff -urN qca-edma-org/edma.h qca-edma-mod/edma.h
  int edma_alloc_queues_tx(struct edma_common_info *edma_cinfo);
  int edma_alloc_queues_rx(struct edma_common_info *edma_cinfo);
  int edma_open(struct net_device *netdev);
-@@ -547,4 +586,29 @@
+@@ -547,4 +589,31 @@
  void edma_iad_process_flow(struct edma_common_info *edma_cinfo,
  			   struct sk_buff *skb, u8 dir, u8 precedence);
  
@@ -842,4 +876,6 @@ diff -urN qca-edma-org/edma.h qca-edma-mod/edma.h
 +int edma_set_pbb_sa_mac( struct net_device *dev, uint8_t *mac );
 +int edma_set_pbb_bvid( struct net_device *dev, int16_t vlan_id );
 +int edma_set_pbb_isid( struct net_device *dev, int32_t vlan_id );
++int edma_set_suservice( struct net_device *dev, uint8_t suservice );
++int edma_set_sukbps( struct net_device *dev, uint32_t kbps );
  #endif /* _EDMA_H_ */

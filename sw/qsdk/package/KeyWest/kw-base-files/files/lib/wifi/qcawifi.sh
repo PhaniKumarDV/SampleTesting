@@ -1881,6 +1881,11 @@ enable_qcawifi() {
 		config_get shaping "$vif" shaping
 		[ -n "$dllmt" ] && iwpriv "$ifname" kwnshaping "$shaping"
 
+		config_get suservice "$device" suservice
+        iwpriv "$ifname" kwnsuservice "$suservice"
+		config_get sukbps "$device" sukbps
+        iwpriv "$ifname" kwnsukbps "$sukbps"
+
 		config_get dcsstatus "$device" dcsstatus
 		config_get dcsthrld "$device" dcsthrld
 		config_get dcstime "$device" dcstime

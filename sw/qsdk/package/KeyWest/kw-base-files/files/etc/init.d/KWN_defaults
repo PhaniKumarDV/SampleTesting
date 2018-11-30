@@ -35,6 +35,8 @@ start_service() {
     dcsthrld1=$(uci get wireless.wifi1.dcsthrld)
     dcstime1=$(uci get wireless.wifi1.dcstime)
     blint1=$(uci get wireless.wifi1.blint)
+    suservice1=$(uci get wireless.wifi1.suservice)
+    sukbps1=$(uci get wireless.wifi1.sukbps)
 #RADIO 2.4
     tx_power_radio2=$(uci get wireless.wifi0.TXPowLim2G)
     hidden_radio0=$(uci get wireless.@wifi-iface[0].hidden)
@@ -181,6 +183,14 @@ start_service() {
     if [ "$blint1" == "" ]
     then
         uci set wireless.wifi1.blint='1800'
+    fi
+    if [ "$suservice1" == "" ]
+    then
+        uci set wireless.wifi1.suservice='1'
+    fi
+    if [ "$sukbps1" == "" ]
+    then
+        uci set wireless.wifi1.sukbps='64'
     fi
 #Ethernet
     if [ "$eth_mtu" == "" ]
