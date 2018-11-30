@@ -416,7 +416,7 @@ diff -urN qca-wifi-org/offload/wlan/include/ol_if_athvar.h qca-wifi-mod/offload/
  
 diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_ath.c qca-wifi-mod/offload/wlan/lmac_offload_if/ol_if_ath.c
 --- qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_ath.c	2018-06-08 11:00:45.000000000 +0530
-+++ qca-wifi-mod/offload/wlan/lmac_offload_if/ol_if_ath.c	2018-11-28 17:15:40.004794573 +0530
++++ qca-wifi-mod/offload/wlan/lmac_offload_if/ol_if_ath.c	2018-11-29 19:04:05.581374403 +0530
 @@ -196,6 +196,7 @@
  int ol_ath_peer_mumimo_tx_count_event_handler (ol_scn_t scn, u_int8_t *data, u_int16_t datalen);
  int ol_ath_peer_gid_userpos_list_event_handler (ol_scn_t scn, u_int8_t *data, u_int16_t datalen);
@@ -453,7 +453,7 @@ diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_ath.c qca-wifi-mod/off
              } else {
                  return 15 + ((freq - 2512) / 20);
              }
-@@ -6743,6 +6745,331 @@
+@@ -6743,6 +6745,353 @@
      OS_SET_TIMER(&ic->ic_inact_timer, IEEE80211_SESSION_WAIT*1000);
  }
  
@@ -464,7 +464,7 @@ diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_ath.c qca-wifi-mod/off
 +
 +    for( i = 0; i < ic->kwn_scan.acs_result.cnt; i++ )
 +    {
-+        //printk("Freq %d Utility %d \n",ic->kwn_scan.acs_result.acs_entry[i].frequency, ic->kwn_scan.acs_result.acs_entry[i].utility);
++        //printk("Freq %d Utility %d Blacklsit %d \n",ic->kwn_scan.acs_result.acs_entry[i].frequency, ic->kwn_scan.acs_result.acs_entry[i].utility, ic->kwn_scan.acs_result.acs_entry[i].blacklist);
 +        if( freq == ic->kwn_scan.acs_result.acs_entry[i].frequency ) {
 +            if( i < ( ic->kwn_scan.acs_result.cnt - 1 ) && 
 +                    ic->kwn_scan.acs_result.acs_entry[ i + 1 ].blacklist == 0 ) {
@@ -539,6 +539,29 @@ diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_ath.c qca-wifi-mod/off
 +    }
 +}
 +
++void kwn_update_channel_list( struct ieee80211com *ic )
++{
++#define IS_NEW_CHANNEL(c)	isclr(reported, (c)->ic_ieee)
++    u_int8_t reported[IEEE80211_CHAN_BYTES];
++    int i, cnt = 0;
++
++    memset(reported, 0, sizeof(reported));
++    for (i = 0; i < ic->ic_nchans; i++) {
++        const struct ieee80211_channel *c = &ic->ic_channels[i];
++        if( IS_NEW_CHANNEL(c) ) {
++            setbit( reported, c->ic_ieee );
++            ic->kwn_scan.acs_result.acs_entry[cnt].channel = c->ic_ieee;
++            ic->kwn_scan.acs_result.acs_entry[cnt].frequency = c->ic_freq;
++            ic->kwn_scan.acs_result.acs_entry[cnt].utility = 0;
++            ic->kwn_scan.acs_result.acs_entry[cnt].blacklist = 0;
++            printk("channel %d %d %d \n",ic->kwn_scan.acs_result.acs_entry[cnt].channel, ic->kwn_scan.acs_result.acs_entry[cnt].frequency, ic->kwn_scan.acs_result.acs_entry[cnt].utility);
++            cnt++;
++        }
++    }
++    ic->kwn_scan.acs_result.cnt = cnt;
++    printk("Count %d \n",ic->kwn_scan.acs_result.cnt);
++}
++
 +static OS_TIMER_FUNC( ol_dcs_timer_fun )
 +{
 +	wlan_dev_t ic;
@@ -564,9 +587,8 @@ diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_ath.c qca-wifi-mod/off
 +        return;
 +    }
 +    if( ic->kwn_scan.acs_result.cnt == 0 ) {
-+        printk(": DCS: Last scanned results are not available, Enable ACS\n");
-+        OS_SET_TIMER( &ic->kwn_dcs.dcs_timer, ic->kwn_dcs.dcs_time * 1000 );
-+        return;
++        kwn_update_channel_list( ic );
++        printk(": DCS: Last scanned results are not available, Update channel list\n");
 +    }
 +    if( ic->kwn_dcs.dcs_thrld ) {
 +        next_freq = kwn_get_next_frequency( ic, ic->ic_curchan->ic_freq );
@@ -785,7 +807,7 @@ diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_ath.c qca-wifi-mod/off
  static int
  ol_ath_set_mgmt_retry_limit(struct ieee80211com *ic , u_int8_t limit)
  {
-@@ -7156,6 +7483,7 @@
+@@ -7156,6 +7505,7 @@
      ic->ic_atf_logging = 0;
  
      ic->ic_bestUL_hyst = BEST_UL_HYST_DEF;
@@ -793,7 +815,7 @@ diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_ath.c qca-wifi-mod/off
  
      return EOK;
  }
-@@ -8133,6 +8461,10 @@
+@@ -8133,6 +8483,10 @@
                                                  ol_ath_esp_estimate_event_handler, WMI_RX_UMAC_CTX);
  #endif
  
@@ -804,7 +826,7 @@ diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_ath.c qca-wifi-mod/off
  #if OL_ATH_SUPPORT_LED
          if (scn->target_version == AR9888_REV2_VERSION || scn->target_version == AR9887_REV1_VERSION) {
              scn->scn_led_gpio = PEREGRINE_LED_GPIO ;
-@@ -8475,6 +8807,12 @@
+@@ -8475,6 +8829,12 @@
      u_int32_t num_mem_chunks;
      ic = &scn->sc_ic;
  
