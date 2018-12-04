@@ -17,6 +17,9 @@ function index()
     entry({"admin", "monitor", "nwkstats", "learntbl"}, call("action_learntbl"))
     entry({"admin", "monitor", "nwkstats", "clr_learntbl"}, call("action_clr_learntbl"))
     entry({"admin", "monitor", "nwkstats", "dhcplease"}, template("admin_monitor/dhcplease"))
+	entry({"admin", "monitor", "nwkstats", "clrethstats"}, call("clrethstats"), nil).leaf = true
+	entry({"admin", "monitor", "nwkstats", "clrwifi1stats"}, call("clrwifi1stats"), nil).leaf = true
+	entry({"admin", "monitor", "nwkstats", "clrwifi0stats"}, call("clrwifi0stats"), nil).leaf = true
 
 	entry({"admin", "monitor", "stats"}, template("admin_monitor/radio1_stats"), _("Link Statistics"), 2)
 	entry({"admin", "monitor", "stats", "radio2stats"}, template("admin_monitor/radio2_stats"))
@@ -380,3 +383,14 @@ function action_clr_log( logtype )
 	luci.http.write_json(data)
 end
 
+function clrethstats()
+	luci.sys.exec("iwpriv ath1 kwnclrethstats 1")
+end
+function clrwifi1stats()
+	luci.sys.exec("athstatsclr -i wifi1")
+	luci.sys.exec("80211stats -i ath1 -e 1")
+end
+function clrwifi0stats()
+	luci.sys.exec("athstatsclr -i wifi0")
+	luci.sys.exec("80211stats -i ath0 -e 1")
+end

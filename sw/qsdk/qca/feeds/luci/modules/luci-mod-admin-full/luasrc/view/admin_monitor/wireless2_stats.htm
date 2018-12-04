@@ -29,6 +29,18 @@
             );
         }
     );
+    
+function clearwifi0stat()
+{
+    var id = 1;
+    XHR.get('<%=luci.dispatcher.build_url("admin", "monitor", "nwkstats")%>/clrwifi0stats/' + id, null,
+	function(x, data) {
+		    location.href="<%=luci.dispatcher.build_url("admin/monitor/nwkstats/radio2nwkstats")%>"
+		if (data) { 
+        }
+	}
+    );
+}
             </script>
 <script type="text/javascript" src="<%=resource%>/cbi.js"></script>
 <div class="page-content">
@@ -43,7 +55,12 @@
     </ul>
    <h2><a id="content" name="content"><%:Wireless Statistics%></a></h2>
 	<fieldset class="cbi-section">
-        <h3 style="color:#a5bc23; border-bottom:0px;"><%:Data%></h3>
+       <table>
+       <tr> 
+        <td><h3 style="color:#a5bc23; border-bottom:0px;"><%:Data%></h3></td>
+        <td><span style="padding-left:700px;" class="cbi-page-actions right"><input type="button" class="cbi-button" value="<%:Clear%>" onclick="clearwifi0stat()" /></span></td>
+       </tr>
+       </table>
 		<table style="margin:10px; width:400px;">
 		<tr><td><table class="cbi-section-table" style="margin:0px; width:400px;">
 			<tr>

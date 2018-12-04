@@ -33,7 +33,18 @@
             );
         }
     );
-            </script>
+function clearethstat()
+{
+    var id = 1;
+    XHR.get('<%=luci.dispatcher.build_url("admin", "monitor", "nwkstats")%>/clrethstats/' + id, null,
+	function(x, data) {
+		    location.href="<%=luci.dispatcher.build_url("admin/monitor/nwkstats/ethnwkstats")%>"
+		if (data) { 
+        }
+	}
+    );
+}
+</script>
 <script type="text/javascript" src="<%=resource%>/cbi.js"></script>
 <div class="page-content">
    <h2><a id="content" name="content"><%:Network Statistics%></a></h2>
@@ -47,6 +58,7 @@
     </ul>
    <h2><a id="content" name="content"><%:Ethernet Statistics%></a></h2>
 	<fieldset class="cbi-section">
+    <span id="s1" style="padding-left:275px;" class="cbi-page-actions right"><input type="button" class="cbi-button" value="<%:Clear%>" onclick="clearethstat()" /></span>
 		<table class="cbi-section-table" style="margin:10px; width:400px;">
 			<tr class="cbi-section-table-titles">
 				<th class="cbi-section-table-cell"></th>
