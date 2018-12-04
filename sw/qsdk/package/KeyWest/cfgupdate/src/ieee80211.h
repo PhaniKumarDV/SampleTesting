@@ -901,6 +901,7 @@ struct ieee80211_node_stats {
     u_int32_t  	mpdu_err; 
     u_int32_t  	retries; 
     int16_t  	noise_floor; 
+    u_int8_t    rtx;
 } __packed;
 
 /* VHT - Node Stats*/
@@ -2977,6 +2978,8 @@ struct ieee80211req_sta_info {
         u_int8_t  isi_r_ant_gain;
         u_int32_t isi_l_bw_limit;
         u_int32_t isi_r_bw_limit;
+        u_int8_t  isi_l_rtx;
+        u_int8_t  isi_r_rtx;
 
 };
 

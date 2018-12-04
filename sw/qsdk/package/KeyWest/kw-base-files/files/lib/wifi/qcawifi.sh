@@ -1834,32 +1834,36 @@ enable_qcawifi() {
 		config_get ddrsinctimer "$device" ddrsinctimer
 		config_get ddrsdectimer "$device" ddrsdectimer
 		config_get ddrsincthrld "$device" ddrsincthrld
+		config_get ddrsrtxinc "$device" ddrsrtxinc
+		config_get ddrsrtxdec "$device" ddrsrtxdec
 		config_get atpcstatus "$device" atpcstatus
 		config_get atpcpower "$device" atpcpower
         #pow=`expr $atpcpower + 3`
 
 
-        iwpriv "$ifname" kwnstream "$spatialstream"
+        [ -n "$spatialstream" ] && iwpriv "$ifname" kwnstream "$spatialstream"
         if [ "$ddrsstatus" == "1" ]
         then
-            iwpriv "$ifname" kwnddrsmin "$ddrsminrate"
-            iwpriv "$ifname" kwnddrsmax "$ddrsmaxrate"
-            iwpriv "$ifname" kwnddrsinc "$ddrsinctimer"
-            iwpriv "$ifname" kwnddrsdec "$ddrsdectimer"
-            iwpriv "$ifname" kwnincthrld "$ddrsincthrld"
+            [ -n "$ddrsminrate" ] && iwpriv "$ifname" kwnddrsmin "$ddrsminrate"
+            [ -n "$ddrsmaxrate" ] && iwpriv "$ifname" kwnddrsmax "$ddrsmaxrate"
+            [ -n "$ddrsinctimer" ] && iwpriv "$ifname" kwnddrsinc "$ddrsinctimer"
+            [ -n "$ddrsdectimer" ] && iwpriv "$ifname" kwnddrsdec "$ddrsdectimer"
+            [ -n "$ddrsincthrld" ] && iwpriv "$ifname" kwnincthrld "$ddrsincthrld"
+            [ -n "$ddrsrtxinc" ] && iwpriv "$ifname" kwnrtxinc "$ddrsrtxinc"
+            [ -n "$ddrsrtxdec" ] && iwpriv "$ifname" kwnrtxdec "$ddrsrtxdec"
         else
-            iwpriv "$ifname" kwnddrsmin "$ddrsrate"
-            iwpriv "$ifname" kwnddrsmax "$ddrsrate"
+            [ -n "$ddrsrate" ] && iwpriv "$ifname" kwnddrsmin "$ddrsrate"
+            [ -n "$ddrsrate" ] && iwpriv "$ifname" kwnddrsmax "$ddrsrate"
         fi
-        iwpriv "$ifname" kwnatpc "$atpcstatus"
-        iwpriv "$ifname" kwnatpcpow "$atpcpower"
+        [ -n "$atpcstatus" ] && iwpriv "$ifname" kwnatpc "$atpcstatus"
+        [ -n "$atpcpower" ] && iwpriv "$ifname" kwnatpcpow "$atpcpower"
 
 
 		config_get kwnnoiseoff "$device" kwnnoiseoff
-        iwpriv "$ifname" kwnnoiseoff "$kwnnoiseoff"
+        [ -n "$kwnnoiseoff" ] && iwpriv "$ifname" kwnnoiseoff "$kwnnoiseoff"
 
 		config_get antennagain "$device" antennagain
-        iwpriv "$ifname" kwnantgain "$antennagain"
+        [ -n "$antennagain" ] && iwpriv "$ifname" kwnantgain "$antennagain"
 
 		config_get assemfrag "$device" assemfrag
 		config_get maxsize "$device" maxsize
@@ -1882,9 +1886,9 @@ enable_qcawifi() {
 		[ -n "$dllmt" ] && iwpriv "$ifname" kwnshaping "$shaping"
 
 		config_get suservice "$device" suservice
-        iwpriv "$ifname" kwnsuservice "$suservice"
+        [ -n "$suservice" ] && iwpriv "$ifname" kwnsuservice "$suservice"
 		config_get sukbps "$device" sukbps
-        iwpriv "$ifname" kwnsukbps "$sukbps"
+        [ -n "$sukbps" ] && iwpriv "$ifname" kwnsukbps "$sukbps"
 
 		config_get dcsstatus "$device" dcsstatus
 		config_get dcsthrld "$device" dcsthrld

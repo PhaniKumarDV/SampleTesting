@@ -648,6 +648,12 @@ void cfg_set( char *type, char *value )
         case UCI_ID_RADIO1_DCS_THRLD:
             sprintf(cmd,"uci set wireless.wifi1.dcsthrld='%s'",value);
             break;
+        case UCI_ID_RADIO1_DDRS_RTX_INC:
+            sprintf(cmd,"uci set wireless.wifi1.ddrsrtxinc='%s'",value);
+            break;
+        case UCI_ID_RADIO1_DDRS_RTX_DEC:
+            sprintf(cmd,"uci set wireless.wifi1.ddrsrtxdec='%s'",value);
+            break;
         default:
             break;
     }

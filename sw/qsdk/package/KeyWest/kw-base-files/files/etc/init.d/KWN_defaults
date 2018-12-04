@@ -24,6 +24,8 @@ start_service() {
     ddrsinctimer1=$(uci get wireless.wifi1.ddrsinctimer)
     ddrsdectimer1=$(uci get wireless.wifi1.ddrsdectimer)
     ddrsincthrld1=$(uci get wireless.wifi1.ddrsincthrld)
+    ddrsrtxinc1=$(uci get wireless.wifi1.ddrsrtxinc)
+    ddrsrtxdec1=$(uci get wireless.wifi1.ddrsrtxdec)
     atpcstatus1=$(uci get wireless.wifi1.atpcstatus)
     atpcpower1=$(uci get wireless.wifi1.atpcpower)
     gain1=$(uci get wireless.wifi1.antennagain)
@@ -133,6 +135,14 @@ start_service() {
     then
         uci set wireless.wifi1.ddrsincthrld='3'
     fi
+    if [ "$ddrsrtxinc1" == "" ]
+    then
+        uci set wireless.wifi1.ddrsrtxinc='10'
+    fi
+    if [ "$ddrsrtxdec1" == "" ]
+    then
+        uci set wireless.wifi1.ddrsrtxdec='15'
+    fi
 # Auto Stream is not supported in current release...for upgrade support restting to single
     if [ $stream1 -eq "3" ]; then
         uci set wireless.wifi1.spatialstream='1'
@@ -174,7 +184,7 @@ start_service() {
     fi
     if [ "$dcsthrld1" == "" ]
     then
-        uci set wireless.wifi1.dcsthrld='0'
+        uci set wireless.wifi1.dcsthrld='50'
     fi
     if [ "$dcstime1" == "" ]
     then

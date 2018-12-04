@@ -92,6 +92,8 @@ function updateparam()
         document.getElementById("inc_timer").style.display = "block";
         document.getElementById("dec_timer").style.display = "block";
         document.getElementById("inc_thrld").style.display = "block";
+        document.getElementById("rtx_inc").style.display = "block";
+        document.getElementById("rtx_dec").style.display = "block";
     }
     else {
         document.getElementById("mcs_idx").style.display = "block";
@@ -100,6 +102,8 @@ function updateparam()
         document.getElementById("inc_timer").style.display = "none";
         document.getElementById("dec_timer").style.display = "none";
         document.getElementById("inc_thrld").style.display = "none";
+        document.getElementById("rtx_inc").style.display = "none";
+        document.getElementById("rtx_dec").style.display = "none";
     }
     if( stream == 3 ) {
         document.getElementById("mcs_idx").style.display = "none";
@@ -246,6 +250,18 @@ function getoptions( list, value )
             <label class="cbi-value-title">DDRS Rate Incr. Threshold</label>
             <div class="cbi-value-field">
               <input type="text" name="122" class="cbi-input-select" value="<%=uciget('uci get wireless.wifi1.ddrsincthrld')%>" >&nbsp; (1-10) dB
+           </div>
+         </div>
+          <div class="cbi-value" id="rtx_inc">
+            <label class="cbi-value-title">DDRS RTX Incr. Threshold</label>
+            <div class="cbi-value-field">
+              <input type="text" name="126" class="cbi-input-select" value="<%=uciget('uci get wireless.wifi1.ddrsrtxinc')%>" >&nbsp; (0-100) %
+           </div>
+         </div>
+          <div class="cbi-value" id="rtx_dec">
+            <label class="cbi-value-title">DDRS RTX Decr. Threshold</label>
+            <div class="cbi-value-field">
+              <input type="text" name="127" class="cbi-input-select" value="<%=uciget('uci get wireless.wifi1.ddrsrtxdec')%>" >&nbsp; (0-100) %
            </div>
          </div>
           <div class="cbi-value">

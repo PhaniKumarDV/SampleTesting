@@ -1,7 +1,7 @@
 diff -urN libiwinfo-2015-06-01_org/include/iwinfo.h libiwinfo-2015-06-01_mod/include/iwinfo.h
 --- libiwinfo-2015-06-01_org/include/iwinfo.h	2018-07-09 13:57:34.289239779 +0530
-+++ libiwinfo-2015-06-01_mod/include/iwinfo.h	2018-11-29 13:08:50.988709966 +0530
-@@ -102,6 +102,30 @@
++++ libiwinfo-2015-06-01_mod/include/iwinfo.h	2018-12-04 18:56:18.649493380 +0530
+@@ -102,6 +102,32 @@
      char local_long[32];
      char remote_lat[32];
      char remote_long[32];
@@ -29,12 +29,14 @@ diff -urN libiwinfo-2015-06-01_org/include/iwinfo.h libiwinfo-2015-06-01_mod/inc
 +    uint8_t r_ant_gain;
 +    uint32_t l_bw_limit;
 +    uint32_t r_bw_limit;
++    uint8_t l_rtx;
++    uint8_t r_rtx;
  };
  
  struct iwinfo_txpwrlist_entry {
 diff -urN libiwinfo-2015-06-01_org/iwinfo_lua.c libiwinfo-2015-06-01_mod/iwinfo_lua.c
 --- libiwinfo-2015-06-01_org/iwinfo_lua.c	2018-07-09 13:58:03.333239283 +0530
-+++ libiwinfo-2015-06-01_mod/iwinfo_lua.c	2018-11-29 13:09:33.136340974 +0530
++++ libiwinfo-2015-06-01_mod/iwinfo_lua.c	2018-12-04 18:56:39.465461142 +0530
 @@ -272,6 +272,9 @@
  
  			lua_newtable(L);
@@ -45,7 +47,7 @@ diff -urN libiwinfo-2015-06-01_org/iwinfo_lua.c libiwinfo-2015-06-01_mod/iwinfo_
  			lua_pushnumber(L, e->signal);
  			lua_setfield(L, -2, "signal");
  
-@@ -305,6 +308,75 @@
+@@ -305,6 +308,81 @@
  			lua_pushstring(L, e->remote_long);
  			lua_setfield(L, -2, "remote_long");
  
@@ -118,13 +120,19 @@ diff -urN libiwinfo-2015-06-01_org/iwinfo_lua.c libiwinfo-2015-06-01_mod/iwinfo_
 +			lua_pushnumber(L, e->r_bw_limit);
 +			lua_setfield(L, -2, "r_bw_limit");
 +
++			lua_pushnumber(L, e->l_rtx);
++			lua_setfield(L, -2, "l_rtx");
++
++			lua_pushnumber(L, e->r_rtx);
++			lua_setfield(L, -2, "r_rtx");
++
  			if (e->rx_rate.mcs >= 0)
  			{
  				lua_pushnumber(L, e->rx_rate.mcs);
 diff -urN libiwinfo-2015-06-01_org/iwinfo_qcawifi.c libiwinfo-2015-06-01_mod/iwinfo_qcawifi.c
 --- libiwinfo-2015-06-01_org/iwinfo_qcawifi.c	2018-07-09 13:58:28.057238861 +0530
-+++ libiwinfo-2015-06-01_mod/iwinfo_qcawifi.c	2018-11-29 13:09:11.268532032 +0530
-@@ -799,6 +799,31 @@
++++ libiwinfo-2015-06-01_mod/iwinfo_qcawifi.c	2018-12-04 18:56:55.349436526 +0530
+@@ -799,6 +799,33 @@
  			memcpy(entry.local_long, si->isi_l_longitude+5, sizeof(entry.local_long));
  			memcpy(entry.remote_lat, si->isi_r_latitude+5, sizeof(entry.local_long));
  			memcpy(entry.remote_long, si->isi_r_longitude+5, sizeof(entry.remote_long));
@@ -152,6 +160,8 @@ diff -urN libiwinfo-2015-06-01_org/iwinfo_qcawifi.c libiwinfo-2015-06-01_mod/iwi
 +			entry.r_ant_gain = si->isi_r_ant_gain;
 +			entry.l_bw_limit = si->isi_l_bw_limit;
 +			entry.r_bw_limit = si->isi_r_bw_limit;
++			entry.l_rtx = si->isi_l_rtx;
++			entry.r_rtx = si->isi_r_rtx;
 +
  			memcpy(&buf[bl], &entry, sizeof(struct iwinfo_assoclist_entry));
  

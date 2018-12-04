@@ -224,6 +224,8 @@ function getBaseLog(x, y) {
 							document.getElementById("rem_id").innerHTML = assoclist[j].r_link_id;
 							document.getElementById("loc_limit").innerHTML = assoclist[j].l_bw_limit > (1000) ? (assoclist[j].l_bw_limit / ( 1000 )).toFixed(2) : 0;
 							document.getElementById("rem_limit").innerHTML = assoclist[j].r_bw_limit > (1000) ? (assoclist[j].r_bw_limit / ( 1000 )).toFixed(2) : 0;
+							document.getElementById("loc_rtx").innerHTML = assoclist[j].l_rtx + "%";
+							document.getElementById("rem_rtx").innerHTML = assoclist[j].r_rtx + "%";
 						}
 					}
 				}
@@ -355,6 +357,11 @@ function getBaseLog(x, y) {
 				<td>Retries</td>
 				<td id="loc_retry"></td>
 				<td id="rem_retry"></td>
+			</tr>
+			<tr>
+				<td>RTX Percentage</td>
+				<td id="loc_rtx"></td>
+				<td id="rem_rtx"></td>
 			</tr>
 			<tr>
 				<td>Antenna Gain (dBi)</td>
