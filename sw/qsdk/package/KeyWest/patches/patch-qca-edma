@@ -1,7 +1,7 @@
 diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
 --- qca-edma-org/edma.c	2018-07-09 14:25:58.833210000 +0530
-+++ qca-edma-mod/edma.c	2018-11-30 17:37:11.345212731 +0530
-@@ -26,6 +26,278 @@
++++ qca-edma-mod/edma.c	2018-12-04 18:39:25.915055807 +0530
+@@ -26,6 +26,285 @@
  extern u8 edma_per_prec_stats_enable;
  extern u32 edma_iad_stats_enable;
  
@@ -32,6 +32,7 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
 +EXPORT_SYMBOL(edma_set_pbb_isid);
 +EXPORT_SYMBOL(edma_set_suservice);
 +EXPORT_SYMBOL(edma_set_sukbps);
++EXPORT_SYMBOL(edma_clear_eth_stats);
 +
 +uint64_t edma_get_tx_pkts( struct net_device *dev )
 +{
@@ -277,10 +278,16 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
 +	return 0;
 +}
 +
++int edma_clear_eth_stats( struct net_device *dev )
++{
++	struct edma_adapter *adapter = netdev_priv(dev);
++	memset(&adapter->stats, 0, sizeof(adapter->stats));
++	return 0;
++}
  /* edma_skb_priority_offset()
   *	get edma skb priority
   */
-@@ -777,19 +1049,223 @@
+@@ -777,19 +1056,223 @@
  #endif
  			edma_receive_checksum(rd, skb);
  
@@ -511,7 +518,7 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
  			/* Check if we reached refill threshold */
  			if (cleaned_count == EDMA_RX_BUFFER_WRITE) {
  				ret_count = edma_alloc_rx_buf(edma_cinfo, erdr, cleaned_count, queue_id);
-@@ -1324,7 +1800,6 @@
+@@ -1324,7 +1807,6 @@
  		word3 |= (1 << EDMA_TX_INS_CVLAN);
  		word3 |= (adapter->default_vlan_tag) << EDMA_TX_CVLAN_TAG_SHIFT;
  	}
@@ -519,7 +526,7 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
  	if (packet_is_rstp) {
  		word3 |= dp_bitmap << EDMA_TPD_PORT_BITMAP_SHIFT;
  		word3 |= from_cpu << EDMA_TPD_FROM_CPU_SHIFT;
-@@ -1535,6 +2010,40 @@
+@@ -1535,6 +2017,40 @@
  	return __EDMA_LINKDOWN;
  }
  
@@ -560,7 +567,7 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
  /* edma_adjust_link()
   *	check for edma link status
   */
-@@ -1551,12 +2060,14 @@
+@@ -1551,12 +2067,14 @@
  
  	if (status == __EDMA_LINKUP && adapter->link_state == __EDMA_LINKDOWN) {
  		dev_info(&adapter->pdev->dev, "%s: GMAC Link is up with phy_speed=%d\n", netdev->name, phydev->speed);
@@ -575,7 +582,7 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
  		adapter->link_state = __EDMA_LINKDOWN;
  		netif_carrier_off(netdev);
  		netif_tx_stop_all_queues(netdev);
-@@ -1590,6 +2101,7 @@
+@@ -1590,6 +2108,7 @@
  	unsigned int flags_transmit = 0;
  	bool packet_is_rstp = false;
  	struct netdev_queue *nq = NULL;
@@ -583,7 +590,7 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
  
  	if (skb_shinfo(skb)->nr_frags) {
  		nr_frags_first = skb_shinfo(skb)->nr_frags;
-@@ -1652,12 +2164,163 @@
+@@ -1652,12 +2171,163 @@
  		return NETDEV_TX_BUSY;
  	}
  
@@ -750,7 +757,7 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
  		flags_transmit |= EDMA_VLAN_TX_TAG_INSERT_FLAG;
  	else if (adapter->default_vlan_tag)
  		flags_transmit |= EDMA_VLAN_TX_TAG_INSERT_DEFAULT_FLAG;
-@@ -1683,6 +2346,30 @@
+@@ -1683,6 +2353,30 @@
  	adapter->stats.tx_packets++;
  	adapter->stats.tx_bytes += skb->len;
  
@@ -783,7 +790,7 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
  	return NETDEV_TX_OK;
 diff -urN qca-edma-org/edma.h qca-edma-mod/edma.h
 --- qca-edma-org/edma.h	2018-07-09 14:25:58.833210000 +0530
-+++ qca-edma-mod/edma.h	2018-11-30 17:37:22.393170126 +0530
++++ qca-edma-mod/edma.h	2018-12-04 18:39:36.863039215 +0530
 @@ -44,6 +44,12 @@
  #include <linux/if_pppox.h>
  #include "ess_edma.h"
@@ -847,7 +854,7 @@ diff -urN qca-edma-org/edma.h qca-edma-mod/edma.h
  int edma_alloc_queues_tx(struct edma_common_info *edma_cinfo);
  int edma_alloc_queues_rx(struct edma_common_info *edma_cinfo);
  int edma_open(struct net_device *netdev);
-@@ -547,4 +589,31 @@
+@@ -547,4 +589,32 @@
  void edma_iad_process_flow(struct edma_common_info *edma_cinfo,
  			   struct sk_buff *skb, u8 dir, u8 precedence);
  
@@ -878,4 +885,5 @@ diff -urN qca-edma-org/edma.h qca-edma-mod/edma.h
 +int edma_set_pbb_isid( struct net_device *dev, int32_t vlan_id );
 +int edma_set_suservice( struct net_device *dev, uint8_t suservice );
 +int edma_set_sukbps( struct net_device *dev, uint32_t kbps );
++int edma_clear_eth_stats( struct net_device *dev );
  #endif /* _EDMA_H_ */
