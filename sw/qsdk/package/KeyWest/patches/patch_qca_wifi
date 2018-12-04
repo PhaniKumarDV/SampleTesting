@@ -948,7 +948,7 @@ diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_ath_config.c qca-wifi-
                 (scn->target_type == TARGET_TYPE_QCA9888) || (scn->target_type == TARGET_TYPE_IPQ4019))
 diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_vap.c qca-wifi-mod/offload/wlan/lmac_offload_if/ol_if_vap.c
 --- qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_vap.c	2018-06-08 11:00:45.000000000 +0530
-+++ qca-wifi-mod/offload/wlan/lmac_offload_if/ol_if_vap.c	2018-11-28 14:10:12.618847238 +0530
++++ qca-wifi-mod/offload/wlan/lmac_offload_if/ol_if_vap.c	2018-12-04 17:27:54.818790294 +0530
 @@ -32,6 +32,7 @@
  #if ATH_SUPPORT_GREEN_AP
  #include "ath_green_ap.h"
@@ -1072,7 +1072,7 @@ diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_vap.c qca-wifi-mod/off
      /* delete key before vdev delete */
      delete_default_vap_keys(vap);
  
-@@ -3717,6 +3783,69 @@
+@@ -3717,6 +3783,89 @@
      return 0;
  }
  
@@ -1120,13 +1120,33 @@ diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_vap.c qca-wifi-mod/off
 +        //printk("dg_ack_rcvd : %d \n",dg_ack_rcvd);	
 +        //printk("vap->iv_ic->ic_dg_timer_interval = %d,HZ = %d,jiffies = %9lu , Next jiffies = %9lu \n",vap->iv_ic->ic_dg_timer_interval,HZ,jiffies, 
 +        //	jiffies+(vap->iv_ic->ic_dg_timer_interval*HZ/1000));
-+        if(!dg_ack_rcvd) {
-+            //printk("Reset timer\n");
-+            mod_timer(&dg_timer,jiffies+(vap->iv_ic->ic_dg_timer_interval*HZ/1000));
++        if( !dg_ack_rcvd ) {
++            if( vap->iv_ic->ic_dg_triggered ) {
++                u_int64_t curr_jiffies = jiffies;
++                unsigned long diff = curr_jiffies - vap->iv_ic->ic_dg_jiffies;
++                /* Issue: In the case when power is down and up within 20ms, DG Timer gets triggered and keeps on sending DG packets forever
++                 * which creates no link issue. This issue happens only in BSU.
++                 * Fix: In this case stop the DG Timer after 1sec and reset the dg triggered flag */
++                if( diff > 1000 ) {
++                    printk(": DG: current jiffies %llu  last jiffies %llu diff %lu \n",curr_jiffies, vap->iv_ic->ic_dg_jiffies,diff);
++                    printk(": DG: Delete Timer\n");
++                    vap->iv_ic->ic_dg_triggered = 0;
++                    del_timer(&dg_timer);
++                }
++                else {
++                    mod_timer(&dg_timer,jiffies+(vap->iv_ic->ic_dg_timer_interval*HZ/1000));
++                }
++            }
++            else {
++                mod_timer(&dg_timer,jiffies+(vap->iv_ic->ic_dg_timer_interval*HZ/1000));
++            }
 +        }
 +        else {
-+            //printk("Delete timer\n");
 +            del_timer(&dg_timer);
++        }
++        if( !vap->iv_ic->ic_dg_triggered ) {
++            vap->iv_ic->ic_dg_triggered = 1;
++            vap->iv_ic->ic_dg_jiffies = jiffies;
 +        }
 +
 +        dev_put(dev);
@@ -1142,7 +1162,7 @@ diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_vap.c qca-wifi-mod/off
  /* Intialization functions */
  void
  ol_ath_vap_attach(struct ieee80211com *ic)
-@@ -3728,6 +3857,7 @@
+@@ -3728,6 +3877,7 @@
      ic->ic_vap_alloc_macaddr = ol_ath_vap_alloc_macaddr;
      ic->ic_vap_free_macaddr = ol_ath_vap_free_macaddr;
      ic->ic_vap_set_param = ol_ath_vap_set_param;
@@ -1150,7 +1170,7 @@ diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_vap.c qca-wifi-mod/off
      ic->ic_vap_sifs_trigger = ol_ath_vap_sifs_trigger;
      ic->ic_vap_set_ratemask = ol_ath_vap_set_ratemask;
      ic->ic_vap_dyn_bw_rts = ol_ath_vap_dyn_bw_rts;
-@@ -3754,6 +3884,7 @@
+@@ -3754,6 +3904,7 @@
          ath_green_ap_start(ic);
      }
  #endif  /* ATH_SUPPORT_GREEN_AP */
@@ -5199,7 +5219,7 @@ diff -urN qca-wifi-org/umac/include/ieee80211_vap.h qca-wifi-mod/umac/include/ie
  #endif
 diff -urN qca-wifi-org/umac/include/ieee80211_var.h qca-wifi-mod/umac/include/ieee80211_var.h
 --- qca-wifi-org/umac/include/ieee80211_var.h	2018-06-08 11:00:49.000000000 +0530
-+++ qca-wifi-mod/umac/include/ieee80211_var.h	2018-11-30 17:36:09.705450221 +0530
++++ qca-wifi-mod/umac/include/ieee80211_var.h	2018-12-04 17:28:26.526719139 +0530
 @@ -590,6 +590,7 @@
  #define RNR_MAX_SIZE               256    /* >= RNR_MAX_ENTRIES * (sizeof(rnr_ap_info_t) + sizeof(rnr_tbtt_info_t)) */
  #define ACR_MAX_ENTRIES            16     /* AP Channel Report entries */
@@ -5253,7 +5273,7 @@ diff -urN qca-wifi-org/umac/include/ieee80211_var.h qca-wifi-mod/umac/include/ie
      int                                 (*ic_vap_sifs_trigger)(struct ieee80211vap *vap,
                                           u_int32_t val);
      int                                 (*ic_vap_get_param)(struct ieee80211vap *vap,
-@@ -1886,6 +1918,25 @@
+@@ -1886,6 +1918,27 @@
      u_int32_t                           ic_whc_scaling_factor; /* scaling factor for WHC best uplink algorithm */
      u_int32_t                           device_id;   /* Device id from probe */
      u_int32_t                           vendor_id;   /* Vendor id from probe */
@@ -5276,10 +5296,12 @@ diff -urN qca-wifi-org/umac/include/ieee80211_var.h qca-wifi-mod/umac/include/ie
 +    kwn_scan_t                          kwn_scan;
 +    kwn_dcs_t                           kwn_dcs;
 +    uint8_t                             ic_ipaddr[20];
++    u_int8_t                            ic_dg_triggered;
++    u_int64_t                           ic_dg_jiffies;
  } IEEE80211COM, *PIEEE80211COM;
  
  #define BEST_UL_HYST_DEF        10
-@@ -2283,6 +2334,9 @@
+@@ -2283,6 +2336,9 @@
      struct ieee80211_stats            iv_stats; /* for backward compatibility */
      struct ieee80211_mac_stats        iv_unicast_stats;   /* mac statistics for unicast frames */
      struct ieee80211_mac_stats        iv_multicast_stats; /* mac statistics for multicast frames */
@@ -5289,7 +5311,7 @@ diff -urN qca-wifi-org/umac/include/ieee80211_var.h qca-wifi-mod/umac/include/ie
      struct tkip_countermeasure        iv_unicast_counterm;  /* unicast tkip countermeasure */
      struct tkip_countermeasure        iv_multicast_counterm;  /* unicast tkip countermeasure */
  
-@@ -2538,6 +2592,7 @@
+@@ -2538,6 +2594,7 @@
      u_int8_t						  iv_sko_th;        /* station kick out threshold */
  #endif /*ATH_SUPPORT_QUICK_KICKOUT*/
      struct ieee80211_chanutil_info     chanutil_info; /* Channel Utilization information */
@@ -5297,7 +5319,7 @@ diff -urN qca-wifi-org/umac/include/ieee80211_var.h qca-wifi-mod/umac/include/ie
  #if UMAC_SUPPORT_CHANUTIL_MEASUREMENT
      u_int8_t                           iv_chanutil_enab;
  #endif /* UMAC_SUPPORT_CHANUTIL_MEASUREMENT */
-@@ -2673,6 +2728,7 @@
+@@ -2673,6 +2730,7 @@
      void                        *iv_txrx_handle;
  #endif
      u_int8_t                   iv_vht_fixed_mcs;        /* VHT Fixed MCS Index */
@@ -5305,7 +5327,7 @@ diff -urN qca-wifi-org/umac/include/ieee80211_var.h qca-wifi-mod/umac/include/ie
      u_int8_t                   iv_nss;                  /* Spatial Stream Count */
      u_int8_t                   iv_tx_stbc;              /* TX STBC Enable:1 Disable:0 */
      u_int8_t                   iv_rx_stbc;              /* RX STBC Enable:(1,2,3) Disable:0 */
-@@ -2908,8 +2964,51 @@
+@@ -2908,8 +2966,51 @@
      bool                       iv_wps_session;
      csa_deauth_type            iv_csa_deauth_mode; /* if set, sends deauth to all stations after CSA */
      u_int8_t                   iv_filter_ssid[IEEE80211_NWID_LEN+1]; /* Filter SSID from scan results */
