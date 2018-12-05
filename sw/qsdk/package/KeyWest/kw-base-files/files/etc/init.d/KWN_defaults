@@ -39,6 +39,10 @@ start_service() {
     blint1=$(uci get wireless.wifi1.blint)
     suservice1=$(uci get wireless.wifi1.suservice)
     sukbps1=$(uci get wireless.wifi1.sukbps)
+    mcast_rate1=$(uci get wireless.@wifi-iface[1].mcast_rate)
+    bcast_rate1=$(uci get wireless.@wifi-iface[1].bcast_rate)
+    mgmt_rate1=$(uci get wireless.@wifi-iface[1].mgmt_rate)
+    set_bcn_rate1=$(uci get wireless.@wifi-iface[1].set_bcn_rate)
 #RADIO 2.4
     tx_power_radio2=$(uci get wireless.wifi0.TXPowLim2G)
     hidden_radio0=$(uci get wireless.@wifi-iface[0].hidden)
@@ -201,6 +205,22 @@ start_service() {
     if [ "$sukbps1" == "" ]
     then
         uci set wireless.wifi1.sukbps='64'
+    fi
+    if [ "$mcast_rate1" == "" ]
+    then
+        uci set wireless.@wifi-iface[1].mcast_rate='6000'
+    fi
+    if [ "$bcast_rate1" == "" ]
+    then
+        uci set wireless.@wifi-iface[1].bcast_rate='6000'
+    fi
+    if [ "$mgmt_rate1" == "" ]
+    then
+        uci set wireless.@wifi-iface[1].mgmt_rate='6000'
+    fi
+    if [ "$set_bcn_rate1" == "" ]
+    then
+        uci set wireless.@wifi-iface[1].set_bcn_rate='6000'
     fi
 #Ethernet
     if [ "$eth_mtu" == "" ]

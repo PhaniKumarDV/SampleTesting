@@ -1209,6 +1209,12 @@ enable_qcawifi() {
 		config_get mcast_rate "$vif" mcast_rate
 		[ -n "$mcast_rate" ] && iwpriv "$ifname" mcast_rate "${mcast_rate%%.*}"
 
+		config_get bcast_rate "$vif" bcast_rate
+		[ -n "$bcast_rate" ] && iwpriv "$ifname" bcast_rate "${bcast_rate}"
+
+		config_get mgmt_rate "$vif" mgmt_rate
+		[ -n "$mgmt_rate" ] && iwpriv "$ifname" mgmt_rate "${mgmt_rate}"
+
 		config_get powersave "$vif" powersave
 		[ -n "$powersave" ] && iwpriv "$ifname" powersave "${powersave}"
 
