@@ -153,6 +153,12 @@ var country = "<%=uciget('uci get wireless.wifi1.country')%>";
 var shaping = "<%=uciget('uci get wireless.@wifi-iface[1].shaping')%>";
 var ullmt = "<%=uciget('uci get wireless.@wifi-iface[1].ullmt')%>";
 var dllmt = "<%=uciget('uci get wireless.@wifi-iface[1].dllmt')%>";
+var gps_n = "<%=uciget('uci get system.gps.latitude')%>";
+var gps_e = "<%=uciget('uci get system.gps.longitude')%>";
+var gps = "-";
+if( gps_n != 0 ) {
+    gps = gps_n + "&deg; N, " + gps_e + "&deg E";
+}
 eth1_speed = eth1_speed.split("Speed:");
 eth1_speed = eth1_speed[1];
 eth1_duplex = eth1_duplex.split("Duplex:");
@@ -481,23 +487,23 @@ function get_log()
 <table>
 <tr>
 <td style="border-top:0px;">
-<fieldset class="cbi-section" style="width:450px;min-height:230px;padding:20px 20px;">
+<fieldset class="cbi-section" style="width:430px;min-height:230px;padding:20px 20px;">
 	<legend><%:System%></legend>
 	<table width="100%" cellspacing="10">
 		<tr><td width="35%"><%:Host Name%></td><td><%=luci.sys.hostname() or "?"%></td></tr>
-		<tr><td width="38%"><%:Description%></td><td id="desc"></td></tr>
+		<tr><td width="35%"><%:Description%></td><td id="desc"></td></tr>
 		<tr><td width="35%"><%:Serial Number%></td><td><%=serial_no %></td></tr>
 		<tr><td width="35%"><%:Local Time%></td><td id="localtime">-</td></tr>
 		<tr><td width="35%"><%:Uptime%></td><td id="uptime">-</td></tr>
 		<tr><td width="35%">Temperature</td><td><%=currTemperature%> &#8451;</td></tr>
-		<tr><td width="35%"><%:GPS Coordinates%></td><td><%=uciget('uci get system.gps.latitude')%>' <%=uciget('uci get system.gps.longitude')%>''</td></tr>
+		<tr><td width="35%"><%:GPS%></td><td><script type="text/javascript">document.write(gps)</script></td></tr>
 		<tr><td width="35%"><%:Customer Name%></td><td><%=uciget('uci get wireless.wifi1.customername')%></td></tr>
 		<tr><td width="35%"><%:Country%></td><td><script type="text/javascript">document.write(country)</script></td></tr>
 	</table>
 </fieldset>
 </td>
 <td rowspan="2" style="border-top:0px;">
-<fieldset class="cbi-section" style="width:450px;height:690px;padding:20px 20px;">
+<fieldset class="cbi-section" style="width:470px;height:690px;padding:20px 20px;">
 	<legend><%:Wireless%></legend>
 	<table width="100%" cellspacing="10">
        <tr><td></td><td style="color:#a5bc23"><b>5 GHz<b></td><td style="color:#a5bc23"><b>2.4 GHz<b></td></tr>
@@ -528,7 +534,7 @@ function get_log()
 </tr>
 <tr>
 <td style="border-top:0px;">
-<fieldset class="cbi-section" style="width:450px;min-height:230px;padding:20px 20px;">
+<fieldset class="cbi-section" style="width:430px;min-height:230px;padding:20px 20px;">
 	<legend><%:Network%></legend>
 	<table width="100%" cellspacing="10">
 		<tr><td width="35%"><%:Ethernet MAC%></td><td><%=eth_mac%></td></tr>
