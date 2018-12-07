@@ -267,7 +267,7 @@ start_service() {
         uci set tftp.http.optype='0'
     fi
 #VARIANT
-    uci set variant.variant.buildno='291118'
+    uci set variant.variant.buildno='071218'
     if [ "$maxsu" == "" ]
     then
         uci set variant.variant.maxsu ='1'
