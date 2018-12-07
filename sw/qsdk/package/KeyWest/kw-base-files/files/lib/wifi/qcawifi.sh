@@ -1762,8 +1762,21 @@ enable_qcawifi() {
 
 ########################## KWN Changes #############################
 		config_get rate "$device" rate
+		config_get hwmode "$device" hwmode
+
+        case "$hwmode" in
+        11ac)
+            rate=10
+            ;;
+        11na)
+            rate=8
+            ;;
+        *)
+            rate=0
+            ;;
+        esac
 		acrate=$rate
-        rate=0
+
 		case $rate in
 			0)
 				arate="6M"
