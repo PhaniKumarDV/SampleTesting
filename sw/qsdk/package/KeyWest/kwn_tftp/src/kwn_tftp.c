@@ -155,6 +155,12 @@ void kwn_config_upgrade( )
     printf(" %s\n",cmd );
     system( cmd );
 
+    memset( cmd, '\0', sizeof( cmd ) );
+    sprintf( cmd, "sed -i 's/\r$//g' %s",KWN_NEW_CONFIG_FILE );
+    printf(" %s\n",cmd );
+    system( cmd );
+    
+    printf("\n %s : %d\n",__func__,__LINE__);
     if( access( KWN_NEW_CONFIG_FILE, 0 ) == 0 ) {
         fin = fopen( KWN_NEW_CONFIG_FILE, "r" );
 
@@ -169,7 +175,7 @@ void kwn_config_upgrade( )
         system("reload_config");
 
         /*TO DO: sleep*/
-        sleep(20);
+        sleep(30);
         memset( cmd, '\0', sizeof( cmd ) );
         sprintf( cmd," uci set tftp.tftp.opstatus='%d'", KWN_UPLOAD_SUCCESS );
         system( cmd );
@@ -263,6 +269,7 @@ void kwn_config_retrieve( )
     printf("\n %s : %d\n",__func__,__LINE__);
     FILE *fp1 = NULL;
     FILE *fp = NULL;
+    char *tok;
     char cmd[100];
     char buff_down[200];
 
@@ -279,7 +286,14 @@ void kwn_config_retrieve( )
 
     while( fgets( buff_down, sizeof(buff_down), fp1 ) != NULL )
     {
-        fprintf(fp,"%s",buff_down);
+        tok=strtok(buff_down,"\n");
+
+        while( tok != NULL)
+        {
+            fprintf(fp,"%s\r\n",tok);
+            printf( "%s\n", tok );
+            tok = strtok(NULL, "\n");
+        }
     }
     pclose(fp1);
     fclose(fp);
@@ -307,6 +321,12 @@ void kwn_http_config_upgrade()
     char cmd[100];
 
     if( access( KWN_HTTP_NEW_CONFIG_FILE, 0 ) == 0 ) {
+    
+        memset( cmd, '\0', sizeof( cmd ) );
+        sprintf( cmd, "sed -i 's/\r$//g' %s",KWN_HTTP_NEW_CONFIG_FILE );
+        printf(" %s\n",cmd );
+        system( cmd );
+        
         fin = fopen( KWN_HTTP_NEW_CONFIG_FILE, "r" );
 
         while( fgets( buff_up, sizeof( buff_up ), fin ) != NULL )
@@ -320,12 +340,15 @@ void kwn_http_config_upgrade()
         system("reload_config");
 
         //TO DO: sleep
-        sleep(20);
+        sleep(30);
         memset( cmd, '\0', sizeof( cmd ) );
         sprintf( cmd," uci set tftp.tftp.opstatus='%d'", KWN_UPLOAD_SUCCESS );
         system( cmd );
 
         printf("\nUpload from remote to embedded device");
+        memset( cmd, '\0', sizeof( cmd ) );
+        sprintf( cmd,"rm %s", KWN_HTTP_NEW_CONFIG_FILE );
+        system( cmd );
         return;
     }
 
@@ -343,6 +366,7 @@ void kwn_http_config_retrieve()
 
     FILE *fp1 = NULL;
     FILE *fp = NULL;
+    char *tok;
     char cmd[100];
     char buff_down[200];
 
@@ -359,7 +383,14 @@ void kwn_http_config_retrieve()
 
     while( fgets( buff_down, sizeof(buff_down), fp1 ) != NULL )
     {
-        fprintf(fp,"%s",buff_down);
+        tok=strtok(buff_down,"\n");
+
+        while( tok != NULL)
+        {
+            fprintf(fp,"%s\r\n",tok);
+            //printf( "%s\n", tok );
+            tok = strtok(NULL, "\n");
+        }
     }
     pclose(fp1);
     fclose(fp);
