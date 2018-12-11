@@ -1828,8 +1828,8 @@ diff -urN qca-wifi-org/offload/wlan/umac_offload_if/ol_if_scan.c qca-wifi-mod/of
                  ss->ss_all_chans[ss->ss_nallchans++] = c;
 diff -urN qca-wifi-org/os/linux/include/ieee80211_ioctl.h qca-wifi-mod/os/linux/include/ieee80211_ioctl.h
 --- qca-wifi-org/os/linux/include/ieee80211_ioctl.h	2018-06-08 11:00:42.000000000 +0530
-+++ qca-wifi-mod/os/linux/include/ieee80211_ioctl.h	2018-12-04 18:50:55.069996444 +0530
-@@ -1530,6 +1530,69 @@
++++ qca-wifi-mod/os/linux/include/ieee80211_ioctl.h	2018-12-11 13:16:56.576854083 +0530
+@@ -1530,6 +1530,82 @@
      IEEE80211_PARAM_TIMEOUTIE                  = 550,   /* set/get assoc comeback timeout value */
      IEEE80211_PARAM_PMF_ASSOC                  = 551,   /* enable/disable pmf support */
      IEEE80211_PARAM_DFS_INFO_NOTIFY_APP        = 552,   /* Enable the feature to notify dfs info to app */
@@ -1895,11 +1895,24 @@ diff -urN qca-wifi-org/os/linux/include/ieee80211_ioctl.h qca-wifi-mod/os/linux/
 +    IEEE80211_PARAM_KWN_SU_KBPS                = 612,   /* SU DFlt in Kbps */
 +    IEEE80211_PARAM_KWN_CLEAR_ETH_STATS        = 613,   /* clear Eth Stats */
 +    IEEE80211_PARAM_KWN_DDRS_RTX_INC_THRLD     = 614,   /* RTX Inc */
-+    IEEE80211_PARAM_KWN_DDRS_RTX_DEC_THRLD     = 615    /* RTX Dec */
++    IEEE80211_PARAM_KWN_DDRS_RTX_DEC_THRLD     = 615,   /* RTX Dec */
++    IEEE80211_PARAM_KWN_FILTERING_STATUS       = 616,   /* Filtering Status */
++    IEEE80211_PARAM_KWN_FILTERING_L2MCAST      = 617,   /* Filtering L2 Multicast */
++    IEEE80211_PARAM_KWN_FILTERING_L3MCAST      = 618,   /* Filtering L3 Multicast */
++    IEEE80211_PARAM_KWN_FILTERING_L2BCAST      = 619,   /* Filtering L2 Broadcast */
++    IEEE80211_PARAM_KWN_FILTERING_L3BCAST      = 620,   /* Filtering L3 Broadcast */
++    IEEE80211_PARAM_KWN_FIL_TX_L2MCAST_DRPCNT  = 621,   /* Tx L2 Multicast drop count */ 
++    IEEE80211_PARAM_KWN_FIL_RX_L2MCAST_DRPCNT  = 622,   /* Rx L2 Multicast drop count */ 
++    IEEE80211_PARAM_KWN_FIL_TX_L3MCAST_DRPCNT  = 623,   /* Tx L3 Multicast drop count */ 
++    IEEE80211_PARAM_KWN_FIL_RX_L3MCAST_DRPCNT  = 624,   /* Rx L3 Multicast drop count */ 
++    IEEE80211_PARAM_KWN_FIL_TX_L2BCAST_DRPCNT  = 625,   /* Tx L2 Broadcast drop count */ 
++    IEEE80211_PARAM_KWN_FIL_RX_L2BCAST_DRPCNT  = 626,   /* Rx L2 Broadcast drop count */ 
++    IEEE80211_PARAM_KWN_FIL_TX_L3BCAST_DRPCNT  = 627,   /* Tx L3 Broadcast drop count */ 
++    IEEE80211_PARAM_KWN_FIL_RX_L3BCAST_DRPCNT  = 628    /* Rx L3 Broadcast drop count */ 
  };
  #define WOW_CUSTOM_PKT_LEN 102
  #define WOW_SYNC_PATTERN 0xFF
-@@ -2328,4 +2391,25 @@
+@@ -2328,4 +2404,25 @@
  };
  #endif
  
@@ -1927,7 +1940,7 @@ diff -urN qca-wifi-org/os/linux/include/ieee80211_ioctl.h qca-wifi-mod/os/linux/
  #endif /* _NET80211_IEEE80211_IOCTL_H_ */
 diff -urN qca-wifi-org/os/linux/src/ieee80211_wireless.c qca-wifi-mod/os/linux/src/ieee80211_wireless.c
 --- qca-wifi-org/os/linux/src/ieee80211_wireless.c	2018-06-08 11:00:40.000000000 +0530
-+++ qca-wifi-mod/os/linux/src/ieee80211_wireless.c	2018-12-04 18:51:39.501927156 +0530
++++ qca-wifi-mod/os/linux/src/ieee80211_wireless.c	2018-12-11 13:19:44.524317807 +0530
 @@ -106,6 +106,10 @@
  int ieee80211_authorise_local_peer(wlan_if_t vap, char *params);
  #endif
@@ -2187,7 +2200,7 @@ diff -urN qca-wifi-org/os/linux/src/ieee80211_wireless.c qca-wifi-mod/os/linux/s
      if (!(dev->flags & IFF_UP)) {
          return -EINVAL;
      }
-@@ -14947,6 +15116,211 @@
+@@ -14947,6 +15116,247 @@
      IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1, 0, "dfs_notify" },
      { IEEE80211_PARAM_DFS_INFO_NOTIFY_APP,
      0, IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1, "g_dfs_notify" },
@@ -2394,12 +2407,48 @@ diff -urN qca-wifi-org/os/linux/src/ieee80211_wireless.c qca-wifi-mod/os/linux/s
 +    { IEEE80211_PARAM_KWN_DDRS_RTX_DEC_THRLD,
 +	    IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1, 0, "kwnrtxdec" },
 +    { IEEE80211_PARAM_KWN_DDRS_RTX_DEC_THRLD,
-+	    0, IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1, "g_kwnrtxdec" }
++	    0, IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1, "g_kwnrtxdec" },
++    { IEEE80211_PARAM_KWN_FILTERING_STATUS,
++        IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1, 0, "kwnfltrstat" },
++    { IEEE80211_PARAM_KWN_FILTERING_STATUS,
++        0, IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1, "g_kwnfltrstat" },
++    { IEEE80211_PARAM_KWN_FILTERING_L2MCAST,
++        IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1, 0, "kwnl2mcast" },
++    { IEEE80211_PARAM_KWN_FILTERING_L2MCAST,
++        0, IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1, "g_kwnl2mcast" },
++    { IEEE80211_PARAM_KWN_FILTERING_L3MCAST,
++        IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1, 0, "kwnl3mcast" },
++    { IEEE80211_PARAM_KWN_FILTERING_L3MCAST,
++        0, IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1, "g_kwnl3mcast" },
++    { IEEE80211_PARAM_KWN_FILTERING_L2BCAST,
++        IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1, 0, "kwnl2bcast" },
++    { IEEE80211_PARAM_KWN_FILTERING_L2BCAST,
++        0, IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1, "g_kwnl2bcast" },
++    { IEEE80211_PARAM_KWN_FILTERING_L3BCAST,
++        IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1, 0, "kwnl3bcast" },
++    { IEEE80211_PARAM_KWN_FILTERING_L3BCAST,
++        0, IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1, "g_kwnl3bcast" },
++    { IEEE80211_PARAM_KWN_FIL_TX_L2MCAST_DRPCNT,
++        0, IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1, "g_kwtxl2mdrpcnt" },
++    { IEEE80211_PARAM_KWN_FIL_RX_L2MCAST_DRPCNT,
++        0, IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1, "g_kwrxl2mdrpcnt" },
++    { IEEE80211_PARAM_KWN_FIL_TX_L3MCAST_DRPCNT,
++        0, IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1, "g_kwtxl3mdrpcnt" },
++    { IEEE80211_PARAM_KWN_FIL_RX_L3MCAST_DRPCNT,
++        0, IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1, "g_kwrxl3mdrpcnt" },
++    { IEEE80211_PARAM_KWN_FIL_TX_L2BCAST_DRPCNT,
++        0, IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1, "g_kwtxl2bdrpcnt" },
++    { IEEE80211_PARAM_KWN_FIL_RX_L2BCAST_DRPCNT,
++        0, IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1, "g_kwrxl2bdrpcnt" },
++    { IEEE80211_PARAM_KWN_FIL_TX_L3BCAST_DRPCNT,
++        0, IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1, "g_kwtxl3bdrpcnt" },
++    { IEEE80211_PARAM_KWN_FIL_RX_L3BCAST_DRPCNT,
++        0, IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1, "g_kwrxl3bdrpcnt" },
 +
  };
  
  static const iw_handler ieee80211_handlers[] = {
-@@ -14992,7 +15366,7 @@
+@@ -14992,7 +15402,7 @@
  #endif /* SIOCGIWSCAN */
      (iw_handler) ieee80211_ioctl_siwessid,      /* SIOCSIWESSID */
      (iw_handler) ieee80211_ioctl_giwessid,      /* SIOCGIWESSID */
@@ -2408,7 +2457,7 @@ diff -urN qca-wifi-org/os/linux/src/ieee80211_wireless.c qca-wifi-mod/os/linux/s
      (iw_handler) NULL,      /* SIOCGIWNICKN */
      (iw_handler) NULL,              /* -- hole -- */
      (iw_handler) NULL,              /* -- hole -- */
-@@ -15309,11 +15683,26 @@
+@@ -15309,11 +15719,26 @@
      {
  
      case SIOCG80211STATS:
@@ -4260,8 +4309,8 @@ diff -urN qca-wifi-org/umac/base/ieee80211_node.c qca-wifi-mod/umac/base/ieee802
      OS_BEACON_WRITE_LOCK(&nt->nt_nodelock, &lock_state, flags);
 diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.c qca-wifi-mod/umac/base/ieee80211_ucfg.c
 --- qca-wifi-org/umac/base/ieee80211_ucfg.c	2018-06-08 11:00:49.000000000 +0530
-+++ qca-wifi-mod/umac/base/ieee80211_ucfg.c	2018-12-04 18:54:02.021704334 +0530
-@@ -50,6 +50,33 @@
++++ qca-wifi-mod/umac/base/ieee80211_ucfg.c	2018-12-11 13:18:57.660463994 +0530
+@@ -50,6 +50,46 @@
  #define HIGHEST_BASIC_RATE 24000
  #define THREE_HUNDRED_FIFTY_MBPS 350000
  
@@ -4291,11 +4340,24 @@ diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.c qca-wifi-mod/umac/base/ieee802
 +extern int edma_set_suservice(struct net_device *dev, uint8_t suservice);
 +extern int edma_set_sukbps(struct net_device *dev, uint32_t kbps);
 +extern int edma_clear_eth_stats( struct net_device *dev );
++extern int edma_filtering_status(struct net_device *dev, uint8_t status);
++extern int edma_filtering_l2mcast(struct net_device *dev, uint8_t l2mcast);
++extern int edma_filtering_l3mcast(struct net_device *dev, uint8_t l3mcast);
++extern int edma_filtering_l2bcast(struct net_device *dev, uint8_t l2bcast);
++extern int edma_filtering_l3bcast(struct net_device *dev, uint8_t l3bcast);
++extern uint64_t edma_get_fil_tx_l2mcast_drpcnt( struct net_device *dev );
++extern uint64_t edma_get_fil_rx_l2mcast_drpcnt( struct net_device *dev );
++extern uint64_t edma_get_fil_tx_l3mcast_drpcnt( struct net_device *dev );
++extern uint64_t edma_get_fil_rx_l3mcast_drpcnt( struct net_device *dev );
++extern uint64_t edma_get_fil_tx_l2bcast_drpcnt( struct net_device *dev );
++extern uint64_t edma_get_fil_rx_l2bcast_drpcnt( struct net_device *dev );
++extern uint64_t edma_get_fil_tx_l3bcast_drpcnt( struct net_device *dev );
++extern uint64_t edma_get_fil_rx_l3bcast_drpcnt( struct net_device *dev );
 +
  extern int ol_ath_ucfg_get_user_postion(wlan_if_t vaphandle, u_int32_t aid);
  extern int ol_ath_ucfg_get_peer_mumimo_tx_count(wlan_if_t vaphandle, u_int32_t aid);
  extern int ol_ath_ucfg_reset_peer_mumimo_tx_count(wlan_if_t vaphandle, u_int32_t aid);
-@@ -57,6 +84,7 @@
+@@ -57,6 +97,7 @@
  static struct ieee80211_channel* checkchan(wlan_if_t vaphandle,
                                            int channel, int secChanOffset);
  extern int ieee80211_rate_is_valid_basic(struct ieee80211vap *, u_int32_t);
@@ -4303,7 +4365,7 @@ diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.c qca-wifi-mod/umac/base/ieee802
  #if MESH_MODE_SUPPORT
  int ieee80211_add_localpeer(wlan_if_t vap, char *params);
  int ieee80211_authorise_local_peer(wlan_if_t vap, char *params);
-@@ -985,6 +1013,7 @@
+@@ -985,6 +1026,7 @@
      int i;
  #endif
      uint32_t fils_en_period = 0;
@@ -4311,7 +4373,7 @@ diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.c qca-wifi-mod/umac/base/ieee802
  
      if (osifp->is_delete_in_progress)
          return -EINVAL;
-@@ -2642,7 +2671,10 @@
+@@ -2642,7 +2684,10 @@
      case IEEE80211_IOC_SCAN_FLUSH:
          IEEE80211_DPRINTF(vap, IEEE80211_MSG_IOCTL, "set %s\n",
                          "IEEE80211_IOC_SCAN_FLUSH");
@@ -4323,7 +4385,7 @@ diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.c qca-wifi-mod/umac/base/ieee802
          retv = 0; /* success */
          break;
  
-@@ -3974,7 +4006,469 @@
+@@ -3974,7 +4019,514 @@
      case IEEE80211_PARAM_DFS_INFO_NOTIFY_APP:
          ic->ic_dfs_info_notify_channel_available = !!value;
          break;
@@ -4457,7 +4519,7 @@ diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.c qca-wifi-mod/umac/base/ieee802
 +		vap->kwn_tput_test_from_app = 0;
 +	}
 +	break;
-+
+ 
 +    case IEEE80211_PARAM_KWN_TPUT_TEST_DUR:
 +	vap->kwn_tput_test_duration = value * 1000;
 +	//printk(": Test Duration: %d\n",vap->kwn_tput_test_duration);
@@ -4759,7 +4821,7 @@ diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.c qca-wifi-mod/umac/base/ieee802
 +    case IEEE80211_PARAM_KWN_SU_KBPS:
 +    {
 +        struct net_device *eth_dev;
- 
++
 +        eth_dev = dev_get_by_name( &init_net, "eth0" );
 +        if( eth_dev ) {
 +            vap->kwn_su_kbps = value;
@@ -4790,10 +4852,55 @@ diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.c qca-wifi-mod/umac/base/ieee802
 +        vap->kwn_txparam.rtx_dec_thrld = value;
 +        break;
 +    }
++    case IEEE80211_PARAM_KWN_FILTERING_STATUS:
++    {
++        struct net_device *eth_dev;
++        eth_dev = dev_get_by_name(&init_net, "eth0");
++        if(eth_dev) {
++            edma_filtering_status(eth_dev,value);
++        }
++        break;
++    }
++    case IEEE80211_PARAM_KWN_FILTERING_L2MCAST:
++    {
++        struct net_device *eth_dev;
++        eth_dev = dev_get_by_name(&init_net, "eth0");
++        if(eth_dev) {
++            edma_filtering_l2mcast(eth_dev,value);
++        }
++        break;
++    }
++    case IEEE80211_PARAM_KWN_FILTERING_L3MCAST:
++    {        
++        struct net_device *eth_dev;
++        eth_dev = dev_get_by_name(&init_net, "eth0");
++        if(eth_dev) {
++            edma_filtering_l3mcast(eth_dev,value);
++        }
++        break;
++    }
++    case IEEE80211_PARAM_KWN_FILTERING_L2BCAST:
++    {        
++        struct net_device *eth_dev;
++        eth_dev = dev_get_by_name(&init_net, "eth0");
++        if(eth_dev) {
++            edma_filtering_l2bcast(eth_dev,value);
++        }
++        break;
++    }
++    case IEEE80211_PARAM_KWN_FILTERING_L3BCAST:
++    {        
++        struct net_device *eth_dev;
++        eth_dev = dev_get_by_name(&init_net, "eth0");
++        if(eth_dev) {
++            edma_filtering_l3bcast(eth_dev,value);
++        }
++        break;
++    }
      }
  
      if (retv == ENETRESET)
-@@ -4018,6 +4512,7 @@
+@@ -4018,6 +4570,7 @@
      int *txpow_frm_subtype = value;
      u_int8_t frame_subtype;
      u_int8_t frame_type;
@@ -4801,7 +4908,7 @@ diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.c qca-wifi-mod/umac/base/ieee802
  #if ATH_SUPPORT_DFS
      int tmp;
  #endif
-@@ -5586,6 +6081,241 @@
+@@ -5586,6 +6139,321 @@
      case IEEE80211_PARAM_DFS_INFO_NOTIFY_APP:
          *value = ic->ic_dfs_info_notify_channel_available;
          break;
@@ -5040,10 +5147,90 @@ diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.c qca-wifi-mod/umac/base/ieee802
 +    case IEEE80211_PARAM_KWN_DDRS_RTX_DEC_THRLD:
 +        *value = vap->kwn_txparam.rtx_dec_thrld;
 +        break;
++    case IEEE80211_PARAM_KWN_FIL_TX_L2MCAST_DRPCNT:
++        {
++            struct net_device *eth_dev;
++            eth_dev = dev_get_by_name(&init_net, "eth0");
++            if(eth_dev) {
++                *value = edma_get_fil_tx_l2mcast_drpcnt(eth_dev);
++            }
++            dev_put(eth_dev);
++        }
++        break;
++    case IEEE80211_PARAM_KWN_FIL_RX_L2MCAST_DRPCNT:
++        {
++            struct net_device *eth_dev;
++            eth_dev = dev_get_by_name(&init_net, "eth0");
++            if(eth_dev) {
++                *value = edma_get_fil_rx_l2mcast_drpcnt(eth_dev);
++            }
++            dev_put(eth_dev);
++        }
++        break;
++    case IEEE80211_PARAM_KWN_FIL_TX_L3MCAST_DRPCNT:
++        {
++            struct net_device *eth_dev;
++            eth_dev = dev_get_by_name(&init_net, "eth0");
++            if(eth_dev) {
++                *value = edma_get_fil_tx_l3mcast_drpcnt(eth_dev);
++            }
++            dev_put(eth_dev);
++        }
++        break;
++    case IEEE80211_PARAM_KWN_FIL_RX_L3MCAST_DRPCNT:
++        {
++            struct net_device *eth_dev;
++            eth_dev = dev_get_by_name(&init_net, "eth0");
++            if(eth_dev) {
++                *value = edma_get_fil_rx_l3mcast_drpcnt(eth_dev);
++            }
++            dev_put(eth_dev);
++        }
++        break;
++    case IEEE80211_PARAM_KWN_FIL_TX_L2BCAST_DRPCNT:
++        {
++            struct net_device *eth_dev;
++            eth_dev = dev_get_by_name(&init_net, "eth0");
++            if(eth_dev) {
++                *value = edma_get_fil_tx_l2bcast_drpcnt(eth_dev);
++            }
++            dev_put(eth_dev);
++        }
++        break;
++    case IEEE80211_PARAM_KWN_FIL_RX_L2BCAST_DRPCNT:
++        {
++            struct net_device *eth_dev;
++            eth_dev = dev_get_by_name(&init_net, "eth0");
++            if(eth_dev) {
++                *value = edma_get_fil_rx_l2bcast_drpcnt(eth_dev);
++            }
++            dev_put(eth_dev);
++        }
++        break;
++    case IEEE80211_PARAM_KWN_FIL_TX_L3BCAST_DRPCNT:
++        {
++            struct net_device *eth_dev;
++            eth_dev = dev_get_by_name(&init_net, "eth0");
++            if(eth_dev) {
++                *value = edma_get_fil_tx_l3bcast_drpcnt(eth_dev);
++            }
++            dev_put(eth_dev);
++        }
++        break;
++    case IEEE80211_PARAM_KWN_FIL_RX_L3BCAST_DRPCNT:
++        {
++            struct net_device *eth_dev;
++            eth_dev = dev_get_by_name(&init_net, "eth0");
++            if(eth_dev) {
++                *value = edma_get_fil_rx_l3bcast_drpcnt(eth_dev);
++            }
++            dev_put(eth_dev);
++        }
++        break;
      }
  
      if (retv) {
-@@ -6582,12 +7312,15 @@
+@@ -6582,12 +7450,15 @@
      wlan_chan_t chan = wlan_node_get_chan(node);
      ieee80211_rate_info rinfo;
      u_int32_t jiffies_now=0, jiffies_delta=0, jiffies_assoc=0;
@@ -5059,7 +5246,7 @@ diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.c qca-wifi-mod/umac/base/ieee802
      len = sta_space(node, &ielen, vap);
      if (len > req->space) {
          return;
-@@ -6641,7 +7374,7 @@
+@@ -6641,7 +7512,7 @@
          si->isi_tx_rate_mcs = rinfo.mcs;
          si->isi_tx_rate_flags = rinfo.flags;
  #endif
@@ -5068,7 +5255,7 @@ diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.c qca-wifi-mod/umac/base/ieee802
      }
  
      memset(&rinfo, 0, sizeof(rinfo));
-@@ -6685,7 +7418,46 @@
+@@ -6685,7 +7556,46 @@
      si->isi_is_256qam = wlan_node_get_256qam_support(node);
      si->isi_rx_nss = wlan_node_get_rx_spatial(node);
      si->isi_tx_nss = wlan_node_get_tx_spatial(node);
