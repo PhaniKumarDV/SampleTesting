@@ -1,0 +1,24 @@
+#!/bin/sh /etc/rc.common
+START=99
+USE_PROCD=1
+
+service_triggers() {
+        procd_add_reload_trigger "filter"
+}
+
+start_service() {
+    procd_open_instance
+    status=$(uci get filter.filter.status)
+    l2mcast=$(uci get filter.filter.l2mcast)
+    l3mcast=$(uci get filter.filter.l3mcast)
+    l2bcast=$(uci get filter.filter.l2bcast)
+    l3bcast=$(uci get filter.filter.l3bcast)
+    
+    iwpriv ath1 kwnfltrstat $status
+    iwpriv ath1 kwnl2mcast $l2mcast
+    iwpriv ath1 kwnl3mcast $l3mcast
+    iwpriv ath1 kwnl2bcast $l2bcast
+    iwpriv ath1 kwnl3bcast $l3bcast
+    
+    procd_close_instance
+}

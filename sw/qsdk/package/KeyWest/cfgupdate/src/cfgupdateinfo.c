@@ -654,6 +654,21 @@ void cfg_set( char *type, char *value )
         case UCI_ID_RADIO1_DDRS_RTX_DEC:
             sprintf(cmd,"uci set wireless.wifi1.ddrsrtxdec='%s'",value);
             break;
+        case UCI_ID_FILTERING_STATUS:
+            sprintf(cmd,"uci set filter.filter.status='%s'",value);
+            break;
+        case UCI_ID_FILTERING_L2MCAST:
+            sprintf(cmd,"uci set filter.filter.l2mcast='%s'",value);
+            break;
+        case UCI_ID_FILTERING_L3MCAST:
+            sprintf(cmd,"uci set filter.filter.l3mcast='%s'",value);
+            break;
+        case UCI_ID_FILTERING_L2BCAST:
+            sprintf(cmd,"uci set filter.filter.l2bcast='%s'",value);
+            break;
+        case UCI_ID_FILTERING_L3BCAST:
+            sprintf(cmd,"uci set filter.filter.l3bcast='%s'",value);
+            break;
         default:
             break;
     }
