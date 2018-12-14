@@ -1,0 +1,6 @@
+config filter 'filter'
+	option status  '0'	
+	option l2mcast '0'
+	option l3mcast '0'
+	option l2bcast '0'
+	option l3bcast '0'

@@ -1,0 +1,174 @@
+<%#
+ Copyright 2008-2009 Steven Barth <steven@midlink.org>
+ Copyright 2008-2015 Jo-Philipp Wich <jow@openwrt.org>
+ Licensed to the public under the Apache License 2.0.
+-%>
+
+<%-
+        function uciget(cmd)
+                local res = luci.util.exec(cmd)
+                local str = string.gsub(res, "\n", "")
+                return str
+        end
+-%>
+<%+header%>
+<div class="page-content">
+<script type="text/javascript" src="<%=resource%>/cbi.js"></script>
+<script type="text/javascript">
+var def = new Array(8);
+function save_def_value()
+{
+    var f = document.formTable;
+    for (i=0; i<f.elements.length; i++)
+    {
+        def[i] = f.elements[i].value;
+    }
+}
+
+function disable_spin()
+{
+    document.getElementById("spin").innerHTML = "";
+}
+
+function save_value()
+{
+    document.getElementById("spin").innerHTML = "<i class='fa fa-spinner fa-pulse'></i>";
+    setTimeout("disable_spin()",1000);
+    var setdata = "";
+    var f = document.formTable;
+    for( i=0; i<f.elements.length; i++)
+    {
+        if( def[i] != f.elements[i].value ) {
+            def[i] = f.elements[i].value;
+            setdata += f.elements[i].name + "=" + f.elements[i].value + "~";
+        }
+    }
+    XHR.get('<%=luci.dispatcher.build_url("admin")%>/cfg_set' + '/' + setdata, null,
+	    function(x, data) {
+		    if (data) { 
+                location.href='<%=luci.dispatcher.build_url("admin/network/filtering")%>';
+		    }
+	    }
+    );
+}
+</script>
+<h2><a id="content" name="content"><%: Filtering Configuration%></a></h2>
+<div class="cbi-map">
+    <fieldset class="cbi-section">
+       <form name="formTable">
+          <div class="cbi-value">
+            <label class="cbi-value-title">Filtering Status</label>
+            <div class="cbi-value-field">
+              <select class="cbi-input-select" name="128">
+                 <script type="text/javascript">
+                 var stat = "<%=uciget('uci get filter.filter.status')%>";
+                 document.write("<option value='0' ");
+                 if( stat == "0" )
+                     document.write(" selected");
+                 document.write(">Disable</option>");
+                 document.write("<option value='1' ");
+                 if( stat == "1" )
+                     document.write(" selected");
+                 document.write(">Enable</option>");
+                 </script>
+              </select>
+            </div>
+          </div>
+          <div class="cbi-value" id="l2multi">
+            <label class="cbi-value-title">L2 Multicast</label>
+            <div class="cbi-value-field">
+              <select class="cbi-input-select" name="129">
+                 <script type="text/javascript">
+                 var l2mcast = "<%=uciget('uci get filter.filter.l2mcast')%>";
+                 document.write("<option value='0' ");
+                 if( l2mcast == "0" )
+                     document.write(" selected");
+                 document.write(">Disable</option>");
+                 document.write("<option value='1' ");
+                 if( l2mcast == "1" )
+                     document.write(" selected");
+                 document.write(">Enable</option>");
+                 </script>
+              </select>
+            </div>
+          </div>
+          <div class="cbi-value" id="l3multi">
+            <label class="cbi-value-title">L3 Multicast</label>
+            <div class="cbi-value-field">
+              <select class="cbi-input-select" name="130">
+                 <script type="text/javascript">
+                 var l3mcast = "<%=uciget('uci get filter.filter.l3mcast')%>";
+                 document.write("<option value='0' ");
+                 if( l3mcast == "0" )
+                     document.write(" selected");
+                 document.write(">Disable</option>");
+                 document.write("<option value='1' ");
+                 if( l3mcast == "1" )
+                     document.write(" selected");
+                 document.write(">Enable</option>");
+                 </script>
+              </select>
+            </div>
+          </div>
+          <div class="cbi-value" id="l2broad">
+            <label class="cbi-value-title">L2 Broadcast</label>
+            <div class="cbi-value-field">
+              <select class="cbi-input-select" name="131">
+                 <script type="text/javascript">
+                 var l2bcast = "<%=uciget('uci get filter.filter.l2bcast')%>";
+                 document.write("<option value='0' ");
+                 if( l2bcast == "0" )
+                     document.write(" selected");
+                 document.write(">Disable</option>");
+                 document.write("<option value='1' ");
+                 if( l2bcast == "1" )
+                     document.write(" selected");
+                 document.write(">Enable</option>");
+                 </script>
+              </select>
+            </div>
+          </div>
+          <div class="cbi-value" id="l3broad">
+            <label class="cbi-value-title">L3 Broadcast</label>
+            <div class="cbi-value-field">
+              <select class="cbi-input-select" name="132">
+                 <script type="text/javascript">
+                 var l3bcast = "<%=uciget('uci get filter.filter.l3bcast')%>";
+                 document.write("<option value='0' ");
+                 if( l3bcast == "0" )
+                     document.write(" selected");
+                 document.write(">Disable</option>");
+                 document.write("<option value='1' ");
+                 if( l3bcast == "1" )
+                     document.write(" selected");
+                 document.write(">Enable</option>");
+                 </script>
+              </select>
+            </div>
+          </div>
+    </form>
+    </fieldset>
+</div>
+<div class="cbi-page-actions left">
+<div id="spin"></div>
+<input type="button" class="cbi-button" value="<%:Save%>" onclick="save_value()" />
+</div>
+<script type="text/javascript">
+if( stat == 0 )
+{
+    document.getElementById("l2multi").style.display="none";
+    document.getElementById("l3multi").style.display="none";
+    document.getElementById("l2broad").style.display="none";
+    document.getElementById("l3broad").style.display="none";
+}
+else
+{
+    document.getElementById("l2multi").style.display="block";
+    document.getElementById("l3multi").style.display="block";
+    document.getElementById("l2broad").style.display="block";
+    document.getElementById("l3broad").style.display="block";
+}
+save_def_value();
+</script>
+</div>
+<%+footer%>

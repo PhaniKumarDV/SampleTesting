@@ -28,6 +28,14 @@
                      document.getElementById("rxpkt").innerHTML = a[3];
                      document.getElementById("rxbyte").innerHTML = a[4];
                      document.getElementById("rxerr").innerHTML = a[5];
+                     document.getElementById("l2_tx_mpkt").innerHTML = a[6];
+                     document.getElementById("l2_rx_mpkt").innerHTML = a[7];
+                     document.getElementById("l3_tx_mpkt").innerHTML = a[8];
+                     document.getElementById("l3_rx_mpkt").innerHTML = a[9];
+                     document.getElementById("l2_tx_bpkt").innerHTML = a[10];
+                     document.getElementById("l2_rx_bpkt").innerHTML = a[11];
+                     document.getElementById("l3_tx_bpkt").innerHTML = a[12];
+                     document.getElementById("l3_rx_bpkt").innerHTML = a[13];
                }
             }
             );
@@ -113,6 +121,74 @@ function clearethstat()
                        var rxerr = "<%=execute("iwpriv ath1 g_kwn_ethrxerr | sed 's/ath1      g_kwn_ethrxerr://'")%>";
                        rxerr.replace(" ","");
                        document.write(rxerr);
+                    </script>
+                </td>
+			</tr>
+			<tr>
+				<td>L2 Multicast drop count</td>
+				<td id="l2_tx_mpkt">
+                   <script type="text/javascript">
+                      var l2txmpkt = "<%=execute("iwpriv ath1 g_kwtxl2mdrpcnt | sed 's/ath1      g_kwtxl2mdrpcnt://'")%>";
+                      l2txmpkt.replace(" ","");
+                      document.write(l2txmpkt);
+                    </script>
+                </td>
+				<td id="l2_rx_mpkt">
+                    <script type="text/javascript">
+                      var l2rxmpkt = "<%=execute("iwpriv ath1 g_kwrxl2mdrpcnt | sed 's/ath1      g_kwrxl2mdrpcnt://'")%>";
+                      l2rxmpkt.replace(" ","");
+                      document.write(l2rxmpkt);
+                    </script>
+                </td>
+			</tr>
+			<tr>
+				<td>L3 Multicast drop count</td>
+				<td id="l3_tx_mpkt">
+                    <script type="text/javascript">
+                      var l3txmpkt = "<%=execute("iwpriv ath1 g_kwtxl3mdrpcnt | sed 's/ath1      g_kwtxl3mdrpcnt://'")%>";
+                      l3txmpkt.replace(" ","");
+                      document.write(l3txmpkt);
+                    </script>
+                </td>
+				<td id="l3_rx_mpkt">
+                    <script type="text/javascript">
+                      var l3rxmpkt = "<%=execute("iwpriv ath1 g_kwrxl3mdrpcnt | sed 's/ath1      g_kwrxl3mdrpcnt://'")%>";
+                      l3rxmpkt.replace(" ","");
+                      document.write(l3rxmpkt);
+                    </script>
+                </td>
+			</tr>
+            <tr>
+				<td>L2 Broadcast drop count</td>
+				<td id="l2_tx_bpkt">
+                    <script type="text/javascript">
+                      var l2txbpkt = "<%=execute("iwpriv ath1 g_kwtxl2bdrpcnt | sed 's/ath1      g_kwtxl2bdrpcnt://'")%>";
+                      l2txbpkt.replace(" ","");
+                      document.write(l2txbpkt);
+                    </script>
+                </td>
+				<td id="l2_rx_bpkt">
+                    <script type="text/javascript">
+                      var l2rxbpkt = "<%=execute("iwpriv ath1 g_kwrxl2bdrpcnt | sed 's/ath1      g_kwrxl2bdrpcnt://'")%>";
+                      l2rxbpkt.replace(" ","");
+                      document.write(l2rxbpkt);
+                    </script>
+                </td>
+			</tr>
+			<tr>
+				<td>L3 Broadcast drop count</td>
+				<td id="l3_tx_bpkt">
+                    <script type="text/javascript">
+                      var l3txbpkt = "<%=execute("iwpriv ath1 g_kwtxl3bdrpcnt | sed 's/ath1      g_kwtxl3bdrpcnt://'")%>";
+                      l3txbpkt.replace(" ","");
+                      document.write(l3txbpkt);
+                    </script>
+                </td>
+				<td id="l3_rx_bpkt">
+                    <script type="text/javascript">
+                      var l3rxbpkt = "<%=execute("iwpriv ath1 g_kwrxl3bdrpcnt | sed 's/ath1      g_kwrxl3bdrpcnt://'")%>";
+                      l3rxbpkt.replace(" ","");
+                      document.write(l3rxbpkt);
                     </script>
                 </td>
 			</tr>
