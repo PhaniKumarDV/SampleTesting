@@ -48,6 +48,7 @@
 
 <script type="text/javascript" src="<%=resource%>/cbi.js"></script>
 <script type="text/javascript">
+var radiomode = "<%=uciget('uci get wireless.@wifi-iface[1].mode')%>";
 var ind = <%=luci.http.write_json(entryind)%>;
 var freq = <%= luci.http.write_json(freq) %>;
 var hw = "<%=uciget('uci get wireless.wifi1.hwmode')%>";
@@ -251,14 +252,18 @@ function getBaseLog(x, y) {
                     <select class="cbi-input-select" name="80" style="width:110px;">
                     <script type="text/javascript">
                         var dir = "<%=uciget('uci get tool.tool.dir')%>";
-                        document.write("<option value='1' ");
-                        if( dir == "1" )
-                            document.write(" selected");
-                        document.write(">Uplink</option>");
-                        document.write("<option value='2' ");
-                        if( dir == "2" )
-                            document.write(" selected");
-                        document.write(">Downlink</option>");
+                        if( radiomode == "sta" ) {
+                           document.write("<option value='1' ");
+                           if( dir == "1" )
+                              document.write(" selected");
+                           document.write(">Uplink</option>");
+                        }
+                        else {
+                           document.write("<option value='2' ");
+                           if( dir == "2" )
+                             document.write(" selected");
+                           document.write(">Downlink</option>");
+                        }
                         document.write("<option value='3' ");
                         if( dir == "3" )
                             document.write(" selected");

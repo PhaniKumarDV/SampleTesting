@@ -19,6 +19,11 @@ start_service() {
     cnt=$(uci get tool.tool.cnt)
 
     if [ "$mode" == "ap" ]; then
+        if [ $dir -eq "1" ]; then
+            dir=2
+        fi
+    fi
+    if [ "$mode" == "ap" ]; then
         if [ $dir -eq "1" ]; then                       
             dir=2                                         
         else                                              
