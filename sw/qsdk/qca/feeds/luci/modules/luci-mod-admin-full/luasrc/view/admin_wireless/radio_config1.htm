@@ -151,10 +151,16 @@ function getoptions( list, value )
 }
 function updatelinkid( val )
 {
-    if( val == "ap" )
+    if( val == "ap" ) {
        document.getElementById("linkid").style.display = "none";
-    else 
+       document.getElementById("wifitimer").style.display = "none";
+       document.getElementById("linktimer").style.display = "none";
+    }
+    else { 
        document.getElementById("linkid").style.display = "block";
+       document.getElementById("wifitimer").style.display = "block";
+       document.getElementById("linktimer").style.display = "block";
+    }
 }
 function updatehidessid()
 {
@@ -302,6 +308,18 @@ function updatehidessid()
             <label class="cbi-value-title">Link Id</label>
             <div class="cbi-value-field">
               <input type="text" name="14" class="cbi-input-select" value="<%=uciget('uci get wireless.wifi1.linkid')%>" >
+            </div>
+          </div>
+          <div class="cbi-value" id="wifitimer">
+            <label class="cbi-value-title">Wireless Inactivity Timer</label>
+            <div class="cbi-value-field">
+              <input type="text" name="133" class="cbi-input-select" value="<%=uciget('uci get wireless.wifi1.wifitimer')%>" > &nbsp; Minutes
+            </div>
+          </div>
+          <div class="cbi-value" id="linktimer">
+            <label class="cbi-value-title">Link Inactivity Timer</label>
+            <div class="cbi-value-field">
+              <input type="text" name="134" class="cbi-input-select" value="<%=uciget('uci get wireless.wifi1.linktimer')%>" > &nbsp; Minutes
             </div>
           </div>
     </form>

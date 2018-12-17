@@ -482,6 +482,17 @@ _disable_qcawifi() {
 
 	echo "$DRIVERS disable radio $1" >/dev/console
 
+    case "$1" in
+        wifi0)
+            ;;
+        wifi1)
+            kill -9  `ps | grep wifi_timeout.sh | awk '{print $1}'` 
+            kill -9  `ps | grep link_timeout.sh | awk '{print $1}'` 
+            ;;
+        *)
+            echo "############### Invalid interface" > /dev/console
+            ;;
+    esac
 	find_qcawifi_phy "$device" >/dev/null || return 1
 
 	# If qrfs is disabled in enable_qcawifi(),need to enable it
@@ -2062,6 +2073,36 @@ enable_qcawifi() {
 
         iwpriv "$ifname" scanentryage 600
 
+#KWN_CHANGES for link Inactivity
+		config_get radiomode "$vif" mode
+		config_get wifi_timer "$device" wifitimer
+		config_get link_timer "$device" linktimer
+
+        if [ "$radiomode" == "sta" ]
+        then
+           case "$phy" in
+               wifi0)
+                   ;;
+               wifi1)
+                   if [ "$wifi_timer" -ge 1 ]
+                   then
+                      sh /usr/sbin/wifi_timeout.sh
+                   else
+                      echo "Wireless inactivity timer functionality is disabled"
+                   fi
+                   if [ "$link_timer" -ge 1 ]
+                   then
+                      sh /usr/sbin/link_timeout.sh
+                   else
+                      echo "Link inactivity timer functionality is disabled"
+                   fi
+                   ;;
+               *)
+                   echo "############### Invalid interface" > /dev/console
+                   ;;
+            esac
+         fi
+#KWN_CHANGES for link Inactivity
 	done
 
         config_get primaryradio "$device" primaryradio

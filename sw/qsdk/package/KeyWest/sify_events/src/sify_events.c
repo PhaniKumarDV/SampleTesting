@@ -67,6 +67,7 @@ void sify_file_write(char *sify_buf,int status, int reason)
 		syslog(LOG_INFO, " Associated ( MAC: %s )\n",sify_buf);		       
         sprintf( trap_cmd, "/usr/sbin/snmptrap.sh 1 %s  > /dev/null 2>&1", sify_buf);
         system( trap_cmd );
+        system("/usr/sbin/link.sh > /dev/null 2>&1");
                 //int rc=system("/usr/sbin/sify_senddata.sh '1'"); 
 	}
 	else

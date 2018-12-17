@@ -43,6 +43,8 @@ start_service() {
     bcast_rate1=$(uci get wireless.@wifi-iface[1].bcast_rate)
     mgmt_rate1=$(uci get wireless.@wifi-iface[1].mgmt_rate)
     set_bcn_rate1=$(uci get wireless.@wifi-iface[1].set_bcn_rate)
+    wifi_timer1=$(uci get wireless.wifi1.wifitimer)
+    link_timer1=$(uci get wireless.wifi1.linktimer)
 #RADIO 2.4
     tx_power_radio2=$(uci get wireless.wifi0.TXPowLim2G)
     hidden_radio0=$(uci get wireless.@wifi-iface[0].hidden)
@@ -59,10 +61,6 @@ start_service() {
 #VARIANT
     maxsu=$(uci get variant.variant.maxsu)
 
-    if [ "$eth_timer" == "" ]
-    then
-        uci set ethernet.ethernet.ethtimer='0'
-    fi
     if [ "$tx_power_radio1" == "" ]
     then
         uci set wireless.wifi1.TXPowLim5G='23'
@@ -222,7 +220,19 @@ start_service() {
     then
         uci set wireless.@wifi-iface[1].set_bcn_rate='6000'
     fi
+    if [ "$wifi_timer1" == "" ]
+    then
+        uci set wireless.wifi1.wifitimer='0'
+    fi
+    if [ "$link_timer1" == "" ]
+    then
+        uci set wireless.wifi1.linktimer='0'
+    fi
 #Ethernet
+    if [ "$eth_timer" == "" ]
+    then
+        uci set ethernet.ethernet.ethtimer='0'
+    fi
     if [ "$eth_mtu" == "" ]
     then
         uci set network.lan.mtu='1500'
