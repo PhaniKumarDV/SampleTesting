@@ -164,7 +164,8 @@ enum uci_cfg_id {
     UCI_ID_FILTERING_L3BCAST = 132,
     /* Inactivity */
     UCI_ID_RADIO1_WIRELESS_INACT = 133,
-    UCI_ID_RADIO1_LINK_INACT = 134
+    UCI_ID_RADIO1_LINK_INACT = 134,
+    UCI_ID_RADIO1_MAX_EIRP = 135
 };
 
 typedef struct

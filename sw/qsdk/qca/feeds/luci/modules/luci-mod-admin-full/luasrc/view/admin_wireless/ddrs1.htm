@@ -74,9 +74,11 @@ function updateparam()
     var atpc = "<%=uciget('uci get wireless.wifi1.atpcstatus')%>";
     if( atpc == 1 ) {
        document.getElementById("power").style.display = "none";
+       document.getElementById("eirp").style.display = "block";
     }
     else {
        document.getElementById("power").style.display = "block";
+       document.getElementById("eirp").style.display = "none";
     }
 
     var stream = "<%=uciget('uci get wireless.wifi1.spatialstream')%>";
@@ -280,6 +282,12 @@ function getoptions( list, value )
                  document.write(">Disable</option>");
                  </script>
              </select>
+           </div>
+         </div>
+          <div class="cbi-value" id="eirp">
+            <label class="cbi-value-title">Maximum EIRP</label>
+            <div class="cbi-value-field">
+              <input type="text" name="135" class="cbi-input-select" value="<%=uciget('uci get wireless.wifi1.maxeirp')%>" > &nbsp; (0-100) dBm
            </div>
          </div>
           <div class="cbi-value" id="power">

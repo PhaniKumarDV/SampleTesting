@@ -669,6 +669,15 @@ void cfg_set( char *type, char *value )
         case UCI_ID_FILTERING_L3BCAST:
             sprintf(cmd,"uci set filter.filter.l3bcast='%s'",value);
             break;
+        case UCI_ID_RADIO1_WIRELESS_INACT:
+            sprintf(cmd,"uci set wireless.wifi1.wifitimer='%s'",value);
+            break;
+        case UCI_ID_RADIO1_LINK_INACT:
+            sprintf(cmd,"uci set wireless.wifi1.linktimer='%s'",value);
+            break;
+        case UCI_ID_RADIO1_MAX_EIRP:
+            sprintf(cmd,"uci set wireless.wifi1.maxeirp='%s'",value);
+            break;
         default:
             break;
     }

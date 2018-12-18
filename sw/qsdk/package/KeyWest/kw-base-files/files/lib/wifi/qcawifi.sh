@@ -1867,6 +1867,7 @@ enable_qcawifi() {
 		config_get ddrsrtxinc "$device" ddrsrtxinc
 		config_get ddrsrtxdec "$device" ddrsrtxdec
 		config_get atpcstatus "$device" atpcstatus
+		config_get maxeirp "$device" maxeirp
 		config_get atpcpower "$device" atpcpower
         #pow=`expr $atpcpower + 3`
 
@@ -1886,6 +1887,7 @@ enable_qcawifi() {
             [ -n "$ddrsrate" ] && iwpriv "$ifname" kwnddrsmax "$ddrsrate"
         fi
         [ -n "$atpcstatus" ] && iwpriv "$ifname" kwnatpc "$atpcstatus"
+        [ -n "$maxeirp" ] && iwpriv "$ifname" kwnmaxeirp "$maxeirp"
         [ -n "$atpcpower" ] && iwpriv "$ifname" kwnatpcpow "$atpcpower"
 
 

@@ -27,6 +27,7 @@ start_service() {
     ddrsrtxinc1=$(uci get wireless.wifi1.ddrsrtxinc)
     ddrsrtxdec1=$(uci get wireless.wifi1.ddrsrtxdec)
     atpcstatus1=$(uci get wireless.wifi1.atpcstatus)
+    maxeirp1=$(uci get wireless.wifi1.maxeirp)
     atpcpower1=$(uci get wireless.wifi1.atpcpower)
     gain1=$(uci get wireless.wifi1.antennagain)
     frag1=$(uci get wireless.wifi1.assemfrag)
@@ -155,6 +156,10 @@ start_service() {
     if [ "$atpcstatus1" == "" ]
     then
         uci set wireless.wifi1.atpcstatus='2'
+    fi
+    if [ "$maxeirp1" == "" ]
+    then
+        uci set wireless.wifi1.maxeirp='0'
     fi
     if [ "$atpcpower1" == "" ]
     then
