@@ -157,7 +157,7 @@ var gps_n = "<%=uciget('uci get system.gps.latitude')%>";
 var gps_e = "<%=uciget('uci get system.gps.longitude')%>";
 var gps = "-";
 if( gps_n != 0 ) {
-    gps = gps_n + "&deg; N, " + gps_e + "&deg E";
+    gps = gps_n + " " + gps_e;
 }
 eth1_speed = eth1_speed.split("Speed:");
 eth1_speed = eth1_speed[1];
