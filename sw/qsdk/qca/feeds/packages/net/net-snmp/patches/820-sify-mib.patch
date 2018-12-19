@@ -1,7 +1,7 @@
 diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.c
 --- net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c	1970-01-01 05:30:00.000000000 +0530
-+++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.c	2018-12-18 14:47:49.371762016 +0530
-@@ -0,0 +1,4561 @@
++++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.c	2018-12-19 12:34:34.962092412 +0530
+@@ -0,0 +1,4633 @@
 +/****************************************************************************
 +*                                                                           *
 +*  File Name:           kwnmib.c                                           *
@@ -318,34 +318,43 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +  { 187  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_RX_L2BCASTDROPCNT } },
 +  { 188  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_TX_L3BCASTDROPCNT } },
 +  { 189  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_RX_L3BCASTDROPCNT } },
++  { 190  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_TX_DROPPED } },
++  { 191  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_RX_DROPPED } },
++  { 192  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_TX_MULTICAST } },
++  { 193  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_RX_MULTICAST } },
++  { 194  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_TX_UNICAST } },
++  { 195  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_RX_UNICAST } },
++  { 196  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_RX_CRC_ERRORS } },
++  { 197  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_RX_OVERSIZE_ERRORS } },
++  { 198  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_RX_OVERRUN_ERRORS } },
 +  /* Assoc MIBS */
-+  { 190  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_RADIO_INDEX } },
-+  { 191  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_SEC_INDEX } },
-+  { 192  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_MAC } },
-+  { 193  , ASN_IPADDRESS  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_IP } },
-+  { 194  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_LAT } },
-+  { 195  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_LONG } },
-+  { 196  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_LAT } },
-+  { 197  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_LONG } },
-+  { 198  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_RX_RATE } },
-+  { 199  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_TX_RATE } },
-+  { 200  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_RX_TPUT } },
-+  { 201  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_TX_TPUT } },
-+  { 202  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_SNR_A1 } },
-+  { 203  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_SNR_A2 } },
-+  { 204  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_SNR_A1 } },
-+  { 205  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_SNR_A2 } },
-+  { 206  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_PHY_ERR } },
-+  { 207  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_PHY_ERR } },
-+  { 208  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_MPDU_ERR } },
-+  { 209  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_MPDU_ERR } },
-+  { 210  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_RETRIES } },
-+  { 211  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_RETRIES } },
-+  { 212  , ASN_INTEGER    , RWRITE, var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LINKTEST_DUR } },
-+  { 213  , ASN_INTEGER    , RWRITE, var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LINKTEST_DIR } },
-+  { 214  , ASN_INTEGER    , RWRITE, var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LINKTEST_START_STOP } },
-+  { 215  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_NOISE_FLOOR } },
-+  { 216  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_NOISE_FLOOR } },
++  { 199  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_RADIO_INDEX } },
++  { 200  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_SEC_INDEX } },
++  { 201  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_MAC } },
++  { 202  , ASN_IPADDRESS  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_IP } },
++  { 203  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_LAT } },
++  { 204  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_LONG } },
++  { 205  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_LAT } },
++  { 206  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_LONG } },
++  { 207  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_RX_RATE } },
++  { 208  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_TX_RATE } },
++  { 209  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_RX_TPUT } },
++  { 210  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_TX_TPUT } },
++  { 211  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_SNR_A1 } },
++  { 212  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_SNR_A2 } },
++  { 213  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_SNR_A1 } },
++  { 214  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_SNR_A2 } },
++  { 215  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_PHY_ERR } },
++  { 216  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_PHY_ERR } },
++  { 217  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_MPDU_ERR } },
++  { 218  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_MPDU_ERR } },
++  { 219  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_RETRIES } },
++  { 220  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_RETRIES } },
++  { 221  , ASN_INTEGER    , RWRITE, var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LINKTEST_DUR } },
++  { 222  , ASN_INTEGER    , RWRITE, var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LINKTEST_DIR } },
++  { 223  , ASN_INTEGER    , RWRITE, var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LINKTEST_START_STOP } },
++  { 224  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_NOISE_FLOOR } },
++  { 225  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_NOISE_FLOOR } },
 +};
 +
 +/****************************************************************************
@@ -2833,6 +2842,69 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +                kwn_rm_str_space(var_len);
 +                return (u_char *) res_str;
 +            }
++        case KWN_ETHSTATS_TX_DROPPED:
++            {
++                sprintf( cmd, "iwpriv ath1 g_kwnethtxfail | sed 's/ath1      g_kwnethtxfail://'" );
++                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len, NULL );
++                kwn_rm_str_space(var_len);
++                return (u_char *) res_str;
++            }
++        case KWN_ETHSTATS_RX_DROPPED:
++            {
++                sprintf( cmd, "iwpriv ath1 g_kwnethrxfail | sed 's/ath1      g_kwnethrxfail://'" );
++                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len, NULL );
++                kwn_rm_str_space(var_len);
++                return (u_char *) res_str;
++            }
++        case KWN_ETHSTATS_TX_MULTICAST:
++            {
++                sprintf( cmd, "iwpriv ath1 g_kwnethtxmcpkt | sed 's/ath1      g_kwnethtxmcpkt://'" );
++                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len, NULL );
++                kwn_rm_str_space(var_len);
++                return (u_char *) res_str;
++            }
++        case KWN_ETHSTATS_RX_MULTICAST:
++            {
++                sprintf( cmd, "iwpriv ath1 g_kwnethrxmcpkt | sed 's/ath1      g_kwnethrxmcpkt://'" );
++                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len, NULL );
++                kwn_rm_str_space(var_len);
++                return (u_char *) res_str;
++            }
++        case KWN_ETHSTATS_TX_UNICAST:
++            {
++                sprintf( cmd, "iwpriv ath1 g_kwnethtxucpkt | sed 's/ath1      g_kwnethtxucpkt://'" );
++                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len, NULL );
++                kwn_rm_str_space(var_len);
++                return (u_char *) res_str;
++            }
++        case KWN_ETHSTATS_RX_UNICAST:
++            {
++                sprintf( cmd, "iwpriv ath1 g_kwnethrxucpkt | sed 's/ath1      g_kwnethrxucpkt://'" );
++                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len, NULL );
++                kwn_rm_str_space(var_len);
++                return (u_char *) res_str;
++            }
++        case KWN_ETHSTATS_RX_CRC_ERRORS:
++            {
++                sprintf( cmd, "iwpriv ath1 g_kwethcrcerrs | sed 's/ath1      g_kwethcrcerrs://'" );
++                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len, NULL );
++                kwn_rm_str_space(var_len);
++                return (u_char *) res_str;
++            }
++        case KWN_ETHSTATS_RX_OVERSIZE_ERRORS:
++            {
++                sprintf( cmd, "iwpriv ath1 g_kwethoversize | sed 's/ath1      g_kwethoversize://'" );
++                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len, NULL );
++                kwn_rm_str_space(var_len);
++                return (u_char *) res_str;
++            }
++        case KWN_ETHSTATS_RX_OVERRUN_ERRORS:
++            {
++                sprintf( cmd, "iwpriv ath1 g_kwethoverrun | sed 's/ath1      g_kwethoverrun://'" );
++                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len, NULL );
++                kwn_rm_str_space(var_len);
++                return (u_char *) res_str;
++            }
 +        default:
 +            ERROR_MSG ( "" );
 +    }
@@ -4518,7 +4590,7 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +            {
 +                switch ( (char) name[11] ) {
 +                    case KWN_ASSOC_LINKTEST_DUR:
-+                        sprintf( cmd, "uvi set tool.tool.dur='%d'",long_val );
++                        sprintf( cmd, "uci set tool.tool.dur='%d'",long_val );
 +                        system( cmd );
 +                        break;
 +                    case KWN_ASSOC_LINKTEST_DIR:
@@ -4565,8 +4637,8 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +}
 diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.h
 --- net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h	1970-01-01 05:30:00.000000000 +0530
-+++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.h	2018-12-18 15:01:34.414241992 +0530
-@@ -0,0 +1,487 @@
++++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.h	2018-12-19 12:33:48.206142891 +0530
+@@ -0,0 +1,496 @@
 +/****************************************************************************
 +*                                                                           *
 +*  File Name:           kwnmib.h                                      *
@@ -4952,7 +5024,16 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h net-snmp-5.4.4-mod/agent/mi
 +    KWN_ETHSTATS_TX_L2BCASTDROPCNT = 16,
 +    KWN_ETHSTATS_RX_L2BCASTDROPCNT = 17,
 +    KWN_ETHSTATS_TX_L3BCASTDROPCNT = 18,
-+    KWN_ETHSTATS_RX_L3BCASTDROPCNT = 19
++    KWN_ETHSTATS_RX_L3BCASTDROPCNT = 19,
++    KWN_ETHSTATS_TX_DROPPED = 20,
++    KWN_ETHSTATS_RX_DROPPED = 21,
++    KWN_ETHSTATS_TX_MULTICAST = 22,
++    KWN_ETHSTATS_RX_MULTICAST = 23,
++    KWN_ETHSTATS_TX_UNICAST = 24,
++    KWN_ETHSTATS_RX_UNICAST = 25,
++    KWN_ETHSTATS_RX_CRC_ERRORS = 26,
++    KWN_ETHSTATS_RX_OVERSIZE_ERRORS = 27,
++    KWN_ETHSTATS_RX_OVERRUN_ERRORS = 28
 +};
 +
 +enum KWN_ASSOCLIST {
@@ -5080,8 +5161,8 @@ diff -urN net-snmp-5.4.4-org/include/net-snmp/net-snmp-config.h.in net-snmp-5.4.
  
 diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWEST-MIB.mib
 --- net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib	1970-01-01 05:30:00.000000000 +0530
-+++ net-snmp-5.4.4-mod/mibs/KEYWEST-MIB.mib	2018-12-18 14:46:33.727898652 +0530
-@@ -0,0 +1,2640 @@
++++ net-snmp-5.4.4-mod/mibs/KEYWEST-MIB.mib	2018-12-19 12:33:24.690168148 +0530
+@@ -0,0 +1,2730 @@
 +------------------------------------------------------------------------
 +------------------------------------------------------------------------
 +--
@@ -7231,6 +7312,24 @@ diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWES
 +                ethernetTxL3BcastDropCount
 +                    DisplayString,
 +                ethernetRxL3BcastDropCount
++                    DisplayString,
++                ethernetTxDropped
++                    DisplayString,
++                ethernetRxDropped
++                    DisplayString,
++                ethernetTxMulticast
++                    DisplayString,
++                ethernetRxMulticast
++                    DisplayString,
++                ethernetTxUnicast
++                    DisplayString,
++                ethernetRxUnicast
++                    DisplayString,
++                ethernetRxCRCErrors
++                    DisplayString,
++                ethernetRxFrameOverSizeErrors
++                    DisplayString,
++                ethernetRxFrameOverrunErrors
 +                    DisplayString
 +        }
 +
@@ -7385,6 +7484,78 @@ diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWES
 +        DESCRIPTION "This parameter represents the Rx L3 Broadcast
 +                     drop count in ethernet statistics table."
 +::= { ethernetStatsEntry 19 }
++
++ethernetTxDropped OBJECT-TYPE
++        SYNTAX      DisplayString
++        MAX-ACCESS  read-only
++        STATUS      current
++        DESCRIPTION "This parameter represents the Tx drop
++                     count in ethernet statistics table."
++::= { ethernetStatsEntry 20 }
++
++ethernetRxDropped OBJECT-TYPE
++        SYNTAX      DisplayString
++        MAX-ACCESS  read-only
++        STATUS      current
++        DESCRIPTION "This parameter represents the Rx drop
++                     count in ethernet statistics table."
++::= { ethernetStatsEntry 21 }
++
++ethernetTxMulticast OBJECT-TYPE
++        SYNTAX      DisplayString
++        MAX-ACCESS  read-only
++        STATUS      current
++        DESCRIPTION "This parameter represents the Tx Multi
++                     -cast in ethernet statistics table."
++::= { ethernetStatsEntry 22 }
++
++ethernetRxMulticast OBJECT-TYPE
++        SYNTAX      DisplayString
++        MAX-ACCESS  read-only
++        STATUS      current
++        DESCRIPTION "This parameter represents the Rx Multi
++                     -cast in ethernet statistics table."
++::= { ethernetStatsEntry 23 }
++
++ethernetTxUnicast OBJECT-TYPE
++        SYNTAX      DisplayString
++        MAX-ACCESS  read-only
++        STATUS      current
++        DESCRIPTION "This parameter represents the Tx Uni
++                     -cast in ethernet statistics table."
++::= { ethernetStatsEntry 24 }
++
++ethernetRxUnicast OBJECT-TYPE
++        SYNTAX      DisplayString
++        MAX-ACCESS  read-only
++        STATUS      current
++        DESCRIPTION "This parameter represents the Rx Uni
++                     -cast in ethernet statistics table."
++::= { ethernetStatsEntry 25 }
++
++ethernetRxCRCErrors OBJECT-TYPE
++        SYNTAX      DisplayString
++        MAX-ACCESS  read-only
++        STATUS      current
++        DESCRIPTION "This parameter represents the Rx CRC
++                     Errors in ethernet statistics table."
++::= { ethernetStatsEntry 26 }
++
++ethernetRxFrameOverSizeErrors OBJECT-TYPE
++        SYNTAX      DisplayString
++        MAX-ACCESS  read-only
++        STATUS      current
++        DESCRIPTION "This parameter represents the Rx Frame over
++                     Size Errors in ethernet statistics table."
++::= { ethernetStatsEntry 27 }
++
++ethernetRxFrameOverrunErrors OBJECT-TYPE
++        SYNTAX      DisplayString
++        MAX-ACCESS  read-only
++        STATUS      current
++        DESCRIPTION "This parameter represents the Rx Frame over
++                     Run Errors in ethernet statistics table."
++::= { ethernetStatsEntry 28 }
 +
 +------------------------------------------------------------------------
 +------------------------------------------------------------------------
@@ -7653,9 +7824,9 @@ diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWES
 +
 +assocLinkTestDirection OBJECT-TYPE
 +        SYNTAX      INTEGER {
-+            uplink (1),
-+            downlink (2),
-+            bidirection (3),
++            uplink      (1),
++            downlink    (2),
++            bidirection (3)
 +        }
 +        MAX-ACCESS  read-write
 +        STATUS      current
@@ -7664,7 +7835,7 @@ diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWES
 +
 +assocLinkTestStartStop OBJECT-TYPE
 +        SYNTAX      INTEGER {
-+            stop (0),
++            stop  (0),
 +            start (1)
 +        }
 +        MAX-ACCESS  read-write

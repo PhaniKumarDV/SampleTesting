@@ -1,7 +1,7 @@
 diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
 --- qca-edma-org/edma.c	2018-07-09 14:25:58.833210000 +0530
-+++ qca-edma-mod/edma.c	2018-12-11 13:14:27.717255587 +0530
-@@ -26,6 +26,432 @@
++++ qca-edma-mod/edma.c	2018-12-19 12:27:54.678513121 +0530
+@@ -26,6 +26,525 @@
  extern u8 edma_per_prec_stats_enable;
  extern u32 edma_iad_stats_enable;
  
@@ -46,6 +46,15 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
 +EXPORT_SYMBOL(edma_get_fil_rx_l2bcast_drpcnt);
 +EXPORT_SYMBOL(edma_get_fil_tx_l3bcast_drpcnt);
 +EXPORT_SYMBOL(edma_get_fil_rx_l3bcast_drpcnt);
++EXPORT_SYMBOL(edma_get_tx_failure);
++EXPORT_SYMBOL(edma_get_rx_failure);
++EXPORT_SYMBOL(edma_get_rx_crc_errors);
++EXPORT_SYMBOL(edma_get_rx_frame_oversize_errors);
++EXPORT_SYMBOL(edma_get_rx_frame_overrun_errors);
++EXPORT_SYMBOL(edma_get_tx_multicastpkt);
++EXPORT_SYMBOL(edma_get_rx_multicastpkt);
++EXPORT_SYMBOL(edma_get_tx_unicastpkt);
++EXPORT_SYMBOL(edma_get_rx_unicastpkt);
 +
 +uint64_t edma_get_tx_pkts( struct net_device *dev )
 +{
@@ -431,50 +440,105 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
 +	return value;
 +}
 +
++uint64_t edma_get_tx_failure( struct net_device *dev )
++{
++	struct edma_adapter *adapter = netdev_priv(dev);
++    uint64_t value;
++
++    value = adapter->stats.tx_dropped;
++	return value;
++}
++
++uint64_t edma_get_rx_failure( struct net_device *dev )
++{
++	struct edma_adapter *adapter = netdev_priv(dev);
++    uint64_t value;
++
++    value = adapter->stats.rx_dropped;
++	return value;
++}
++
++uint64_t edma_get_rx_crc_errors( struct net_device *dev )
++{
++	struct edma_adapter *adapter = netdev_priv(dev);
++    uint64_t value;
++
++    value = adapter->stats.rx_crc_errors;
++	return value;
++}
++
++uint64_t edma_get_rx_frame_oversize_errors( struct net_device *dev )
++{
++	struct edma_adapter *adapter = netdev_priv(dev);
++    uint64_t value;
++
++    value = adapter->stats.rx_over_errors;
++	return value;
++}
++
++uint64_t edma_get_rx_frame_overrun_errors( struct net_device *dev )
++{
++	struct edma_adapter *adapter = netdev_priv(dev);
++    uint64_t value;
++
++    value = adapter->stats.rx_fifo_errors;
++	return value;
++}
++
++uint64_t edma_get_tx_multicastpkt( struct net_device *dev )
++{
++	struct edma_adapter *adapter = netdev_priv(dev);
++	struct edma_common_info *edma_cinfo = adapter->edma_cinfo;
++    uint64_t value;
++
++    value = edma_cinfo->fil_drop_count.kwn_tx_multicast;
++	return value;
++}
++
++uint64_t edma_get_rx_multicastpkt( struct net_device *dev )
++{
++    struct edma_adapter *adapter = netdev_priv(dev);
++    uint64_t value;
++
++    value = adapter->stats.multicast;
++	return value;
++}
++
++uint64_t edma_get_tx_unicastpkt( struct net_device *dev )
++{
++	struct edma_adapter *adapter = netdev_priv(dev);
++	struct edma_common_info *edma_cinfo = adapter->edma_cinfo;
++    uint64_t value;
++
++    value = edma_cinfo->fil_drop_count.kwn_tx_unicast;
++	return value;
++}
++
++uint64_t edma_get_rx_unicastpkt( struct net_device *dev )
++{
++    struct edma_adapter *adapter = netdev_priv(dev);
++	struct edma_common_info *edma_cinfo = adapter->edma_cinfo;
++    uint64_t value;
++
++    value = edma_cinfo->fil_drop_count.kwn_rx_unicast;
++	return value;
++}
++
  /* edma_skb_priority_offset()
   *	get edma skb priority
   */
-@@ -420,6 +846,34 @@
- 	memset(rx_desc, 0, sizeof(struct edma_rx_free_desc));
- }
- 
-+/*
-+ * is_broadcast_ether_addr - Determine if the Ethernet address is broadcast
-+ * @addr: Pointer to a six-byte array containing the Ethernet address
-+ *
-+ * Return true if the address is the broadcast address.
-+ *
-+ * Please note: addr must be aligned to u16.
-+ 
-+static inline bool is_broadcast_ether_addr(const u8 *addr)
-+{
-+    return (*(const u16 *)(addr + 0) &
-+            *(const u16 *)(addr + 2) &
-+            *(const u16 *)(addr + 4)) == 0xffff;
-+}
-+
-+/ multicast ip check /
-+static inline bool ipv4_is_multicast(__be32 addr)
-+{
-+    return (addr & htonl(0xf0000000)) == htonl(0xe0000000);
-+}
-+
-+/ broadcast ip check /
-+static inline bool ipv4_is_lbcast(__be32 addr)
-+{
-+    / limited broadcast /
-+    return addr == htonl(INADDR_BROADCAST);
-+}
-+*/
- /* edma_rx_complete_stp_rstp()
-  *	Complete Rx processing for STP RSTP packets
-  */
-@@ -772,24 +1226,269 @@
+@@ -772,24 +1291,275 @@
  					skb_set_hash(skb, rd->rrd2, PKT_HASH_TYPE_L4);
  			}
  
++            /* Advanced ethernet stats */
++            if ( is_unicast_ether_addr( eth_hdr(skb)->h_dest ) )
++            {
++                edma_cinfo->fil_drop_count.kwn_rx_unicast++;
++            }
++
 +            /* KWN FILTERING */
-+            if ( edma_cinfo->kwn_fil_status )
++            if ( edma_cinfo->kwn_fil_status && ( memcmp( netdev->dev_addr, eth_hdr(skb)->h_dest, 6) != 0 )  )
 +            {
 +                if ( edma_cinfo->kwn_fil_l2mcast )
 +                {
@@ -487,7 +551,7 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
 +                }
 +                if ( edma_cinfo->kwn_fil_l2bcast )
 +                {
-+                    if ( !(is_broadcast_ether_addr(eth_hdr(skb)->h_dest)) )
++                    if ( is_broadcast_ether_addr(eth_hdr(skb)->h_dest) )
 +                    {
 +                        edma_cinfo->fil_drop_count.kwn_fil_rx_l2bcast_dropcnt++;
 +                        dev_kfree_skb_any( skb );
@@ -496,7 +560,7 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
 +                }
 +                if ( edma_cinfo->kwn_fil_l3mcast )
 +                {
-+                    if ( !(ipv4_is_multicast (ip_hdr(skb)->saddr)) )
++                    if ( ipv4_is_multicast (ip_hdr(skb)->daddr) )
 +                    {
 +                        edma_cinfo->fil_drop_count.kwn_fil_rx_l3mcast_dropcnt++;
 +                        dev_kfree_skb_any( skb );
@@ -505,7 +569,7 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
 +                }
 +                if ( edma_cinfo->kwn_fil_l3bcast )
 +                {
-+                    if ( !(ipv4_is_lbcast (ip_hdr(skb)->saddr)) )
++                    if ( ipv4_is_lbcast (ip_hdr(skb)->daddr) )
 +                    {
 +                        edma_cinfo->fil_drop_count.kwn_fil_rx_l3bcast_dropcnt++;
 +                        dev_kfree_skb_any( skb );
@@ -746,7 +810,7 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
  			/* Check if we reached refill threshold */
  			if (cleaned_count == EDMA_RX_BUFFER_WRITE) {
  				ret_count = edma_alloc_rx_buf(edma_cinfo, erdr, cleaned_count, queue_id);
-@@ -1324,7 +2023,6 @@
+@@ -1324,7 +2094,6 @@
  		word3 |= (1 << EDMA_TX_INS_CVLAN);
  		word3 |= (adapter->default_vlan_tag) << EDMA_TX_CVLAN_TAG_SHIFT;
  	}
@@ -754,7 +818,7 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
  	if (packet_is_rstp) {
  		word3 |= dp_bitmap << EDMA_TPD_PORT_BITMAP_SHIFT;
  		word3 |= from_cpu << EDMA_TPD_FROM_CPU_SHIFT;
-@@ -1535,6 +2233,40 @@
+@@ -1535,6 +2304,40 @@
  	return __EDMA_LINKDOWN;
  }
  
@@ -795,7 +859,7 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
  /* edma_adjust_link()
   *	check for edma link status
   */
-@@ -1551,12 +2283,14 @@
+@@ -1551,12 +2354,14 @@
  
  	if (status == __EDMA_LINKUP && adapter->link_state == __EDMA_LINKDOWN) {
  		dev_info(&adapter->pdev->dev, "%s: GMAC Link is up with phy_speed=%d\n", netdev->name, phydev->speed);
@@ -810,7 +874,7 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
  		adapter->link_state = __EDMA_LINKDOWN;
  		netif_carrier_off(netdev);
  		netif_tx_stop_all_queues(netdev);
-@@ -1590,6 +2324,7 @@
+@@ -1590,6 +2395,7 @@
  	unsigned int flags_transmit = 0;
  	bool packet_is_rstp = false;
  	struct netdev_queue *nq = NULL;
@@ -818,12 +882,24 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
  
  	if (skb_shinfo(skb)->nr_frags) {
  		nr_frags_first = skb_shinfo(skb)->nr_frags;
-@@ -1652,12 +2387,200 @@
+@@ -1651,13 +2457,212 @@
+ 		edma_cinfo->edma_ethstats.tx_desc_error++;
  		return NETDEV_TX_BUSY;
  	}
- 
++   
++    /* Advanced Ethernet statitics */
++    if ( is_multicast_ether_addr( eth_hdr(skb)->h_dest ) )
++    {
++        edma_cinfo->fil_drop_count.kwn_tx_multicast++;
++    }
++    if ( is_unicast_ether_addr( eth_hdr(skb)->h_dest ) )
++    {
++        edma_cinfo->fil_drop_count.kwn_tx_unicast++;
++    }
++
++
 +    /* KWN FILTERING */
-+    if ( edma_cinfo->kwn_fil_status )
++    if ( edma_cinfo->kwn_fil_status && ( memcmp( net_dev->dev_addr, eth_hdr(skb)->h_source, 6) != 0 )  )
 +    {
 +        if ( edma_cinfo->kwn_fil_l2mcast )
 +        {
@@ -835,7 +911,7 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
 +        }
 +        if ( edma_cinfo->kwn_fil_l2bcast )
 +        {
-+            if ( !(is_broadcast_ether_addr(eth_hdr(skb)->h_dest)) )
++            if ( is_broadcast_ether_addr(eth_hdr(skb)->h_dest) )
 +            {
 +                edma_cinfo->fil_drop_count.kwn_fil_tx_l2bcast_dropcnt++;
 +                goto drop1;
@@ -843,7 +919,7 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
 +        }
 +        if ( edma_cinfo->kwn_fil_l3mcast )
 +        {
-+            if ( !(ipv4_is_multicast(ip_hdr(skb)->saddr)) )
++            if ( ipv4_is_multicast(ip_hdr(skb)->daddr) )
 +            {
 +                edma_cinfo->fil_drop_count.kwn_fil_tx_l3mcast_dropcnt++;
 +                goto drop1;
@@ -851,7 +927,7 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
 +        }
 +        if ( edma_cinfo->kwn_fil_l3bcast )
 +        {
-+            if ( !(ipv4_is_lbcast(ip_hdr(skb)->saddr)) )
++            if ( ipv4_is_lbcast(ip_hdr(skb)->daddr) )
 +            {
 +                edma_cinfo->fil_drop_count.kwn_fil_tx_l3bcast_dropcnt++;
 +                goto drop1;
@@ -1009,7 +1085,7 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
 +		}
 +		skb->vlan_tci = 0;
 +	}
-+
+ 
  	/* Check and mark VLAN tag offload */
  #if (LINUX_VERSION_CODE <= KERNEL_VERSION(3, 18, 21))
 -	if (vlan_tx_tag_present(skb))
@@ -1022,7 +1098,7 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
  		flags_transmit |= EDMA_VLAN_TX_TAG_INSERT_FLAG;
  	else if (adapter->default_vlan_tag)
  		flags_transmit |= EDMA_VLAN_TX_TAG_INSERT_DEFAULT_FLAG;
-@@ -1683,6 +2606,30 @@
+@@ -1683,6 +2688,30 @@
  	adapter->stats.tx_packets++;
  	adapter->stats.tx_bytes += skb->len;
  
@@ -1055,7 +1131,7 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
  	return NETDEV_TX_OK;
 diff -urN qca-edma-org/edma.h qca-edma-mod/edma.h
 --- qca-edma-org/edma.h	2018-07-09 14:25:58.833210000 +0530
-+++ qca-edma-mod/edma.h	2018-12-11 13:15:00.377246023 +0530
++++ qca-edma-mod/edma.h	2018-12-19 12:28:14.202493218 +0530
 @@ -44,6 +44,12 @@
  #include <linux/if_pppox.h>
  #include "ess_edma.h"
@@ -1069,7 +1145,7 @@ diff -urN qca-edma-org/edma.h qca-edma-mod/edma.h
  #define EDMA_CPU_CORES_SUPPORTED 4
  #define EDMA_MAX_PORTID_SUPPORTED 5
  #define EDMA_MAX_VLAN_SUPPORTED  EDMA_MAX_PORTID_SUPPORTED
-@@ -366,6 +372,17 @@
+@@ -366,6 +372,20 @@
  	struct edma_common_info *edma_cinfo; /* edma common info */
  };
  
@@ -1082,12 +1158,15 @@ diff -urN qca-edma-org/edma.h qca-edma-mod/edma.h
 +    u64 kwn_fil_rx_l2bcast_dropcnt;
 +    u64 kwn_fil_tx_l3bcast_dropcnt;
 +    u64 kwn_fil_rx_l3bcast_dropcnt;
++    u64 kwn_tx_multicast;
++    u64 kwn_tx_unicast;
++    u64 kwn_rx_unicast;
 +};
 +
  /* edma specific common info */
  struct edma_common_info {
  	struct edma_tx_desc_ring *tpd_ring[16]; /* 16 Tx queues */
-@@ -393,6 +410,38 @@
+@@ -393,6 +413,38 @@
  	struct edma_per_cpu_queues_info edma_percpu_info[CONFIG_NR_CPUS]; /* per cpu information */
  	spinlock_t stats_lock; /* protect edma stats area for updation */
  	u32 num_cores;
@@ -1126,7 +1205,7 @@ diff -urN qca-edma-org/edma.h qca-edma-mod/edma.h
  };
  
  /* transimit packet descriptor (tpd) ring */
-@@ -473,6 +522,16 @@
+@@ -473,6 +525,16 @@
  	__be16 proto;
  };
  
@@ -1143,7 +1222,7 @@ diff -urN qca-edma-org/edma.h qca-edma-mod/edma.h
  int edma_alloc_queues_tx(struct edma_common_info *edma_cinfo);
  int edma_alloc_queues_rx(struct edma_common_info *edma_cinfo);
  int edma_open(struct net_device *netdev);
-@@ -547,4 +606,45 @@
+@@ -547,4 +609,54 @@
  void edma_iad_process_flow(struct edma_common_info *edma_cinfo,
  			   struct sk_buff *skb, u8 dir, u8 precedence);
  
@@ -1188,4 +1267,13 @@ diff -urN qca-edma-org/edma.h qca-edma-mod/edma.h
 +uint64_t edma_get_fil_rx_l2bcast_drpcnt( struct net_device *dev );
 +uint64_t edma_get_fil_tx_l3bcast_drpcnt( struct net_device *dev );
 +uint64_t edma_get_fil_rx_l3bcast_drpcnt( struct net_device *dev );
++uint64_t edma_get_tx_failure( struct net_device *dev );
++uint64_t edma_get_rx_failure( struct net_device *dev );
++uint64_t edma_get_rx_crc_errors( struct net_device *dev );
++uint64_t edma_get_rx_frame_oversize_errors( struct net_device *dev );
++uint64_t edma_get_rx_frame_overrun_errors( struct net_device *dev );
++uint64_t edma_get_tx_multicastpkt( struct net_device *dev );
++uint64_t edma_get_rx_multicastpkt( struct net_device *dev );
++uint64_t edma_get_tx_unicastpkt( struct net_device *dev );
++uint64_t edma_get_rx_unicastpkt( struct net_device *dev );
  #endif /* _EDMA_H_ */

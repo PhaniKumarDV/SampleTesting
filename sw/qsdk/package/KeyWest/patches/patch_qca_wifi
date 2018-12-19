@@ -1878,8 +1878,8 @@ diff -urN qca-wifi-org/offload/wlan/umac_offload_if/ol_if_scan.c qca-wifi-mod/of
                  ss->ss_all_chans[ss->ss_nallchans++] = c;
 diff -urN qca-wifi-org/os/linux/include/ieee80211_ioctl.h qca-wifi-mod/os/linux/include/ieee80211_ioctl.h
 --- qca-wifi-org/os/linux/include/ieee80211_ioctl.h	2018-06-08 11:00:42.000000000 +0530
-+++ qca-wifi-mod/os/linux/include/ieee80211_ioctl.h	2018-12-18 17:57:22.759351701 +0530
-@@ -1530,6 +1530,83 @@
++++ qca-wifi-mod/os/linux/include/ieee80211_ioctl.h	2018-12-19 12:29:57.318387028 +0530
+@@ -1530,6 +1530,92 @@
      IEEE80211_PARAM_TIMEOUTIE                  = 550,   /* set/get assoc comeback timeout value */
      IEEE80211_PARAM_PMF_ASSOC                  = 551,   /* enable/disable pmf support */
      IEEE80211_PARAM_DFS_INFO_NOTIFY_APP        = 552,   /* Enable the feature to notify dfs info to app */
@@ -1960,10 +1960,19 @@ diff -urN qca-wifi-org/os/linux/include/ieee80211_ioctl.h qca-wifi-mod/os/linux/
 +    IEEE80211_PARAM_KWN_FIL_TX_L3BCAST_DRPCNT  = 627,   /* Tx L3 Broadcast drop count */ 
 +    IEEE80211_PARAM_KWN_FIL_RX_L3BCAST_DRPCNT  = 628,   /* Rx L3 Broadcast drop count */ 
 +    IEEE80211_PARAM_KWN_MAX_EIRP               = 629	/* KWN Max EIRP */
++    IEEE80211_PARAM_KWN_ETH_TX_FAILURE         = 630,   /* Eth Tx Failure */ 
++    IEEE80211_PARAM_KWN_ETH_RX_FAILURE         = 631,   /* Eth Rx Failure */ 
++    IEEE80211_PARAM_KWN_ETH_RX_CRC_ERRORS      = 632,   /* Eth Rx CRC Errors */ 
++    IEEE80211_PARAM_KWN_ETH_RX_FRAME_OVERSIZE  = 633,   /* Eth Rx Frame Oversize Errors */ 
++    IEEE80211_PARAM_KWN_ETH_RX_FRAME_OVERRUN   = 634,   /* Eth Rx Frame OverRun Errors */ 
++    IEEE80211_PARAM_KWN_ETH_TX_MULTICAST_PKT   = 635,   /* Eth Tx Multicast Packets */ 
++    IEEE80211_PARAM_KWN_ETH_RX_MULTICAST_PKT   = 636,   /* Eth Rx Multicast Packets */ 
++    IEEE80211_PARAM_KWN_ETH_TX_UNICAST_PKT     = 637,   /* Eth Tx Unicast Packets */ 
++    IEEE80211_PARAM_KWN_ETH_RX_UNICAST_PKT     = 638    /* Eth Rx Unicast Packets */ 
  };
  #define WOW_CUSTOM_PKT_LEN 102
  #define WOW_SYNC_PATTERN 0xFF
-@@ -2328,4 +2405,27 @@
+@@ -2328,4 +2414,27 @@
  };
  #endif
  
@@ -1993,7 +2002,7 @@ diff -urN qca-wifi-org/os/linux/include/ieee80211_ioctl.h qca-wifi-mod/os/linux/
  #endif /* _NET80211_IEEE80211_IOCTL_H_ */
 diff -urN qca-wifi-org/os/linux/src/ieee80211_wireless.c qca-wifi-mod/os/linux/src/ieee80211_wireless.c
 --- qca-wifi-org/os/linux/src/ieee80211_wireless.c	2018-06-08 11:00:40.000000000 +0530
-+++ qca-wifi-mod/os/linux/src/ieee80211_wireless.c	2018-12-18 17:58:17.303322487 +0530
++++ qca-wifi-mod/os/linux/src/ieee80211_wireless.c	2018-12-19 12:31:39.026280551 +0530
 @@ -106,6 +106,10 @@
  int ieee80211_authorise_local_peer(wlan_if_t vap, char *params);
  #endif
@@ -2253,7 +2262,7 @@ diff -urN qca-wifi-org/os/linux/src/ieee80211_wireless.c qca-wifi-mod/os/linux/s
      if (!(dev->flags & IFF_UP)) {
          return -EINVAL;
      }
-@@ -14947,6 +15116,250 @@
+@@ -14947,6 +15116,269 @@
      IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1, 0, "dfs_notify" },
      { IEEE80211_PARAM_DFS_INFO_NOTIFY_APP,
      0, IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1, "g_dfs_notify" },
@@ -2500,11 +2509,30 @@ diff -urN qca-wifi-org/os/linux/src/ieee80211_wireless.c qca-wifi-mod/os/linux/s
 +    { IEEE80211_PARAM_KWN_MAX_EIRP,
 +	    IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1, 0, "kwnmaxeirp" },
 +    { IEEE80211_PARAM_KWN_MAX_EIRP,
-+	    0, IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1, "g_kwnmaxeirp" }
++	    0, IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1, "g_kwnmaxeirp" },
++    { IEEE80211_PARAM_KWN_ETH_TX_FAILURE,
++        0, IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1, "g_kwnethtxfail" },
++    { IEEE80211_PARAM_KWN_ETH_RX_FAILURE,
++        0, IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1, "g_kwnethrxfail" },
++    { IEEE80211_PARAM_KWN_ETH_RX_CRC_ERRORS,
++        0, IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1, "g_kwethcrcerrs" },
++    { IEEE80211_PARAM_KWN_ETH_RX_FRAME_OVERSIZE,
++        0, IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1, "g_kwethoversize" },
++    { IEEE80211_PARAM_KWN_ETH_RX_FRAME_OVERRUN,
++        0, IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1, "g_kwethoverrun" },
++    { IEEE80211_PARAM_KWN_ETH_TX_MULTICAST_PKT,
++        0, IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1, "g_kwnethtxmcpkt" },
++    { IEEE80211_PARAM_KWN_ETH_RX_MULTICAST_PKT,
++        0, IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1, "g_kwnethrxmcpkt" },
++    { IEEE80211_PARAM_KWN_ETH_TX_UNICAST_PKT,
++        0, IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1, "g_kwnethtxucpkt" },
++    { IEEE80211_PARAM_KWN_ETH_RX_UNICAST_PKT,
++        0, IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1, "g_kwnethrxucpkt" }
++
  };
  
  static const iw_handler ieee80211_handlers[] = {
-@@ -14992,7 +15405,7 @@
+@@ -14992,7 +15424,7 @@
  #endif /* SIOCGIWSCAN */
      (iw_handler) ieee80211_ioctl_siwessid,      /* SIOCSIWESSID */
      (iw_handler) ieee80211_ioctl_giwessid,      /* SIOCGIWESSID */
@@ -2513,7 +2541,7 @@ diff -urN qca-wifi-org/os/linux/src/ieee80211_wireless.c qca-wifi-mod/os/linux/s
      (iw_handler) NULL,      /* SIOCGIWNICKN */
      (iw_handler) NULL,              /* -- hole -- */
      (iw_handler) NULL,              /* -- hole -- */
-@@ -15309,11 +15722,26 @@
+@@ -15309,11 +15741,26 @@
      {
  
      case SIOCG80211STATS:
@@ -4462,8 +4490,8 @@ diff -urN qca-wifi-org/umac/base/ieee80211_node.c qca-wifi-mod/umac/base/ieee802
      OS_BEACON_WRITE_LOCK(&nt->nt_nodelock, &lock_state, flags);
 diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.c qca-wifi-mod/umac/base/ieee80211_ucfg.c
 --- qca-wifi-org/umac/base/ieee80211_ucfg.c	2018-06-08 11:00:49.000000000 +0530
-+++ qca-wifi-mod/umac/base/ieee80211_ucfg.c	2018-12-18 18:00:07.823263094 +0530
-@@ -50,6 +50,46 @@
++++ qca-wifi-mod/umac/base/ieee80211_ucfg.c	2018-12-19 12:31:04.990316372 +0530
+@@ -50,6 +50,55 @@
  #define HIGHEST_BASIC_RATE 24000
  #define THREE_HUNDRED_FIFTY_MBPS 350000
  
@@ -4506,11 +4534,20 @@ diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.c qca-wifi-mod/umac/base/ieee802
 +extern uint64_t edma_get_fil_rx_l2bcast_drpcnt( struct net_device *dev );
 +extern uint64_t edma_get_fil_tx_l3bcast_drpcnt( struct net_device *dev );
 +extern uint64_t edma_get_fil_rx_l3bcast_drpcnt( struct net_device *dev );
++extern uint64_t edma_get_tx_failure( struct net_device *dev );
++extern uint64_t edma_get_rx_failure( struct net_device *dev );
++extern uint64_t edma_get_rx_crc_errors( struct net_device *dev );
++extern uint64_t edma_get_rx_frame_oversize_errors( struct net_device *dev );
++extern uint64_t edma_get_rx_frame_overrun_errors( struct net_device *dev );
++extern uint64_t edma_get_tx_multicastpkt( struct net_device *dev );
++extern uint64_t edma_get_rx_multicastpkt( struct net_device *dev );
++extern uint64_t edma_get_tx_unicastpkt( struct net_device *dev );
++extern uint64_t edma_get_rx_unicastpkt( struct net_device *dev );
 +
  extern int ol_ath_ucfg_get_user_postion(wlan_if_t vaphandle, u_int32_t aid);
  extern int ol_ath_ucfg_get_peer_mumimo_tx_count(wlan_if_t vaphandle, u_int32_t aid);
  extern int ol_ath_ucfg_reset_peer_mumimo_tx_count(wlan_if_t vaphandle, u_int32_t aid);
-@@ -57,6 +97,7 @@
+@@ -57,6 +106,7 @@
  static struct ieee80211_channel* checkchan(wlan_if_t vaphandle,
                                            int channel, int secChanOffset);
  extern int ieee80211_rate_is_valid_basic(struct ieee80211vap *, u_int32_t);
@@ -4518,7 +4555,7 @@ diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.c qca-wifi-mod/umac/base/ieee802
  #if MESH_MODE_SUPPORT
  int ieee80211_add_localpeer(wlan_if_t vap, char *params);
  int ieee80211_authorise_local_peer(wlan_if_t vap, char *params);
-@@ -985,6 +1026,7 @@
+@@ -985,6 +1035,7 @@
      int i;
  #endif
      uint32_t fils_en_period = 0;
@@ -4526,7 +4563,7 @@ diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.c qca-wifi-mod/umac/base/ieee802
  
      if (osifp->is_delete_in_progress)
          return -EINVAL;
-@@ -2642,7 +2684,10 @@
+@@ -2642,7 +2693,10 @@
      case IEEE80211_IOC_SCAN_FLUSH:
          IEEE80211_DPRINTF(vap, IEEE80211_MSG_IOCTL, "set %s\n",
                          "IEEE80211_IOC_SCAN_FLUSH");
@@ -4538,7 +4575,7 @@ diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.c qca-wifi-mod/umac/base/ieee802
          retv = 0; /* success */
          break;
  
-@@ -3974,7 +4019,547 @@
+@@ -3974,7 +4028,547 @@
      case IEEE80211_PARAM_DFS_INFO_NOTIFY_APP:
          ic->ic_dfs_info_notify_channel_available = !!value;
          break;
@@ -4720,7 +4757,7 @@ diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.c qca-wifi-mod/umac/base/ieee802
 +	vap->kwn_tput_test_direction = value;
 +	//printk(": Test Direction: %d\n",vap->kwn_tput_test_direction);
 +	break;
- 
++
 +    case IEEE80211_PARAM_KWN_SET_PBB_B_VLANID: {
 +	struct net_device *eth_dev;
 +	eth_dev = dev_get_by_name(&init_net, "eth0");
@@ -4987,7 +5024,7 @@ diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.c qca-wifi-mod/umac/base/ieee802
 +    case IEEE80211_PARAM_KWN_SU_SERVICE:
 +    {
 +        struct net_device *eth_dev;
-+
+ 
 +        eth_dev = dev_get_by_name( &init_net, "eth0" );
 +        if( vap->iv_opmode == IEEE80211_M_HOSTAP ) {
 +            value = 1;
@@ -5086,7 +5123,7 @@ diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.c qca-wifi-mod/umac/base/ieee802
      }
  
      if (retv == ENETRESET)
-@@ -4018,6 +4603,7 @@
+@@ -4018,6 +4612,7 @@
      int *txpow_frm_subtype = value;
      u_int8_t frame_subtype;
      u_int8_t frame_type;
@@ -5094,7 +5131,7 @@ diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.c qca-wifi-mod/umac/base/ieee802
  #if ATH_SUPPORT_DFS
      int tmp;
  #endif
-@@ -5586,6 +6172,324 @@
+@@ -5586,6 +6181,414 @@
      case IEEE80211_PARAM_DFS_INFO_NOTIFY_APP:
          *value = ic->ic_dfs_info_notify_channel_available;
          break;
@@ -5416,10 +5453,100 @@ diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.c qca-wifi-mod/umac/base/ieee802
 +    case IEEE80211_PARAM_KWN_MAX_EIRP:
 +        *value = vap->kwn_txparam.max_eirp;
 +        break;
++    case IEEE80211_PARAM_KWN_ETH_TX_FAILURE:
++        {
++            struct net_device *eth_dev;
++            eth_dev = dev_get_by_name(&init_net, "eth0");
++            if(eth_dev) {
++                *value = edma_get_tx_failure(eth_dev);
++            }
++            dev_put(eth_dev);
++        }
++        break;
++    case IEEE80211_PARAM_KWN_ETH_RX_FAILURE:
++        {
++            struct net_device *eth_dev;
++            eth_dev = dev_get_by_name(&init_net, "eth0");
++            if(eth_dev) {
++                *value = edma_get_rx_failure(eth_dev);
++            }
++            dev_put(eth_dev);
++        }
++        break;
++    case IEEE80211_PARAM_KWN_ETH_RX_CRC_ERRORS:
++        {
++            struct net_device *eth_dev;
++            eth_dev = dev_get_by_name(&init_net, "eth0");
++            if(eth_dev) {
++                *value = edma_get_rx_crc_errors(eth_dev);
++            }
++            dev_put(eth_dev);
++        }
++        break;
++    case IEEE80211_PARAM_KWN_ETH_RX_FRAME_OVERSIZE:
++        {
++            struct net_device *eth_dev;
++            eth_dev = dev_get_by_name(&init_net, "eth0");
++            if(eth_dev) {
++                *value = edma_get_rx_frame_oversize_errors(eth_dev);
++            }
++            dev_put(eth_dev);
++        }
++        break; 
++    case IEEE80211_PARAM_KWN_ETH_RX_FRAME_OVERRUN:
++        {
++            struct net_device *eth_dev;
++            eth_dev = dev_get_by_name(&init_net, "eth0");
++            if(eth_dev) {
++                *value = edma_get_rx_frame_overrun_errors(eth_dev);
++            }
++            dev_put(eth_dev);
++        }
++        break;
++    case IEEE80211_PARAM_KWN_ETH_TX_MULTICAST_PKT:
++        {
++            struct net_device *eth_dev;
++            eth_dev = dev_get_by_name(&init_net, "eth0");
++            if(eth_dev) {
++                *value = edma_get_tx_multicastpkt(eth_dev);
++            }
++            dev_put(eth_dev);
++        }
++        break;
++    case IEEE80211_PARAM_KWN_ETH_RX_MULTICAST_PKT:
++        {
++            struct net_device *eth_dev;
++            eth_dev = dev_get_by_name(&init_net, "eth0");
++            if(eth_dev) {
++                *value = edma_get_rx_multicastpkt(eth_dev);
++            }
++            dev_put(eth_dev);
++        }
++        break;
++    case IEEE80211_PARAM_KWN_ETH_TX_UNICAST_PKT:
++        {
++            struct net_device *eth_dev;
++            eth_dev = dev_get_by_name(&init_net, "eth0");
++            if(eth_dev) {
++                *value = edma_get_tx_unicastpkt(eth_dev);
++            }
++            dev_put(eth_dev);
++        }
++        break;
++    case IEEE80211_PARAM_KWN_ETH_RX_UNICAST_PKT:
++        {
++            struct net_device *eth_dev;
++            eth_dev = dev_get_by_name(&init_net, "eth0");
++            if(eth_dev) {
++                *value = edma_get_rx_unicastpkt(eth_dev);
++            }
++            dev_put(eth_dev);
++        }
++        break;
      }
  
      if (retv) {
-@@ -6582,12 +7486,15 @@
+@@ -6582,12 +7585,15 @@
      wlan_chan_t chan = wlan_node_get_chan(node);
      ieee80211_rate_info rinfo;
      u_int32_t jiffies_now=0, jiffies_delta=0, jiffies_assoc=0;
@@ -5435,7 +5562,7 @@ diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.c qca-wifi-mod/umac/base/ieee802
      len = sta_space(node, &ielen, vap);
      if (len > req->space) {
          return;
-@@ -6641,7 +7548,7 @@
+@@ -6641,7 +7647,7 @@
          si->isi_tx_rate_mcs = rinfo.mcs;
          si->isi_tx_rate_flags = rinfo.flags;
  #endif
@@ -5444,7 +5571,7 @@ diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.c qca-wifi-mod/umac/base/ieee802
      }
  
      memset(&rinfo, 0, sizeof(rinfo));
-@@ -6685,7 +7592,46 @@
+@@ -6685,7 +7691,46 @@
      si->isi_is_256qam = wlan_node_get_256qam_support(node);
      si->isi_rx_nss = wlan_node_get_rx_spatial(node);
      si->isi_tx_nss = wlan_node_get_tx_spatial(node);
