@@ -36,6 +36,15 @@
                      document.getElementById("l2_rx_bpkt").innerHTML = a[11];
                      document.getElementById("l3_tx_bpkt").innerHTML = a[12];
                      document.getElementById("l3_rx_bpkt").innerHTML = a[13];
+                     <%#document.getElementById("txfailpkt").innerHTML = a[14];
+                     document.getElementById("rxfailpkt").innerHTML = a[15];
+                     document.getElementById("txmcastpkt").innerHTML = a[16];
+                     document.getElementById("rxmcastpkt").innerHTML = a[17];
+                     document.getElementById("txucastpkt").innerHTML = a[18];
+                     document.getElementById("rxucastpkt").innerHTML = a[19];
+                     document.getElementById("rxcrcerrs").innerHTML = a[20];
+                     document.getElementById("rxfrmovrsize").innerHTML = a[21];
+                     document.getElementById("rxfrmovrrun").innerHTML = a[22];-%>
                }
             }
             );
@@ -107,21 +116,55 @@ function clearethstat()
                     </script>
                 </td>
 			</tr>
-			<tr>
-				<td>Errors</td>
-				<td id="txerr">
-                    <script type="text/javascript">
-                       var txerr = "<%=execute("iwpriv ath1 g_kwn_ethtxerr | sed 's/ath1      g_kwn_ethtxerr://'")%>";
-                       txerr.replace(" ","");
-                       document.write(txerr);
+            <tr>
+				<td>Dropped</td>
+				<td id="txfailpkt">
+                   <script type="text/javascript">
+                      var txfailpkt = "<%=execute("iwpriv ath1 g_kwnethtxfail | sed 's/ath1      g_kwnethtxfail://'")%>";
+                      txfailpkt.replace(" ","");
+                      document.write(txfailpkt);
                     </script>
                 </td>
-				<td id="rxerr">
+				<td id="rxfailpkt">
                     <script type="text/javascript">
-                       var rxerr = "<%=execute("iwpriv ath1 g_kwn_ethrxerr | sed 's/ath1      g_kwn_ethrxerr://'")%>";
-                       rxerr.replace(" ","");
-                       document.write(rxerr);
+                       var rxfailpkt = "<%=execute("iwpriv ath1 g_kwnethrxfail | sed 's/ath1      g_kwnethrxfail://'")%>";
+                       rxfailpkt.replace(" ","");
+                       document.write(rxfailpkt);
                     </script>
+                </td>
+			</tr>
+            <tr>
+				<td>Multicast packets</td>
+				<td id="txmcastpkt">
+                   <script type="text/javascript">
+                      var txmcastpkt = "<%=execute("iwpriv ath1 g_kwnethtxmcpkt | sed 's/ath1      g_kwnethtxmcpkt://'")%>";
+                      txmcastpkt.replace(" ","");
+                      document.write(txmcastpkt);
+                    </script>
+                </td>
+				<td id="rxmcastpkt">
+                   <script type="text/javascript">
+                      var rxmcastpkt = "<%=execute("iwpriv ath1 g_kwnethrxmcpkt | sed 's/ath1      g_kwnethrxmcpkt://'")%>";
+                      rxmcastpkt.replace(" ","");
+                      document.write(rxmcastpkt);
+                   </script>
+                </td>
+			</tr>
+            <tr>
+				<td>Unicast packets</td>
+				<td id="txucastpkt">
+                   <script type="text/javascript">
+                      var txucastpkt = "<%=execute("iwpriv ath1 g_kwnethtxucpkt | sed 's/ath1      g_kwnethtxucpkt://'")%>";
+                      txucastpkt.replace(" ","");
+                      document.write(txucastpkt);
+                    </script>
+                </td>
+				<td id="rxucastpkt">
+                   <script type="text/javascript">
+                      var rxucastpkt = "<%=execute("iwpriv ath1 g_kwnethrxucpkt | sed 's/ath1      g_kwnethrxucpkt://'")%>";
+                      rxmcastpkt.replace(" ","");
+                      document.write(rxmcastpkt);
+                   </script>
                 </td>
 			</tr>
 			<tr>
@@ -193,6 +236,59 @@ function clearethstat()
                 </td>
 			</tr>
 		</table>
+        <h3 style="color:#a5bc23; border-bottom:0px;"><%:Errors%></h3>
+		<table class="cbi-section-table" style="margin:10px; width:400px;">
+            <tr>
+				<td>Tx Errors</td>
+				<td id="txerr">
+                    <script type="text/javascript">
+                       var txerr = "<%=execute("iwpriv ath1 g_kwn_ethtxerr | sed 's/ath1      g_kwn_ethtxerr://'")%>";
+                       txerr.replace(" ","");
+                       document.write(txerr);
+                    </script>
+                </td>
+            </tr>
+            <tr>
+				<td>Rx Errors</td>
+				<td id="rxerr">
+                    <script type="text/javascript">
+                       var rxerr = "<%=execute("iwpriv ath1 g_kwn_ethrxerr | sed 's/ath1      g_kwn_ethrxerr://'")%>";
+                       rxerr.replace(" ","");
+                       document.write(rxerr);
+                    </script>
+                </td>
+			</tr>
+            <tr>
+				<td>RX CRC Errors</td>
+				<td id="rxcrcerrs">
+                   <script type="text/javascript">
+                      var rxcrcerrs = "<%=execute("iwpriv ath1 g_kwethcrcerrs | sed 's/ath1      g_kwethcrcerrs://'")%>";
+                      rxcrcerrs.replace(" ","");
+                      document.write(rxcrcerrs);
+                    </script>
+                </td>
+			</tr>
+            <tr>
+				<td>RX Frame Oversize Errors</td>
+				<td id="rxfrmovrsize">
+                   <script type="text/javascript">
+                      var rxfrmovrsize = "<%=execute("iwpriv ath1 g_kwethoversize | sed 's/ath1      g_kwethoversize://'")%>";
+                      rxfrmovrsize.replace(" ","");
+                      document.write(rxfrmovrsize);
+                    </script>
+                </td>
+			</tr>
+            <tr>
+				<td>RX Frame Overrun Errors</td>
+				<td id="rxfrmovrrun">
+                   <script type="text/javascript">
+                      var rxfrmovrrun = "<%=execute("iwpriv ath1 g_kwethoverrun | sed 's/ath1      g_kwethoverrun://'")%>";
+                      rxfrmovrrun.replace(" ","");
+                      document.write(rxfrmovrrun);
+                    </script>
+                </td>
+			</tr>
+        </table>
 	</fieldset>
 </div>
 <%+footer%>
