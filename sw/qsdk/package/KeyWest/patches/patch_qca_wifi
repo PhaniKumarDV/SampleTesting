@@ -1878,7 +1878,7 @@ diff -urN qca-wifi-org/offload/wlan/umac_offload_if/ol_if_scan.c qca-wifi-mod/of
                  ss->ss_all_chans[ss->ss_nallchans++] = c;
 diff -urN qca-wifi-org/os/linux/include/ieee80211_ioctl.h qca-wifi-mod/os/linux/include/ieee80211_ioctl.h
 --- qca-wifi-org/os/linux/include/ieee80211_ioctl.h	2018-06-08 11:00:42.000000000 +0530
-+++ qca-wifi-mod/os/linux/include/ieee80211_ioctl.h	2018-12-19 12:29:57.318387028 +0530
++++ qca-wifi-mod/os/linux/include/ieee80211_ioctl.h	2018-12-20 12:20:29.246928620 +0530
 @@ -1530,6 +1530,92 @@
      IEEE80211_PARAM_TIMEOUTIE                  = 550,   /* set/get assoc comeback timeout value */
      IEEE80211_PARAM_PMF_ASSOC                  = 551,   /* enable/disable pmf support */
@@ -1959,7 +1959,7 @@ diff -urN qca-wifi-org/os/linux/include/ieee80211_ioctl.h qca-wifi-mod/os/linux/
 +    IEEE80211_PARAM_KWN_FIL_RX_L2BCAST_DRPCNT  = 626,   /* Rx L2 Broadcast drop count */ 
 +    IEEE80211_PARAM_KWN_FIL_TX_L3BCAST_DRPCNT  = 627,   /* Tx L3 Broadcast drop count */ 
 +    IEEE80211_PARAM_KWN_FIL_RX_L3BCAST_DRPCNT  = 628,   /* Rx L3 Broadcast drop count */ 
-+    IEEE80211_PARAM_KWN_MAX_EIRP               = 629	/* KWN Max EIRP */
++    IEEE80211_PARAM_KWN_MAX_EIRP               = 629,	/* KWN Max EIRP */
 +    IEEE80211_PARAM_KWN_ETH_TX_FAILURE         = 630,   /* Eth Tx Failure */ 
 +    IEEE80211_PARAM_KWN_ETH_RX_FAILURE         = 631,   /* Eth Rx Failure */ 
 +    IEEE80211_PARAM_KWN_ETH_RX_CRC_ERRORS      = 632,   /* Eth Rx CRC Errors */ 
