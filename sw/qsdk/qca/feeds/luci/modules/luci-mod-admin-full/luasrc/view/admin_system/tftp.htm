@@ -42,7 +42,7 @@ function upgrade_retrieve(optype)
     if( optype == 1 ) {
         document.getElementById('apply').style.display="none";
         if ( type_value == 1 )
-            myVar = setInterval(inc,1000);
+            myVar = setInterval(inc,3000);
         else
             myVar = setInterval(inc,22500);
         document.getElementById('dotbar').style.display="block";
@@ -102,25 +102,69 @@ var index = 0;
 function inc ()
 {
     var optype;
-    if( document.getElementById("up").checked == true )
+    var ftype = document.getElementById("filetype").value;
+    var keep_set = document.getElementById("keep2").value;
+    var optstatus;
+    var opt = 1;
+    if( document.getElementById('up').checked == true )
         optype = 1;
     else
-        optype =2;
+        optype = 2;
     index++;
     document.getElementById("custom-style").innerHTML = ".dots .dot:nth-child( -n + " + index + "){background-color: #a5bc23;}"
-    if( index == 20 ) {
-        index = 0;
-        document.getElementById("custom-style").innerHTML = ".dots .dot:nth-child( -n + " + index + "){background-color: #a5bc23;}"
-        clearInterval(myVar);
-        if( optype == 1 ) {
-            alert("Configuration applied successfully");
-            document.getElementById("apply").style.display="block";
+    if ( ( ftype == 2 ) && ( index >= 3 ) && ( index < 20 ) )
+    {
+        XHR.get('<%=luci.dispatcher.build_url("admin","system","flashops")%>/uci_get' + '/' + opt, null,
+	        function(x, data) {
+		        if (data) { 
+                    optstatus = data;
+                     if ( optstatus == 7 ) {
+                        alert("Firmware upgrade failed");
+                        index = 0;
+                        document.getElementById("custom-style").innerHTML = ".dots .dot:nth-child( -n + " + index + "){background-color: #a5bc23;}"
+                        clearInterval(myVar);
+                        document.getElementById("apply").style.display="block";
+                        document.getElementById("dotbar").style.display="none";
+                    }
+		        }
+	        }
+        );
+    }
+    if( index == 20 ) 
+    {
+        if ( ftype == 1 ) {
+            XHR.get('<%=luci.dispatcher.build_url("admin","system","flashops")%>/uci_get' + '/' + opt, null,
+	        function(x, data) {
+		        if (data) {
+                    optstatus = data; 
+                    index = 0;
+                    document.getElementById("custom-style").innerHTML = ".dots .dot:nth-child( -n + " + index + "){background-color: #a5bc23;}"
+                    clearInterval(myVar);
+                    if( optype == 1 ) {
+                       if ( optstatus == 6 )
+                          alert("Configuration applied successfully.");
+                       else
+                          alert("Failed to apply configuration.");
+                       document.getElementById("apply").style.display="block";
+                    }
+                    if( optype == 2 ) {
+                       if ( optstatus == 3 )
+                          alert("Configuration retrieved successfully.");
+                       else
+                          alert("Failed to retrieve Configuration.");
+                       document.getElementById("retrieve").style.display="block";
+                    }
+                    document.getElementById("dotbar").style.display="none";
+               }
+		   }
+           );
         }
-        else {
-            alert("Configuration retrieved successfully");
-            document.getElementById("retrieve").style.display="block";
+        if( ftype == 2 ) {
+            if( keep_set )
+               location.href='<%=luci.dispatcher.build_url("admin")%>';
+            else
+               location.href="http://192.168.1.1";
         }
-        document.getElementById("dotbar").style.display="none";
     }
 }
 
