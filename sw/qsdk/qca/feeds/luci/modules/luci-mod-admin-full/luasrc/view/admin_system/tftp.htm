@@ -44,7 +44,7 @@ function upgrade_retrieve(optype)
         if ( type_value == 1 )
             myVar = setInterval(inc,3000);
         else
-            myVar = setInterval(inc,22500);
+            myVar = setInterval(inc,24000);
         document.getElementById('dotbar').style.display="block";
         document.getElementById('msg').innerHTML="Please wait while applying the configuration ...";
     }
@@ -291,6 +291,7 @@ function updateparam()
 <script type="text/javascript">
 save_def_value();
 updatekeepset();
+updateparam();
 </script>
 </div>
 <%+footer%>

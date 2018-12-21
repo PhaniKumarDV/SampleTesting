@@ -43,6 +43,7 @@ function index()
 	entry({"admin", "system", "flashops", "progress"}, template("admin_system/progress"))
 
 	entry({"admin", "system", "flashops", "backupfiles"}, form("admin_system/backupfiles"))
+	entry({"admin", "system", "flashops", "uci_get"}, call("action_uciget"), nil).leaf = true
 
 	--entry({"admin", "system", "reboot"}, call("action_reboot"), _("Reboot"), 90)
 end
@@ -433,4 +434,10 @@ function ltn12_popen(command)
 		fdo:close()
 		nixio.exec("/bin/sh", "-c", command)
 	end
+end
+
+function action_uciget(opt)
+    local data = luci.sys.exec("uci get tftp.tftp.opstatus")
+	luci.http.prepare_content("application/json")
+	luci.http.write_json(data)
 end
