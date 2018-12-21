@@ -28,6 +28,7 @@
 
     local uci  = require "luci.model.uci".cursor()
     local currTemperature = uci:get_first("system", "system", "temperature")
+    local cablen = luci.sys.exec("ssdk_sh port cdt run 5 0 | grep cable")
    
 
 	local meminfo = sysinfo.memory or {
@@ -125,6 +126,7 @@
     eth1_status = string.gsub(eth1_status, "\n", "")
     eth1_speed = string.gsub(eth1_speed, "\n", "")
     eth1_duplex = string.gsub(eth1_duplex, "\n", "")
+    cablen = string.gsub(cablen, "\n", "")
     gw = string.gsub(gw, "\n", "")
 -%>
 
@@ -147,6 +149,7 @@
 var eth1_status = "<%=eth1_status %>";
 var eth1_speed = "<%=eth1_speed %>";
 var eth1_duplex = "<%=eth1_duplex %>";
+var cablen = "<%=cablen %>";
 var dns = "<%=uciget('uci get network.lan.dns')%>";
 var dhcp = "<%=uciget('uci get network.lan.proto')%>";
 var country = "<%=uciget('uci get wireless.wifi1.country')%>";
@@ -159,6 +162,7 @@ var gps = "-";
 if( gps_n != 0 ) {
     gps = gps_n + " " + gps_e;
 }
+cablen = cablen.split(":");
 eth1_speed = eth1_speed.split("Speed:");
 eth1_speed = eth1_speed[1];
 eth1_duplex = eth1_duplex.split("Duplex:");
@@ -503,7 +507,7 @@ function get_log()
 </fieldset>
 </td>
 <td rowspan="2" style="border-top:0px;">
-<fieldset class="cbi-section" style="width:470px;height:690px;padding:20px 20px;">
+<fieldset class="cbi-section" style="width:470px;height:718px;padding:20px 20px;">
 	<legend><%:Wireless%></legend>
 	<table width="100%" cellspacing="10">
        <tr><td></td><td style="color:#a5bc23"><b>5 GHz<b></td><td style="color:#a5bc23"><b>2.4 GHz<b></td></tr>
@@ -548,6 +552,7 @@ function get_log()
             document.write(" Down ");
         </script>
         </td></tr>
+		<tr><td width="35%"><%:Cable Length%></td><td><script type="text/javascript">document.write(cablen[2])</script>&nbsp;m</td></tr>
 		<tr><td width="35%"><%:IP Address%></td><td><script type="text/javascript">document.write(ip)</script></td></tr>
 		<tr><td width="35%"><%:Subnet Mask%></td><td><script type="text/javascript">document.write(mask)</script></td></tr>
 		<tr><td width="35%"><%:Gateway IP%></td><td><script type="text/javascript">document.write(gw)</script></td></tr>
