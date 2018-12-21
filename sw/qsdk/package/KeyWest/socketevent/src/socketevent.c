@@ -47,9 +47,6 @@
 #include "ieee80211.h"
 #include "ieee80211_ioctl.h"
 
-#define GET_CFG_FILE "/lib/getcfgfile.txt"
-#define SET_CFG_FILE "/lib/setcfgfile.txt"
-
 void kwn_get_assoclist( kwn_wireless_stats *list );
 void kwn_get_wireless_stats( kwn_pkt *buf );
 void kwn_req_type ( int socketfd, kwn_pkt *buf, struct sockaddr_in *peer_addr, int socket_length );
@@ -60,7 +57,11 @@ void kwn_conv_str_to_ip( int8_t* conv_ip, uint8_t* byte )
 {
     uint32_t ip_addr=0,val;
     int8_t  *tok,*ptr;
-    
+   
+    if( conv_ip[0] == '\0' )
+    {
+        return;
+    }
     tok=strtok(conv_ip,".");
     
     while( tok != NULL)
@@ -78,6 +79,94 @@ void kwn_conv_str_to_ip( int8_t* conv_ip, uint8_t* byte )
     byte[3] = (ip_addr & 0xFF);
 
     printf("IP: %d.%d.%d.%d \n",byte[0],byte[1],byte[2],byte[3]);
+    return;
+}
+
+void kwn_dhcp_inet_handle(  const char* cmd, uint8_t* cmd_buf )
+{
+    FILE *fp;
+    char *tok, *p;
+    short int len;
+    char ip[20];
+    char a[100];
+    int i = 0;
+
+    memset( a, '\0', sizeof( a ) );
+    memset( ip, '\0', sizeof( ip ) );
+    strcpy(ip,"0.0.0.0");
+
+    fp = popen( cmd, "r" );
+    while( fgets( a, sizeof( a ), fp ) != NULL )
+    {       
+        /*printf("%s\n", a);*/
+        if( i == 1 )
+            break;
+        i++;
+    } 
+    pclose( fp );
+    
+    printf("%s", a);
+    p = strstr(a,"Bcast");
+
+    if ( p == NULL )
+    {   
+        printf("No occurance of inet\n");
+    }   
+    else
+    {   
+        tok = strtok(a,"inet addr:");
+        len = strlen( tok );
+        memcpy( ip, tok, len );
+    }   
+    printf("%s",ip);
+    len = strlen( ip );
+    memcpy(cmd_buf, ip, len);
+    return;
+}
+
+void kwn_dhcp_mask_handle(  const char* cmd, uint8_t* cmd_buf )
+{
+    FILE *fp;
+    char *tok, *p;
+    short int len;
+    char ip[20];
+    char a[100];
+    int i = 0;
+
+    memset( a, '\0', sizeof( a ) );
+    memset( ip, '\0', sizeof( ip ) );
+    strcpy(ip,"0.0.0.0");
+
+    fp = popen( cmd, "r" );
+    while( fgets( a, sizeof( a ), fp ) != NULL )
+    {       
+        /*printf("%s\n", a);*/
+        if( i == 1 )
+            break;
+        i++;
+    } 
+    pclose( fp );
+    
+    printf("%s", a);
+    p = strstr(a,"Bcast");
+
+    if ( p == NULL )
+    {   
+        printf("No occurance of inet\n");
+    }   
+    else
+    {
+        tok = strtok(a,": \n");
+        while( tok != NULL)
+        {
+            len = strlen(tok);
+            memcpy(ip,tok,len);
+            tok = strtok(NULL, ": \n");
+        }
+    }   
+    printf("%s",ip);
+    len = strlen( ip );
+    memcpy(cmd_buf, ip, len);
     return;
 }
 
@@ -105,6 +194,7 @@ void kwn_sys_cmd_imp( const char* cmd, uint8_t* cmd_buf )
     uint8_t  *token;
     uint16_t len;
 
+    memset( a, '\0', sizeof(a) );
     fp = popen(cmd,"r");
     if( fp == NULL )
         return;
@@ -114,9 +204,15 @@ void kwn_sys_cmd_imp( const char* cmd, uint8_t* cmd_buf )
     }
     pclose(fp);
 
-    token = strtok(a,"\n");
-    len = strlen(token);
-    memcpy(cmd_buf,token,len);
+    if( a[0] == '\0' ) {
+        len = strlen(a);
+        memcpy(cmd_buf,a,len);
+    }
+    else {
+        token = strtok(a,"\n");
+        len = strlen(token);
+        memcpy(cmd_buf,token,len);
+    }
     return;
 }
 
@@ -241,16 +337,6 @@ void kwn_get_config_from_device( kwn_cfg_data *dev_cfg )
     uint8_t  gip_byte[4] = {'\0'};
     uint8_t  netmask_byte[4] = {'\0'};
     uint8_t  l_mac[6] = {'\0'};
-    //char op_mode,bwidth,ipaddr_type;
-
-    memset(cmd, '\0', sizeof(cmd));
-    memset(cmd_buf, '\0', sizeof(cmd_buf));
-    sprintf( cmd,"uci get network.lan.ipaddr");
-    kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] ); 
-    kwn_conv_str_to_ip(&cmd_buf[0],&ip_byte[0]);
-    len = strlen(ip_byte);
-    memcpy(dev_cfg->ip, ip_byte, len);
-    /*printf("IP Form: %d.%d.%d.%d\n",dev_cfg->ip[0],dev_cfg->ip[1],dev_cfg->ip[2],dev_cfg->ip[3]);*/
 
     memset(cmd, '\0', sizeof(cmd));
     memset(cmd_buf, '\0', sizeof(cmd_buf));
@@ -258,8 +344,24 @@ void kwn_get_config_from_device( kwn_cfg_data *dev_cfg )
     kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] ); 
     len=strlen(cmd_buf);
     dev_cfg->ip_type = kwn_iptype_to_enum(&cmd_buf[0], len);
-    //memcpy(dev_cfg->ip_type, ipaddr_type, sizeof(ipaddr_type));
-    /*printf("dev_cfg->ip_type IP_TYPE: %d\n",dev_cfg->ip_type);*/
+    printf("dev_cfg->ip_type IP_TYPE: %d\n",dev_cfg->ip_type);
+
+    memset(cmd, '\0', sizeof(cmd));
+    memset(cmd_buf, '\0', sizeof(cmd_buf));
+    if ( dev_cfg->ip_type == 1 )
+    {
+        sprintf( cmd,"uci get network.lan.ipaddr");
+        kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] );
+    }
+    else
+    {
+        sprintf( cmd, "ifconfig br-lan" );
+        kwn_dhcp_inet_handle( &cmd[0], &cmd_buf[0] );
+    }
+    kwn_conv_str_to_ip(&cmd_buf[0],&ip_byte[0]);
+    len = strlen(ip_byte);
+    memcpy(dev_cfg->ip, ip_byte, len);
+    printf("IP Form: %d.%d.%d.%d\n",dev_cfg->ip[0],dev_cfg->ip[1],dev_cfg->ip[2],dev_cfg->ip[3]);
 
     memset(cmd, '\0', sizeof(cmd));
     memset(cmd_buf, '\0', sizeof(cmd_buf));
@@ -267,7 +369,7 @@ void kwn_get_config_from_device( kwn_cfg_data *dev_cfg )
     kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] );
     len=strlen(cmd_buf);
     memcpy(dev_cfg->ssid, cmd_buf, len);
-    printf("ssid len : %d \n",len);
+    printf("ssid len : %d - ",len);
     printf("dev_cfg->ssid SSID: %s\n",dev_cfg->ssid);
 
     memset(cmd, '\0', sizeof(cmd));
@@ -276,8 +378,7 @@ void kwn_get_config_from_device( kwn_cfg_data *dev_cfg )
     kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] );
     len=strlen(cmd_buf);
     dev_cfg->opmode = kwn_opmode_to_enum(&cmd_buf[0], len);
-    //memcpy(dev_cfg->opmode, op_mode, sizeof(op_mode));
-    /*printf("dev_cfg->opmode OPMODE: %d\n",dev_cfg->opmode);*/
+    printf("dev_cfg->opmode OPMODE: %d\n",dev_cfg->opmode);
  
     memset(cmd, '\0', sizeof(cmd));
     memset(cmd_buf, '\0', sizeof(cmd_buf));
@@ -285,15 +386,14 @@ void kwn_get_config_from_device( kwn_cfg_data *dev_cfg )
     kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] ); 
     len=strlen(cmd_buf);
     dev_cfg->bandwidth = kwn_bwidth_to_enum(&cmd_buf[0], len);
-    //memcpy(dev_cfg->bandwidth, bwidth, sizeof(bwidth));   
-    /*printf("dev_cfg->bandwidth Bandwidth: %d\n",dev_cfg->bandwidth);*/
+    printf("dev_cfg->bandwidth Bandwidth: %d\n",dev_cfg->bandwidth);
  
     memset(cmd, '\0', sizeof(cmd));
     memset(cmd_buf, '\0', sizeof(cmd_buf));
     sprintf(cmd,"uci get wireless.wifi1.channel");
     kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] ); 
     dev_cfg->channel = (uint8_t)atoi(cmd_buf);
-    /*printf("Channel : %d\n",dev_cfg->channel);*/
+    printf("dev_cfg->Channel : %d\n",dev_cfg->channel);
  
     memset(cmd, '\0', sizeof(cmd));
     memset(cmd_buf, '\0', sizeof(cmd_buf));
@@ -322,16 +422,32 @@ void kwn_get_config_from_device( kwn_cfg_data *dev_cfg )
     
     memset(cmd, '\0', sizeof(cmd));
     memset(cmd_buf, '\0', sizeof(cmd_buf));
-    sprintf( cmd,"uci get network.lan.gateway");
+    if ( dev_cfg->ip_type == 1 )
+    {
+        sprintf( cmd,"uci get network.lan.gateway");
+    }
+    else
+    {
+        sprintf( cmd,"ip route get 1 | awk '{print $NF;exit}'" );
+    }
     kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] ); 
     kwn_conv_str_to_ip(&cmd_buf[0],&gip_byte[0]);
     len = strlen(gip_byte);
     memcpy(dev_cfg->gip, gip_byte, len);
+    printf("Gateway: %d.%d.%d.%d\n",dev_cfg->gip[0],dev_cfg->gip[1],dev_cfg->gip[2],dev_cfg->gip[3]);
 
     memset(cmd, '\0', sizeof(cmd));
     memset(cmd_buf, '\0', sizeof(cmd_buf));
-    sprintf( cmd,"uci get network.lan.netmask");
-    kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] ); 
+    if ( dev_cfg->ip_type == 1 )
+    {
+        sprintf( cmd,"uci get network.lan.netmask");
+        kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] ); 
+    }
+    else
+    {
+        sprintf( cmd, "ifconfig br-lan" );
+        kwn_dhcp_mask_handle( &cmd[0], &cmd_buf[0] );
+    }
     kwn_conv_str_to_ip(&cmd_buf[0],&netmask_byte[0]);
     len = strlen(netmask_byte);
     memcpy(dev_cfg->netmask, netmask_byte, len);
@@ -343,15 +459,64 @@ void kwn_get_config_from_device( kwn_cfg_data *dev_cfg )
     kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] );
     len=strlen(cmd_buf);
     memcpy(dev_cfg->cust_name, cmd_buf, len);
-    printf("Length of customername : %d\n",len);
-    printf("dev_cfg->cust_name CUSTOMER Name: %s\n",dev_cfg->cust_name);
+    printf("Len of custname : %d -",len);
+    printf("dev_cfg->cust_name CUSTOMER Name : %s\n",dev_cfg->cust_name);
 
     memset(cmd, '\0', sizeof(cmd));
     memset(cmd_buf, '\0', sizeof(cmd_buf));
     sprintf( cmd,"uci get wireless.wifi1.linkid");
     kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] ); 
     dev_cfg->linkid = atoi(cmd_buf);
-    printf("Link_id : %d\n",dev_cfg->linkid);
+    printf("dev_cfg->Link_id : %d\n",dev_cfg->linkid);
+
+    memset(cmd, '\0', sizeof(cmd));
+    memset(cmd_buf, '\0', sizeof(cmd_buf));
+    sprintf( cmd,"uci get wireless.wifi1.ddrsstatus");
+    kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] ); 
+    dev_cfg->ddrs_status = atoi(cmd_buf);
+    printf("dev_cfg->DDRS Status : %d\n",dev_cfg->ddrs_status);
+ 
+    memset(cmd, '\0', sizeof(cmd));
+    memset(cmd_buf, '\0', sizeof(cmd_buf));
+    sprintf( cmd,"uci get wireless.wifi1.spatialstream");
+    kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] ); 
+    dev_cfg->stream = atoi(cmd_buf);
+    printf("dev_cfg->Spatial Stream : %d\n",dev_cfg->stream);   
+ 
+    memset(cmd, '\0', sizeof(cmd));
+    memset(cmd_buf, '\0', sizeof(cmd_buf));
+    sprintf( cmd,"uci get wireless.wifi1.ddrsrate");
+    kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] ); 
+    dev_cfg->modindex = atoi(cmd_buf);
+    printf("dev_cfg->Modulation Index : %d\n",dev_cfg->modindex);   
+ 
+    memset(cmd, '\0', sizeof(cmd));
+    memset(cmd_buf, '\0', sizeof(cmd_buf));
+    sprintf( cmd,"uci get wireless.wifi1.ddrsminrate");
+    kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] ); 
+    dev_cfg->min_modindex = atoi(cmd_buf);
+    printf("dev_cfg->Min Modulation Index : %d\n",dev_cfg->min_modindex);   
+ 
+    memset(cmd, '\0', sizeof(cmd));
+    memset(cmd_buf, '\0', sizeof(cmd_buf));
+    sprintf( cmd,"uci get wireless.wifi1.ddrsmaxrate");
+    kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] ); 
+    dev_cfg->max_modindex = atoi(cmd_buf);
+    printf("dev_cfg->Max Modulation Index : %d\n",dev_cfg->max_modindex);   
+ 
+    memset(cmd, '\0', sizeof(cmd));
+    memset(cmd_buf, '\0', sizeof(cmd_buf));
+    sprintf( cmd,"uci get wireless.wifi1.atpcstatus");
+    kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] ); 
+    dev_cfg->atpc_status = atoi(cmd_buf);
+    printf("dev_cfg->ATPC Status : %d\n",dev_cfg->atpc_status);   
+ 
+    memset(cmd, '\0', sizeof(cmd));
+    memset(cmd_buf, '\0', sizeof(cmd_buf));
+    sprintf( cmd,"uci get wireless.wifi1.atpcpower");
+    kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] ); 
+    dev_cfg->txpower = atoi(cmd_buf);
+    printf("dev_cfg->TX Power : %d\n",dev_cfg->txpower);   
 
     /*printf("Executed uci commands to get the config\n");*/   
     return;
@@ -372,8 +537,8 @@ void kwn_get_config_data( kwn_pkt* buf)
     buf->hdr.ptmp = 0;
     buf->hdr.more = 1;
 
-    printf("Data IP: %d.%d.%d.%d \n",data.ip[0],data.ip[1],data.ip[2],data.ip[3]);
     /* IP_ADDRESS */
+    printf("Data IP: %d.%d.%d.%d \n",data.ip[0],data.ip[1],data.ip[2],data.ip[3]);
     llen = sizeof(data.ip);     /* length */
     memcpy(buf->data+len, &llen,sizeof(uint16_t));
     len += sizeof(uint16_t);
@@ -383,8 +548,8 @@ void kwn_get_config_data( kwn_pkt* buf)
     memcpy(buf->data+len, &data.ip,llen); /* value */
     len += llen;
     
-    printf("IP_TYPE : %d\n",data.ip_type);
     /* IP_TYPE */
+    printf("IP_TYPE : %d\n",data.ip_type);
     llen = sizeof(data.ip_type);     /* length */
     memcpy(buf->data+len, &llen,sizeof(uint16_t));
     len += sizeof(uint16_t);
@@ -394,8 +559,8 @@ void kwn_get_config_data( kwn_pkt* buf)
     memcpy(buf->data+len, &data.ip_type,llen); /* value */
     len += llen;
 
-    printf("SSID : %s\n",data.ssid);
     /* SSID */
+    printf("SSID : %s\n",data.ssid);
     llen = strlen(data.ssid);     /* length */
     memcpy(buf->data+len, &llen,sizeof(uint16_t));
     printf("llen of ssid : %d\n",llen);
@@ -406,8 +571,8 @@ void kwn_get_config_data( kwn_pkt* buf)
     memcpy(buf->data+len, &data.ssid,llen); /* value */
     len += llen;
 
-    printf("OPMODE: %d\n",data.opmode);
     /* OPMODE */
+    printf("OPMODE: %d\n",data.opmode);
     llen = sizeof(data.opmode);     /* length */
     memcpy(buf->data+len, &llen,sizeof(uint16_t));
     len += sizeof(uint16_t);
@@ -417,8 +582,8 @@ void kwn_get_config_data( kwn_pkt* buf)
     memcpy(buf->data+len, &data.opmode,llen); /* value */
     len += llen;
 
-    printf("Bandwidth: %d\n",data.bandwidth);
     /* BANDWIDTH */
+    printf("Bandwidth: %d\n",data.bandwidth);
     llen = sizeof(data.bandwidth);     /* length */
     memcpy(buf->data+len, &llen,sizeof(uint16_t));
     len += sizeof(uint16_t);
@@ -428,8 +593,8 @@ void kwn_get_config_data( kwn_pkt* buf)
     memcpy(buf->data+len, &data.bandwidth,llen); /* value */
     len += llen;
     
-    printf("Channel: %d\n",data.channel);
     /* CHANNEL */
+    printf("Channel: %d\n",data.channel);
     llen = sizeof(data.channel);     /* length */
     memcpy(buf->data+len, &llen,sizeof(uint16_t));
     len += sizeof(uint16_t);
@@ -439,8 +604,8 @@ void kwn_get_config_data( kwn_pkt* buf)
     memcpy(buf->data+len, &data.channel,llen); /* value */
     len += llen;
 
-    printf("Mode: %d\n",data.mode);
     /* RADIO_MODE */
+    printf("Mode: %d\n",data.mode);
     llen = sizeof(data.mode);     /* length */
     memcpy(buf->data+len, &llen,sizeof(uint16_t));
     len += sizeof(uint16_t);
@@ -462,8 +627,8 @@ void kwn_get_config_data( kwn_pkt* buf)
     memcpy(buf->data+len, &data.local_mac,llen); /* value */
     len += llen;
     
-    printf("Country: %u\n",data.country);
     /* RADIO_MODE */
+    printf("Country: %u\n",data.country);
     llen = sizeof(data.country);     /* length */
     memcpy(buf->data+len, &llen,sizeof(uint16_t));
     len += sizeof(uint16_t);
@@ -473,8 +638,9 @@ void kwn_get_config_data( kwn_pkt* buf)
     memcpy(buf->data+len, &data.country,llen); /* value */
     len += llen;
  
-    printf("Gateway IP: %d.%d.%d.%d \n",data.gip[0],data.gip[1],data.gip[2],data.gip[3]);
     /* GATEWAY_IP_ADDRESS */
+    if( data.gip[0] != '\0' )
+    printf("Gateway IP: %d.%d.%d.%d \n",data.gip[0],data.gip[1],data.gip[2],data.gip[3]);
     llen = sizeof(data.gip);     /* length */
     memcpy(buf->data+len, &llen,sizeof(uint16_t));
     len += sizeof(uint16_t);
@@ -484,8 +650,8 @@ void kwn_get_config_data( kwn_pkt* buf)
     memcpy(buf->data+len, &data.gip,llen); /* value */
     len += llen;
     
-    printf("Mask IP: %d.%d.%d.%d \n",data.netmask[0],data.netmask[1],data.netmask[2],data.netmask[3]);
     /* NETMASK_IP_ADDRESS */
+    printf("Mask IP: %d.%d.%d.%d \n",data.netmask[0],data.netmask[1],data.netmask[2],data.netmask[3]);
     llen = sizeof(data.netmask);     /* length */
     printf("Netmask Length: %d\n",llen);
     memcpy(buf->data+len, &llen,sizeof(uint16_t));
@@ -496,8 +662,8 @@ void kwn_get_config_data( kwn_pkt* buf)
     memcpy(buf->data+len, &data.netmask,llen); /* value */
     len += llen;   
     
-    printf("CUSTOMER ID: %s\n",data.cust_name);
     /* CUSTOMER NAME*/
+    printf("CUSTOMER ID: %s\n",data.cust_name);
     llen = strlen(data.cust_name);     /* length */
     memcpy(buf->data+len, &llen,sizeof(uint16_t));
     printf("llen of customername : %d\n",llen);
@@ -508,8 +674,8 @@ void kwn_get_config_data( kwn_pkt* buf)
     memcpy(buf->data+len, &data.cust_name,llen); /* value */
     len += llen;
  
+    /* LINKID */
     printf("LinkID: %d\n",data.linkid);
-    /* OPMODE */
     llen = sizeof(data.linkid);     /* length */
     memcpy(buf->data+len, &llen,sizeof(uint16_t));
     len += sizeof(uint16_t);
@@ -518,7 +684,84 @@ void kwn_get_config_data( kwn_pkt* buf)
     len += sizeof(uint8_t);
     memcpy(buf->data+len, &data.linkid,llen); /* value */
     len += llen;
-   
+ 
+    /* DDRS STATUS */
+    printf("DDRS Status: %d\n",data.ddrs_status);
+    llen = sizeof(data.ddrs_status);     /* length */
+    memcpy(buf->data+len, &llen,sizeof(uint16_t));
+    len += sizeof(uint16_t);
+    type = KWN_CFG_DDRS_STATUS;           /* type */
+    memcpy(buf->data+len, &type,sizeof(uint8_t));
+    len += sizeof(uint8_t);
+    memcpy(buf->data+len, &data.ddrs_status,llen); /* value */
+    len += llen;  
+ 
+    /* SPATIAL STREAM */
+    printf("Spatial Stream: %d\n",data.stream);
+    llen = sizeof(data.stream);     /* length */
+    memcpy(buf->data+len, &llen,sizeof(uint16_t));
+    len += sizeof(uint16_t);
+    type = KWN_CFG_SPATIAL_STREAM;           /* type */
+    memcpy(buf->data+len, &type,sizeof(uint8_t));
+    len += sizeof(uint8_t);
+    memcpy(buf->data+len, &data.stream,llen); /* value */
+    len += llen;   
+ 
+    /* MODULATION INDEX */
+    printf("Modulation index: %d\n",data.modindex);
+    llen = sizeof(data.modindex);     /* length */
+    memcpy(buf->data+len, &llen,sizeof(uint16_t));
+    len += sizeof(uint16_t);
+    type = KWN_CFG_MOD_INDEX;           /* type */
+    memcpy(buf->data+len, &type,sizeof(uint8_t));
+    len += sizeof(uint8_t);
+    memcpy(buf->data+len, &data.modindex,llen); /* value */
+    len += llen;   
+ 
+    /* MIN MODULATION INDEX */
+    printf("Min Modulation index: %d\n",data.min_modindex);
+    llen = sizeof(data.min_modindex);     /* length */
+    memcpy(buf->data+len, &llen,sizeof(uint16_t));
+    len += sizeof(uint16_t);
+    type = KWN_CFG_MIN_MOD_INDEX;           /* type */
+    memcpy(buf->data+len, &type,sizeof(uint8_t));
+    len += sizeof(uint8_t);
+    memcpy(buf->data+len, &data.min_modindex,llen); /* value */
+    len += llen;   
+ 
+    /* MAX MODULATION INDEX */
+    printf("Max Modulation index: %d\n",data.max_modindex);
+    llen = sizeof(data.max_modindex);     /* length */
+    memcpy(buf->data+len, &llen,sizeof(uint16_t));
+    len += sizeof(uint16_t);
+    type = KWN_CFG_MAX_MOD_INDEX;           /* type */
+    memcpy(buf->data+len, &type,sizeof(uint8_t));
+    len += sizeof(uint8_t);
+    memcpy(buf->data+len, &data.max_modindex,llen); /* value */
+    len += llen;   
+
+    /* ATPC STATUS */
+    printf("ATPC Status: %d\n",data.atpc_status);
+    llen = sizeof(data.atpc_status);     /* length */
+    memcpy(buf->data+len, &llen,sizeof(uint16_t));
+    len += sizeof(uint16_t);
+    type = KWN_CFG_ATPC_STATUS;           /* type */
+    memcpy(buf->data+len, &type,sizeof(uint8_t));
+    len += sizeof(uint8_t);
+    memcpy(buf->data+len, &data.atpc_status,llen); /* value */
+    len += llen;
+ 
+    /* TRANSMIT POWER */
+    printf("Transmit Power: %d\n",data.txpower);
+    llen = sizeof(data.txpower);     /* length */
+    memcpy(buf->data+len, &llen,sizeof(uint16_t));
+    len += sizeof(uint16_t);
+    type = KWN_CFG_TX_POWER;           /* type */
+    memcpy(buf->data+len, &type,sizeof(uint8_t));
+    len += sizeof(uint8_t);
+    memcpy(buf->data+len, &data.txpower,llen); /* value */
+    len += llen;
+     
     buf->hdr.length = len;
     printf("Data length: %d\n",buf->hdr.length);
     
@@ -550,13 +793,8 @@ void kwn_set_config_data( kwn_pkt* buf )
         {
             case KWN_CFG_IP:
                 {
-                    uint8_t  bytes[4];
-                    //uint32_t ip;
+                    uint8_t  bytes[4]={'\0'};
                     memcpy(&bytes,buf->data+len,llen);
-                    //bytes[0] = ip & 0xFF;
-                    //bytes[1] = (ip >> 8) & 0xFF;
-                    //bytes[2] = (ip >> 16) & 0xFF;
-                    //bytes[3] = (ip >> 24) & 0xFF;   
                     printf("IP Address: %d.%d.%d.%d\n", bytes[0], bytes[1], bytes[2], bytes[3]); 
                     sprintf(cmd, "uci set network.lan.ipaddr='%d.%d.%d.%d'", bytes[0], bytes[1], bytes[2], bytes[3]);
                     system(cmd);
@@ -575,7 +813,6 @@ void kwn_set_config_data( kwn_pkt* buf )
                 {
                     uint8_t ssid[33]={'\0'};
                     memcpy(&ssid,buf->data+len,llen);
-                    //ssid[llen]='\0';
                     printf("SSID: %s\n",ssid);
                     sprintf(cmd, "uci set wireless.@wifi-iface[1].ssid='%s'",ssid);
                     system(cmd);
@@ -632,12 +869,7 @@ void kwn_set_config_data( kwn_pkt* buf )
             case KWN_CFG_GIP:
                 {
                     uint8_t  gbytes[4];
-                    //uint32_t ip;
                     memcpy(&gbytes,buf->data+len,llen);
-                    //bytes[0] = ip & 0xFF;
-                    //bytes[1] = (ip >> 8) & 0xFF;
-                    //bytes[2] = (ip >> 16) & 0xFF;
-                    //bytes[3] = (ip >> 24) & 0xFF;   
                     printf("GIP Address: %d.%d.%d.%d\n", gbytes[0], gbytes[1], gbytes[2], gbytes[3]); 
                     sprintf(cmd,"uci set network.lan.gateway='%d.%d.%d.%d'", gbytes[0], gbytes[1], gbytes[2], gbytes[3]);
                     system(cmd);
@@ -646,12 +878,7 @@ void kwn_set_config_data( kwn_pkt* buf )
             case KWN_CFG_NETMASK:
                 {
                     uint8_t  maskip[4];
-                    //uint32_t ip;
                     memcpy(&maskip,buf->data+len,llen);
-                    //bytes[0] = ip & 0xFF;
-                    //bytes[1] = (ip >> 8) & 0xFF;
-                    //bytes[2] = (ip >> 16) & 0xFF;
-                    //bytes[3] = (ip >> 24) & 0xFF;   
                     printf("MASKIP Address: %d.%d.%d.%d\n", maskip[0], maskip[1], maskip[2], maskip[3]); 
                     sprintf(cmd,"uci set network.lan.netmask='%d.%d.%d.%d'", maskip[0], maskip[1], maskip[2], maskip[3]);
                     system(cmd);
@@ -661,7 +888,6 @@ void kwn_set_config_data( kwn_pkt* buf )
                 {
                     uint8_t cust_name[33]={'\0'};
                     memcpy(&cust_name,buf->data+len,llen);
-                    //cust_name[llen]='\0';
                     printf("CUSTOMER NAME: %s\n",cust_name);
                     sprintf(cmd, "uci set wireless.wifi1.customername='%s'",cust_name);
                     system(cmd);
@@ -673,6 +899,69 @@ void kwn_set_config_data( kwn_pkt* buf )
                     memcpy(&linkid, buf->data+len,llen);
                     printf("Linkid: %d \n",linkid);
                     sprintf(cmd, "uci set wireless.wifi1.linkid='%d'",linkid);
+                    system(cmd);
+                    break;
+                }
+            case KWN_CFG_DDRS_STATUS:
+                {
+                    uint8_t ddrs_status;
+                    memcpy(&ddrs_status,buf->data+len,llen);
+                    printf("DDRS Status : %d\n",ddrs_status);
+                    sprintf(cmd, "uci set wireless.wifi1.ddrsstatus='%d'", ddrs_status);
+                    system(cmd);
+                    break;
+                }
+            case KWN_CFG_SPATIAL_STREAM:
+                {
+                    uint8_t spatialstream;
+                    memcpy(&spatialstream,buf->data+len,llen);
+                    printf("Spatial Stream : %d\n",spatialstream);
+                    sprintf(cmd, "uci set wireless.wifi1.spatialstream='%d'", spatialstream);
+                    system(cmd);
+                    break;
+                }
+            case KWN_CFG_MOD_INDEX:
+                {
+                    uint8_t mod_index;
+                    memcpy(&mod_index,buf->data+len,llen);
+                    printf("Modulation Index : %d\n",mod_index);
+                    sprintf(cmd, "uci set wireless.wifi1.ddrsrate='%d'", mod_index);
+                    system(cmd);
+                    break;
+                }
+            case KWN_CFG_MIN_MOD_INDEX:
+                {
+                    uint8_t min_mod_index;
+                    memcpy(&min_mod_index,buf->data+len,llen);
+                    printf("Min Modulation Index : %d\n",min_mod_index);
+                    sprintf(cmd, "uci set wireless.wifi1.ddrsminrate='%d'", min_mod_index);
+                    system(cmd);
+                    break;
+                }
+            case KWN_CFG_MAX_MOD_INDEX:
+                {
+                    uint8_t max_mod_index;
+                    memcpy(&max_mod_index,buf->data+len,llen);
+                    printf("Max Modulation Index : %d\n",max_mod_index);
+                    sprintf(cmd, "uci set wireless.wifi1.ddrsmaxrate='%d'", max_mod_index);
+                    system(cmd);
+                    break;
+                }
+            case KWN_CFG_ATPC_STATUS:
+                {
+                    uint8_t atpc_status;
+                    memcpy(&atpc_status,buf->data+len,llen);
+                    printf("ATPC Status : %d\n",atpc_status);
+                    sprintf(cmd, "uci set wireless.wifi1.atpcstatus='%d'", atpc_status);
+                    system(cmd);
+                    break;
+                }
+            case KWN_CFG_TX_POWER:
+                {
+                    uint8_t tx_power;
+                    memcpy(&tx_power,buf->data+len,llen);
+                    printf("TX Power : %d\n",tx_power);
+                    sprintf(cmd, "uci set wireless.wifi1.atpcpower='%d'", tx_power);
                     system(cmd);
                     break;
                 }
@@ -745,6 +1034,7 @@ void kwn_set_link_test( kwn_pkt *buf )
                 {
                     uint8_t mac[KWN_MAC_ADDR_LEN];
                     memcpy(&mac,buf->data+len,llen);
+                    system("iwpriv ath1 kwn_flag 1");
                     printf("MAC = %2.2X:%2.2X:%2.2X:%2.2X:%2.2X:%2.2X\n",mac[0],mac[1],mac[2],mac[3],mac[4],mac[5]);
                     sprintf( cmd, "iwpriv ath1 addmac %2.2X:%2.2X:%2.2X:%2.2X:%2.2X:%2.2X",mac[0],mac[1],mac[2],mac[3],mac[4],mac[5] );
                     system( cmd );
@@ -861,6 +1151,19 @@ void kwn_get_assoclist( kwn_wireless_stats *list )
         list->sta[num].local_snr_a2 = si->isi_local_snr_a2;
         list->sta[num].remote_snr_a2 = si->isi_remote_snr_a2;
         kwn_conv_str_to_ip( &si->isi_ip_addr[0], &list->sta[num].r_ip[0] );
+        printf("local_ret:%d\n",si->isi_l_rtx);
+        list->sta[num].local_link_qindex = ( 100 - si->isi_l_rtx );
+        printf("remote_ret:%d\n",si->isi_r_rtx);
+        list->sta[num].remote_link_qindex = ( 100 - si->isi_r_rtx );
+        /* Local Signal A1 Calculation */
+        list->sta[num].local_signal_a1 = ( list->sta[num].local_snr_a1 > 128 ) ? si->isi_l_noise_floor : ( (int16_t)list->sta[num].local_snr_a1 + si->isi_l_noise_floor );
+        /* Local Signal A2 Calculation */
+        list->sta[num].local_signal_a2 = ( list->sta[num].local_snr_a2 > 128 ) ? si->isi_l_noise_floor : ( (int16_t)list->sta[num].local_snr_a2 + si->isi_l_noise_floor );
+        /* Remote Signal A1 Calculation */
+        list->sta[num].remote_signal_a1 = ( list->sta[num].remote_snr_a1 > 128 ) ? si->isi_r_noise_floor : ( (int16_t)list->sta[num].remote_snr_a1 + si->isi_r_noise_floor );
+        /* Remote Signal A2 Calculation */
+        list->sta[num].remote_signal_a2 = ( list->sta[num].remote_snr_a2 > 128 ) ? si->isi_r_noise_floor : ( (int16_t)list->sta[num].remote_snr_a2 + si->isi_r_noise_floor );
+
 #if 0
         printf(" station mac = %2.2X:%2.2X:%2.2X:%2.2X:%2.2X:%2.2X\n",
                 list->sta[num].mac[0],
@@ -1086,6 +1389,72 @@ void kwn_get_wireless_stats( kwn_pkt *buf )
         memcpy(buf->data+len, &type,sizeof(uint8_t));
         len += sizeof(uint8_t);
         memcpy(buf->data+len, &wireless_list.sta[i].rx_ratekbps,llen); /* value */
+        len += llen;
+        
+        /* LOCAL_SIGNAL_A1 */
+        printf("Local Signal A1 %d \n",wireless_list.sta[i].local_signal_a1);
+        llen = sizeof(wireless_list.sta[i].local_signal_a1);     /* length */
+        memcpy(buf->data+len, &llen,sizeof(uint16_t));
+        len += sizeof(uint16_t);
+        type = KWN_WLAN_L_SIGNAL_A1;             /* type */
+        memcpy(buf->data+len, &type,sizeof(uint8_t));
+        len += sizeof(uint8_t);
+        memcpy(buf->data+len, &wireless_list.sta[i].local_signal_a1,llen); /* value */
+        len += llen;
+
+        /* LOCAL_SIGNAL_A2 */
+        printf("Local Signal A2 %d \n",wireless_list.sta[i].local_signal_a2);
+        llen = sizeof(wireless_list.sta[i].local_signal_a2);     /* length */
+        memcpy(buf->data+len, &llen,sizeof(uint16_t));
+        len += sizeof(uint16_t);
+        type = KWN_WLAN_L_SIGNAL_A2;             /* type */
+        memcpy(buf->data+len, &type,sizeof(uint8_t));
+        len += sizeof(uint8_t);
+        memcpy(buf->data+len, &wireless_list.sta[i].local_signal_a2,llen); /* value */
+        len += llen;
+
+        /* REMOTE_SIGNAL_A1 */
+        printf("Remote Signal A1 %d \n",wireless_list.sta[i].remote_signal_a1);
+        llen = sizeof(wireless_list.sta[i].remote_signal_a1);     /* length */
+        memcpy(buf->data+len, &llen,sizeof(uint16_t));
+        len += sizeof(uint16_t);
+        type = KWN_WLAN_R_SIGNAL_A1;             /* type */
+        memcpy(buf->data+len, &type,sizeof(uint8_t));
+        len += sizeof(uint8_t);
+        memcpy(buf->data+len, &wireless_list.sta[i].remote_signal_a1,llen); /* value */
+        len += llen;
+
+        /* REMOTE_SIGNAL_A2 */
+        printf("Remote Signal A2 %d \n",wireless_list.sta[i].remote_signal_a2);
+        llen = sizeof(wireless_list.sta[i].remote_signal_a2);     /* length */
+        memcpy(buf->data+len, &llen,sizeof(uint16_t));
+        len += sizeof(uint16_t);
+        type = KWN_WLAN_R_SIGNAL_A2;             /* type */
+        memcpy(buf->data+len, &type,sizeof(uint8_t));
+        len += sizeof(uint8_t);
+        memcpy(buf->data+len, &wireless_list.sta[i].remote_signal_a2,llen); /* value */
+        len += llen;
+
+        /* LOCAL LINK QUALITY INDEX */
+        printf("Local Link Quality Index %d \n",wireless_list.sta[i].local_link_qindex);
+        llen = sizeof(wireless_list.sta[i].local_link_qindex);     /* length */
+        memcpy(buf->data+len, &llen,sizeof(uint16_t));
+        len += sizeof(uint16_t);
+        type = KWN_WLAN_L_LINK_QINDEX;             /* type */
+        memcpy(buf->data+len, &type,sizeof(uint8_t));
+        len += sizeof(uint8_t);
+        memcpy(buf->data+len, &wireless_list.sta[i].local_link_qindex,llen); /* value */
+        len += llen;
+
+        /* REMOTE LINK QUALITY INDEX */
+        printf("Remote Link Quality Index %d \n",wireless_list.sta[i].remote_link_qindex);
+        llen = sizeof(wireless_list.sta[i].remote_link_qindex);     /* length */
+        memcpy(buf->data+len, &llen,sizeof(uint16_t));
+        len += sizeof(uint16_t);
+        type = KWN_WLAN_R_LINK_QINDEX;             /* type */
+        memcpy(buf->data+len, &type,sizeof(uint8_t));
+        len += sizeof(uint8_t);
+        memcpy(buf->data+len, &wireless_list.sta[i].remote_link_qindex,llen); /* value */
         len += llen;
     }
     buf->hdr.length = len;
