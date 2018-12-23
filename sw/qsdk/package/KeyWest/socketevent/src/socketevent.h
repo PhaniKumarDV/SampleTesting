@@ -39,8 +39,8 @@ enum kwn_pkt_subtype
 
 enum kwn_cfg_data_params
 {
-    KWN_CFG_IP = 1,
-    KWN_CFG_IP_TYPE,
+    KWN_CFG_IP_TYPE = 1,
+    KWN_CFG_IP,
     KWN_CFG_SSID,
     KWN_CFG_OPMODE,
     KWN_CFG_BANDWIDTH,
