@@ -5206,8 +5206,8 @@ diff -urN net-snmp-5.4.4-org/include/net-snmp/net-snmp-config.h.in net-snmp-5.4.
  
 diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWEST-MIB.mib
 --- net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib	1970-01-01 05:30:00.000000000 +0530
-+++ net-snmp-5.4.4-mod/mibs/KEYWEST-MIB.mib	2018-12-19 13:44:30.049704574 +0530
-@@ -0,0 +1,2760 @@
++++ net-snmp-5.4.4-mod/mibs/KEYWEST-MIB.mib	2018-12-23 19:07:57.230959718 +0530
+@@ -0,0 +1,2770 @@
 +------------------------------------------------------------------------
 +------------------------------------------------------------------------
 +--
@@ -5759,8 +5759,9 @@ diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWES
 +
 +linkProfileSpatialStream OBJECT-TYPE
 +        SYNTAX      INTEGER {
-+            enable (1),
-+            disable (2)
++            single (1),
++            dual (2),
++            auto (3)
 +        }
 +        MAX-ACCESS  read-write
 +        STATUS      current
@@ -6461,6 +6462,15 @@ diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWES
 +                     Longitude Coordinates."
 +::= { sysInfo 6 }
 +
++sysInfoTemperature OBJECT-TYPE
++        SYNTAX      DisplayString
++        MAX-ACCESS  read-only
++        STATUS      current
++        DESCRIPTION "This parameter represents the 
++                     Temperature."
++::= { sysInfo 7 }
++
++------------------------------------------------------------------------
 +------------------------------------------------------------------------
 +------------------------------------------------------------------------
 +
