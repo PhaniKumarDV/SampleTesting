@@ -1,0 +1,186 @@
+<%#
+ Copyright 2008 Steven Barth <steven@midlink.org>
+ Copyright 2008 Jo-Philipp Wich <jow@openwrt.org>
+ Licensed to the public under the Apache License 2.0.
+-%>
+<%+header%>
+<%
+    local iw = luci.sys.wifi.getiwinfo("wifi1.network1")
+    local currfreq = iw.frequency
+        function uciget(cmd)
+                local res = luci.util.exec(cmd)
+                local str = string.gsub(res, "\n", "")
+                return str
+        end
+%>
+<script type="text/javascript">
+var timer;
+function enable() {
+    document.getElementById("s1").innerHTML="<input type='button' class='cbi-button' value='<%:Start Test%>' onclick='starttool()' />";
+    document.getElementById("msg").innerHTML="";
+}
+function disable_spin()
+{
+    document.getElementById("spin").innerHTML = "";
+}
+function stoptool()
+{
+    var id = 1;
+    XHR.get('<%=luci.dispatcher.build_url("admin", "monitor", "tools")%>/ethteststop/' + id, null,
+    function(x, data) {
+        if (data) { 
+        }
+    }
+    );
+    document.getElementById("s1").innerHTML="<input type='button' class='cbi-button' value='<%:Start Test%>' onclick='starttool()' />";
+    clearTimeout( timer );
+    document.getElementById("msg").innerHTML = "";
+    disable_spin();
+}
+
+function starttool()
+{
+    var test_size = document.getElementById("size").value;
+    var test_dir = document.getElementById("dir").value;
+    var test_dur = document.getElementById("dur").value;
+    var test_mac = document.getElementById("mac").value;
+    var test_speed = document.getElementById("speed").value;
+	document.getElementById("msg").innerHTML = "Ethernet Test is in progress...";
+
+    document.getElementById("s1").innerHTML="<input type='button' class='cbi-button' value='<%:Stop Test%>' onclick='stoptool()' />";
+    timer = setTimeout("enable()",test_dur*1000);
+    XHR.get('<%=luci.dispatcher.build_url("admin", "monitor", "tools")%>/ethtestsize/' + test_size, null,
+    function(x, data) {
+        if (data) { 
+        }
+    }
+    );
+
+    XHR.get('<%=luci.dispatcher.build_url("admin", "monitor", "tools")%>/ethtestdir/' + test_dir, null,
+    function(x, data) {
+        if (data) { 
+        }
+    }
+    );
+
+    XHR.get('<%=luci.dispatcher.build_url("admin", "monitor", "tools")%>/ethtestdur/' + test_dur, null,
+    function(x, data) {
+        if (data) { 
+        }
+    }
+    );
+
+    XHR.get('<%=luci.dispatcher.build_url("admin", "monitor", "tools")%>/ethtestmac/' + test_mac, null,
+    function(x, data) {
+        if (data) { 
+        }
+    }
+    );
+
+    XHR.get('<%=luci.dispatcher.build_url("admin", "monitor", "tools")%>/ethteststart/' + test_speed, null,
+    function(x, data) {
+        if (data) { 
+        }
+    }
+    );
+}
+	XHR.poll(5, '<%=REQUEST_URI%>', { status: 1 },
+		function(x, info)
+        {
+            var id = 6;
+            XHR.get('<%=luci.dispatcher.build_url("admin", "stats")%>/' + id, null,
+            function(x, data) {
+              if (data) { 
+                  var s = data.split("=");
+                  var ethtx, ethrx, ethfail;
+			      ethtx = s[6] > (1000 * 1000) ? (s[6] / ( 1000 * 1000 )).toFixed(2) : 0;
+			      ethrx = s[7] > (1000 * 1000) ? (s[7] / ( 1000 * 1000 )).toFixed(2) : 0;
+			      ethfail = s[10];
+			      document.getElementById("ethtx").innerHTML = ethtx + " Mbps";
+			      document.getElementById("ethrx").innerHTML = ethrx + " Mbps";
+			      document.getElementById("ethfail").innerHTML = ethfail;
+               }
+            }
+            );
+        }
+    );
+</script>
+<div class="page-content">
+<h2><a id="content" name="content"><%:Tools%></a></h2>
+    <ul class="cbi-tabmenu">
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=luci.dispatcher.build_url("admin/monitor/tools")%>"><%:Diagnostics%></a></li>
+        <script type="text/javascript">
+            var mode = "<%=uciget('uci get wireless.@wifi-iface[1].mode')%>";
+            if( mode == "ap" )
+               document.write("<li style='margin-right:4px' class='cbi-tab-disabled'><a href='sascan'><%:Spectrum Analyzer%></a></li>");
+            else
+               document.write("<li style='margin-right:4px' class='cbi-tab-disabled'><a href='survey'><%:Site Survey%></a></li>");
+        </script>
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="linkcalc"><%:Link Calculator%></a></li>
+        <li style="margin-right:4px" class="cbi-tab"><a href="#"><%:Ethernet Test%></a></li>
+    </ul>
+<div class="cbi-map">
+    <fieldset class="cbi-section">
+       <form name="formTable">
+          <div class="cbi-value">
+            <label class="cbi-value-title">Ethernet MAC Address</label>
+            <div class="cbi-value-field">
+                <input type="text" id="mac" class="cbi-input-select" style="width:150px;" value="">
+            </div>
+          </div>
+          <div class="cbi-value">
+            <label class="cbi-value-title">Packet Size</label>
+            <div class="cbi-value-field">
+                <input type="text" id="size" class="cbi-input-select" style="width:150px;" value="1400"> &nbsp; Bytes
+            </div>
+          </div>
+          <div class="cbi-value">
+            <label class="cbi-value-title">Speed</label>
+            <div class="cbi-value-field">
+                <input type="text" id="speed" class="cbi-input-select" style="width:150px;" value="50"> &nbsp; Mbps
+            </div>
+          </div>
+          <div class="cbi-value">
+            <label class="cbi-value-title">Duration</label>
+            <div class="cbi-value-field">
+                <input type="text" id="dur" class="cbi-input-select" style="width:150px;" value="60"> &nbsp; Seconds
+            </div>
+          </div>
+          <div class="cbi-value">
+            <label class="cbi-value-title">Direction</label>
+            <div class="cbi-value-field">
+                    <select class="cbi-input-select" id="dir" style="width:150px;">
+                    <script type="text/javascript">
+                        document.write("<option value='1' ");
+                        document.write(">Local -> Remote</option>");
+                        document.write("<option value='3' ");
+                        document.write(">Bidirection</option>");
+                    </script>
+                    </select>
+            </div>
+          </div>
+          <div class="cbi-value">
+            <label class="cbi-value-title">Tx Throughput</label>
+            <div class="cbi-value-field" style="margin-top:4px;" id="ethtx">
+            </div>
+          </div>
+          <div class="cbi-value">
+            <label class="cbi-value-title">Rx Throughput</label>
+            <div class="cbi-value-field" style="margin-top:4px;" id="ethrx">
+            </div>
+          </div>
+          <div class="cbi-value">
+            <label class="cbi-value-title">Rx Failed Count</label>
+            <div class="cbi-value-field" style="margin-top:4px;" id="ethfail">
+            </div>
+          </div>
+    </form>
+    </fieldset>
+</div>
+<div class="cbi-page-actions left">
+<div style="text-align:left;"><span id="spin"></span>&nbsp;&nbsp;<span id="msg"></span></div>
+<span id="s1"><input type="button" class="cbi-button" value="<%:Start Test%>" onclick="starttool()" /></span>
+</div>
+</div>
+</div>
+<%+footer%>

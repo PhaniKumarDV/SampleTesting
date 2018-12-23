@@ -1,7 +1,7 @@
 diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
 --- qca-edma-org/edma.c	2018-07-09 14:25:58.833210000 +0530
-+++ qca-edma-mod/edma.c	2018-12-19 12:27:54.678513121 +0530
-@@ -26,6 +26,525 @@
++++ qca-edma-mod/edma.c	2018-12-23 20:27:45.952118846 +0530
+@@ -26,6 +26,618 @@
  extern u8 edma_per_prec_stats_enable;
  extern u32 edma_iad_stats_enable;
  
@@ -55,7 +55,26 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
 +EXPORT_SYMBOL(edma_get_rx_multicastpkt);
 +EXPORT_SYMBOL(edma_get_tx_unicastpkt);
 +EXPORT_SYMBOL(edma_get_rx_unicastpkt);
++EXPORT_SYMBOL(edma_set_kwn_tput_pkt_per_ms);
++EXPORT_SYMBOL(edma_set_kwn_tput_pkt_size);
++EXPORT_SYMBOL(edma_set_kwn_tput_duration);
++EXPORT_SYMBOL(edma_set_kwn_tput_direction);
++EXPORT_SYMBOL(edma_set_kwn_test_mac);
++EXPORT_SYMBOL(edma_set_kwn_tput_start);
++EXPORT_SYMBOL(edma_get_kwn_tput_rxseq_failed_cnt);
 +
++void edma_send_tput_tx(unsigned long data);
++/* Phani: Tx Send Timer for KWN Ethernet TPUT Test */
++char kwn_tput_test_dsap[6] = {0xaa,0xaa,0xab,0xac,0xad,0xae};
++struct kwn_tput_test_params {
++	int kwn_tput_test_duration;
++	int kwn_tput_test_pktsize;
++	int kwn_tput_test_pktperms;
++	int kwn_tput_test_direction;
++	int kwn_tput_start_test;
++	uint64_t kwn_tput_test_txseq;
++	uint64_t kwn_tput_test_rxseq;
++};
 +uint64_t edma_get_tx_pkts( struct net_device *dev )
 +{
 +	struct edma_adapter *adapter = netdev_priv(dev);
@@ -524,10 +543,84 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
 +	return value;
 +}
 +
++int edma_set_kwn_tput_pkt_per_ms( struct net_device *dev, uint32_t pkt_per_ms )
++{
++	struct edma_adapter *adapter = netdev_priv(dev);
++	struct edma_common_info *edma_cinfo = adapter->edma_cinfo;
++	printk(": @@@@@@@@@ KWN Ethernet PktPerMs : %d\n",pkt_per_ms );
++	edma_cinfo->kwn_pkt_per_ms = pkt_per_ms;
++	return 0;
++}
++
++int edma_set_kwn_tput_pkt_size( struct net_device *dev, uint32_t pkt_size )
++{
++	struct edma_adapter *adapter = netdev_priv(dev);
++	struct edma_common_info *edma_cinfo = adapter->edma_cinfo;
++	printk(": @@@@@@@@@ KWN Ethernet PktSize : %d\n",pkt_size );
++	edma_cinfo->kwn_pkt_size = pkt_size;
++	return 0;
++}
++
++int edma_set_kwn_tput_duration( struct net_device *dev, uint32_t duration )
++{
++	struct edma_adapter *adapter = netdev_priv(dev);
++	struct edma_common_info *edma_cinfo = adapter->edma_cinfo;
++	printk(": @@@@@@@@@ KWN Ethernet Duration : %d\n",duration );
++	edma_cinfo->kwn_duration = duration;
++	return 0;
++}
++
++int edma_set_kwn_tput_direction( struct net_device *dev, uint32_t direction )
++{
++	struct edma_adapter *adapter = netdev_priv(dev);
++	struct edma_common_info *edma_cinfo = adapter->edma_cinfo;
++	printk(": @@@@@@@@@ KWN Ethernet Direction : %d\n",direction );
++	edma_cinfo->kwn_direction = direction;
++	return 0;
++}
++
++int edma_set_kwn_test_mac( struct net_device *dev, uint8_t *mac )
++{
++	struct edma_adapter *adapter = netdev_priv(dev);
++	struct edma_common_info *edma_cinfo = adapter->edma_cinfo;
++	int i = 0;
++	memcpy(edma_cinfo->kwn_test_mac, mac, 6);
++	printk("@@@@@@@ KWN Test MAC: ");
++	for ( i = 0; i < 6; i++ ) {
++		printk(": %x",mac[i]);
++	}
++	printk("\n");
++	return 0;
++}
++
++int edma_set_kwn_tput_start( struct net_device *dev, uint32_t start )
++{
++	struct edma_adapter *adapter = netdev_priv(dev);
++	struct edma_common_info *edma_cinfo = adapter->edma_cinfo;
++    printk(": @@@@@@@@@ KWN Tput Test : %d\n",start );
++    edma_cinfo->kwn_start = start;
++    if ( start ) {
++        edma_cinfo->kwn_tput_start_time = jiffies;
++        edma_cinfo->kwn_tput_txseq = 0;
++        printk(": KWN Tput Test Started: \n");
++        mod_timer(&edma_cinfo->kwn_tput_timer, jiffies + 1);
++    } else {
++        edma_cinfo->kwn_tput_start_time = jiffies - edma_cinfo->kwn_duration;
++    }
++    return 0;
++}
++
++uint64_t edma_get_kwn_tput_rxseq_failed_cnt( struct net_device *dev )
++{
++	struct edma_adapter *adapter = netdev_priv(dev);
++	struct edma_common_info *edma_cinfo = adapter->edma_cinfo;
++    return edma_cinfo->kwn_tput_rx_failed_cnt;
++}
++
  /* edma_skb_priority_offset()
   *	get edma skb priority
   */
-@@ -772,24 +1291,275 @@
+@@ -772,24 +1384,341 @@
  					skb_set_hash(skb, rd->rrd2, PKT_HASH_TYPE_L4);
  			}
  
@@ -793,7 +886,12 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
 +                    edma_cinfo->rx_offer_pkt_cnt = 0;
 +                    edma_cinfo->rx_offer_pkt_bytes_cnt = 0;
 +                    edma_cinfo->rx_byte_drop_cnt = 0;
-+                    //printk(": RX Tput: %llu\n",edma_cinfo->kwn_rx_tput_mbps);
++#if 0
++                    printk(": RX Tput: %llu %llu %llu %llu\n",edma_cinfo->kwn_rx_tput_mbps, 
++                            edma_cinfo->kwn_tput_txseq,
++                            edma_cinfo->kwn_tput_rxseq,
++                            edma_cinfo->kwn_tput_rx_failed_cnt);
++#endif
 +                }
 +                else 
 +                {
@@ -807,10 +905,83 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
 +                }
 +            }
 +
++            /* Process the KWN Ethernet Test packets */
++            /* In case of KWN Tput Packets, then drop them immediately */
++            if ( skb->len > 20 && 
++                    ( (memcmp(&skb->data[sizeof(struct ether_header)], kwn_tput_test_dsap, sizeof(kwn_tput_test_dsap)) == 0) ||
++                      (memcmp(&skb->data[0], kwn_tput_test_dsap, sizeof(kwn_tput_test_dsap)) == 0) ) ) {
++                if ( 1  ) {
++                    struct kwn_tput_test_params *kparams;
++                    int offset = 0;
++
++                    //offset += sizeof(struct ether_header) + sizeof(kwn_tput_test_dsap);
++                    offset += sizeof(kwn_tput_test_dsap);
++                    kparams = (struct kwn_tput_test_params *)&skb->data[ offset ];
++                    if ( ntohl(kparams->kwn_tput_test_txseq) == 0 ) 
++                    {
++                        printk(": TPUT: Reset params: \n");
++                        /* Reset the params */
++                        edma_cinfo->kwn_tput_rxseq = 0;
++                        edma_cinfo->kwn_tput_rx_failed_cnt = 0;
++                        if ( edma_cinfo->kwn_start == 0 ) {
++                            /* Start the BiDi test based on input parameters */
++                            edma_cinfo->kwn_direction = ntohl(kparams->kwn_tput_test_direction);
++                            if ( edma_cinfo->kwn_direction == 3 ) {
++                                edma_cinfo->kwn_duration = ntohl(kparams->kwn_tput_test_duration);
++                                edma_cinfo->kwn_pkt_size = ntohl(kparams->kwn_tput_test_pktsize);
++                                edma_cinfo->kwn_pkt_per_ms = ntohl(kparams->kwn_tput_test_pktperms);
++                                memcpy(edma_cinfo->kwn_test_mac, eth_hdr(skb)->h_source, 6);
++                                /* Start the Test */
++                                printk(": @@@@@@@@@ BiDi KWN Tput Test : \n");
++                                edma_cinfo->kwn_tput_start_time = jiffies;
++                                edma_cinfo->kwn_tput_txseq = 0;
++                                edma_cinfo->kwn_start = 1;
++                                printk(": Bi-Di KWN Tput Test Started: \n");
++                                mod_timer(&edma_cinfo->kwn_tput_timer, jiffies + 1);
++                            }
++                        }
++                    } else {
++                        if( ntohl(kparams->kwn_tput_test_txseq) > edma_cinfo->kwn_tput_rxseq ) {
++                            if ( ntohl(kparams->kwn_tput_test_txseq) - edma_cinfo->kwn_tput_rxseq > 1 ) {
++                                edma_cinfo->kwn_tput_rx_failed_cnt += ( ntohl(kparams->kwn_tput_test_txseq) - edma_cinfo->kwn_tput_rxseq - 1 );
++                            }
++                            edma_cinfo->kwn_tput_rxseq = ntohl(kparams->kwn_tput_test_txseq);
++                        }
++                        else if( ntohl(kparams->kwn_tput_test_txseq) == edma_cinfo->kwn_tput_rxseq ) {
++                        }
++                        else {
++                            edma_cinfo->kwn_tput_rx_failed_cnt = ( edma_cinfo->kwn_tput_rx_failed_cnt > 0 ? 
++                                    edma_cinfo->kwn_tput_rx_failed_cnt - 1 : 0 );
++                        }
++                        /* Stop the BiDi test if started */
++                        edma_cinfo->kwn_start = ntohl(kparams->kwn_tput_start_test);
++                        if ( edma_cinfo->kwn_start == 0 && edma_cinfo->kwn_direction == 3 ) {
++                            edma_cinfo->kwn_tput_start_time = jiffies - edma_cinfo->kwn_duration;
++                        }
++                    }
++
++                }
++                dev_kfree_skb_any ( skb );
++                continue;
++            }
++
++
  			/* Check if we reached refill threshold */
  			if (cleaned_count == EDMA_RX_BUFFER_WRITE) {
  				ret_count = edma_alloc_rx_buf(edma_cinfo, erdr, cleaned_count, queue_id);
-@@ -1324,7 +2094,6 @@
+@@ -961,9 +1890,11 @@
+ static void edma_free_rfs_flow_table(struct edma_adapter *adapter)
+ {
+ 	int i;
++	struct edma_common_info *edma_cinfo = adapter->edma_cinfo;
+ 
+ 	/* Remove sync timer */
+ 	del_timer_sync(&adapter->rfs.expire_rfs);
++    del_timer_sync(&edma_cinfo->kwn_tput_timer);
+ 	spin_lock_bh(&adapter->rfs.rfs_ftab_lock);
+ 
+ 	/* Free EDMA RFS table entries */
+@@ -1324,7 +2255,6 @@
  		word3 |= (1 << EDMA_TX_INS_CVLAN);
  		word3 |= (adapter->default_vlan_tag) << EDMA_TX_CVLAN_TAG_SHIFT;
  	}
@@ -818,7 +989,7 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
  	if (packet_is_rstp) {
  		word3 |= dp_bitmap << EDMA_TPD_PORT_BITMAP_SHIFT;
  		word3 |= from_cpu << EDMA_TPD_FROM_CPU_SHIFT;
-@@ -1535,6 +2304,40 @@
+@@ -1535,6 +2465,38 @@
  	return __EDMA_LINKDOWN;
  }
  
@@ -826,40 +997,38 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
 +static loff_t pos = 0;
 +int sify_filewrite (int input)
 +{
-+       struct file *file;
-+       char up_data [] ="Ethernet is Up\n";  
-+       char down_data [] ="Ethernet is Down\n"; 
-+       mm_segment_t old_fs;
++    struct file *file;
++    char up_data [] ="Ethernet is Up\n";  
++    char down_data [] ="Ethernet is Down\n"; 
++    mm_segment_t old_fs;
 +
-+       old_fs = get_fs();  //Save the current FS segment
-+       set_fs(get_ds());
++    old_fs = get_fs();  //Save the current FS segment
++    set_fs(get_ds());
 +
-+       file = filp_open("/etc/eth_events.txt", O_WRONLY| O_CREAT| O_APPEND | O_SYNC, 0644);
++    file = filp_open("/etc/eth_events.txt", O_WRONLY| O_CREAT| O_APPEND | O_SYNC, 0644);
++    if(file) {
 +
-+       if(file){
++        if (input == 1)
++        {
++            vfs_write(file, up_data, (sizeof (up_data)), &pos);
++            pos = pos+(sizeof (up_data));
++        }
++        else
++        {
++            vfs_write(file, down_data, (sizeof(down_data)), &pos);
++            pos = pos+(sizeof (down_data));
 +
-+               if (input == 1)
-+               {
-+                       vfs_write(file, up_data, (sizeof (up_data)), &pos);
-+                       pos = pos+(sizeof (up_data));
-+               }
-+               else
-+               {
-+                       vfs_write(file, down_data, (sizeof(down_data)), &pos);
-+                       pos = pos+(sizeof (down_data));
-+
-+               }
-+
-+       }
-+       filp_close(file,NULL);
-+       set_fs(old_fs); //Reset to save FS
-+
++        }
++    }
++    filp_close(file,NULL);
++    set_fs(old_fs); //Reset to save FS
++    return 0;
 +}
 +
  /* edma_adjust_link()
   *	check for edma link status
   */
-@@ -1551,12 +2354,14 @@
+@@ -1551,12 +2513,14 @@
  
  	if (status == __EDMA_LINKUP && adapter->link_state == __EDMA_LINKDOWN) {
  		dev_info(&adapter->pdev->dev, "%s: GMAC Link is up with phy_speed=%d\n", netdev->name, phydev->speed);
@@ -874,7 +1043,76 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
  		adapter->link_state = __EDMA_LINKDOWN;
  		netif_carrier_off(netdev);
  		netif_tx_stop_all_queues(netdev);
-@@ -1590,6 +2395,7 @@
+@@ -1576,6 +2540,68 @@
+ 	return stats;
+ }
+ 
++void edma_send_tput_tx(unsigned long data)
++{
++	struct edma_adapter *adapter = (struct edma_adapter *)data;
++	struct edma_common_info *edma_cinfo = adapter->edma_cinfo;
++	int pkt_per_ms = edma_cinfo->kwn_pkt_per_ms;
++  	int pkt_size = edma_cinfo->kwn_pkt_size;
++	struct ether_header *eth;
++	struct net_device *dev;
++	struct kwn_tput_test_params *kparams;
++
++	if ( (dev = dev_get_by_name( &init_net, "eth0" )) == NULL )
++		return;
++
++    /* Calculate packet count per ms */
++	for ( ; pkt_per_ms > 0; --pkt_per_ms )
++	{
++        struct sk_buff *skb = NULL;
++        int offset = 0;
++		/* Create a packet */
++		skb = dev_alloc_skb ( pkt_size + 64 );
++		if ( skb == NULL ) {
++			return;
++		}
++		/* Fill the skb content */
++		skb_reserve( skb, 64 );
++		
++        skb_put( skb, pkt_size );
++		
++		skb->dev = dev;
++        
++        eth = (struct ether_header *)skb->data;
++        memcpy( eth->ether_shost, dev->dev_addr, 6 );
++        memcpy( eth->ether_dhost, edma_cinfo->kwn_test_mac, 6 );
++		eth->ether_type = htons( skb->len - sizeof(*eth) );
++		
++        memcpy(&skb->data[sizeof(*eth)], kwn_tput_test_dsap, sizeof(kwn_tput_test_dsap));
++        offset += sizeof(*eth) + sizeof(kwn_tput_test_dsap);
++        
++        kparams = (struct kwn_tput_test_params *)&skb->data[offset];
++        
++        kparams->kwn_tput_test_duration = htonl(edma_cinfo->kwn_duration);
++        kparams->kwn_tput_test_pktsize = htonl(edma_cinfo->kwn_pkt_size);
++        kparams->kwn_tput_test_pktperms = htonl(edma_cinfo->kwn_pkt_per_ms);
++        kparams->kwn_tput_test_direction = htonl(edma_cinfo->kwn_direction);
++        kparams->kwn_tput_test_txseq = htonl(edma_cinfo->kwn_tput_txseq);
++        kparams->kwn_tput_start_test = htonl(edma_cinfo->kwn_start);
++        ++edma_cinfo->kwn_tput_txseq;
++        skb_reset_mac_header( skb );
++        dev_queue_xmit( skb );
++	}
++	/* Schedule Tx Tasklet when test duration is not completed */
++    if ( edma_cinfo->kwn_tput_start_time &&
++            (( jiffies - edma_cinfo->kwn_tput_start_time ) < edma_cinfo->kwn_duration )) {
++        mod_timer(&edma_cinfo->kwn_tput_timer, jiffies + 1);
++    } else {
++        printk(": KWN Tput Test Completed: \n");
++        edma_cinfo->kwn_start = 0;
++    }
++	dev_put( dev );	
++	return;
++}
++
+ /* edma_xmit()
+  *	Main api to be called by the core for packet transmission
+  */
+@@ -1590,6 +2616,7 @@
  	unsigned int flags_transmit = 0;
  	bool packet_is_rstp = false;
  	struct netdev_queue *nq = NULL;
@@ -882,7 +1120,7 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
  
  	if (skb_shinfo(skb)->nr_frags) {
  		nr_frags_first = skb_shinfo(skb)->nr_frags;
-@@ -1651,13 +2457,212 @@
+@@ -1651,13 +2678,212 @@
  		edma_cinfo->edma_ethstats.tx_desc_error++;
  		return NETDEV_TX_BUSY;
  	}
@@ -1098,7 +1336,7 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
  		flags_transmit |= EDMA_VLAN_TX_TAG_INSERT_FLAG;
  	else if (adapter->default_vlan_tag)
  		flags_transmit |= EDMA_VLAN_TX_TAG_INSERT_DEFAULT_FLAG;
-@@ -1683,6 +2688,30 @@
+@@ -1683,6 +2909,30 @@
  	adapter->stats.tx_packets++;
  	adapter->stats.tx_bytes += skb->len;
  
@@ -1129,9 +1367,29 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
  netdev_okay:
  	local_bh_enable();
  	return NETDEV_TX_OK;
+@@ -2297,6 +3547,7 @@
+ {
+ 	struct edma_adapter *adapter = netdev_priv(netdev);
+ 	struct platform_device *pdev = adapter->edma_cinfo->pdev;
++	struct edma_common_info *edma_cinfo = adapter->edma_cinfo;
+ 
+ 	netif_tx_start_all_queues(netdev);
+ 	edma_initialise_rfs_flow_table(adapter);
+@@ -2318,6 +3569,11 @@
+ 		adapter->link_state = __EDMA_LINKUP;
+ 		netif_carrier_on(netdev);
+ 	}
++
++    /* KWN */
++    init_timer(&edma_cinfo->kwn_tput_timer);
++    edma_cinfo->kwn_tput_timer.function = edma_send_tput_tx;
++    edma_cinfo->kwn_tput_timer.data = (unsigned long)adapter;
+ 	mutex_unlock(&adapter->poll_mutex);
+ 
+ 	return 0;
 diff -urN qca-edma-org/edma.h qca-edma-mod/edma.h
 --- qca-edma-org/edma.h	2018-07-09 14:25:58.833210000 +0530
-+++ qca-edma-mod/edma.h	2018-12-19 12:28:14.202493218 +0530
++++ qca-edma-mod/edma.h	2018-12-23 20:27:59.388253885 +0530
 @@ -44,6 +44,12 @@
  #include <linux/if_pppox.h>
  #include "ess_edma.h"
@@ -1166,7 +1424,7 @@ diff -urN qca-edma-org/edma.h qca-edma-mod/edma.h
  /* edma specific common info */
  struct edma_common_info {
  	struct edma_tx_desc_ring *tpd_ring[16]; /* 16 Tx queues */
-@@ -393,6 +413,38 @@
+@@ -393,6 +413,49 @@
  	struct edma_per_cpu_queues_info edma_percpu_info[CONFIG_NR_CPUS]; /* per cpu information */
  	spinlock_t stats_lock; /* protect edma stats area for updation */
  	u32 num_cores;
@@ -1202,10 +1460,35 @@ diff -urN qca-edma-org/edma.h qca-edma-mod/edma.h
 +    uint8_t kwn_fil_l2bcast;
 +    uint8_t kwn_fil_l3bcast;
 +    struct edma_drop_count fil_drop_count;
++    uint32_t kwn_pkt_per_ms;
++    uint32_t kwn_pkt_size;
++    uint32_t kwn_duration;
++    uint32_t kwn_direction;
++	uint8_t  kwn_test_mac[6];	/* KWN Test MAC */
++    uint32_t kwn_start;
++    uint64_t kwn_tput_start_time;
++    uint64_t kwn_tput_txseq;
++    uint64_t kwn_tput_rxseq;
++    uint64_t kwn_tput_rx_failed_cnt;
++	struct timer_list kwn_tput_timer; /* timer function for edma_rps_may_expire_flow */
  };
  
  /* transimit packet descriptor (tpd) ring */
-@@ -473,6 +525,16 @@
+@@ -441,6 +504,13 @@
+ 	struct timer_list expire_rfs; /* timer function for edma_rps_may_expire_flow */
+ };
+ 
++struct ether_header {
++    uint8_t    ether_dhost[6];
++    uint8_t    ether_shost[6];
++    uint16_t   ether_type;
++} __packed;
++
++
+ /* EDMA net device structure */
+ struct edma_adapter {
+ 	struct net_device *netdev; /* netdevice */
+@@ -473,6 +543,16 @@
  	__be16 proto;
  };
  
@@ -1222,7 +1505,7 @@ diff -urN qca-edma-org/edma.h qca-edma-mod/edma.h
  int edma_alloc_queues_tx(struct edma_common_info *edma_cinfo);
  int edma_alloc_queues_rx(struct edma_common_info *edma_cinfo);
  int edma_open(struct net_device *netdev);
-@@ -547,4 +609,54 @@
+@@ -547,4 +627,61 @@
  void edma_iad_process_flow(struct edma_common_info *edma_cinfo,
  			   struct sk_buff *skb, u8 dir, u8 precedence);
  
@@ -1276,4 +1559,11 @@ diff -urN qca-edma-org/edma.h qca-edma-mod/edma.h
 +uint64_t edma_get_rx_multicastpkt( struct net_device *dev );
 +uint64_t edma_get_tx_unicastpkt( struct net_device *dev );
 +uint64_t edma_get_rx_unicastpkt( struct net_device *dev );
++int edma_set_kwn_tput_pkt_per_ms( struct net_device *dev, uint32_t pkt_per_ms );
++int edma_set_kwn_tput_pkt_size( struct net_device *dev, uint32_t pkt_size );
++int edma_set_kwn_tput_duration( struct net_device *dev, uint32_t duration );
++int edma_set_kwn_tput_direction( struct net_device *dev, uint32_t direction );
++int edma_set_kwn_test_mac( struct net_device *dev, uint8_t *mac );
++int edma_set_kwn_tput_start( struct net_device *dev, uint32_t start );
++uint64_t edma_get_kwn_tput_rxseq_failed_cnt( struct net_device *dev );
  #endif /* _EDMA_H_ */

@@ -48,6 +48,13 @@ function index()
 	    entry({"admin", "monitor", "tools", "surveyclear"}, call("action_surveyclear"), nil).leaf = true
     end
 	entry({"admin", "monitor", "tools", "linkcalc"}, template("admin_monitor/linkcalc"))
+	entry({"admin", "monitor", "tools", "ethtest"}, template("admin_monitor/ethtest"))
+	entry({"admin", "monitor", "tools", "ethtestsize"}, call("action_ethtestsize"), nil).leaf = true
+	entry({"admin", "monitor", "tools", "ethtestdir"}, call("action_ethtestdir"), nil).leaf = true
+	entry({"admin", "monitor", "tools", "ethtestdur"}, call("action_ethtestdur"), nil).leaf = true
+	entry({"admin", "monitor", "tools", "ethtestmac"}, call("action_ethtestmac"), nil).leaf = true
+	entry({"admin", "monitor", "tools", "ethteststart"}, call("action_ethteststart"), nil).leaf = true
+	entry({"admin", "monitor", "tools", "ethteststop"}, call("action_ethteststop"), nil).leaf = true
 
     --entry({"admin", "monitor", "wifi0stats"}, call("action_wifi0stats"), _("Wifi0 Statistics"), 3).leaf = true
     --entry({"admin", "monitor", "wifi1stats"}, call("action_wifi1stats"), _("Wifi1 Statistics"), 4).leaf = true
@@ -113,6 +120,32 @@ function action_sascan()
     saresult = luci.sys.exec("apstats -c")
     luci.sys.exec("iwpriv ath1 kwn_flag 0")
 	luci.template.render("admin_monitor/sascan", {saresult=saresult})
+end
+
+function action_ethtestsize( size )
+   luci.sys.exec("iwpriv ath1 kwn_tput_size "..size)
+end
+
+function action_ethtestdir( dir )
+   luci.sys.exec("iwpriv ath1 kwn_tput_dir "..dir)
+end
+
+function action_ethtestdur( dur )
+   luci.sys.exec("iwpriv ath1 kwn_tput_dur "..dur)
+end
+
+function action_ethtestmac( mac )
+   luci.sys.exec("iwpriv ath1 kwn_flag 1")
+   luci.sys.exec("iwpriv ath1 addmac "..mac)
+end
+
+function action_ethteststart( speed )
+   luci.sys.exec("iwpriv ath1 kwn_tput_cnt "..speed)
+   luci.sys.exec("iwpriv ath1 kwnethtest 1")
+end
+
+function action_ethteststop( speed )
+   luci.sys.exec("iwpriv ath1 kwnethtest 0")
 end
 
 function action_survey()
