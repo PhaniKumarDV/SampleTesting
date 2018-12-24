@@ -1393,7 +1393,7 @@ diff -urN qca-wifi-org/offload/wlan/regdmn/ol_regdomain.c qca-wifi-mod/offload/w
      ol_regdmn_handle->ol_regdmn_currentRD5G = rd5GHz.regDmnEnum;
 diff -urN qca-wifi-org/offload/wlan/regdmn/ol_regdomain_common.h qca-wifi-mod/offload/wlan/regdmn/ol_regdomain_common.h
 --- qca-wifi-org/offload/wlan/regdmn/ol_regdomain_common.h	2018-06-08 11:00:45.000000000 +0530
-+++ qca-wifi-mod/offload/wlan/regdmn/ol_regdomain_common.h	2018-07-22 10:56:59.119119498 +0530
++++ qca-wifi-mod/offload/wlan/regdmn/ol_regdomain_common.h	2018-12-25 01:03:21.159687921 +0530
 @@ -52,6 +52,14 @@
  	NO_ENUMRD	= 0x00,
      OVERRIDE_RD = 0x01,
@@ -1485,6 +1485,33 @@ diff -urN qca-wifi-org/offload/wlan/regdmn/ol_regdomain_common.h qca-wifi-mod/of
  	{ 4920, 6100, 30, 6, 20, 20, NO_DFS, NO_PSCAN, 0 },				/* A_DEMO_ALL_CHANNELS */
      { 4920, 6100, 50, 20, 20, 5,  DFS_FCC3 | DFS_ETSI | DFS_MKK4, NO_PSCAN, 0 },             /* OVERRIDE_MODE_ALL_CHANNELS_5 */
      { 4920, 6100, 50, 20, 20, 10, DFS_FCC3 | DFS_ETSI | DFS_MKK4, NO_PSCAN, 0 },             /* OVERRIDE_MODE_ALL_CHANNELS_10 */
+@@ -1066,7 +1111,7 @@
+ 	{ 2412, 2472, 5,  6, 20, 5, NO_DFS, NO_PSCAN, 0},	/* F1_2412_2472 */
+ 	{ 2412, 2472, 20, 0, 20, 5, NO_DFS, PSCAN_MKKA, 30},/* F2_2412_2472 */
+ 	{ 2412, 2472, 30, 0, 20, 5, NO_DFS, NO_PSCAN, 4},	/* F3_2412_2472 */
+-	{ 2412, 2472, 20, 0, 20, 5, NO_DFS, PSCAN_MKKA, 0},	/* F4_2412_2472 */
++	{ 2412, 2472, 30, 0, 20, 5, NO_DFS, PSCAN_MKKA, 0},	/* F4_2412_2472 */
+ 
+ 	{ 2412, 2462, 30, 6, 20, 5, NO_DFS, NO_PSCAN, 12},	/* F1_2412_2462 */
+ 	{ 2412, 2462, 20, 0, 20, 5, NO_DFS, PSCAN_MKKA, 30},	/* F2_2412_2462 */
+@@ -1145,7 +1190,7 @@
+ 	{ 2412, 2472, 5,  6, 20, 5, NO_DFS, NO_PSCAN, 0},	/* G1_2412_2472 */
+ 	{ 2412, 2472, 20, 0, 20, 5,  NO_DFS, PSCAN_MKKA_G | PSCAN_MKKA2 | PSCAN_MKKA | PSCAN_EXT_CHAN, 30},	/* G2_2412_2472 */
+ 	{ 2412, 2472, 30, 0, 20, 5, NO_DFS, NO_PSCAN, 4},	/* G3_2412_2472 */
+-	{ 2412, 2472, 20, 0, 20, 5,  NO_DFS, PSCAN_MKKA_G | PSCAN_MKKA2 | PSCAN_MKKA | PSCAN_EXT_CHAN, 0},	/* G4_2412_2472 */
++	{ 2412, 2472, 30, 0, 20, 5,  NO_DFS, PSCAN_MKKA_G | PSCAN_MKKA2 | PSCAN_MKKA | PSCAN_EXT_CHAN, 0},	/* G4_2412_2472 */
+ 
+ 	{ 2412, 2462, 30, 6, 20, 5, NO_DFS, NO_PSCAN, 12},	/* G1_2412_2462 */
+ 	{ 2412, 2462, 20, 0, 20, 5, NO_DFS, PSCAN_MKKA_G, 30},	/* G2_2412_2462 */
+@@ -1189,7 +1234,7 @@
+ static const REG_DMN_FREQ_BAND regDmn2Ghz11gTurboFreq[] = {
+ 	{ 2312, 2372, 5,  6, 40, 40, NO_DFS, NO_PSCAN, 0},  /* T1_2312_2372 */
+ 	{ 2437, 2437, 5,  6, 40, 40, NO_DFS, NO_PSCAN, 0},  /* T1_2437_2437 */
+-	{ 2437, 2437, 20, 6, 40, 40, NO_DFS, NO_PSCAN, 0},  /* T2_2437_2437 */
++	{ 2437, 2437, 30, 6, 40, 40, NO_DFS, NO_PSCAN, 0},  /* T2_2437_2437 */
+ 	{ 2437, 2437, 18, 6, 40, 40, NO_DFS, PSCAN_WWR, 0}, /* T3_2437_2437 */
+ 	{ 2512, 2732, 5,  6, 40, 40, NO_DFS, NO_PSCAN, 0},  /* T1_2512_2732 */
+ };
 @@ -1221,6 +1266,70 @@
       CHAN_TURBO_G_BMZERO
       },

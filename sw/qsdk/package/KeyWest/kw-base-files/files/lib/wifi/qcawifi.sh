@@ -831,7 +831,8 @@ enable_qcawifi() {
 	[ -n "$burst_dur" ] && iwpriv "$phy" burst_dur "$burst_dur"
 
 	config_get TXPowLim2G "$device" TXPowLim2G
-	[ -n "$TXPowLim2G" ] && iwpriv "$phy" TXPowLim2G "$TXPowLim2G"
+    pow2G=`expr $TXPowLim2G \* 2`
+	[ -n "$TXPowLim2G" ] && iwpriv "$phy" TXPowLim2G "$pow2G"
 
 	config_get TXPowLim5G "$device" TXPowLim5G
     pow5G=`expr $TXPowLim5G + 3`

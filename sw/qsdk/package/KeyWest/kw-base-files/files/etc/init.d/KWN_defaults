@@ -68,7 +68,7 @@ start_service() {
     fi
     if [ "$tx_power_radio2" == "" ]
     then
-        uci set wireless.wifi0.TXPowLim2G='20'
+        uci set wireless.wifi0.TXPowLim2G='23'
     fi
     if [ "$tx_chainmask_radio1" == "" ]
     then
