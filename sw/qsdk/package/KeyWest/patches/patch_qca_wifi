@@ -1393,7 +1393,7 @@ diff -urN qca-wifi-org/offload/wlan/regdmn/ol_regdomain.c qca-wifi-mod/offload/w
      ol_regdmn_handle->ol_regdmn_currentRD5G = rd5GHz.regDmnEnum;
 diff -urN qca-wifi-org/offload/wlan/regdmn/ol_regdomain_common.h qca-wifi-mod/offload/wlan/regdmn/ol_regdomain_common.h
 --- qca-wifi-org/offload/wlan/regdmn/ol_regdomain_common.h	2018-06-08 11:00:45.000000000 +0530
-+++ qca-wifi-mod/offload/wlan/regdmn/ol_regdomain_common.h	2018-12-25 01:03:21.159687921 +0530
++++ qca-wifi-mod/offload/wlan/regdmn/ol_regdomain_common.h	2018-12-25 11:06:23.188190654 +0530
 @@ -52,6 +52,14 @@
  	NO_ENUMRD	= 0x00,
      OVERRIDE_RD = 0x01,
@@ -1474,13 +1474,13 @@ diff -urN qca-wifi-org/offload/wlan/regdmn/ol_regdomain_common.h qca-wifi-mod/of
  	{ 5745, 5825, 30, 0, 20, 20, NO_DFS, PSCAN_WWR, 0 },				/* W1_5745_5825 */
  	{ 5500, 5700, 30, 0, 20, 20, DFS_FCC3 | DFS_ETSI, PSCAN_WWR, 0 },		/* W1_5500_5700 */
 +
-+    { 4920, 5925, 30, 6, 20, 5, NO_DFS, PSCAN_ETSI, 0 },                /* RU_4920_5925 custom */
-+    { 5150, 5350, 30, 6, 20, 5, NO_DFS, PSCAN_ETSI, 0 },                /* RU_5150_5350 custom */
-+    { 5350, 5600, 30, 6, 20, 5, NO_DFS, PSCAN_ETSI, 0 },                /* RU_5350_5600 custom */
-+    { 5600, 5850, 30, 6, 20, 5, NO_DFS, PSCAN_ETSI, 0 },                /* RU_5600_5850 custom */
-+    { 5850, 5925, 30, 6, 20, 5, NO_DFS, PSCAN_ETSI, 0 },                /* RU_5850_5925 custom */
-+    { 5825, 5875, 30, 6, 20, 5, NO_DFS, PSCAN_ETSI, 0 },                /* INUL_5825_5875 custom */
-+    { 5725, 5875, 30, 6, 20, 5, NO_DFS, PSCAN_ETSI, 0 },                /* INL_5725_5875 custom */
++    { 4920, 5925, 30, 0, 20, 5, NO_DFS, PSCAN_ETSI, 0 },                /* RU_4920_5925 custom */
++    { 5150, 5350, 30, 0, 20, 5, NO_DFS, PSCAN_ETSI, 0 },                /* RU_5150_5350 custom */
++    { 5350, 5600, 30, 0, 20, 5, NO_DFS, PSCAN_ETSI, 0 },                /* RU_5350_5600 custom */
++    { 5600, 5850, 30, 0, 20, 5, NO_DFS, PSCAN_ETSI, 0 },                /* RU_5600_5850 custom */
++    { 5850, 5925, 30, 0, 20, 5, NO_DFS, PSCAN_ETSI, 0 },                /* RU_5850_5925 custom */
++    { 5825, 5875, 30, 0, 20, 5, NO_DFS, PSCAN_ETSI, 0 },                /* INUL_5825_5875 custom */
++    { 5725, 5875, 30, 0, 20, 5, NO_DFS, PSCAN_ETSI, 0 },                /* INL_5725_5875 custom */
 +
  	{ 4920, 6100, 30, 6, 20, 20, NO_DFS, NO_PSCAN, 0 },				/* A_DEMO_ALL_CHANNELS */
      { 4920, 6100, 50, 20, 20, 5,  DFS_FCC3 | DFS_ETSI | DFS_MKK4, NO_PSCAN, 0 },             /* OVERRIDE_MODE_ALL_CHANNELS_5 */
