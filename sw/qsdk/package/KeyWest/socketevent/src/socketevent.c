@@ -1613,11 +1613,10 @@ void kwn_req_type ( int peer_socket, kwn_pkt *buf, struct sockaddr_in *peer_addr
     }
 
     printf("Data length: %d\n",buf->hdr.length);
-    sock_len = sizeof(struct sockaddr_in);
-    sent = sendto(peer_socket, (void*)buf, sizeof(kwn_pkt), 0, (struct sockaddr*)peer_addr, sock_len);
+    sent = send(peer_socket, (void*)buf, sizeof(kwn_pkt), 0);
     if( sent < 0 )
     {
-        perror("sendto");
+        perror("send");
         return;
     }
     printf("\n message sent \n");
@@ -1628,18 +1627,26 @@ void kwn_req_type ( int peer_socket, kwn_pkt *buf, struct sockaddr_in *peer_addr
 
 int main()
 {
-    int server_socket;
+    int server_socket,peer_sock;
     int sock_len;
-    int len;
+    int len,opt=1;
     struct sockaddr_in      server_addr;
     struct sockaddr_in      peer_addr;
     kwn_pkt kwn_server_recv_buf;
 
     /* Create server socket */
-    server_socket = socket(AF_INET, SOCK_DGRAM, 0);
+    server_socket = socket(AF_INET, SOCK_STREAM, 0);
     if (server_socket == -1)
     {
         fprintf(stderr, "Error creating socket --> %s", strerror(errno));
+    }
+
+    /* set socket options to reuse port */
+    if ( setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, (char *)&opt, sizeof(opt)) == -1)
+    {
+        fprintf(stderr, "Error on bind --> %s", strerror(errno));
+        close(server_socket);
+        exit(EXIT_FAILURE);
     }
 
     /* Zeroing server_addr struct */
@@ -1654,19 +1661,36 @@ int main()
     {
         fprintf(stderr, "Error on bind --> %s", strerror(errno));
     }
+    
+    /* Listening to incoming connections */
+    if ((listen(server_socket, 5)) == -1)
+    {
+        fprintf(stderr, "Error on listen --> %s", strerror(errno));
+        close(server_socket);
+        exit(EXIT_FAILURE);
+    }
+
 
     sock_len = sizeof(peer_addr);
     while(1)
     {
+        peer_sock = accept ( server_socket, (struct sockaddr *)&peer_addr, &sock_len );
 
-        if( ( len = recvfrom( server_socket, &kwn_server_recv_buf, sizeof(kwn_pkt), 0, (struct sockaddr*)&peer_addr, &sock_len) ) < 0 )
+        if (peer_sock == -1)
+        {
+            fprintf(stderr, "Error on accept --> %s", strerror(errno));
+            exit(EXIT_FAILURE);
+        }
+        fprintf(stdout, "Accept peer --> %s\n", inet_ntoa(peer_addr.sin_addr));
+
+        if ( len = recv( peer_sock, &kwn_server_recv_buf, sizeof(kwn_pkt), 0 ) < 0 )
         {
             fprintf(stderr, "Error on recv --> %s", strerror(errno));
             continue;
         }
-        /*printf("Received ID:%d, Intf type:%d, Type:%d, Subtype:%d\n",
-          kwn_server_recv_buf.hdr.id, kwn_server_recv_buf.hdr.interface_type,
-          kwn_server_recv_buf.hdr.type, kwn_server_recv_buf.hdr.sub_type);*/
+        printf("Received ID:%d, Intf type:%d, Type:%d, Subtype:%d\n",
+                kwn_server_recv_buf.hdr.id, kwn_server_recv_buf.hdr.interface_type,
+                kwn_server_recv_buf.hdr.type, kwn_server_recv_buf.hdr.sub_type);
 
         switch(kwn_server_recv_buf.hdr.id)
         {
@@ -1678,7 +1702,7 @@ int main()
                         case KWN_MOBILE_APP:
                         case KWN_NMS_APP:
                             {
-                                kwn_req_type( server_socket, &kwn_server_recv_buf, &peer_addr, sock_len );
+                                kwn_req_type( peer_sock, &kwn_server_recv_buf, &peer_addr, sock_len );
                                 break;
                             }
                         default:
@@ -1690,6 +1714,7 @@ int main()
             default:
                 break;
         }
+        close(peer_sock);
     }
     close(server_socket);
     return 0;
