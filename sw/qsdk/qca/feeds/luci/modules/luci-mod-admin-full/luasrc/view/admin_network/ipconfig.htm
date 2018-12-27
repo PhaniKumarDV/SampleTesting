@@ -5,6 +5,8 @@
 -%>
 
 <%-
+    local gw = luci.sys.exec("ip route get 1 | awk '{print $NF;exit}'")
+        gw = string.gsub(gw, "\n", "")
         function uciget(cmd)
                 local res = luci.util.exec(cmd)
                 local str = string.gsub(res, "\n", "")
@@ -40,12 +42,23 @@ function save_value()
     {
         if( def[i] != f.elements[i].value ) {
             def[i] = f.elements[i].value;
-            setdata += f.elements[i].name + "=" + f.elements[i].value + "~";
+            if ( f.elements[i].name == 27 )
+            {
+                dns_ip1 = document.getElementById("dns1").value;
+                dns_ip2 = document.getElementById("dns2").value;
+                var dns_ip = dns_ip1+" "+dns_ip2;
+                setdata += f.elements[i].name + "=" + dns_ip + "~";
+            }
+            else
+            {
+                setdata += f.elements[i].name + "=" + f.elements[i].value + "~";
+            }
         }
     }
     XHR.get('<%=luci.dispatcher.build_url("admin")%>/cfg_set' + '/' + setdata, null,
 	    function(x, data) {
-		    if (data) { 
+		    if (data) {
+                location.href = "<%=luci.dispatcher.build_url("admin/network/ip")%>";
 		    }
 	    }
     );
@@ -67,6 +80,24 @@ function getoptions( list, value )
 }
 function updateparam(value)
 {
+    var dnsip1 = "0.0.0.0", dnsip2 = "0.0.0.0";
+    var dns_val = "<%=uciget('uci get network.lan.dns')%>"
+    if ( dns_val != "" )
+    {
+            var val = dns_val.split(" ");
+            if( val[0] != undefined )
+            {
+                if ( val[0] != "" )
+                    dnsip1 = val[0];
+            }
+            if( val[1] != undefined )
+            {
+                if ( val[1] != "" )
+                    dnsip2 = val[1];
+            }
+    }
+    document.getElementById("dns1").value = dnsip1;
+    document.getElementById("dns2").value = dnsip2;
     if( value == "static" )
     {
         document.getElementById("ip").innerHTML = "<input type='text' name='23' class='cbi-input-select' value='<%=uciget('uci get network.lan.ipaddr')%>' >";
@@ -77,15 +108,14 @@ function updateparam(value)
     {
         var dyn_val = "<%=uciget("ifconfig br-lan | grep 'inet addr' | sed 's/          //'")%>";
         var val = dyn_val.split(" ");
-        var ip = "0.0.0.0", mask = "0.0.0.0", gw = "0.0.0.0";
+        var ip = "0.0.0.0", mask = "0.0.0.0";
+        var gw = "<%=gw %>";
         if( val != "" )
         {
             ip = val[1].split(":");
             ip = ip[1];
-            mask = val[3].split(":");
+            mask = val[5].split(":");
             mask = mask[1];
-            gw = val[5].split(":");
-            gw = gw[1]
         }
         document.getElementById("ip").innerHTML = ip;
         document.getElementById("mask").innerHTML = mask;
@@ -130,10 +160,16 @@ function updateparam(value)
             <div class="cbi-value-field" id="gateway">
             </div>
           </div>
-          <div class="cbi-value" id="dns">
-            <label class="cbi-value-title">DNS Server IP Address</label>
+          <div class="cbi-value">
+            <label class="cbi-value-title">DNS Primary Server IP Address</label>
             <div class="cbi-value-field">
-              <input type="text" name="27" class="cbi-input-select" value="<%=uciget('uci get network.lan.dns')%>" >
+            <input type="text" id="dns1" name="27" class="cbi-input-select" value="" >
+            </div>
+          </div>
+          <div class="cbi-value">
+            <label class="cbi-value-title">DNS Secondary Server IP Address</label>
+            <div class="cbi-value-field">
+            <input type="text" id="dns2" name="27" class="cbi-input-select" value="" >
             </div>
           </div>
     </form>
