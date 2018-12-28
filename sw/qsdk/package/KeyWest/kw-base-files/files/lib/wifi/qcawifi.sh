@@ -1783,8 +1783,11 @@ enable_qcawifi() {
         11na)
             rate=8
             ;;
-        *)
+        11a)
             rate=0
+            ;;
+        *)
+            rate=$rate
             ;;
         esac
 		acrate=$rate
@@ -2439,7 +2442,7 @@ config wifi-device  wifi$devidx
 	option hwmode	11${mode_11}
 	option htmode   $ht_mode
 	option country  $country_code
-	option rate     auto
+	option rate     0
     option customername CustomerName
     option linkid   0
 

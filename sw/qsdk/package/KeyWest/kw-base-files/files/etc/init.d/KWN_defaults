@@ -10,6 +10,8 @@ start_service() {
     tx_chainmask_radio1=$(uci get wireless.wifi1.txchainmask)
     rx_chainmask_radio1=$(uci get wireless.wifi1.rxchainmask)
     shortgi_radio1=$(uci get wireless.@wifi-iface[1].shortgi)
+    shortgi_radio0=$(uci get wireless.@wifi-iface[0].shortgi)
+    dis_legacy0=$(uci get wireless.@wifi-iface[0].dis_legacy)
     distance_radio1=$(uci get wireless.wifi1.distance)
     hidden_radio1=$(uci get wireless.@wifi-iface[1].hidden)
     dgackdisable=$(uci get wireless.@wifi-iface[1].dgackdisable)
@@ -44,8 +46,13 @@ start_service() {
     bcast_rate1=$(uci get wireless.@wifi-iface[1].bcast_rate)
     mgmt_rate1=$(uci get wireless.@wifi-iface[1].mgmt_rate)
     set_bcn_rate1=$(uci get wireless.@wifi-iface[1].set_bcn_rate)
+    mcast_rate0=$(uci get wireless.@wifi-iface[0].mcast_rate)
+    bcast_rate0=$(uci get wireless.@wifi-iface[0].bcast_rate)
+    mgmt_rate0=$(uci get wireless.@wifi-iface[0].mgmt_rate)
+    set_bcn_rate0=$(uci get wireless.@wifi-iface[0].set_bcn_rate)
     wifi_timer1=$(uci get wireless.wifi1.wifitimer)
     link_timer1=$(uci get wireless.wifi1.linktimer)
+    rate0=$(uci get wireless.wifi0.rate)
 #RADIO 2.4
     tx_power_radio2=$(uci get wireless.wifi0.TXPowLim2G)
     hidden_radio0=$(uci get wireless.@wifi-iface[0].hidden)
@@ -81,6 +88,14 @@ start_service() {
     if [ "$shortgi_radio1" == "" ]
     then
         uci set wireless.@wifi-iface[1].shortgi='1'
+    fi
+    if [ "$shortgi_radio0" == "" ]
+    then
+        uci set wireless.@wifi-iface[0].shortgi='0'
+    fi
+    if [ "$dis_legacy0" == "" ]
+    then
+        uci set wireless.@wifi-iface[0].dis_legacy='0x000F'
     fi
     if [ "$distance_radio1" == "" ]
     then
@@ -225,6 +240,22 @@ start_service() {
     then
         uci set wireless.@wifi-iface[1].set_bcn_rate='6000'
     fi
+    if [ "$mcast_rate0" == "" ]
+    then
+        uci set wireless.@wifi-iface[0].mcast_rate='6000'
+    fi
+    if [ "$bcast_rate0" == "" ]
+    then
+        uci set wireless.@wifi-iface[0].bcast_rate='6000'
+    fi
+    if [ "$mgmt_rate0" == "" ]
+    then
+        uci set wireless.@wifi-iface[0].mgmt_rate='6000'
+    fi
+    if [ "$set_bcn_rate0" == "" ]
+    then
+        uci set wireless.@wifi-iface[0].set_bcn_rate='6000'
+    fi
     if [ "$wifi_timer1" == "" ]
     then
         uci set wireless.wifi1.wifitimer='0'
@@ -252,10 +283,13 @@ start_service() {
 #2.4 Radio Default values
     uci set wireless.wifi0.txchainmask='3'
     uci set wireless.wifi0.rxchainmask='3'
-    uci set wireless.wifi0.rate='0'
+    if [ "$rate0" == "" ]
+    then
+        uci set wireless.wifi0.rate='0'
+    fi
     if [ "$hidden_radio0" == "" ]
     then
-        uci set wireless.@wifi-iface[0].hidden='1'
+        uci set wireless.@wifi-iface[0].hidden='0'
     fi
 #DHCP
     ignore=$(uci get dhcp.lan.ignore)

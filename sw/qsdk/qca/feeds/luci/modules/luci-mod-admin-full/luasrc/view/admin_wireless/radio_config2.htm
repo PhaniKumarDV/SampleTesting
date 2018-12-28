@@ -61,6 +61,7 @@
     var nbwlist = [ "HT20=20MHz", "HT40+=40MHz" ];
     var gbwlist = [ "HT20=20MHz"];
     var pwrlist = ["0=0dBm (1mW)", "8=8dBm (6mW)", "10=10dBm (10mW)", "12=12dBm (15mW)", "14=14dBm (25mW)", "16=16dBm (39mW)", "18=18dBm (63mW)", "20=20dBm (100mW)"];
+    var ratelist = ["21=Auto", "0=MCS0", "1=MCS1", "2=MCS2", "3=MCS3", "4=MCS4", "5=MCS5", "6=MCS6", "7=MCS7"];
     var chanlist = [ "auto=Auto" ];
 	for (var i = 0; i < freqlist.length; i++)
 		chanlist.push(
@@ -167,13 +168,13 @@ function updatehidessid()
        <form name="formTable">
           <div class="cbi-value">
             <label class="cbi-value-title">Radio Mode</label>
-            <div class="cbi-value-field">
-              <select class="cbi-input-select" name="15">
+            <div class="cbi-value-field"> Access Point
+              <!--<select class="cbi-input-select" name="15">
                  <script type="text/javascript">
-                 var mode = "<%=uciget('uci get wireless.@wifi-iface[0].mode')%>";
-                 getoptions( modelist, mode );
+                 //var mode = "<%=uciget('uci get wireless.@wifi-iface[0].mode')%>";
+                 //getoptions( modelist, mode );
                  </script>
-              </select>
+              </select>-->
             </div>
           </div>
           <div class="cbi-value">
@@ -223,6 +224,17 @@ function updatehidessid()
            </div>
          </div>
           <div class="cbi-value">
+            <label class="cbi-value-title">Modulation Index</label>
+            <div class="cbi-value-field">
+              <select class="cbi-input-select" name="136">
+                <script type="text/javascript">
+                  var rate = "<%=uciget('uci get wireless.wifi0.rate')%>";
+                  getoptions( ratelist, rate );
+                </script>
+              </select>
+            </div>
+          </div>
+          <div class="cbi-value">
             <label class="cbi-value-title">Transmit Power</label>
             <div class="cbi-value-field">
               <input type="text" name="21" class="cbi-input-select" value="<%=uciget('uci get wireless.wifi0.TXPowLim2G')%>" > &nbsp; dBm
@@ -234,6 +246,26 @@ function updatehidessid()
                  getoptions( pwrlist, pwr );
                  </script>
              </select>-->
+           </div>
+         </div>
+          <div class="cbi-value">
+            <label class="cbi-value-title">Disable Legacy</label>
+            <div class="cbi-value-field">
+               <select name="137" class="cbi-input-select">
+               <script type="text/javascript">
+                  var dis_legacy = "<%=uciget('uci get wireless.@wifi-iface[0].dis_legacy')%>";
+                  document.write("<option value='0x000F' ");
+                  if( dis_legacy == '0x000F' ) {
+                      document.write(" selected");
+                  }
+                  document.write(">Enable</option>");
+                  document.write("<option value='0' ");
+                  if( dis_legacy == 0 ) {
+                     document.write(" selected");
+                  }
+                  document.write(">Disable</option>");
+                </script>
+               </select>
            </div>
          </div>
           <div class="cbi-value">

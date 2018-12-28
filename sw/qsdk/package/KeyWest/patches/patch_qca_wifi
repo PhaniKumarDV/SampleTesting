@@ -18,7 +18,7 @@ diff -urN qca-wifi-org/cmn_dev/dp/inc/cdp_txrx_stats_struct.h qca-wifi-mod/cmn_d
  /*
 diff -urN qca-wifi-org/cmn_dev/wmi/src/wmi_unified_non_tlv.c qca-wifi-mod/cmn_dev/wmi/src/wmi_unified_non_tlv.c
 --- qca-wifi-org/cmn_dev/wmi/src/wmi_unified_non_tlv.c	2018-06-08 10:23:13.000000000 +0530
-+++ qca-wifi-mod/cmn_dev/wmi/src/wmi_unified_non_tlv.c	2018-12-14 19:31:41.358249575 +0530
++++ qca-wifi-mod/cmn_dev/wmi/src/wmi_unified_non_tlv.c	2018-12-28 19:30:21.894263094 +0530
 @@ -3728,10 +3728,14 @@
  		wmep = &param->wmep_array[ac];
  		switch (ac) {
@@ -29,12 +29,12 @@ diff -urN qca-wifi-org/cmn_dev/wmi/src/wmi_unified_non_tlv.c qca-wifi-mod/cmn_de
 -			wmi_param = &cmd->wmm_params_ac_bk;
 +            wmi_param = &cmd->wmm_params_ac_be;
 +            /* KWN */
-+            wmep = &param->wmep_array[WME_AC_BE];
++            //wmep = &param->wmep_array[WME_AC_BE];
 +            break;
 +        case WME_AC_BK:
 +            wmi_param = &cmd->wmm_params_ac_bk;
 +            /* KWN */
-+            wmep = &param->wmep_array[WME_AC_BE];
++            //wmep = &param->wmep_array[WME_AC_BE];
  			break;
  		case WME_AC_VI:
  			wmi_param = &cmd->wmm_params_ac_vi;

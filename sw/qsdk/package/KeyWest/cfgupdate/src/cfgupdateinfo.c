@@ -678,6 +678,12 @@ void cfg_set( char *type, char *value )
         case UCI_ID_RADIO1_MAX_EIRP:
             sprintf(cmd,"uci set wireless.wifi1.maxeirp='%s'",value);
             break;
+        case UCI_ID_RADIO2_RATE:
+            sprintf(cmd,"uci set wireless.wifi0.rate='%s'",value);
+            break;
+        case UCI_ID_RADIO2_DISABLE_LEGACY:
+            sprintf(cmd,"uci set wireless.@wifi-iface[0].dis_legacy='%s'",value);
+            break;
         default:
             break;
     }

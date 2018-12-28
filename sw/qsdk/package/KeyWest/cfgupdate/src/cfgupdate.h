@@ -165,7 +165,9 @@ enum uci_cfg_id {
     /* Inactivity */
     UCI_ID_RADIO1_WIRELESS_INACT = 133,
     UCI_ID_RADIO1_LINK_INACT = 134,
-    UCI_ID_RADIO1_MAX_EIRP = 135
+    UCI_ID_RADIO1_MAX_EIRP = 135,
+    UCI_ID_RADIO2_RATE = 136,
+    UCI_ID_RADIO2_DISABLE_LEGACY = 137
 };
 
 typedef struct
