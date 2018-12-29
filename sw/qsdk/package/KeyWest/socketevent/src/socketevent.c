@@ -49,9 +49,10 @@
 
 void kwn_get_assoclist( kwn_wireless_stats *list );
 void kwn_get_wireless_stats( kwn_pkt *buf );
-void kwn_req_type ( int socketfd, kwn_pkt *buf, struct sockaddr_in *peer_addr, int socket_length );
+void kwn_req_type( int socketfd, kwn_pkt *buf );
 void kwn_get_config_data( kwn_pkt *buf );
 void kwn_get_config_from_device( kwn_cfg_data *dev_cfg );
+uint8_t commit_in_progress = 0;
 
 void kwn_conv_str_to_ip( int8_t* conv_ip, uint8_t* byte )
 {
@@ -82,7 +83,7 @@ void kwn_conv_str_to_ip( int8_t* conv_ip, uint8_t* byte )
     return;
 }
 
-void kwn_dhcp_inet_handle(  const char* cmd, uint8_t* cmd_buf )
+void kwn_dhcp_inet_handle( const char* cmd, uint8_t* cmd_buf )
 {
     FILE *fp;
     char *tok, *p;
@@ -108,7 +109,7 @@ void kwn_dhcp_inet_handle(  const char* cmd, uint8_t* cmd_buf )
     printf("%s", a);
     p = strstr(a,"Bcast");
 
-    if ( p == NULL )
+    if( p == NULL )
     {   
         printf("No occurance of inet\n");
     }   
@@ -150,7 +151,7 @@ void kwn_dhcp_mask_handle(  const char* cmd, uint8_t* cmd_buf )
     printf("%s", a);
     p = strstr(a,"Bcast");
 
-    if ( p == NULL )
+    if( p == NULL )
     {   
         printf("No occurance of inet\n");
     }   
@@ -211,7 +212,7 @@ uint8_t kwn_dev_radio_mode( uint8_t* dev_radio_mode, uint16_t radio_mode_len )
     uint8_t  wds_mode = 0;
     uint8_t  cmd_wds[50];
     uint16_t i = 0;
-    uint16_t lent = (sizeof(kwn_dev_mode)/sizeof(kwn_dev_mode[0]));
+    uint16_t lent = ( sizeof(kwn_dev_mode)/sizeof(kwn_dev_mode[0]) );
 
     memset(cmd_wds, '\0', sizeof(cmd_wds));
     sprintf(cmd_wds,"uci get wireless.@wifi-iface[1].wds");
@@ -322,10 +323,13 @@ void kwn_get_config_from_device( kwn_cfg_data *dev_cfg )
     uint8_t  cmd[100];
     uint8_t  cmd_buf[50];
     uint16_t len = 0;
-    uint8_t  ip_byte[4] = {'\0'};
-    uint8_t  gip_byte[4] = {'\0'};
-    uint8_t  netmask_byte[4] = {'\0'};
-    uint8_t  l_mac[6] = {'\0'};
+    uint8_t  ip_byte[4] = {0};
+    uint8_t  gip_byte[4] = {0};
+    uint8_t  netmask_byte[4] = {0};
+    uint8_t  l_mac[6] = {0};
+    uint8_t  d_ip_byte[4] = {0};
+    uint8_t  d_gip_byte[4] = {0};
+    uint8_t  d_netmask_byte[4] = {0};
 
     memset(cmd, '\0', sizeof(cmd));
     memset(cmd_buf, '\0', sizeof(cmd_buf));
@@ -337,20 +341,12 @@ void kwn_get_config_from_device( kwn_cfg_data *dev_cfg )
 
     memset(cmd, '\0', sizeof(cmd));
     memset(cmd_buf, '\0', sizeof(cmd_buf));
-    if ( dev_cfg->ip_type == 1 )
-    {
-        sprintf( cmd,"uci get network.lan.ipaddr");
-        kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] );
-    }
-    else
-    {
-        sprintf( cmd, "ifconfig br-lan" );
-        kwn_dhcp_inet_handle( &cmd[0], &cmd_buf[0] );
-    }
+    sprintf( cmd,"uci get network.lan.ipaddr");
+    kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] );
     kwn_conv_str_to_ip(&cmd_buf[0],&ip_byte[0]);
     len = strlen(ip_byte);
     memcpy(dev_cfg->ip, ip_byte, len);
-    printf("IP Form: %d.%d.%d.%d\n",dev_cfg->ip[0],dev_cfg->ip[1],dev_cfg->ip[2],dev_cfg->ip[3]);
+    printf("dev_cfg->ip: %d.%d.%d.%d\n",dev_cfg->ip[0],dev_cfg->ip[1],dev_cfg->ip[2],dev_cfg->ip[3]);
 
     memset(cmd, '\0', sizeof(cmd));
     memset(cmd_buf, '\0', sizeof(cmd_buf));
@@ -358,8 +354,7 @@ void kwn_get_config_from_device( kwn_cfg_data *dev_cfg )
     kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] );
     len=strlen(cmd_buf);
     memcpy(dev_cfg->ssid, cmd_buf, len);
-    printf("ssid len : %d - ",len);
-    printf("dev_cfg->ssid SSID: %s\n",dev_cfg->ssid);
+    printf("dev_cfg->ssid SSID: %s ssid len : %d\n",dev_cfg->ssid, len);
 
     memset(cmd, '\0', sizeof(cmd));
     memset(cmd_buf, '\0', sizeof(cmd_buf));
@@ -390,7 +385,7 @@ void kwn_get_config_from_device( kwn_cfg_data *dev_cfg )
     kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] ); 
     len=strlen(cmd_buf);
     dev_cfg->mode = kwn_dev_radio_mode(&cmd_buf[0],len);
-    /*printf("Device Radio Mode : %d\n",dev_cfg->mode);*/
+    printf("dev_cfg->mode : %d\n",dev_cfg->mode);
 
     memset(cmd, '\0', sizeof(cmd));
     memset(cmd_buf, '\0', sizeof(cmd_buf));
@@ -399,48 +394,33 @@ void kwn_get_config_from_device( kwn_cfg_data *dev_cfg )
     len=KWN_MAC_ADDR_LEN;
     kwn_str_to_mac(&cmd_buf[0],&l_mac[0]);    
     memcpy(dev_cfg->local_mac, l_mac, len);
-    /*printf("MAC = %2.2X:%2.2X:%2.2X:%2.2X:%2.2X:%2.2X\n",dev_cfg->local_mac[0],dev_cfg->local_mac[1],dev_cfg->local_mac[2],
-      dev_cfg->local_mac[3],dev_cfg->local_mac[4],dev_cfg->local_mac[5]);*/
+    printf("dev_cfg->local_mac = %2.2X:%2.2X:%2.2X:%2.2X:%2.2X:%2.2X\n",dev_cfg->local_mac[0],dev_cfg->local_mac[1],dev_cfg->local_mac[2],
+      dev_cfg->local_mac[3],dev_cfg->local_mac[4],dev_cfg->local_mac[5]);
 
     memset(cmd, '\0', sizeof(cmd));
     memset(cmd_buf, '\0', sizeof(cmd_buf));
     sprintf(cmd,"uci get wireless.wifi1.country");
     kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] ); 
     dev_cfg->country = (uint16_t)atoi(cmd_buf);
-    /*printf("Country : %d\n",dev_cfg->country);*/
+    printf("dev_cfg->country : %d\n",dev_cfg->country);
 
     memset(cmd, '\0', sizeof(cmd));
     memset(cmd_buf, '\0', sizeof(cmd_buf));
-    if ( dev_cfg->ip_type == 1 )
-    {
-        sprintf( cmd,"uci get network.lan.gateway");
-    }
-    else
-    {
-        sprintf( cmd,"ip route get 1 | awk '{print $NF;exit}'" );
-    }
+    sprintf( cmd,"uci get network.lan.gateway");
     kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] ); 
     kwn_conv_str_to_ip(&cmd_buf[0],&gip_byte[0]);
     len = strlen(gip_byte);
     memcpy(dev_cfg->gip, gip_byte, len);
-    printf("Gateway: %d.%d.%d.%d\n",dev_cfg->gip[0],dev_cfg->gip[1],dev_cfg->gip[2],dev_cfg->gip[3]);
+    printf("dev_cfg->gip : %d.%d.%d.%d\n",dev_cfg->gip[0],dev_cfg->gip[1],dev_cfg->gip[2],dev_cfg->gip[3]);
 
     memset(cmd, '\0', sizeof(cmd));
     memset(cmd_buf, '\0', sizeof(cmd_buf));
-    if ( dev_cfg->ip_type == 1 )
-    {
-        sprintf( cmd,"uci get network.lan.netmask");
-        kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] ); 
-    }
-    else
-    {
-        sprintf( cmd, "ifconfig br-lan" );
-        kwn_dhcp_mask_handle( &cmd[0], &cmd_buf[0] );
-    }
+    sprintf( cmd,"uci get network.lan.netmask");
+    kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] ); 
     kwn_conv_str_to_ip(&cmd_buf[0],&netmask_byte[0]);
     len = strlen(netmask_byte);
     memcpy(dev_cfg->netmask, netmask_byte, len);
-    printf("Netmask: %d.%d.%d.%d\n",dev_cfg->netmask[0],dev_cfg->netmask[1],dev_cfg->netmask[2],dev_cfg->netmask[3]);
+    printf("dev_cfg->netmask : %d.%d.%d.%d\n",dev_cfg->netmask[0],dev_cfg->netmask[1],dev_cfg->netmask[2],dev_cfg->netmask[3]);
 
     memset(cmd, '\0', sizeof(cmd));
     memset(cmd_buf, '\0', sizeof(cmd_buf));
@@ -507,6 +487,33 @@ void kwn_get_config_from_device( kwn_cfg_data *dev_cfg )
     dev_cfg->txpower = atoi(cmd_buf);
     printf("dev_cfg->TX Power : %d\n",dev_cfg->txpower);   
 
+    memset(cmd, '\0', sizeof(cmd));
+    memset(cmd_buf, '\0', sizeof(cmd_buf));
+    sprintf( cmd, "ifconfig br-lan" );
+    kwn_dhcp_inet_handle( &cmd[0], &cmd_buf[0] );
+    kwn_conv_str_to_ip(&cmd_buf[0],&d_ip_byte[0]);
+    len = strlen(d_ip_byte);
+    memcpy(dev_cfg->dyn_ip, d_ip_byte, len);
+    printf("dev_cfg->dyn_ip: %d.%d.%d.%d\n",dev_cfg->dyn_ip[0],dev_cfg->dyn_ip[1],dev_cfg->dyn_ip[2],dev_cfg->dyn_ip[3]);
+
+    memset(cmd, '\0', sizeof(cmd));
+    memset(cmd_buf, '\0', sizeof(cmd_buf));
+    sprintf( cmd,"ip route get 1 | awk '{print $NF;exit}'" );
+    kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] ); 
+    kwn_conv_str_to_ip(&cmd_buf[0],&d_gip_byte[0]);
+    len = strlen(d_gip_byte);
+    memcpy(dev_cfg->dyn_gip, d_gip_byte, len);
+    printf("dev_cfg->dyn_gip: %d.%d.%d.%d\n",dev_cfg->dyn_gip[0],dev_cfg->dyn_gip[1],dev_cfg->dyn_gip[2],dev_cfg->dyn_gip[3]);
+
+    memset(cmd, '\0', sizeof(cmd));
+    memset(cmd_buf, '\0', sizeof(cmd_buf));
+    sprintf( cmd, "ifconfig br-lan" );
+    kwn_dhcp_mask_handle( &cmd[0], &cmd_buf[0] );
+    kwn_conv_str_to_ip(&cmd_buf[0],&d_netmask_byte[0]);
+    len = strlen(d_netmask_byte);
+    memcpy(dev_cfg->dyn_netmask, d_netmask_byte, len);
+    printf("dev_cfg->dyn_netmask: %d.%d.%d.%d\n",dev_cfg->dyn_netmask[0],dev_cfg->dyn_netmask[1],dev_cfg->dyn_netmask[2],dev_cfg->dyn_netmask[3]);
+
     /*printf("Executed uci commands to get the config\n");*/   
     return;
 }
@@ -538,7 +545,8 @@ void kwn_get_config_data( kwn_pkt* buf)
     len += llen;
 
     /* IP_ADDRESS */
-    printf("Data IP: %d.%d.%d.%d \n",data.ip[0],data.ip[1],data.ip[2],data.ip[3]);
+    if( data.ip[0] != '\0' )
+        printf("Data IP: %d.%d.%d.%d \n",data.ip[0],data.ip[1],data.ip[2],data.ip[3]);
     llen = sizeof(data.ip);     /* length */
     memcpy(buf->data+len, &llen,sizeof(uint16_t));
     len += sizeof(uint16_t);
@@ -549,7 +557,7 @@ void kwn_get_config_data( kwn_pkt* buf)
     len += llen;
 
     /* SSID */
-    printf("SSID : %s\n",data.ssid);
+    printf("SSID : %s - ",data.ssid);
     llen = strlen(data.ssid);     /* length */
     memcpy(buf->data+len, &llen,sizeof(uint16_t));
     printf("llen of ssid : %d\n",llen);
@@ -604,9 +612,9 @@ void kwn_get_config_data( kwn_pkt* buf)
     memcpy(buf->data+len, &data.mode,llen); /* value */
     len += llen;
 
+    /* LOCAL_MAC */
     printf("MAC = %2.2X:%2.2X:%2.2X:%2.2X:%2.2X:%2.2X\n",data.local_mac[0],data.local_mac[1],data.local_mac[2],
             data.local_mac[3],data.local_mac[4],data.local_mac[5]);
-    /* LOCAL_MAC */
     llen = KWN_MAC_ADDR_LEN;     /* length */
     memcpy(buf->data+len, &llen,sizeof(uint16_t));
     len += sizeof(uint16_t);
@@ -640,9 +648,9 @@ void kwn_get_config_data( kwn_pkt* buf)
     len += llen;
 
     /* NETMASK_IP_ADDRESS */
-    printf("Mask IP: %d.%d.%d.%d \n",data.netmask[0],data.netmask[1],data.netmask[2],data.netmask[3]);
+    if( data.netmask[0] != '\0' )
+        printf("Mask IP: %d.%d.%d.%d \n",data.netmask[0],data.netmask[1],data.netmask[2],data.netmask[3]);
     llen = sizeof(data.netmask);     /* length */
-    printf("Netmask Length: %d\n",llen);
     memcpy(buf->data+len, &llen,sizeof(uint16_t));
     len += sizeof(uint16_t);
     type = KWN_CFG_NETMASK;           /* type */
@@ -652,7 +660,7 @@ void kwn_get_config_data( kwn_pkt* buf)
     len += llen;   
 
     /* CUSTOMER NAME*/
-    printf("CUSTOMER ID: %s\n",data.cust_name);
+    printf("CUSTOMER ID: %s - ",data.cust_name);
     llen = strlen(data.cust_name);     /* length */
     memcpy(buf->data+len, &llen,sizeof(uint16_t));
     printf("llen of customername : %d\n",llen);
@@ -751,8 +759,44 @@ void kwn_get_config_data( kwn_pkt* buf)
     memcpy(buf->data+len, &data.txpower,llen); /* value */
     len += llen;
 
+    /* DHCP_IP_ADDRESS */
+    if( data.dyn_ip[0] != '\0' )
+        printf("Data IP: %d.%d.%d.%d \n",data.dyn_ip[0],data.dyn_ip[1],data.dyn_ip[2],data.dyn_ip[3]);
+    llen = sizeof(data.dyn_ip);     /* length */
+    memcpy(buf->data+len, &llen,sizeof(uint16_t));
+    len += sizeof(uint16_t);
+    type = KWN_CFG_DYN_IP;           /* type */
+    memcpy(buf->data+len, &type,sizeof(uint8_t));
+    len += sizeof(uint8_t);
+    memcpy(buf->data+len, &data.dyn_ip,llen); /* value */
+    len += llen;
+
+    /* DHCP_GATEWAY_IP_ADDRESS */
+    if( data.dyn_gip[0] != '\0' )
+        printf("Gateway IP: %d.%d.%d.%d \n",data.dyn_gip[0],data.dyn_gip[1],data.dyn_gip[2],data.dyn_gip[3]);
+    llen = sizeof(data.dyn_gip);     /* length */
+    memcpy(buf->data+len, &llen,sizeof(uint16_t));
+    len += sizeof(uint16_t);
+    type = KWN_CFG_DYN_GIP;           /* type */
+    memcpy(buf->data+len, &type,sizeof(uint8_t));
+    len += sizeof(uint8_t);
+    memcpy(buf->data+len, &data.dyn_gip,llen); /* value */
+    len += llen;
+
+    /* DHCP_NETMASK_IP_ADDRESS */
+    if( data.dyn_netmask[0] != '\0' )
+        printf("Dynamic Mask IP: %d.%d.%d.%d\n",data.dyn_netmask[0],data.dyn_netmask[1],data.dyn_netmask[2],data.dyn_netmask[3]);
+    llen = sizeof(data.dyn_netmask);     /* length */
+    memcpy(buf->data+len, &llen,sizeof(uint16_t));
+    len += sizeof(uint16_t);
+    type = KWN_CFG_DYN_NETMASK;           /* type */
+    memcpy(buf->data+len, &type,sizeof(uint8_t));
+    len += sizeof(uint8_t);
+    memcpy(buf->data+len, &data.netmask,llen); /* value */
+    len += llen;   
+
     buf->hdr.length = len;
-    printf("Data length: %d\n",buf->hdr.length);
+    printf("\n Get config Data length: %d\n",buf->hdr.length);
 
     return;
 }
@@ -772,12 +816,12 @@ void kwn_set_config_data( kwn_pkt* buf )
     {
         memset(&cmd, '\0', sizeof(cmd));
         memcpy(&llen, buf->data+len, sizeof(uint16_t));
-        printf("Length %d ",llen);
+        printf("\nLength %d - ",llen);
         len += sizeof(uint16_t);
         memcpy(&type, buf->data+len, sizeof(uint8_t));
-        printf("Type %d ",type);
+        printf("Type %d - ",type);
         len += sizeof(uint8_t);
-        printf(" LLEN: %d\n",llen);
+        printf("LLEN: %d",llen);
         switch( type )
         {
             uint8_t ip_type;
@@ -1001,6 +1045,10 @@ void kwn_set_config_data( kwn_pkt* buf )
     printf("Data length: %d\n",buf->hdr.length);
     system("uci commit");
     system("reload_config");
+
+    sleep(20);
+    commit_in_progress = 0;
+
     return;
 }
 
@@ -1226,10 +1274,6 @@ void kwn_get_wireless_stats( kwn_pkt *buf )
 
     for( i=0; i<num ;i++)
     {
-        /*memcpy(wireless_list.sta[i].r_latitude,"123.43295+E",32);
-          memcpy(wireless_list.sta[i].r_longitude,"-74.1280",32);
-          memcpy(wireless_list.sta[i].l_latitude,"86.08531",32);
-          memcpy(wireless_list.sta[i].l_longitude,"-197.01739",32);*/
         /* SU_ID */
         llen = sizeof(wireless_list.sta[i].link_id);     /* length */
         memcpy(buf->data+len, &llen,sizeof(uint16_t));
@@ -1257,7 +1301,7 @@ void kwn_get_wireless_stats( kwn_pkt *buf )
         memcpy(buf->data+len, &wireless_list.sta[i].mac,llen); /* value */
         len += llen;
 
-        printf("IP: %d.%d.%d.%d \n",wireless_list.sta[i].r_ip[0], wireless_list.sta[i].r_ip[1],
+        printf("Remote IP: %d.%d.%d.%d \n",wireless_list.sta[i].r_ip[0], wireless_list.sta[i].r_ip[1],
                 wireless_list.sta[i].r_ip[2], wireless_list.sta[i].r_ip[3]);
         /* IP_ADDRESS */
         llen = strlen(wireless_list.sta[i].r_ip);     /* length */
@@ -1552,7 +1596,7 @@ void kwn_get_ethernet_stats( kwn_pkt* buf)
     printf("Data length: %d\n",buf->hdr.length);
 }
 
-void kwn_req_type ( int peer_socket, kwn_pkt *buf, struct sockaddr_in *peer_addr, int sock_len )
+void kwn_req_type ( int peer_socket, kwn_pkt *buf )
 {
     /*printf("Received ID:%d, Intf type:%d, Type:%d, Subtype:%d\n",
       buf->hdr.id, buf->hdr.interface_type,
@@ -1593,7 +1637,11 @@ void kwn_req_type ( int peer_socket, kwn_pkt *buf, struct sockaddr_in *peer_addr
                 {
                     case KWN_SUBTYPE_CONFIG_DATA:
                         {
-                            kwn_set_config_data(buf);
+                            if( commit_in_progress == 0 )
+                            {
+                                commit_in_progress = 1;
+                                kwn_set_config_data(buf);
+                            }
                             break;
                         }
                     case KWN_SUBTYPE_LINK_TEST:
@@ -1630,8 +1678,8 @@ int main()
     int server_socket,peer_sock;
     int sock_len;
     int len,opt=1;
-    struct sockaddr_in      server_addr;
-    struct sockaddr_in      peer_addr;
+    struct sockaddr_in server_addr;
+    struct sockaddr_in peer_addr;
     kwn_pkt kwn_server_recv_buf;
 
     /* Create server socket */
@@ -1670,7 +1718,6 @@ int main()
         exit(EXIT_FAILURE);
     }
 
-
     sock_len = sizeof(peer_addr);
     while(1)
     {
@@ -1679,7 +1726,7 @@ int main()
         if (peer_sock == -1)
         {
             fprintf(stderr, "Error on accept --> %s", strerror(errno));
-            exit(EXIT_FAILURE);
+            continue;
         }
         fprintf(stdout, "Accept peer --> %s\n", inet_ntoa(peer_addr.sin_addr));
 
@@ -1702,7 +1749,7 @@ int main()
                         case KWN_MOBILE_APP:
                         case KWN_NMS_APP:
                             {
-                                kwn_req_type( peer_sock, &kwn_server_recv_buf, &peer_addr, sock_len );
+                                kwn_req_type( peer_sock, &kwn_server_recv_buf);
                                 break;
                             }
                         default:
