@@ -119,7 +119,7 @@ void kwn_dhcp_inet_handle( const char* cmd, uint8_t* cmd_buf )
         len = strlen( tok );
         memcpy( ip, tok, len );
     }   
-    printf("%s",ip);
+    printf("DHCP IP : %s\n",ip);
     len = strlen( ip );
     memcpy(cmd_buf, ip, len);
     return;
@@ -148,7 +148,7 @@ void kwn_dhcp_mask_handle(  const char* cmd, uint8_t* cmd_buf )
     } 
     pclose( fp );
 
-    printf("%s", a);
+    /*printf("%s", a);*/
     p = strstr(a,"Bcast");
 
     if( p == NULL )
@@ -165,7 +165,7 @@ void kwn_dhcp_mask_handle(  const char* cmd, uint8_t* cmd_buf )
             tok = strtok(NULL, ": \n");
         }
     }   
-    printf("%s",ip);
+    printf("DHCP Mask : %s\n",ip);
     len = strlen( ip );
     memcpy(cmd_buf, ip, len);
     return;
@@ -225,7 +225,7 @@ uint8_t kwn_dev_radio_mode( uint8_t* dev_radio_mode, uint16_t radio_mode_len )
 
     for (i=0; i<lent; i++)
     {
-        if( strncmp( dev_radio_mode, *(kwn_dev_mode+i), radio_mode_len) == 0)
+        if( strncmp( dev_radio_mode, *(kwn_dev_mode+i), radio_mode_len ) == 0 )
             radio_mode = i;
     }
 
@@ -233,7 +233,7 @@ uint8_t kwn_dev_radio_mode( uint8_t* dev_radio_mode, uint16_t radio_mode_len )
     {
         if( radio_mode == 1 )
             return KWN_OUTDOOR_BASE;
-        else if( radio_mode == 2)
+        else if( radio_mode == 2 )
             return KWN_OUTDOOR_SUBSCRIBER;
         else
             return KWN_ERROR;
@@ -242,11 +242,11 @@ uint8_t kwn_dev_radio_mode( uint8_t* dev_radio_mode, uint16_t radio_mode_len )
     {
         if( radio_mode == 1 )
             return KWN_OUTDOOR_BASE;
-        else if( radio_mode == 2)
+        else if( radio_mode == 2 )
             return KWN_OUTDOOR_SUBSCRIBER;
-        else if( radio_mode == 3)
+        else if( radio_mode == 3 )
             return KWN_ADHOC;
-        else if( radio_mode == 4)
+        else if( radio_mode == 4 )
             return KWN_STATIC_WDS;
         else
             return KWN_ERROR;
@@ -266,7 +266,7 @@ uint8_t kwn_iptype_to_enum( uint8_t* ipaddr_type, uint16_t ipaddr_type_len)
 
     for (i=0; i<lent; i++)
     {
-        if( strncmp( ipaddr_type, *(kwn_ip_type+i), ipaddr_type_len) == 0)
+        if( strncmp( ipaddr_type, *(kwn_ip_type+i), ipaddr_type_len ) == 0 )
         {
             ip_type = i;
             break;
@@ -289,7 +289,7 @@ uint8_t kwn_opmode_to_enum( uint8_t* dev_opmode, uint16_t opmode_len )
 
     for (i=0; i<lent; i++)
     {
-        if( strncmp( dev_opmode, *(kwn_opmode+i), opmode_len) == 0)
+        if( strncmp( dev_opmode, *(kwn_opmode+i), opmode_len ) == 0 )
         {
             op_mode = i;
             break;
@@ -311,7 +311,7 @@ uint8_t kwn_bwidth_to_enum( uint8_t* dev_bwidth, uint16_t bwidth_len )
 
     for (i=0; i<lent; i++)
     {
-        if( strncmp( dev_bwidth, *(kwn_bandwidth+i), bwidth_len) == 0)
+        if( strncmp( dev_bwidth, *(kwn_bandwidth+i), bwidth_len ) == 0 )
             bwidth = i;
     }
     /*printf("Value of bandwidth: %d\n",bwidth);*/
@@ -821,7 +821,7 @@ void kwn_set_config_data( kwn_pkt* buf )
         memcpy(&type, buf->data+len, sizeof(uint8_t));
         printf("Type %d - ",type);
         len += sizeof(uint8_t);
-        printf("LLEN: %d",llen);
+        printf("LLEN of data %d - ",llen);
         switch( type )
         {
             uint8_t ip_type;
@@ -1176,7 +1176,7 @@ void kwn_get_assoclist( kwn_wireless_stats *list )
         sk_fd = -1;
         return;
     }
-    if( ioctl( sk_fd, IEEE80211_IOCTL_STA_INFO, &iwr) < 0 ) {
+    if( ioctl( sk_fd, IEEE80211_IOCTL_STA_INFO, &iwr ) < 0 ) {
         close( sk_fd );
         return;
     }
@@ -1598,9 +1598,6 @@ void kwn_get_ethernet_stats( kwn_pkt* buf)
 
 void kwn_req_type ( int peer_socket, kwn_pkt *buf )
 {
-    /*printf("Received ID:%d, Intf type:%d, Type:%d, Subtype:%d\n",
-      buf->hdr.id, buf->hdr.interface_type,
-      buf->hdr.type, buf->hdr.sub_type);*/
     int sent;
 
     /*printf("\n %s : %d \n",__func__,__LINE__);*/
@@ -1661,13 +1658,14 @@ void kwn_req_type ( int peer_socket, kwn_pkt *buf )
     }
 
     printf("Data length: %d\n",buf->hdr.length);
+    
     sent = send(peer_socket, (void*)buf, sizeof(kwn_pkt), 0);
-    if( sent < 0 )
+    if( sent == -1 )
     {
-        perror("send");
+        fprintf(stderr, "Error on send --> %s", strerror(errno));
         return;
     }
-    printf("\n message sent \n");
+    printf("\n message sent : %d bytes \n",sent);
 
     return;
 }
@@ -1682,17 +1680,21 @@ int main()
     struct sockaddr_in peer_addr;
     kwn_pkt kwn_server_recv_buf;
 
+    memset(&kwn_server_recv_buf,'\0', sizeof(kwn_pkt)); 
+    
     /* Create server socket */
     server_socket = socket(AF_INET, SOCK_STREAM, 0);
-    if (server_socket == -1)
+    if( server_socket == -1 )
     {
         fprintf(stderr, "Error creating socket --> %s", strerror(errno));
+        close(server_socket);
+        exit(EXIT_FAILURE);
     }
 
     /* set socket options to reuse port */
-    if ( setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, (char *)&opt, sizeof(opt)) == -1)
+    if( setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, (char *)&opt, sizeof(opt)) == -1 )
     {
-        fprintf(stderr, "Error on bind --> %s", strerror(errno));
+        fprintf(stderr, "Error on setsockopt --> %s", strerror(errno));
         close(server_socket);
         exit(EXIT_FAILURE);
     }
@@ -1701,17 +1703,19 @@ int main()
     memset(&server_addr, 0, sizeof(server_addr));
     /* Construct server_addr struct */
     server_addr.sin_family = AF_INET;
-    server_addr.sin_addr.s_addr   = htonl(INADDR_ANY);
-    server_addr.sin_port   = htons(PORT);   /* argv[1] - port number */
+    server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    server_addr.sin_port = htons(PORT);   /* argv[1] - port number */
 
     /* Bind */
-    if ((bind(server_socket, (struct sockaddr *)&server_addr, sizeof(struct sockaddr))) == -1)
+    if( bind(server_socket, (struct sockaddr *)&server_addr, sizeof(struct sockaddr)) == -1 )
     {
         fprintf(stderr, "Error on bind --> %s", strerror(errno));
+        close(server_socket);
+        exit(EXIT_FAILURE);
     }
     
     /* Listening to incoming connections */
-    if ((listen(server_socket, 5)) == -1)
+    if( listen(server_socket, 5) == -1 )
     {
         fprintf(stderr, "Error on listen --> %s", strerror(errno));
         close(server_socket);
@@ -1721,20 +1725,22 @@ int main()
     sock_len = sizeof(peer_addr);
     while(1)
     {
-        peer_sock = accept ( server_socket, (struct sockaddr *)&peer_addr, &sock_len );
-
-        if (peer_sock == -1)
+        peer_sock = accept( server_socket, (struct sockaddr *)&peer_addr, &sock_len );
+        if( peer_sock == -1 )
         {
             fprintf(stderr, "Error on accept --> %s", strerror(errno));
             continue;
         }
-        fprintf(stdout, "Accept peer --> %s\n", inet_ntoa(peer_addr.sin_addr));
+        fprintf( stdout, "Accept peer --> %s\n", inet_ntoa(peer_addr.sin_addr) );
 
-        if ( len = recv( peer_sock, &kwn_server_recv_buf, sizeof(kwn_pkt), 0 ) < 0 )
+        len = recv( peer_sock, &kwn_server_recv_buf, sizeof(kwn_pkt), 0 );
+        if( len == -1 )
         {
             fprintf(stderr, "Error on recv --> %s", strerror(errno));
             continue;
         }
+        printf("Received buf length : %d bytes\n",len);
+        
         printf("Received ID:%d, Intf type:%d, Type:%d, Subtype:%d\n",
                 kwn_server_recv_buf.hdr.id, kwn_server_recv_buf.hdr.interface_type,
                 kwn_server_recv_buf.hdr.type, kwn_server_recv_buf.hdr.sub_type);
@@ -1761,6 +1767,7 @@ int main()
             default:
                 break;
         }
+        memset(&kwn_server_recv_buf,'\0', sizeof(kwn_pkt)); 
         close(peer_sock);
     }
     close(server_socket);

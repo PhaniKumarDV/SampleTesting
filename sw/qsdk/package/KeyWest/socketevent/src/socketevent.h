@@ -3,10 +3,8 @@
 #define KWN_MAC_ADDR_LEN    6 
 #define KWN_GPS_LEN         32 
 #define KWN_MAX_LINKS       1
-#define KWN_PKT_DATA_SIZE   1300
+#define KWN_PKT_DATA_SIZE   291
 #define KWN_SUCCESS         1
-#define KWN_FAILURE         (-1) 
-#define KWN_OK              1
 #define KWN_ERROR           (-1)
 
 enum kwn_id
@@ -173,14 +171,6 @@ typedef struct
     uint8_t  more;           /*                          more - 1 byte  */   
 }__attribute__((packed)) kwn_pkt_hdr;
 
-/* Size of kwn_pkt = 8+1300+1 = 1309 bytes */
-typedef struct
-{
-    kwn_pkt_hdr hdr;                 /*    hdr -    6 bytes */
-    uint8_t data[KWN_PKT_DATA_SIZE]; /*   data - 1300 bytes */
-    uint8_t footer;                  /* footer -    1 byte  */
-}__attribute__((packed)) kwn_pkt;
-
 /* configuration update structure */
 /* Size of kwn_cfg_update = 4+1+33+1+1+1+1+6+2+4+4+33+1+1+1+1+1+1+1+1+4+4+4 = 111 bytes */
 typedef struct
@@ -237,7 +227,7 @@ typedef struct
     uint8_t  remote_link_qindex;            /* Remote Link Quality Index -  1 byte  */
 }__attribute__((packed)) kwn_link_stats;
 
-/* Size of kwn_wireless_stats = 1+151 = 152 bytes */
+/* Size of kwn_wireless_stats = 1+161 = 162 bytes */
 typedef struct
 {
     uint8_t no_of_links;                   /* no of links - 1 bytes */
@@ -265,6 +255,15 @@ typedef struct
     uint64_t tx_errors;     /*  tx errors - 8 bytes */
     uint64_t rx_errors;     /*  tx errors - 8 bytes */
 }__attribute__((packed)) kwn_eth_stats;
+
+/* Size of kwn_pkt = 8+291+1 = 300 bytes */
+typedef struct
+{
+    kwn_pkt_hdr hdr;                 /*    hdr -   8 bytes */
+    uint8_t data[KWN_PKT_DATA_SIZE]; /*   data - 291 bytes */
+    uint8_t footer;                  /* footer -   1 byte  */
+}__attribute__((packed)) kwn_pkt;
+
 
 char *kwn_dev_mode[] = {"\0","ap","sta"};
 char *kwn_opmode[] = {"\0","11a","11na","11ac"};
