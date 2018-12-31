@@ -85,12 +85,17 @@ function action_stats()
     local wi1rxthr = string.gsub(res, "\n", "")
     res = luci.util.exec("iwpriv ath1 g_kwnrxfailcnt | sed 's/ath1      g_kwnrxfailcnt://'")
     local ethrxfail = string.gsub(res, "\n", "")
+    res = luci.util.exec("iwpriv ath0 g_kwn_witxthr | sed 's/ath0      g_kwn_witxthr://'")
+    local wi0txthr = string.gsub(res, "\n", "")
+    res = luci.util.exec("iwpriv ath0 g_kwn_wirxthr | sed 's/ath0      g_kwn_wirxthr://'")
+    local wi0rxthr = string.gsub(res, "\n", "")
     local wi1txpkt = da1txpkt + mg1txpkt
     local wi1rxpkt = da1rxpkt + mg1rxpkt
     local wi2txpkt = da2txpkt + mg2txpkt
     local wi2rxpkt = da2rxpkt + mg2rxpkt
 
-    data = ethtxpkt.."="..ethrxpkt.."="..wi1txpkt.."="..wi1rxpkt.."="..wi2txpkt.."="..wi2rxpkt.."="..ethtxthr.."="..ethrxthr.."="..wi1txthr.."="..wi1rxthr.."="..ethrxfail
+--           0               1              2              3              4              5              6              7             8               9              10             11             12
+    data = ethtxpkt.."="..ethrxpkt.."="..wi1txpkt.."="..wi1rxpkt.."="..wi2txpkt.."="..wi2rxpkt.."="..ethtxthr.."="..ethrxthr.."="..wi1txthr.."="..wi1rxthr.."="..ethrxfail.."="..wi0txthr.."="..wi0rxthr
 	luci.http.prepare_content("application/json")
 	luci.http.write_json(data)
 end
