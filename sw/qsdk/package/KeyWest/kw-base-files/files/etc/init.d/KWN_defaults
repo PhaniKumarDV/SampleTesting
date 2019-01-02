@@ -31,6 +31,7 @@ start_service() {
     atpcstatus1=$(uci get wireless.wifi1.atpcstatus)
     maxeirp1=$(uci get wireless.wifi1.maxeirp)
     atpcpower1=$(uci get wireless.wifi1.atpcpower)
+    mfggain1=$(fw_printenv -n antgain1)
     gain1=$(uci get wireless.wifi1.antennagain)
     frag1=$(uci get wireless.wifi1.assemfrag)
     maxsize1=$(uci get wireless.wifi1.maxsize)
@@ -182,7 +183,12 @@ start_service() {
     fi
     if [ "$gain1" == "" ]
     then
-        uci set wireless.wifi1.antennagain='23'
+        if [ "$mfggain1" == "" ]
+        then
+            uci set wireless.wifi1.antennagain='23'
+        else
+            uci set wireless.wifi1.antennagain=$mfggain1
+        fi
     fi
     if [ "$frag1" == "" ]
     then
