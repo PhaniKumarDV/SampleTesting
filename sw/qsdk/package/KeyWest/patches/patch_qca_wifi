@@ -149,7 +149,7 @@ diff -urN qca-wifi-org/include/_ieee80211.h qca-wifi-mod/include/_ieee80211.h
      IEEE80211_VENDOR_IE_PARAM_UPDATE,
 diff -urN qca-wifi-org/include/ieee80211.h qca-wifi-mod/include/ieee80211.h
 --- qca-wifi-org/include/ieee80211.h	2018-06-08 11:00:50.000000000 +0530
-+++ qca-wifi-mod/include/ieee80211.h	2018-12-14 19:31:56.650235401 +0530
++++ qca-wifi-mod/include/ieee80211.h	2019-01-03 12:57:09.511144461 +0530
 @@ -768,6 +768,13 @@
  #define IEEE80211_ACTION_TPC_REQUEST        2   /* Transmit Power control */
  #define IEEE80211_ACTION_TPC_REPORT         3
@@ -164,7 +164,7 @@ diff -urN qca-wifi-org/include/ieee80211.h qca-wifi-mod/include/ieee80211.h
  
  /* HT actions */
  #define IEEE80211_ACTION_HT_TXCHWIDTH       0   /* recommended transmission channel width */
-@@ -840,6 +847,114 @@
+@@ -840,6 +847,115 @@
          struct ieee80211_ie_op_mode opmode;
  } __packed;
  
@@ -235,6 +235,7 @@ diff -urN qca-wifi-org/include/ieee80211.h qca-wifi-mod/include/ieee80211.h
 +    u_int32_t  	retries; 
 +    int16_t  	noise_floor; 
 +    u_int8_t    rtx;
++    u_int8_t    tx_pwr;
 +} __packed;
 +
 +/* VHT - Node Stats*/
@@ -279,7 +280,7 @@ diff -urN qca-wifi-org/include/ieee80211.h qca-wifi-mod/include/ieee80211.h
  
  /* VHT - recommended Channel width and Nss */
  struct ieee80211_action_vht_opmode {
-@@ -1243,6 +1358,14 @@
+@@ -1243,6 +1359,14 @@
  } __packed;
  
  /*
@@ -294,7 +295,7 @@ diff -urN qca-wifi-org/include/ieee80211.h qca-wifi-mod/include/ieee80211.h
   * 802.11n HT Capability IE
   */
  struct ieee80211_ie_htcap {
-@@ -2734,7 +2857,8 @@
+@@ -2734,7 +2858,8 @@
  
  // Factor used to convert airtime between user space and driver
  #define ATF_AIRTIME_CONVERSION_FACTOR 10
@@ -304,7 +305,7 @@ diff -urN qca-wifi-org/include/ieee80211.h qca-wifi-mod/include/ieee80211.h
  
  struct ieee80211_clone_params {
  	char		icp_name[IEEE80211_MAX_IFNAME];	/* device name */
-@@ -2745,6 +2869,31 @@
+@@ -2745,6 +2870,31 @@
      u_int8_t icp_mataddr[IEEE80211_ADDR_LEN];    /* optional MAT address */
  };
  
@@ -336,7 +337,7 @@ diff -urN qca-wifi-org/include/ieee80211.h qca-wifi-mod/include/ieee80211.h
  #define	    IEEE80211_CLONE_BSSID       0x0001		/* allocate unique mac/bssid */
  #define	    IEEE80211_NO_STABEACONS	    0x0002		/* Do not setup the station beacon timers */
  #define    IEEE80211_CLONE_WDS          0x0004      /* enable WDS processing */
-@@ -2813,6 +2962,36 @@
+@@ -2813,6 +2963,38 @@
          u_int8_t isi_tx_rate_mcs;
          u_int8_t isi_tx_rate_flags;
  #endif
@@ -370,6 +371,8 @@ diff -urN qca-wifi-org/include/ieee80211.h qca-wifi-mod/include/ieee80211.h
 +        u_int32_t isi_r_bw_limit;
 +        u_int8_t  isi_l_rtx;
 +        u_int8_t  isi_r_rtx;
++        u_int8_t  isi_l_tx_power;
++        u_int8_t  isi_r_tx_power;
  
  };
  
@@ -4537,7 +4540,7 @@ diff -urN qca-wifi-org/umac/base/ieee80211_node.c qca-wifi-mod/umac/base/ieee802
      OS_BEACON_WRITE_LOCK(&nt->nt_nodelock, &lock_state, flags);
 diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.c qca-wifi-mod/umac/base/ieee80211_ucfg.c
 --- qca-wifi-org/umac/base/ieee80211_ucfg.c	2018-06-08 11:00:49.000000000 +0530
-+++ qca-wifi-mod/umac/base/ieee80211_ucfg.c	2018-12-23 20:23:33.308286409 +0530
++++ qca-wifi-mod/umac/base/ieee80211_ucfg.c	2019-01-03 12:57:37.723214684 +0530
 @@ -50,6 +50,61 @@
  #define HIGHEST_BASIC_RATE 24000
  #define THREE_HUNDRED_FIFTY_MBPS 350000
@@ -5684,7 +5687,7 @@ diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.c qca-wifi-mod/umac/base/ieee802
      }
  
      memset(&rinfo, 0, sizeof(rinfo));
-@@ -6685,7 +7757,46 @@
+@@ -6685,7 +7757,48 @@
      si->isi_is_256qam = wlan_node_get_256qam_support(node);
      si->isi_rx_nss = wlan_node_get_rx_spatial(node);
      si->isi_tx_nss = wlan_node_get_tx_spatial(node);
@@ -5729,6 +5732,8 @@ diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.c qca-wifi-mod/umac/base/ieee802
 +    si->isi_r_bw_limit = ( vap->iv_opmode == IEEE80211_M_HOSTAP ? vap->kwn_final_ul_limit : vap->kwn_final_dl_limit );
 +    si->isi_l_rtx = node->kwn_local_rtx;
 +    si->isi_r_rtx = node->kwn_remote_rtx;
++    si->isi_l_tx_power = ( node->kwn_profile_cfg.txparam.atpc_status == 1 ? node->kwn_profile_cfg.atpc_power : node->kwn_profile_cfg.txparam.power);
++    si->isi_r_tx_power = node->kwn_remote_tx_pwr;
      cp = (u_int8_t *)(si+1);
  
      if(!wlan_node_getwpaie(vap, macaddr, ni_ie, &ni_ie_len)) {
@@ -5887,7 +5892,7 @@ diff -urN qca-wifi-org/umac/include/ieee80211_mlme.h qca-wifi-mod/umac/include/i
                             u_int32_t                            beacon_frame_length,
 diff -urN qca-wifi-org/umac/include/ieee80211_node.h qca-wifi-mod/umac/include/ieee80211_node.h
 --- qca-wifi-org/umac/include/ieee80211_node.h	2018-06-08 11:00:49.000000000 +0530
-+++ qca-wifi-mod/umac/include/ieee80211_node.h	2018-12-04 18:54:13.125687231 +0530
++++ qca-wifi-mod/umac/include/ieee80211_node.h	2019-01-03 12:57:44.379229508 +0530
 @@ -142,6 +142,51 @@
      u_int64_t  ni_last_ack_jiffies;
  } ni_ctrl_stats_t;
@@ -5940,7 +5945,7 @@ diff -urN qca-wifi-org/umac/include/ieee80211_node.h qca-wifi-mod/umac/include/i
  /*
   * Node information. A node could represents a BSS in infrastructure network,
   * or an ad-hoc station in IBSS mode, or an associated station in HOSTAP mode.
-@@ -585,6 +630,40 @@
+@@ -585,6 +630,41 @@
      bool        is_ft_reassoc;
      ni_mgmt_stats_t ni_mgmt_stats;
      ni_ctrl_stats_t ni_ctrl_stats;
@@ -5978,6 +5983,7 @@ diff -urN qca-wifi-org/umac/include/ieee80211_node.h qca-wifi-mod/umac/include/i
 +    u_int32_t   kwn_last_rrx_pkts;
 +    u_int8_t    kwn_local_rtx;
 +    u_int8_t    kwn_remote_rtx;
++    u_int8_t    kwn_remote_tx_pwr;
  } IEEE80211_NODE, *PIEEE80211_NODE;
  
  
@@ -6289,7 +6295,7 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt_ap.c qca-wifi-mod/umac/mlme/ieee
              if (iswpaoui(frm)) {
 diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee80211_mgmt.c
 --- qca-wifi-org/umac/mlme/ieee80211_mgmt.c	2018-06-08 11:00:48.000000000 +0530
-+++ qca-wifi-mod/umac/mlme/ieee80211_mgmt.c	2018-12-14 19:36:49.337953174 +0530
++++ qca-wifi-mod/umac/mlme/ieee80211_mgmt.c	2019-01-03 12:58:14.399288767 +0530
 @@ -22,10 +22,21 @@
  #include "ieee80211_wifipos_pvt.h"
  #endif
@@ -6655,7 +6661,7 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee802
  
  int
  ieee80211_send_action(
-@@ -1183,21 +1503,179 @@
+@@ -1183,21 +1503,181 @@
      break;
  
      case IEEE80211_ACTION_CAT_VHT: {
@@ -6756,6 +6762,8 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee802
 +			frame_stats->at_node_stats.mpdu_err = vap->kwn_local_mpdu_err;
 +			frame_stats->at_node_stats.retries = ni->remote_retries;
 +			frame_stats->at_node_stats.rtx = ni->kwn_remote_rtx;
++            frame_stats->at_node_stats.tx_pwr = 
++                ( ni->kwn_profile_cfg.txparam.atpc_status == 1 ? ni->kwn_profile_cfg.atpc_power : ni->kwn_profile_cfg.txparam.power );
 +			frm += sizeof( struct ieee80211_action_vht_node_stats );
 +			break;
 +		case IEEE80211_ACTION_TPUT_TEST:
@@ -6849,7 +6857,7 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee802
      }
      break;
  
-@@ -2241,6 +2719,7 @@
+@@ -2241,6 +2721,7 @@
  }
  int
  ieee80211_parse_beacon(struct ieee80211vap                  *vap,
@@ -6857,7 +6865,7 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee802
                         struct ieee80211_beacon_frame        *beacon_frame,
                         const struct ieee80211_frame         *wh,
                         u_int32_t                            beacon_frame_length,
-@@ -2404,6 +2883,9 @@
+@@ -2404,6 +2885,9 @@
              scan_entry_parameters->ie_list.htcap = (u_int8_t *) &(((struct ieee80211_ie_htcap *) info_element)->hc_ie);
              break;
          case IEEE80211_ELEMID_RESERVED_47:
@@ -6867,7 +6875,7 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee802
              break;
          case IEEE80211_ELEMID_RSN:
              scan_entry_parameters->ie_list.rsn = (u_int8_t *) info_element;
-@@ -2435,6 +2917,9 @@
+@@ -2435,6 +2919,9 @@
              scan_entry_parameters->ie_list.extcaps = (u_int8_t *) info_element;
              break;
          case IEEE80211_ELEMID_RESERVED_133:
@@ -6877,7 +6885,7 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee802
              break;
          case IEEE80211_ELEMID_TPC:
              break;
-@@ -2864,6 +3349,7 @@
+@@ -2864,6 +3351,7 @@
      }
  
      scan_entry = ieee80211_scan_table_update(ni->ni_vap,
@@ -6885,7 +6893,7 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee802
                                               wh,
                                               wbuf_get_pktlen(wbuf),
                                               subtype,
-@@ -3825,13 +4311,228 @@
+@@ -3825,13 +4313,229 @@
  
                      ieee80211_parse_opmode(ni, (u_int8_t *)&ia_opmode->at_op_mode, subtype);
                  }
@@ -6977,6 +6985,7 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee802
 +                        ni->kwn_local_rtx = frame_stats->at_node_stats.rtx;
 +                        /* For DCS: updating RTX percentage in vap */
 +                        vap->kwn_local_rtx = frame_stats->at_node_stats.rtx;
++                        ni->kwn_remote_tx_pwr = frame_stats->at_node_stats.tx_pwr;
 +		}
 +		break;
 +	    case IEEE80211_ACTION_TPUT_TEST: 
@@ -7115,7 +7124,7 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee802
          break;
      }
  
-@@ -4002,6 +4703,10 @@
+@@ -4002,6 +4706,10 @@
      switch (subtype) {
      case IEEE80211_FC0_SUBTYPE_PROBE_RESP:
      case IEEE80211_FC0_SUBTYPE_BEACON:
@@ -7126,7 +7135,7 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee802
          ieee80211_recv_beacon(ni, wbuf, subtype, rs);
          /*store all received beacon info*/
          if(vap->iv_beacon_info_count>=100)
-@@ -4092,6 +4797,9 @@
+@@ -4092,6 +4800,9 @@
          break;
  
      case IEEE80211_FC0_SUBTYPE_AUTH:
@@ -7136,7 +7145,7 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee802
  #if ATH_NON_BEACON_AP
          if(IEEE80211_VAP_IS_NON_BEACON_ENABLED(vap)){
              /*Don't response to auth for non-beaconing AP VAP*/
-@@ -4107,10 +4815,34 @@
+@@ -4107,10 +4818,34 @@
      case IEEE80211_FC0_SUBTYPE_ASSOC_RESP:
      case IEEE80211_FC0_SUBTYPE_REASSOC_RESP:
          ieee80211_recv_asresp(ni, wbuf, subtype);
@@ -7172,7 +7181,7 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee802
  #if ATH_NON_BEACON_AP
          if(IEEE80211_VAP_IS_NON_BEACON_ENABLED(vap)){
              /*Don't response to auth for non-beaconing AP VAP*/
-@@ -4158,13 +4890,40 @@
+@@ -4158,13 +4893,40 @@
  #endif
          if (ieee80211_recv_asreq(ni, wbuf, subtype) == -EBUSY)
              forward_to_filter = 0;

@@ -774,6 +774,7 @@ struct ieee80211_action_vht_gid_mgmt {
 #define IEEE80211_ACTION_TPUT_TEST          8   /* Tput Test */
 #define IEEE80211_ACTION_SCAN_ENTRIES       9   /* Scan Entries */
 #define IEEE80211_ACTION_TX_PARAMS          10  /* Tx params */
+#define IEEE80211_ACTION_TPUT_TEST_STATS    11  /* Tput Test stats */
 
 /* HT actions */
 #define IEEE80211_ACTION_HT_TXCHWIDTH       0   /* recommended transmission channel width */
@@ -879,6 +880,17 @@ struct ieee80211_action_vht_scan_entries {
     struct ieee80211_scan_actionentries at_scan_entry;
 } __packed;
 
+struct ieee80211_tput_test_stats {
+    u_int64_t rx_seq;
+    u_int64_t rx_failed_cnt;
+} __packed;
+
+/* VHT - TPUT Test stats*/
+struct ieee80211_action_vht_tput_test_stats {
+    struct ieee80211_action    at_header;
+    struct ieee80211_tput_test_stats at_tput_test_stats;
+} __packed;
+
 struct ieee80211_tput_test {
     u_int8_t  	ipv4[20];
     u_int8_t  	start_stop; 
@@ -902,6 +914,7 @@ struct ieee80211_node_stats {
     u_int32_t  	retries; 
     int16_t  	noise_floor; 
     u_int8_t    rtx;
+    u_int8_t    tx_pwr;
 } __packed;
 
 /* VHT - Node Stats*/
@@ -2980,6 +2993,8 @@ struct ieee80211req_sta_info {
         u_int32_t isi_r_bw_limit;
         u_int8_t  isi_l_rtx;
         u_int8_t  isi_r_rtx;
+        u_int8_t  isi_l_tx_power;
+        u_int8_t  isi_r_tx_power;
 
 };
 

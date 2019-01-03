@@ -228,6 +228,8 @@ function getBaseLog(x, y) {
 							document.getElementById("rem_limit").innerHTML = assoclist[j].r_bw_limit > (1000) ? (assoclist[j].r_bw_limit / ( 1000 )).toFixed(2) : 0;
 							document.getElementById("loc_rtx").innerHTML = assoclist[j].l_rtx + "%";
 							document.getElementById("rem_rtx").innerHTML = assoclist[j].r_rtx + "%";
+							document.getElementById("loc_pwr").innerHTML = assoclist[j].l_tx_power;
+							document.getElementById("rem_pwr").innerHTML = assoclist[j].r_tx_power;
 						}
 					}
 				}
@@ -348,6 +350,11 @@ function getBaseLog(x, y) {
 				<td>Bandwidth Limit (Mbps)</td>
 				<td id="loc_limit"></td>
 				<td id="rem_limit"></td>
+			</tr>
+			<tr>
+				<td>Tx Power (dBm)</td>
+				<td id="loc_pwr"></td>
+				<td id="rem_pwr"></td>
 			</tr>
 			<tr>
 				<td>Phy Errors</td>
