@@ -1,5 +1,5 @@
 config vlan 'vlan'
-    option status '2'
+    option status '1'
     option mode '0'
     option mgmtvlan '1'
     option accessvlan '-1'
