@@ -375,7 +375,11 @@ function get_log()
                             document.getElementById("ssid2").innerHTML = net.ssid;
                             var freq = net.frequency * 1000;
                             document.getElementById("chan2").innerHTML = net.channel + " ( " + freq + " MHz )"
-                            document.getElementById("ddrs2").innerHTML = "Enabled";
+                            var rate = "<%=uciget('uci get wireless.wifi0.rate')%>";
+                            document.getElementById("ddrs2").innerHTML = (rate == 21 ? "Enabled" : "Disabled");
+                            if( rate != 21 ) {
+                                 document.getElementById("rate2").innerHTML = "MCS" + "<%=uciget('uci get wireless.wifi0.rate')%>";
+                            }
                             document.getElementById("atpc2").innerHTML = "Disabled";
                             document.getElementById("pow2").innerHTML = "<%=uciget('uci get wireless.wifi0.TXPowLim2G')%>" + " dBm";
                             document.getElementById("dis2").innerHTML = "300 m";
