@@ -1,6 +1,6 @@
 diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
 --- qca-edma-org/edma.c	2018-07-09 14:25:58.833210000 +0530
-+++ qca-edma-mod/edma.c	2018-12-23 20:27:45.952118846 +0530
++++ qca-edma-mod/edma.c	2019-01-04 19:49:53.835700666 +0530
 @@ -26,6 +26,618 @@
  extern u8 edma_per_prec_stats_enable;
  extern u32 edma_iad_stats_enable;
@@ -1032,14 +1032,14 @@ diff -urN qca-edma-org/edma.c qca-edma-mod/edma.c
  
  	if (status == __EDMA_LINKUP && adapter->link_state == __EDMA_LINKDOWN) {
  		dev_info(&adapter->pdev->dev, "%s: GMAC Link is up with phy_speed=%d\n", netdev->name, phydev->speed);
-+                sify_filewrite(1);
++                //sify_filewrite(1);
  		adapter->link_state = __EDMA_LINKUP;
  		netif_carrier_on(netdev);
  		if (netif_running(netdev))
  			netif_tx_wake_all_queues(netdev);
  	} else if (status == __EDMA_LINKDOWN && adapter->link_state == __EDMA_LINKUP) {
  		dev_info(&adapter->pdev->dev, "%s: GMAC Link is down\n", netdev->name);
-+                sify_filewrite(0);
++                //sify_filewrite(0);
  		adapter->link_state = __EDMA_LINKDOWN;
  		netif_carrier_off(netdev);
  		netif_tx_stop_all_queues(netdev);
