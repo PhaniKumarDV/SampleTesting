@@ -60,10 +60,13 @@
     var bwlist = [ "HT20=20MHz", "HT40+=40MHz", "HT80=80MHz" ];
     var counlist = [ "5011=RUSSIA", "5016=INDIA_UL", "5017=INDIA L" ];
     var chanlist = [ "auto=Auto" ];
-	for (var i = 0; i < freqlist.length; i++)
-		chanlist.push(
-			'%d=%d (%d MHz)'.format(freqlist[i].channel, freqlist[i].channel, freqlist[i].mhz)
-		);
+    if( freqlist != null ) {
+	    for (var i = 0; i < freqlist.length; i++) {
+		    chanlist.push(
+			   '%d=%d (%d MHz)'.format(freqlist[i].channel, freqlist[i].channel, freqlist[i].mhz)
+		    );
+        }
+    }
 var def = new Array(8);
 function save_def_value()
 {

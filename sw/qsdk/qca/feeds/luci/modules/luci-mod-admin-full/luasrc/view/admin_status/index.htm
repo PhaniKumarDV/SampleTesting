@@ -346,11 +346,15 @@ function get_log()
                         if( didx == 1 ) {
                             document.getElementById("mac1").innerHTML = "<%=uciget('uci get wireless.wifi1.macaddr')%>"; 
                             document.getElementById("mode1").innerHTML = "<b>"+net.mode+"<b>"; 
+                            var radio_status = "<%=uciget('uci get wireless.@wifi-iface[1].disabled')%>";
+                            document.getElementById("status1").innerHTML = ( radio_status == 1 ? "Disabled" : "Enabled" );
                             document.getElementById("opmode1").innerHTML = "<%=uciget('uci get wireless.wifi1.hwmode')%>";
                             document.getElementById("bw1").innerHTML = "<%=uciget('uci get wireless.wifi1.htmode')%>";
                             document.getElementById("ssid1").innerHTML = net.ssid;
-                            var freq = net.frequency * 1000;
-                            document.getElementById("chan1").innerHTML = net.channel + " ( " + freq + " MHz )"
+                            if( net.channel != undefined ) {
+                               var freq = net.frequency * 1000;
+                               document.getElementById("chan1").innerHTML = net.channel + " ( " + freq + " MHz )"
+                            }
                             var ddrs1 = "<%=uciget('uci get wireless.wifi1.ddrsstatus')%>";
                             document.getElementById("ddrs1").innerHTML = ( ddrs1 == 1 ? "Enabled" : "Disabled" );
                             if( ddrs1 == 2 ) {
@@ -370,11 +374,15 @@ function get_log()
                         else {
                             document.getElementById("mac2").innerHTML = "<%=uciget('uci get wireless.wifi0.macaddr')%>"; 
                             document.getElementById("mode2").innerHTML = "<b>" +net.mode +"<b>"; 
+                            var radio_status = "<%=uciget('uci get wireless.@wifi-iface[0].disabled')%>";
+                            document.getElementById("status2").innerHTML = ( radio_status == 1 ? "Disabled" : "Enabled" );
                             document.getElementById("opmode2").innerHTML = "<%=uciget('uci get wireless.wifi0.hwmode')%>";
                             document.getElementById("bw2").innerHTML = "<%=uciget('uci get wireless.wifi0.htmode')%>";
                             document.getElementById("ssid2").innerHTML = net.ssid;
-                            var freq = net.frequency * 1000;
-                            document.getElementById("chan2").innerHTML = net.channel + " ( " + freq + " MHz )"
+                            if( net.channel != undefined ) {
+                               var freq = net.frequency * 1000;
+                               document.getElementById("chan2").innerHTML = net.channel + " ( " + freq + " MHz )"
+                            }
                             var rate = "<%=uciget('uci get wireless.wifi0.rate')%>";
                             document.getElementById("ddrs2").innerHTML = (rate == 21 ? "Enabled" : "Disabled");
                             if( rate != 21 ) {
@@ -519,6 +527,7 @@ function get_log()
        <tr><td></td><td style="color:#a5bc23"><b>5 GHz<b></td><td style="color:#a5bc23"><b>2.4 GHz<b></td></tr>
        <tr><td style="padding-top:10px;">MAC</td><td id="mac1" style="padding-top:10px;">-</td><td id="mac2" style="padding-top:10px;">-</td></tr>
        <tr><td>Radio Mode</td><td id="mode1">-</td><td id="mode2">-</td></tr>
+       <tr><td>Radio Status</td><td id="status1">-</td><td id="status2">-</td></tr>
        <tr><td>Operational Mode</td><td id="opmode1">-</td><td id="opmode2">-</td></tr>
        <tr><td>Bandwidth</td><td id="bw1">-</td><td id="bw2">-</td></tr>
        <tr><td>SSID</td><td id="ssid1">-</td><td id="ssid2">-</td></tr>

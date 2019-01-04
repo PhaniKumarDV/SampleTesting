@@ -684,6 +684,9 @@ void cfg_set( char *type, char *value )
         case UCI_ID_RADIO2_DISABLE_LEGACY:
             sprintf(cmd,"uci set wireless.@wifi-iface[0].dis_legacy='%s'",value);
             break;
+        case UCI_ID_RADIO2_STATUS:
+            sprintf(cmd,"uci set wireless.@wifi-iface[0].disabled='%s'",value);
+            break;
         default:
             break;
     }

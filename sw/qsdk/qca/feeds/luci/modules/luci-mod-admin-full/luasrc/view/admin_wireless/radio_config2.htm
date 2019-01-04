@@ -63,10 +63,13 @@
     var pwrlist = ["0=0dBm (1mW)", "8=8dBm (6mW)", "10=10dBm (10mW)", "12=12dBm (15mW)", "14=14dBm (25mW)", "16=16dBm (39mW)", "18=18dBm (63mW)", "20=20dBm (100mW)"];
     var ratelist = ["21=Auto", "0=MCS0", "1=MCS1", "2=MCS2", "3=MCS3", "4=MCS4", "5=MCS5", "6=MCS6", "7=MCS7"];
     var chanlist = [ "auto=Auto" ];
-	for (var i = 0; i < freqlist.length; i++)
-		chanlist.push(
-			'%d=%d (%d MHz)'.format(freqlist[i].channel, freqlist[i].channel, freqlist[i].mhz)
-		);
+    if( freqlist != null ) {
+	    for (var i = 0; i < freqlist.length; i++) {
+		    chanlist.push(
+			    '%d=%d (%d MHz)'.format(freqlist[i].channel, freqlist[i].channel, freqlist[i].mhz)
+		    );
+        }
+    }
 
 var def = new Array(8);
 function save_def_value()
@@ -177,6 +180,28 @@ function updatehidessid()
               </select>-->
             </div>
           </div>
+          <div class="cbi-value">
+            <label class="cbi-value-title">Radio Status</label>
+            <div class="cbi-value-field">
+               <select name="138" class="cbi-input-select">
+               <script type="text/javascript">
+                  var radio_status = "<%=uciget('uci get wireless.@wifi-iface[0].disabled')%>";
+                  if( radio_status == "" )
+                      radio_status = "0";
+                  document.write("<option value='0' ");
+                  if( radio_status == '0' ) {
+                      document.write(" selected");
+                  }
+                  document.write(">Enable</option>");
+                  document.write("<option value='1' ");
+                  if( radio_status == '1' ) {
+                     document.write(" selected");
+                  }
+                  document.write(">Disable</option>");
+                </script>
+               </select>
+           </div>
+         </div>
           <div class="cbi-value">
             <label class="cbi-value-title">SSID</label>
             <div class="cbi-value-field">
