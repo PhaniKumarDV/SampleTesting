@@ -75,10 +75,12 @@ function updateparam()
     if( atpc == 1 ) {
        document.getElementById("power").style.display = "none";
        document.getElementById("eirp").style.display = "block";
+       document.getElementById("gain").style.display = "block";
     }
     else {
        document.getElementById("power").style.display = "block";
        document.getElementById("eirp").style.display = "none";
+       document.getElementById("gain").style.display = "none";
     }
 
     var stream = "<%=uciget('uci get wireless.wifi1.spatialstream')%>";
@@ -284,6 +286,12 @@ function getoptions( list, value )
              </select>
            </div>
          </div>
+          <div class="cbi-value" id="gain">
+            <label class="cbi-value-title">Antenna Gain</label>
+            <div class="cbi-value-field">
+              <input type="text" name="115" class="cbi-input-select" value="<%=uciget('uci get wireless.wifi1.antennagain')%>" > &nbsp; (0-23) dBi
+            </div>
+          </div>
           <div class="cbi-value" id="eirp">
             <label class="cbi-value-title">Maximum EIRP</label>
             <div class="cbi-value-field">
