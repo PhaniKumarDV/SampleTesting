@@ -687,6 +687,15 @@ void cfg_set( char *type, char *value )
         case UCI_ID_RADIO2_STATUS:
             sprintf(cmd,"uci set wireless.@wifi-iface[0].disabled='%s'",value);
             break;
+        case UCI_ID_SYSTEM_LOCATION:
+            sprintf(cmd,"uci set system.@system[0].location='%s'",value);
+            break;
+        case UCI_ID_SYSTEM_CONTACT:
+            sprintf(cmd,"uci set system.@system[0].contact='%s'",value);
+            break;
+        case UCI_ID_SYSTEM_EMAIL:
+            sprintf(cmd,"uci set system.@system[0].email='%s'",value);
+            break;
         default:
             break;
     }
