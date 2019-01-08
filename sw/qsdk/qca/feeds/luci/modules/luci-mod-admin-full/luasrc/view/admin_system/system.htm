@@ -137,6 +137,24 @@ function updategps()
               <input type="text" name="60" class="cbi-input-select" value="<%=uciget('uci get system.@system[0].hostname')%>" >
             </div>
           </div>
+          <div class="cbi-value">
+            <label class="cbi-value-title">Location</label>
+            <div class="cbi-value-field">
+              <input type="text" name="139" class="cbi-input-select" value="<%=uciget('uci get system.@system[0].location')%>" >
+            </div>
+          </div>
+          <div class="cbi-value">
+            <label class="cbi-value-title">Contact</label>
+            <div class="cbi-value-field">
+              <input type="text" name="140" class="cbi-input-select" value="<%=uciget('uci get system.@system[0].contact')%>" >
+            </div>
+          </div>
+          <div class="cbi-value">
+            <label class="cbi-value-title">Email</label>
+            <div class="cbi-value-field">
+              <input type="text" name="141" class="cbi-input-select" value="<%=uciget('uci get system.@system[0].email')%>" >
+            </div>
+          </div>
         <h2><a id="content" name="content"><%:NTP%></a></h2>
           <div class="cbi-value">
             <label class="cbi-value-title">Enable NTP</label>

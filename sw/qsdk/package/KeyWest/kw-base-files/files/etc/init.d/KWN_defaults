@@ -69,6 +69,10 @@ start_service() {
     httpoptype=$(uci get tftp.http.optype)
 #VARIANT
     maxsu=$(uci get variant.variant.maxsu)
+#SYSTEM
+    location=$(uci get system.@system[0].location)
+    contact=$(uci get system.@system[0].contact)
+    email=$(uci get system.@system[0].email)
 
     if [ "$tx_power_radio1" == "" ]
     then
@@ -323,9 +327,25 @@ start_service() {
     fi
 #VARIANT
     uci set variant.variant.buildno='020119'
+    uci set variant.variant.model='1'
+    uci set variant.variant.majnum='1'
+    uci set variant.variant.minnum='0'
     if [ "$maxsu" == "" ]
     then
-        uci set variant.variant.maxsu ='1'
+        uci set variant.variant.maxsu='1'
+    fi
+#SYSTEM
+    if [ "$location" == "" ]
+    then
+        uci set system.@system[0].location='location'
+    fi
+    if [ "$contact" == "" ]
+    then
+        uci set system.@system[0].contact='1234567890'
+    fi
+    if [ "$email" == "" ]
+    then
+        uci set system.@system[0].email='example@mail.com'
     fi
 
     dmesg -n 1

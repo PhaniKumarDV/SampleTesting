@@ -259,7 +259,6 @@ function get_desc()
 		if (data) {
             var model_uci = "<%=uciget('uci get variant.variant.model')%>"
             var prod_uci = "<%=uciget('uci get variant.variant.productid')%>"
-            var rel_num = "<%=uciget('uci get variant.variant.relnum')%>"
             var maj_num = "<%=uciget('uci get variant.variant.majnum')%>"
             var min_num = "<%=uciget('uci get variant.variant.minnum')%>"
             var build_no = "<%=uciget('uci get variant.variant.buildno')%>"
@@ -271,8 +270,10 @@ function get_desc()
             if( m[1] != "" ) {
                 prod_type = m[1];
             }
+            if( model_name == "1" ) 
+                model_name = "MAP100";
             prod_type = ( prod_type == 1 ? "PTP" : "PTMP" );
-            var str = model_name + " - " + prod_type + " - " + rel_num + "." + maj_num + "." + min_num + " ( " + build_no + " )";
+            var str = model_name + " - " + prod_type + " - " + maj_num + "." + min_num + " ( " + build_no + " )";
 			document.getElementById("desc").innerHTML=str;
 		}
 	}
