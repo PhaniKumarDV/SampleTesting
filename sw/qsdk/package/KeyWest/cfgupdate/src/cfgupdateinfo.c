@@ -84,6 +84,40 @@ void kwn_sys_cmd_imp( const char* cmd, uint8_t* cmd_buf )
     return;
 }
 
+void kwn_bw_change()
+{
+    char cmd[50];
+    uint8_t cmd_buf[50];
+    long ullmt, dllmt;
+
+    /* Get Bandwidth */
+    memset(cmd, '\0', sizeof(cmd));
+    memset( cmd_buf, '\0', sizeof( cmd_buf ) );
+    sprintf(cmd,"uci get wireless.wifi1.htmode");
+    kwn_sys_cmd_imp( cmd, &cmd_buf[0] );
+
+    if( !strcmp( cmd_buf, "HT20" )  ) {
+        ullmt = 192000;
+        dllmt = 192000;
+    }
+    else if( !strcmp( cmd_buf, "HT40+" ) || !strcmp( cmd_buf, "HT40-") ) {
+        ullmt = 400000;
+        dllmt = 400000;
+    }
+    else if( !strcmp( cmd_buf, "HT80" )  ) {
+        ullmt = 867000;
+        dllmt = 867000;
+    }
+    else {
+        ullmt = 73000;
+        dllmt = 73000;
+    }
+    sprintf( cmd, "uci set wireless.@wifi-iface[1].ullmt='%d'", ullmt );
+    system( cmd );
+    sprintf( cmd, "uci set wireless.@wifi-iface[1].dllmt='%d'", dllmt );
+    system( cmd );
+}
+
 void kwn_reset_channel()
 {
 #define RUSSIA   5011
@@ -226,6 +260,8 @@ void cfg_set( char *type, char *value )
             break;
         case UCI_ID_RADIO1_BANDWIDTH:
             sprintf(cmd,"uci set wireless.wifi1.htmode='%s'",value);
+            system( cmd );
+            kwn_bw_change();
             break;
         case UCI_ID_RADIO1_CHANNEL:
             sprintf(cmd,"uci set wireless.wifi1.channel='%s'",value);

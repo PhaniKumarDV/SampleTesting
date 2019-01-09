@@ -1,7 +1,7 @@
 diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.c
 --- net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c	1970-01-01 05:30:00.000000000 +0530
-+++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.c	2019-01-09 15:47:06.677773081 +0530
-@@ -0,0 +1,5081 @@
++++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.c	2019-01-09 15:52:07.048862619 +0530
+@@ -0,0 +1,5115 @@
 +/****************************************************************************
 +*                                                                           *
 +*  File Name:           kwnmib.c                                           *
@@ -656,6 +656,39 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +    kwn_conv_str_to_ip( &res_str[0], &resaddr );
 +    res_ip = ntohl( resaddr );
 +    return;
++}
++
++void kwn_bw_change()
++{
++    char cmd[50];
++    long ullmt, dllmt;
++    
++    /* Get Bandwidth */
++    memset(cmd, '\0', sizeof(cmd));
++    memset( res_str, '\0', sizeof( res_str ) );
++    sprintf(cmd,"uci get wireless.wifi1.htmode");
++    kwn_sys_cmd( cmd, &res_str[0] );
++    
++    if( !strcmp( res_str, "HT20" )  ) {
++        ullmt = 192000;
++        dllmt = 192000;
++    }
++    else if( !strcmp( res_str, "HT40+" ) || !strcmp( res_str, "HT40-") ) {
++        ullmt = 400000;
++        dllmt = 400000;
++    }
++    else if( !strcmp( res_str, "HT80" )  ) {
++        ullmt = 867000;
++        dllmt = 867000;
++    }
++    else {
++        ullmt = 73000;
++        dllmt = 73000;
++    }
++    sprintf( cmd, "uci set wireless.@wifi-iface[1].ullmt='%d'", ullmt );
++    system( cmd );
++    sprintf( cmd, "uci set wireless.@wifi-iface[1].dllmt='%d'", dllmt );
++    system( cmd );
 +}
 +
 +void kwn_reset_channel()
@@ -3480,6 +3513,7 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +                    case KWN_WLAN_BANDWIDTH:
 +                        sprintf( cmd, "uci set wireless.wifi%d.htmode='%s'", ind, var_val );
 +                        system( cmd );
++                        kwn_bw_change();
 +                        break;
 +                    case KWN_WLAN_CHANNEL:
 +                        sprintf( cmd, "uci set wireless.wifi%d.channel='%s'", ind, var_val );

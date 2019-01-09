@@ -2400,15 +2400,15 @@ detect_qcawifi() {
 				ht_mode="HT20"
 				country_code="5016"
 				wds_mode="1"
-				ul_limit="887000"
-				dl_limit="887000"
+				ul_limit="867000"
+				dl_limit="867000"
 				mode_11=ac
 				dying_gasp=1;;
                         *11abgn/ac)
 				ht_mode="HT80"
 				country_code="5016"
-				ul_limit="887000"
-				dl_limit="887000"
+				ul_limit="867000"
+				dl_limit="867000"
 				wds_mode="1"
 				mode_11=ac
 				dying_gasp=1;;
