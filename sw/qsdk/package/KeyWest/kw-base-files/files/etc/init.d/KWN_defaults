@@ -326,7 +326,7 @@ start_service() {
         uci set tftp.http.optype='0'
     fi
 #VARIANT
-    uci set variant.variant.buildno='020119'
+    uci set variant.variant.buildno='090119'
     uci set variant.variant.model='1'
     uci set variant.variant.majnum='1'
     uci set variant.variant.minnum='0'
