@@ -87,8 +87,8 @@ function updateparam(value)
         <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=REQUEST_URI%>/config1"><%:5GHz Radio%></a></li>
         <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=REQUEST_URI%>/config2"><%:2.4GHz Radio%></a></li>
     </ul>
-    <fieldset class="cbi-section">
-       <form name="formTable">
+    <form name="formTable">
+      <fieldset class="cbi-section" id="bridge">
         <h2><a id="content" name="content"><%:IP Configuration%></a></h2>
           <div class="cbi-value">
             <label class="cbi-value-title">Address Type</label>
@@ -123,6 +123,41 @@ function updateparam(value)
             <div class="cbi-value-field" id="gateway">
             </div>
           </div>
+      </fieldset>
+      <fieldset class="cbi-section" id="routingwifi">
+        <br>
+        <legend style="width:96%; padding:10px 0px 10px 0px; border-bottom:1px solid #e5e5e5;">Wireless</legend><br><br>
+          <div class="cbi-value">
+            <label class="cbi-value-title">IP Address</label>
+            <div class="cbi-value-field" id="wifi_ip">
+            </div>
+          </div>
+          <div class="cbi-value">
+            <label class="cbi-value-title">Subnet Mask</label>
+            <div class="cbi-value-field" id="wifi_mask">
+            </div>
+          </div>
+          <div class="cbi-value">
+            <label class="cbi-value-title">Gateway</label>
+            <div class="cbi-value-field" id="wifi_gateway">
+            </div>
+          </div>
+      </fieldset>
+      <fieldset class="cbi-section" id="routingeth">
+        <br>
+        <legend style="width:96%; padding:10px 0px 10px 0px; border-bottom:1px solid #e5e5e5;">Ethernet</legend><br><br>
+          <div class="cbi-value">
+            <label class="cbi-value-title">IP Address</label>
+            <div class="cbi-value-field" id="eth_ip">
+            </div>
+          </div>
+          <div class="cbi-value">
+            <label class="cbi-value-title">Subnet Mask</label>
+            <div class="cbi-value-field" id="eth_mask">
+            </div>
+          </div>
+      </fieldset>
+      <fieldset class="cbi-section">
         <h2><a id="content" name="content"><%:System%></a></h2>
           <div class="cbi-value">
             <label class="cbi-value-title">Customer Name</label>
@@ -136,8 +171,8 @@ function updateparam(value)
               <input type="text" name="14" class="cbi-input-select" value="<%=uciget('uci get wireless.wifi1.linkid')%>" >
             </div>
           </div>
+      </fieldset>
     </form>
-    </fieldset>
 </div>
 <div class="cbi-page-actions left">
 <div id="spin"></div>
@@ -148,10 +183,35 @@ var type = "<%=uciget('uci get network.lan.proto')%>";
 updateparam(type);
 save_def_value();
 var mode = "<%=uciget('uci get wireless.@wifi-iface[1].mode')%>";
+var route_status = "<%=uciget('uci get network.param.routestatus')%>";
 if( mode == "ap" )
+{
     document.getElementById("linkid").style.display = "none";
+    document.getElementById("bridge").style.display = "block";
+    document.getElementById("routingwifi").style.display = "none";
+    document.getElementById("routingeth").style.display = "none";
+}
 else
+{
     document.getElementById("linkid").style.display = "block";
+    if( route_status == "1")
+    {
+        document.getElementById("bridge").style.display = "block";
+        document.getElementById("routingwifi").style.display = "none";
+        document.getElementById("routingeth").style.display = "none";
+    }
+    else
+    {
+        document.getElementById("bridge").style.display = "none";
+        document.getElementById("routingwifi").style.display = "block";
+        document.getElementById("routingeth").style.display = "block";
+        document.getElementById("wifi_ip").innerHTML="<input type='text' name='144' class='cbi-input-select' value='<%=uciget('uci get network.kwath.ipaddr')%>' >";
+        document.getElementById("wifi_mask").innerHTML="<input type='text' name='146' class='cbi-input-select' value='<%=uciget('uci get network.kwath.netmask')%>' >";
+        document.getElementById("wifi_gateway").innerHTML="<input type='text' name='147' class='cbi-input-select' value='<%=uciget('uci get network.kwath.gateway')%>' >";
+        document.getElementById("eth_ip").innerHTML="<input type='text' name='148' class='cbi-input-select' value='<%=uciget('uci get network.kweth.ipaddr')%>' >";
+        document.getElementById("eth_mask").innerHTML="<input type='text' name='150' class='cbi-input-select' value='<%=uciget('uci get network.kweth.netmask')%>' >";
+    }
+}
 </script>
 </div>
 <%+footer%>

@@ -151,6 +151,9 @@ var eth1_speed = "<%=eth1_speed %>";
 var eth1_duplex = "<%=eth1_duplex %>";
 var cablen = "<%=cablen %>";
 var dns = "<%=uciget('uci get network.lan.dns')%>";
+var network_mode = "<%=uciget('uci get network.param.routestatus')%>";
+var route_ip = "<%=uciget('uci get network.kweth.ipaddr')%>";
+var route_mask = "<%=uciget('uci get network.kweth.netmask')%>";
 var dhcp = "<%=uciget('uci get network.lan.proto')%>";
 var country = "<%=uciget('uci get wireless.wifi1.country')%>";
 var shaping = "<%=uciget('uci get wireless.@wifi-iface[1].shaping')%>";
@@ -170,6 +173,7 @@ eth1_duplex = eth1_duplex[1];
 ullmt = ullmt > 1000 ? (ullmt / 1000) : 0;
 dllmt = dllmt > 1000 ? (dllmt / 1000) : 0;
 shaping = ( shaping == 0 ? "Disabled" : "Enabled" );
+route = ( network_mode == 1 ? "Disabled" : "Enabled" );
 dhcp = ( dhcp == "static" ? "Disabled" : "Enabled" );
 if( dns == "" )
     dns = "0.0.0.0";
@@ -190,9 +194,9 @@ var mask = "0.0.0.0";
 if( val != "" )
 {
     ip = val[1].split(":");
-    ip = ip[1];
+    ip = ( network_mode == 1 ? ip[1] : route_ip );
     mask = val[5].split(":");
-    mask = mask[1]
+    mask = ( network_mode == 1 ? mask[1] : route_mask );
 }
 
 	function progressbar(v, m)
@@ -574,7 +578,7 @@ function get_log()
 		<tr><td width="35%"><%:Gateway IP%></td><td><script type="text/javascript">document.write(gw)</script></td></tr>
 		<tr><td width="35%"><%:DNS IP%></td><td><script type="text/javascript">document.write(dns)</script></td></tr>
 		<tr><td width="35%"><%:DHCP Client%></td><td><script type="text/javascript">document.write(dhcp)</script></td></tr>
-		<tr><td width="35%"><%:Routing Mode%></td><td>Disabled</td></tr>
+		<tr><td width="35%"><%:Routing Mode%></td><td><script type="text/javascript">document.write(route)</script></td></tr>
 		<tr><td width="35%"><%:Traffic Shaping%></td><td><script type="text/javascript">document.write(shaping)</script></td></tr>
 		<tr><td width="35%"><%:Uplink Limit%></td><td><script type="text/javascript">document.write(ullmt)</script>&nbsp;Mbps</td></tr>
 		<tr><td width="35%"><%:Downlink Limit%></td><td><script type="text/javascript">document.write(dllmt)</script>&nbsp;Mbps</td></tr>

@@ -172,7 +172,19 @@ enum uci_cfg_id {
     /* System Info */
     UCI_ID_SYSTEM_LOCATION = 139,
     UCI_ID_SYSTEM_CONTACT = 140,
-    UCI_ID_SYSTEM_EMAIL = 141
+    UCI_ID_SYSTEM_EMAIL = 141,
+    /* Routing Params */
+    UCI_ID_ROUTING_STATUS = 142,
+    UCI_ID_NAT_STATUS = 143,
+    /* Wireless Routing Params */
+    UCI_ID_ROUTE_WIFI_IP = 144,
+    UCI_ID_ROUTE_WIFI_ADDR_TYPE = 145,
+    UCI_ID_ROUTE_WIFI_NETMASK = 146,
+    UCI_ID_ROUTE_WIFI_GATEWAY = 147,
+    /* Ethernet Routing Params */
+    UCI_ID_ROUTE_ETH_IP = 148,
+    UCI_ID_ROUTE_ETH_ADDR_TYPE = 149,
+    UCI_ID_ROUTE_ETH_NETMASK = 150
 };
 
 typedef struct

@@ -78,31 +78,53 @@ function getoptions( list, value )
         document.write("</option>");
     }
 }
+function updatemode(value)
+{
+    if( value == "1" )
+    {   
+        document.getElementById("bridgemode").style.display="block";
+        document.getElementById("routingwifi").style.display="none";
+        document.getElementById("routingeth").style.display="none";
+        document.getElementById("nat").style.display="none";
+    }
+    else
+    {
+        document.getElementById("bridgemode").style.display="none";
+        document.getElementById("routingwifi").style.display="block";
+        document.getElementById("routingeth").style.display="block";
+        document.getElementById("nat").style.display="block";
+        document.getElementById("wifi_ip").innerHTML="<input type='text' name='144' class='cbi-input-select' value='<%=uciget('uci get network.kwath.ipaddr')%>' >";
+        document.getElementById("wifi_mask").innerHTML="<input type='text' name='146' class='cbi-input-select' value='<%=uciget('uci get network.kwath.netmask')%>' >";
+        document.getElementById("wifi_gateway").innerHTML="<input type='text' name='147' class='cbi-input-select' value='<%=uciget('uci get network.kwath.gateway')%>' >";
+        document.getElementById("eth_ip").innerHTML="<input type='text' name='148' class='cbi-input-select' value='<%=uciget('uci get network.kweth.ipaddr')%>' >";
+        document.getElementById("eth_mask").innerHTML="<input type='text' name='150' class='cbi-input-select' value='<%=uciget('uci get network.kweth.netmask')%>' >";
+    }
+}
 function updateparam(value)
 {
     var dnsip1 = "0.0.0.0", dnsip2 = "0.0.0.0";
     var dns_val = "<%=uciget('uci get network.lan.dns')%>"
     if ( dns_val != "" )
     {
-            var val = dns_val.split(" ");
-            if( val[0] != undefined )
-            {
-                if ( val[0] != "" )
+        var val = dns_val.split(" ");
+        if( val[0] != undefined )
+        {
+            if ( val[0] != "" )
                     dnsip1 = val[0];
-            }
-            if( val[1] != undefined )
-            {
-                if ( val[1] != "" )
-                    dnsip2 = val[1];
-            }
+        }
+        if( val[1] != undefined )
+        {
+            if ( val[1] != "" )
+                dnsip2 = val[1];
+        }
     }
     document.getElementById("dns1").value = dnsip1;
     document.getElementById("dns2").value = dnsip2;
     if( value == "static" )
     {
         document.getElementById("ip").innerHTML = "<input type='text' name='23' class='cbi-input-select' value='<%=uciget('uci get network.lan.ipaddr')%>' >";
-        document.getElementById("mask").innerHTML = "<input type='text' name='25' class='cbi-input-select' value='<%=uciget('uci get network.lan.netmask')%>' >"
-        document.getElementById("gateway").innerHTML = "<input type='text' name='26' class='cbi-input-select' value='<%=uciget('uci get network.lan.gateway')%>' >"
+        document.getElementById("mask").innerHTML = "<input type='text' name='25' class='cbi-input-select' value='<%=uciget('uci get network.lan.netmask')%>' >";
+        document.getElementById("gateway").innerHTML = "<input type='text' name='26' class='cbi-input-select' value='<%=uciget('uci get network.lan.gateway')%>' >";
     }
     else
     {
@@ -125,8 +147,48 @@ function updateparam(value)
 </script>
 <h2><a id="content" name="content"><%: IP Configuration%></a></h2>
 <div class="cbi-map">
-    <fieldset class="cbi-section">
-       <form name="formTable">
+    <form name="formTable">
+        <fieldset class="cbi-section">
+          <div class="cbi-value">
+            <label class="cbi-value-title">Network Mode</label>
+            <div class="cbi-value-field">
+              <select class="cbi-input-select" id="routeopt" name="142" onchange="updatemode(this.value)">
+                 <script type="text/javascript">
+                 var mode = "<%=uciget('uci get network.param.routestatus')%>";
+                 document.write("<option value='1' ");
+                 if( mode == "1" )
+                     document.write(" selected");
+                 document.write(">Bridge</option>");
+                 document.write("<option value='2' ");
+                 if( mode == "2" )
+                     document.write(" selected");
+                 document.write(">Routing</option>");
+                 </script>
+              </select>
+            </div>
+          </div>
+        </fieldset>
+        <fieldset class="cbi-section" id="nat">
+          <div class="cbi-value">
+            <label class="cbi-value-title">Nat Status</label>
+            <div class="cbi-value-field">
+              <select class="cbi-input-select" name="143">
+                 <script type="text/javascript">
+                 var mode = "<%=uciget('uci get network.param.natstatus')%>";
+                 document.write("<option value='0' ");
+                 if( mode == "0" )
+                     document.write(" selected");
+                 document.write(">Disable</option>");
+                 document.write("<option value='1' ");
+                 if( mode == "1" )
+                     document.write(" selected");
+                 document.write(">Enable</option>");
+                 </script>
+              </select>
+            </div>
+          </div>
+        </fieldset>
+        <fieldset class="cbi-section" id="bridgemode">
           <div class="cbi-value">
             <label class="cbi-value-title">Address Type</label>
             <div class="cbi-value-field">
@@ -160,20 +222,57 @@ function updateparam(value)
             <div class="cbi-value-field" id="gateway">
             </div>
           </div>
+        </fieldset>
+        <fieldset class="cbi-section" id="routingwifi">
+        <br>
+        <legend style="width:96%; padding:10px 0px 10px 0px; border-bottom:1px solid #e5e5e5;">Wireless</legend><br><br>
           <div class="cbi-value">
-            <label class="cbi-value-title">DNS Primary Server IP Address</label>
+            <label class="cbi-value-title">IP Address</label>
+            <div class="cbi-value-field" id="wifi_ip">
+            </div>
+          </div>
+          <div class="cbi-value">
+            <label class="cbi-value-title">Subnet Mask</label>
+            <div class="cbi-value-field" id="wifi_mask">
+            </div>
+          </div>
+          <div class="cbi-value">
+            <label class="cbi-value-title">Gateway</label>
+            <div class="cbi-value-field" id="wifi_gateway">
+            </div>
+          </div>
+        </fieldset>
+        <fieldset class="cbi-section" id="routingeth">
+        <br>
+        <legend style="width:96%; padding:10px 0px 10px 0px; border-bottom:1px solid #e5e5e5;">Ethernet</legend><br><br>
+          <div class="cbi-value">
+            <label class="cbi-value-title">IP Address</label>
+            <div class="cbi-value-field" id="eth_ip">
+            </div>
+          </div>
+          <div class="cbi-value">
+            <label class="cbi-value-title">Subnet Mask</label>
+            <div class="cbi-value-field" id="eth_mask">
+            </div>
+          </div>
+        </fieldset>
+        <fieldset class="cbi-section">
+          <br>
+          <legend style="width:96%; padding:10px 0px 10px 0px; border-bottom:1px solid #e5e5e5;">DNS</legend><br><br>
+          <div class="cbi-value">
+            <label class="cbi-value-title">Primary DNS</label>
             <div class="cbi-value-field">
             <input type="text" id="dns1" name="27" class="cbi-input-select" value="" >
             </div>
           </div>
           <div class="cbi-value">
-            <label class="cbi-value-title">DNS Secondary Server IP Address</label>
+            <label class="cbi-value-title">Secondary DNS</label>
             <div class="cbi-value-field">
             <input type="text" id="dns2" name="27" class="cbi-input-select" value="" >
             </div>
           </div>
+        </fieldset>
     </form>
-    </fieldset>
 </div>
 <div class="cbi-page-actions left">
 <div id="spin"></div>
@@ -182,7 +281,12 @@ function updateparam(value)
 <script type="text/javascript">
 var type = "<%=uciget('uci get network.lan.proto')%>";
 updateparam(type);
+var dev_mode = "<%=uciget('uci get network.param.routestatus')%>";
+updatemode(dev_mode);
 save_def_value();
+var mode = "<%=uciget('uci get wireless.@wifi-iface[1].mode')%>";
+if( mode == "ap" )
+    document.getElementById("routeopt").disabled="true";
 </script>
 </div>
 <%+footer%>

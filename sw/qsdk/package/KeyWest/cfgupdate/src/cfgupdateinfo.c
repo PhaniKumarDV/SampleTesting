@@ -696,6 +696,33 @@ void cfg_set( char *type, char *value )
         case UCI_ID_SYSTEM_EMAIL:
             sprintf(cmd,"uci set system.@system[0].email='%s'",value);
             break;
+        case UCI_ID_ROUTING_STATUS:
+            sprintf(cmd,"uci set network.param.routestatus='%s'",value);
+            break;
+        case UCI_ID_NAT_STATUS:
+            sprintf(cmd,"uci set network.param.natstatus='%s'",value);
+            break;
+        case UCI_ID_ROUTE_WIFI_IP:
+            sprintf(cmd,"uci set network.kwath.ipaddr='%s'",value);
+            break;
+        case UCI_ID_ROUTE_WIFI_ADDR_TYPE:
+            sprintf(cmd,"uci set network.kwath.proto='%s'",value);
+            break;
+        case UCI_ID_ROUTE_WIFI_NETMASK:
+            sprintf(cmd,"uci set network.kwath.netmask='%s'",value);
+            break;
+        case UCI_ID_ROUTE_WIFI_GATEWAY:
+            sprintf(cmd,"uci set network.kwath.gateway='%s'",value);
+            break;
+        case UCI_ID_ROUTE_ETH_IP:
+            sprintf(cmd,"uci set network.kweth.ipaddr ='%s'",value);
+            break;
+        case UCI_ID_ROUTE_ETH_ADDR_TYPE:
+            sprintf(cmd,"uci set network.kweth.proto='%s'",value);
+            break;
+        case UCI_ID_ROUTE_ETH_NETMASK:
+            sprintf(cmd,"uci set network.kweth.netmask='%s'",value);
+            break;
         default:
             break;
     }

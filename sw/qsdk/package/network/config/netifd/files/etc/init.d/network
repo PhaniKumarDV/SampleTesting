@@ -5,6 +5,52 @@ STOP=90
 
 USE_PROCD=1
 
+kwn_routing() {
+    devmode=$(uci get wireless.@wifi-iface[1].mode)
+    routestatus=$(uci get network.param.routestatus)
+    natstatus=$(uci get network.param.natstatus)
+    athip=$(uci get network.kwath.ipaddr)
+    athgip=$(uci get network.kwath.gateway)
+    athmask=$(uci get network.kwath.netmask)
+    ethip=$(uci get network.kweth.ipaddr)
+    ethmask=$(uci get network.kweth.netmask)
+    langip=$(uci get network.lan.gateway)
+    if [ "$devmode" == "ap" ]
+    then
+        uci set network.param.routestatus='1'
+        uci set network.param.natstatus='0'
+        ifconfig br-kweth down
+        brctl delbr br-kweth
+        iptables -F
+    else
+        if [ $routestatus -eq "2" ]
+        then
+            uci set network.lan.proto='static'
+            brctl delif br-lan eth0
+            brctl addbr br-kweth
+            brctl addif br-kweth eth0
+            ifconfig br-lan $athip netmask $athmask
+            route del -net 0.0.0.0 gw $langip netmask 0.0.0.0 dev br-lan
+            route add default gw $athgip br-lan
+            ifconfig br-kweth $ethip netmask $ethmask
+
+            if [ $natstatus -eq "1" ]
+            then
+                iptables -F
+                iptables -t nat -A POSTROUTING -o br-kweth -j MASQUERADE
+                iptables -A FORWARD -i br-kweth -o br-lan -m state --state RELATED,ESTABLISHED -j ACCEPT
+                iptables -A FORWARD -i br-lan -o br-kweth -j ACCEPT
+            else
+                iptables -F
+            fi
+        else
+            ifconfig br-kweth down
+            brctl delbr br-kweth
+            iptables -F
+        fi
+    fi
+}
+
 init_switch() {
 	setup_switch() { return 0; }
 
@@ -60,6 +106,7 @@ stop() {
 service_running() {
 	ubus -t 30 wait_for network.interface
 	/sbin/wifi reload_legacy
+    kwn_routing
 }
 
 validate_atm_bridge_section()
