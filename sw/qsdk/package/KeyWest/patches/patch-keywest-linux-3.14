@@ -174,6 +174,22 @@ diff -urN linux-3.14-org/kernel/timeconst.bc linux-3.14-mod/kernel/timeconst.bc
  
  	if (hz < 2) {
  		print "#error Totally bogus HZ value!\n"
+diff -urN linux-3.14-org/net/bridge/br_device.c linux-3.14-mod/net/bridge/br_device.c
+--- linux-3.14-org/net/bridge/br_device.c	2018-08-13 14:08:30.960588000 +0530
++++ linux-3.14-mod/net/bridge/br_device.c	2019-01-09 16:09:15.501544852 +0530
+@@ -64,10 +64,12 @@
+ 	if (is_broadcast_ether_addr(dest))
+ 		br_flood_deliver(br, skb, false);
+ 	else if (is_multicast_ether_addr(dest)) {
++#if 0 /* TODO: KWN Multicast Packet handling */
+ 		br_multicast_handle_hook_t *multicast_handle_hook =
+ 			rcu_dereference(br_multicast_handle_hook);
+ 		if (!__br_get(multicast_handle_hook, true, NULL, skb))
+ 			goto out;
++#endif
+ 
+ 		if (unlikely(netpoll_tx_running(dev))) {
+ 			br_flood_deliver(br, skb, false);
 diff -urN linux-3.14-org/net/bridge/br_fdb.c linux-3.14-mod/net/bridge/br_fdb.c
 --- linux-3.14-org/net/bridge/br_fdb.c	2018-08-13 14:08:30.960588000 +0530
 +++ linux-3.14-mod/net/bridge/br_fdb.c	2018-08-13 15:34:28.040418211 +0530
@@ -199,6 +215,46 @@ diff -urN linux-3.14-org/net/bridge/br_fdb.c linux-3.14-mod/net/bridge/br_fdb.c
  /* Flush all entries referring to a specific port.
   * if do_all is set also flush static entries
   */
+diff -urN linux-3.14-org/net/bridge/br_input.c linux-3.14-mod/net/bridge/br_input.c
+--- linux-3.14-org/net/bridge/br_input.c	2018-08-13 14:08:30.960588000 +0530
++++ linux-3.14-mod/net/bridge/br_input.c	2019-01-09 16:09:11.077559719 +0530
+@@ -176,10 +176,12 @@
+ 		skb2 = skb;
+ 		unicast = false;
+ 	} else if (is_multicast_ether_addr(dest)) {
++#if 0 /* TODO: KWN Multicast Packet handling */
+ 		br_multicast_handle_hook_t *multicast_handle_hook =
+ 			rcu_dereference(br_multicast_handle_hook);
+ 		if (!__br_get(multicast_handle_hook, true, p, skb))
+ 			goto out;
++#endif
+ 
+ 		mdst = br_mdb_get(br, skb, vid);
+ 		if ((mdst || BR_INPUT_SKB_CB_MROUTERS_ONLY(skb)) &&
+@@ -196,9 +198,11 @@
+ 
+ 		unicast = false;
+ 		br->dev->stats.multicast++;
++#if 0 /* TODO: KWN Multicast Packet handling */
+ 	} else if ((pdst = __br_get(get_dst_hook, NULL, p, &skb))) {
+ 		if (!skb)
+ 			goto out;
++#endif
+ 	} else if ((p->flags & BR_ISOLATE_MODE) ||
+ 		   ((dst = __br_fdb_get(br, dest, vid)) && dst->is_local)) {
+ 		skb2 = skb;
+@@ -212,9 +216,11 @@
+ 			pdst = dst->dst;
+ 		}
+ 
++#if 0 /* TODO: KWN Multicast Packet handling */
+ 		if (pdst)
+ 			br_forward(pdst, skb, skb2);
+ 		else
++#endif
+ 			br_flood_forward(br, skb, skb2, unicast);
+ 	}
+ 
 diff -urN linux-3.14-org/net/bridge/br_ioctl.c linux-3.14-mod/net/bridge/br_ioctl.c
 --- linux-3.14-org/net/bridge/br_ioctl.c	2018-08-13 14:08:30.960588000 +0530
 +++ linux-3.14-mod/net/bridge/br_ioctl.c	2018-08-13 15:34:28.044418211 +0530
