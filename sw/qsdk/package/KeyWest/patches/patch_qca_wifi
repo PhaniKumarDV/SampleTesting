@@ -3664,7 +3664,7 @@ diff -urN qca-wifi-org/umac/base/ieee80211_config.c qca-wifi-mod/umac/base/ieee8
      break;
 diff -urN qca-wifi-org/umac/base/ieee80211_node.c qca-wifi-mod/umac/base/ieee80211_node.c
 --- qca-wifi-org/umac/base/ieee80211_node.c	2018-06-08 11:00:49.000000000 +0530
-+++ qca-wifi-mod/umac/base/ieee80211_node.c	2019-01-08 15:57:06.181305558 +0530
++++ qca-wifi-mod/umac/base/ieee80211_node.c	2019-01-09 14:09:33.177140156 +0530
 @@ -142,6 +142,102 @@
      struct ieee80211_node *nodes[IEEE80211_512_AID];
  };
@@ -3768,7 +3768,7 @@ diff -urN qca-wifi-org/umac/base/ieee80211_node.c qca-wifi-mod/umac/base/ieee802
  #define IEEE80211_NODE_ITER_F_ASSOC_STA     0x1
  #define IEEE80211_NODE_ITER_F_UNASSOC_STA   0x2
  static void
-@@ -151,10 +247,724 @@
+@@ -151,10 +247,727 @@
  ieee80211_node_remove_ipv6_by_node(struct ieee80211_node_table *nt, struct ieee80211_node *ni);
  #endif
  
@@ -4228,15 +4228,18 @@ diff -urN qca-wifi-org/umac/base/ieee80211_node.c qca-wifi-mod/umac/base/ieee802
 +    printk(": DDRS: Min %d Max %d Cur %d ",ni->kwn_profile_cfg.txparam.min_rate, ni->kwn_profile_cfg.txparam.max_rate, ni->kwn_profile_cfg.curr_rate);
 +    printk(": DDRS: Remote SNR A1:%d A2:%d Rate %d\n",ni->kwn_snr_avg.remote_snr_avg[0],ni->kwn_snr_avg.remote_snr_avg[1],ni->kwn_txrate);
 +#endif
-+    if( ( ieee80211com_get_tx_chainmask( ic ) != KWN_CHAINMASK_A1A2 || 
++    /* Spatial stream should be changed to Single if 1*1 chain at any end */
++    if( ni->kwn_remote_tx_chainmask != 0 ) {
++        if( ( ieee80211com_get_tx_chainmask( ic ) != KWN_CHAINMASK_A1A2 || 
 +                    ni->kwn_remote_tx_chainmask != KWN_CHAINMASK_A1A2 ) && 
-+            ( ni->kwn_profile_cfg.txparam.spatial_stream != KWN_STREAM_SINGLE ) ) {
-+        printk(": DDRS: Changed Spatial stream to Single Stream. Local Chainmask %d Remote Chainmask %d \n",
-+                ieee80211com_get_tx_chainmask( ic ), ni->kwn_remote_tx_chainmask);
-+        ni->kwn_profile_cfg.txparam.spatial_stream = KWN_STREAM_SINGLE;
-+        kwn_get_maxrate( vap, &max_srate, &max_rate );
-+        ni->kwn_profile_cfg.txparam.min_rate = 0;
-+        ni->kwn_profile_cfg.txparam.max_rate = max_srate;
++                ( ni->kwn_profile_cfg.txparam.spatial_stream != KWN_STREAM_SINGLE ) ) {
++            printk(": DDRS: Changed Spatial stream to Single Stream. Local Chainmask %d Remote Chainmask %d \n",
++                    ieee80211com_get_tx_chainmask( ic ), ni->kwn_remote_tx_chainmask);
++            ni->kwn_profile_cfg.txparam.spatial_stream = KWN_STREAM_SINGLE;
++            kwn_get_maxrate( vap, &max_srate, &max_rate );
++            ni->kwn_profile_cfg.txparam.min_rate = 0;
++            ni->kwn_profile_cfg.txparam.max_rate = max_srate;
++        }
 +    }
 +    if( ni->kwn_profile_cfg.txparam.min_rate > ni->kwn_profile_cfg.txparam.max_rate ) {
 +#ifdef KWN_DDRS_PRINT
@@ -4494,7 +4497,7 @@ diff -urN qca-wifi-org/umac/base/ieee80211_node.c qca-wifi-mod/umac/base/ieee802
  static struct ieee80211_node *
  node_alloc(struct ieee80211vap *vap, const u_int8_t *macaddr, bool tmpnode)
  {
-@@ -168,7 +978,7 @@
+@@ -168,7 +981,7 @@
          return NULL;
      }
      OS_MEMZERO(ni, sizeof(struct ieee80211_node));
@@ -4503,7 +4506,7 @@ diff -urN qca-wifi-org/umac/base/ieee80211_node.c qca-wifi-mod/umac/base/ieee802
  #if IEEE80211_DEBUG_REFCNT
      ni->trace = (struct node_trace_all *)OS_MALLOC(ic->ic_osdev, sizeof(struct node_trace_all), GFP_KERNEL);
      if (ni->trace == NULL) {
-@@ -266,6 +1076,25 @@
+@@ -266,6 +1079,25 @@
      ni->ni_disassoc_tx_xretry = 0;
      ni->ni_deauth_tx_xretry = 0;
  
@@ -4529,7 +4532,7 @@ diff -urN qca-wifi-org/umac/base/ieee80211_node.c qca-wifi-mod/umac/base/ieee802
  
      ieee80211_ref_node(ni);     /* mark referenced */
  
-@@ -442,6 +1271,11 @@
+@@ -442,6 +1274,11 @@
          }
      }
  #endif
@@ -4541,7 +4544,7 @@ diff -urN qca-wifi-org/umac/base/ieee80211_node.c qca-wifi-mod/umac/base/ieee802
      ni->is_extender_client = 0;
  
      ieee80211node_clear_whc_rept_info(ni);
-@@ -1975,6 +2809,10 @@
+@@ -1975,6 +2812,10 @@
      bool node_reclaimed=false;
      OS_BEACON_DECLARE_AND_RESET_VAR(flags);
  
