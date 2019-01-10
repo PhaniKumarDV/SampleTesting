@@ -751,7 +751,7 @@ void cfg_set( char *type, char *value )
             sprintf(cmd,"uci set network.kwath.gateway='%s'",value);
             break;
         case UCI_ID_ROUTE_ETH_IP:
-            sprintf(cmd,"uci set network.kweth.ipaddr ='%s'",value);
+            sprintf(cmd,"uci set network.kweth.ipaddr='%s'",value);
             break;
         case UCI_ID_ROUTE_ETH_ADDR_TYPE:
             sprintf(cmd,"uci set network.kweth.proto='%s'",value);

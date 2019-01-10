@@ -37,9 +37,9 @@ kwn_routing() {
             if [ $natstatus -eq "1" ]
             then
                 iptables -F
-                iptables -t nat -A POSTROUTING -o br-kweth -j MASQUERADE
-                iptables -A FORWARD -i br-kweth -o br-lan -m state --state RELATED,ESTABLISHED -j ACCEPT
-                iptables -A FORWARD -i br-lan -o br-kweth -j ACCEPT
+                iptables -t nat -A POSTROUTING -o br-lan -j MASQUERADE
+                iptables -A FORWARD -i br-lan -o br-kweth -m state --state RELATED,ESTABLISHED -j ACCEPT
+                iptables -A FORWARD -i br-kweth -o br-lan -j ACCEPT
             else
                 iptables -F
             fi
