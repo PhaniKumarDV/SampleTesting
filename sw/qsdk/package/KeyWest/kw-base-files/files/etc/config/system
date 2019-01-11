@@ -10,7 +10,7 @@ config system
     option location 'location'
     option contact '1234567890'
     option email 'example@mail.com'
-
+    option bstid 'base_station_id'
 
 config timeserver ntp
 	#list server	0.openwrt.pool.ntp.org

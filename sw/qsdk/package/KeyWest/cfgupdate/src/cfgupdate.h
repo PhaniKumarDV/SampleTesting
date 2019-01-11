@@ -179,7 +179,9 @@ enum uci_cfg_id {
     /* Ethernet Routing Params */
     UCI_ID_ROUTE_ETH_IP = 144,
     UCI_ID_ROUTE_ETH_ADDR_TYPE = 145,
-    UCI_ID_ROUTE_ETH_NETMASK = 146
+    UCI_ID_ROUTE_ETH_NETMASK = 146,
+    /* System Info */
+    UCI_ID_SYSTEM_BASESTATION_ID = 147
 };
 
 typedef struct

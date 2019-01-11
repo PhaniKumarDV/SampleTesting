@@ -11,6 +11,7 @@
                 return str
         end
 -%>
+
 <%+header%>
 <div class="page-content">
 <script type="text/javascript" src="<%=resource%>/cbi.js"></script>
@@ -50,58 +51,54 @@ function save_value()
 	    }
     );
 }
-function updateint()
-{
-    if( document.getElementById("int2").checked == "1" )
-        document.getElementById("int1").value = 1;
-    else
-        document.getElementById("int1").value = 0;
-}
 </script>
 <h2><a id="content" name="content"><%: System Configuration%></a></h2>
 <div class="cbi-map">
     <ul class="cbi-tabmenu">
         <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=luci.dispatcher.build_url("admin/system/system")%>"><%:General%></a></li>
-        <li style="margin-right:4px" class="cbi-tab"><a href="#"><%:Logging%></a></li>
-        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="location"><%:Location%></a></li>
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="logging"><%:Logging%></a></li>
+        <li style="margin-right:4px" class="cbi-tab"><a href="#"><%:Location%></a></li>
     </ul>
-        <h2><a id="content" name="content"><%:System Log%></a></h2>
-    <fieldset class="cbi-section">
-       <form name="formTable">
+    <form name="formTable">
+      <fieldset class="cbi-section">
           <div class="cbi-value">
-            <label class="cbi-value-title">Log Server</label>
+            <label class="cbi-value-title">Customer Name</label>
             <div class="cbi-value-field">
-              <input type="text" name="66" class="cbi-input-select" value="<%=uciget('uci get system.@system[0].log_ip')%>" >
+              <input type="text" name="13" class="cbi-input-select" value="<%=uciget('uci get wireless.wifi1.customername')%>" >
             </div>
           </div>
           <div class="cbi-value">
-            <label class="cbi-value-title">Log Server Port</label>
+            <label class="cbi-value-title">Customer Location</label>
             <div class="cbi-value-field">
-              <input type="text" name="67" class="cbi-input-select" value="<%=uciget('uci get system.@system[0].log_port')%>" >
-            </div>
-          </div>
-             <h2><a id="content" name="content"><%:Temperature Log%></a></h2>
-          <div class="cbi-value">
-            <label class="cbi-value-title">Enable Temperature Log</label>
-            <div style="display:none"><input type="text" id="int1" name="68" value="<%=uciget('uci get system.@system[0].templogstatus')%>"></div>
-            <div class="cbi-value-field">
-                 <script type="text/javascript">
-                 var interval = "<%=uciget('uci get system.@system[0].templogstatus')%>";
-                 document.write("<input type='checkbox' ");
-                 if( interval == 1 )
-                     document.write(" checked");
-                 document.write(" id='int2' class='cibi-input-select' onchange='updateint()' >");
-              </script>
+              <input type="text" name="139" class="cbi-input-select" value="<%=uciget('uci get system.@system[0].location')%>" >
             </div>
           </div>
           <div class="cbi-value">
-            <label class="cbi-value-title">Temperature Log Interval</label>
+            <label class="cbi-value-title">Customer Email</label>
             <div class="cbi-value-field">
-              <input type="text" name="69" class="cbi-input-select" value="<%=uciget('uci get system.@system[0].temploginterval')%>" >&nbsp;sec
+              <input type="text" name="141" class="cbi-input-select" value="<%=uciget('uci get system.@system[0].email')%>" >
             </div>
           </div>
-        </form>
-        </fieldset>
+          <div class="cbi-value">
+            <label class="cbi-value-title">Customer Phone</label>
+            <div class="cbi-value-field">
+              <input type="text" name="140" class="cbi-input-select" value="<%=uciget('uci get system.@system[0].contact')%>" >
+            </div>
+          </div>
+          <div class="cbi-value">
+            <label class="cbi-value-title">Base Station ID</label>
+            <div class="cbi-value-field">
+              <input type="text" name="147" class="cbi-input-select" value="<%=uciget('uci get system.@system[0].bstid')%>" >
+            </div>
+          </div>
+          <div class="cbi-value" id="linkid">
+            <label class="cbi-value-title">Link Id</label>
+            <div class="cbi-value-field">
+              <input type="text" name="14" class="cbi-input-select" value="<%=uciget('uci get wireless.wifi1.linkid')%>" >
+            </div>
+          </div>
+      </fieldset>
+    </form>
 </div>
 <div class="cbi-page-actions left">
 <div id="spin"></div>

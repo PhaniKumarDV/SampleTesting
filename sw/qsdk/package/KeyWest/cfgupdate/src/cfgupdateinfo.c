@@ -313,7 +313,7 @@ void kwn_reset_nwkmode_params()
     }
 }
 
-void kwn_reset_radioparams()
+void kwn_radiomode_change()
 {
     char cmd[100];
     uint8_t cmd_buf[10];
@@ -338,6 +338,9 @@ void kwn_reset_radioparams()
         kwn_reset_nwkmode_params();
     }
     kwn_reset_channel();
+    /* Reset Vlan */
+    system("uci set vlan.vlan.status='1'");
+    system("uci set vlan.vlan.mode='0'");
 }
 
 void cfg_set( char *type, char *value )
@@ -355,7 +358,7 @@ void cfg_set( char *type, char *value )
         case UCI_ID_RADIO1_MODE:
             sprintf(cmd,"uci set wireless.@wifi-iface[1].mode='%s'",value);
             system( cmd );
-            kwn_reset_radioparams();
+            kwn_radiomode_change();
             break;
         case UCI_ID_RADIO1_SSID:
             sprintf(cmd,"uci set wireless.@wifi-iface[1].ssid='%s'",value);
@@ -861,6 +864,9 @@ void cfg_set( char *type, char *value )
             break;
         case UCI_ID_ROUTE_ETH_NETMASK:
             sprintf(cmd,"uci set network.kweth.netmask='%s'",value);
+            break;
+        case UCI_ID_SYSTEM_BASESTATION_ID:
+            sprintf(cmd,"uci set system.@system[0].bstid='%s'",value);
             break;
         default:
             break;

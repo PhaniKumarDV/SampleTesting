@@ -73,6 +73,7 @@ start_service() {
     location=$(uci get system.@system[0].location)
     contact=$(uci get system.@system[0].contact)
     email=$(uci get system.@system[0].email)
+    bstid=$(uci get system.@system[0].bstid)
 
     if [ "$tx_power_radio1" == "" ]
     then
@@ -346,6 +347,10 @@ start_service() {
     if [ "$email" == "" ]
     then
         uci set system.@system[0].email='example@mail.com'
+    fi
+    if [ "$bstid" == "" ]
+    then
+        uci set system.@system[0].bstid='base_station_id'
     fi
 #ROUTING
     param=$(uci get network.param)
