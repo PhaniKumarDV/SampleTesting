@@ -1,7 +1,7 @@
 diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.c
 --- net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c	1970-01-01 05:30:00.000000000 +0530
-+++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.c	2019-01-10 16:50:27.802701097 +0530
-@@ -0,0 +1,5122 @@
++++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.c	2019-01-11 09:43:28.890015983 +0530
+@@ -0,0 +1,5152 @@
 +/****************************************************************************
 +*                                                                           *
 +*  File Name:           kwnmib.c                                           *
@@ -799,6 +799,51 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +    kwn_reset_datarate( stream );
 +}
 +
++void kwn_reset_nwkmode_params()
++{
++    char cmd[100];
++    uint8_t cmd_buf[50];
++    uint8_t rad_mode[10];
++
++    /* Get Radio Mode */
++    memset(cmd, '\0', sizeof(cmd));
++    memset(cmd_buf, '\0', sizeof(cmd_buf));
++    sprintf(cmd,"uci get wireless.@wifi-iface[1].mode");
++    kwn_sys_cmd( &cmd[0], &rad_mode[0] );
++
++    memset(cmd, '\0', sizeof(cmd));
++    memset(cmd_buf, '\0', sizeof(cmd_buf));
++    sprintf(cmd,"uci get network.param.networkmode");
++    kwn_sys_cmd( &cmd[0], &cmd_buf[0] ); 
++
++    if( ( strcmp(rad_mode,"sta") == 0 ) && ( strcmp(cmd_buf,"2") == 0 ) ) {
++        sprintf(cmd,"uci set network.lan.proto='static'");
++        system(cmd);
++        sprintf(cmd,"uci set network.lan.ipaddr='192.168.3.1'");
++        system(cmd);
++        sprintf(cmd,"uci set network.lan.netmask='255.255.255.0'");
++        system(cmd);
++        sprintf(cmd,"uci set network.lan.gateway='192.168.3.1'");
++        system(cmd);
++    }
++    else {
++        sprintf(cmd,"uci set network.lan.proto='static'");
++        system(cmd);
++        sprintf(cmd,"uci set network.lan.ipaddr='192.168.1.1'");
++        system(cmd);
++        sprintf(cmd,"uci set network.lan.netmask='255.255.255.0'");
++        system(cmd);
++        sprintf(cmd,"uci set network.lan.gateway='192.168.1.1'");
++        system(cmd);
++    }
++}
++
++void kwn_reset_radioparams()
++{
++    kwn_reset_channel();
++    kwn_reset_nwkmode_params();
++}
++
 +void get_active_frequency( int ind, uint16_t *freq, uint8_t *chan )
 +{
 +    int sk_fd = -1;
@@ -1489,7 +1534,7 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len, NULL );
 +                if( memcmp(res_str, "static", 6) == 0 )
 +                {
-+                    sprintf( cmd, "uci get network.param.routestatus" );
++                    sprintf( cmd, "uci get network.param.networkmode" );
 +                    kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
 +                    if( res_val == 1 )
 +                    {
@@ -1515,7 +1560,7 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len, NULL );
 +                if( memcmp(res_str, "static", 6) == 0 )
 +                {
-+                    sprintf( cmd, "uci get network.param.routestatus" );
++                    sprintf( cmd, "uci get network.param.networkmode" );
 +                    kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
 +                    if( res_val == 1 )
 +                    {
@@ -1541,16 +1586,7 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len, NULL );
 +                if( memcmp(res_str, "static", 6) == 0 )
 +                {
-+                    sprintf( cmd, "uci get network.param.routestatus" );
-+                    kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
-+                    if( res_val == 1 )
-+                    {
-+                        sprintf( cmd, "uci get network.lan.gateway" );
-+                    }
-+                    else
-+                    {
-+                        sprintf( cmd, "uci get network.kwath.gateway" );
-+                    }
++                    sprintf( cmd, "uci get network.lan.gateway" );
 +                }
 +                else
 +                {
@@ -1573,13 +1609,13 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +            }
 +        case KWN_NWK_NETWORKMODE:
 +            {
-+                sprintf( cmd, "uci get network.param.routestatus" );
++                sprintf( cmd, "uci get network.param.networkmode" );
 +                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
 +                return ( u_char * ) &res_val;
 +            }
 +        case KWN_NWK_NATSTATUS:
 +            {
-+                sprintf( cmd, "uci get network.param.routestatus" );
++                sprintf( cmd, "uci get network.param.networkmode" );
 +                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
 +                if( res_val == 1 )
 +                {
@@ -1591,25 +1627,25 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +            }
 +        case KWN_NWK_WIRELESS_IP:
 +            {
-+                sprintf( cmd, "uci get network.param.routestatus" );
++                sprintf( cmd, "uci get network.param.networkmode" );
 +                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
 +                if( res_val == 1 )
 +                {
 +                    return SNMP_ERR_GENERR;
 +                }
-+                sprintf( cmd, "uci get network.kwath.ipaddr" );
++                sprintf( cmd, "uci get network.lan.ipaddr" );
 +                kwn_get_value( KWN_TYPE_IP_ADDRESS, &cmd[0], var_len, NULL );
 +                return ( u_char * ) &res_ip;
 +            }
 +        case KWN_NWK_WIRELESS_MASK:
 +            {
-+                sprintf( cmd, "uci get network.param.routestatus" );
++                sprintf( cmd, "uci get network.param.networkmode" );
 +                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
 +                if( res_val == 1 )
 +                {
 +                    return SNMP_ERR_GENERR;
 +                }
-+                sprintf( cmd, "uci get network.kwath.netmask" );
++                sprintf( cmd, "uci get network.lan.netmask" );
 +                kwn_get_value( KWN_TYPE_IP_ADDRESS, &cmd[0], var_len, NULL );
 +                return ( u_char * ) &res_ip;
 +            }
@@ -3498,7 +3534,7 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +                        system( cmd );
 +                        /* Change in Radiomode reset channel for 5GHz radio */
 +                        if( ind == 1 )
-+                            kwn_reset_channel();
++                            kwn_reset_radioparams();
 +                        break;
 +                    case KWN_WLAN_SSID:
 +                        sprintf( cmd, "uci set wireless.@wifi-iface[%d].ssid='%s'", ind, var_val );
@@ -3820,7 +3856,7 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +
 +    memset( cmd, '\0', sizeof(cmd) );
 +    memset( res_str, '\0', sizeof(res_str) );
-+    sprintf( cmd, "uci get network.param.routestatus" );
++    sprintf( cmd, "uci get network.param.networkmode" );
 +    kwn_sys_cmd( cmd, &res_str[0] );
 +    networkmode = atoi( res_str );
 +    
@@ -3886,14 +3922,7 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +                        else
 +                        {
 +                            kwn_conv_uint32_to_ip( var_val, var_val_len, &ip[0] );
-+                            if( networkmode == 1 )
-+                            {
-+                                sprintf( cmd, "uci set network.lan.gateway='%s'", ip );
-+                            }
-+                            else
-+                            {
-+                                sprintf( cmd, "uci set network.kwath.gateway='%s'", ip );
-+                            }
++                            sprintf( cmd, "uci set network.lan.gateway='%s'", ip );
 +                        }
 +                        system( cmd );
 +                        break;
@@ -3920,8 +3949,9 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +                    case KWN_NWK_NETWORKMODE:
 +                        if( radiomode == 1 )
 +                            return SNMP_ERR_GENERR;
-+                        sprintf( cmd, "uci set network.param.routestatus='%d'", long_val );
++                        sprintf( cmd, "uci set network.param.networkmode='%d'", long_val );
 +                        system( cmd );
++                        kwn_reset_nwkmode_params();
 +                        break;
 +                    case KWN_NWK_NATSTATUS:
 +                        if( networkmode == 1 )
@@ -3933,14 +3963,14 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +                        if( networkmode == 1 )
 +                            return SNMP_ERR_GENERR;
 +                        kwn_conv_uint32_to_ip( var_val, var_val_len, &ip[0] );
-+                        sprintf( cmd, "uci set network.kwath.ipaddr='%s'", ip );
++                        sprintf( cmd, "uci set network.lan.ipaddr='%s'", ip );
 +                        system( cmd );
 +                        break;
 +                    case KWN_NWK_WIRELESS_MASK:
 +                        if( networkmode == 1 )
 +                            return SNMP_ERR_GENERR;
 +                        kwn_conv_uint32_to_ip( var_val, var_val_len, &ip[0] );
-+                        sprintf( cmd, "uci set network.kwath.netmask='%s'", ip );
++                        sprintf( cmd, "uci set network.lan.netmask='%s'", ip );
 +                        system( cmd );
 +                        break;
 +                            default:
