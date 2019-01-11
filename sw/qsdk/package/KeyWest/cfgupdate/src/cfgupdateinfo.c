@@ -230,12 +230,13 @@ void kwn_reset_tx_params()
 void kwn_reset_nwkmode_params()
 {
     char cmd[100];
-    uint8_t cmd_buf[50];
+    uint8_t cmd_buf[10];
     uint8_t rad_mode[10];
+    uint8_t eth_ip[20],eth_msk[20],eth_gip[20],eth_addtype[10];
 
     /* Get Radio Mode */
     memset(cmd, '\0', sizeof(cmd));
-    memset(cmd_buf, '\0', sizeof(cmd_buf));
+    memset(rad_mode, '\0', sizeof(rad_mode));
     sprintf(cmd,"uci get wireless.@wifi-iface[1].mode");
     kwn_sys_cmd_imp( &cmd[0], &rad_mode[0] );
 
@@ -245,6 +246,26 @@ void kwn_reset_nwkmode_params()
     kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] ); 
 
     if( ( strcmp(rad_mode,"sta") == 0 ) && ( strcmp(cmd_buf,"2") == 0 ) ) {
+        memset(cmd, '\0', sizeof(cmd));
+        memset(eth_addtype, '\0', sizeof(eth_addtype));
+        sprintf(cmd,"uci get network.lan.proto");
+        kwn_sys_cmd_imp( &cmd[0], &eth_addtype[0] ); 
+        
+        memset(cmd, '\0', sizeof(cmd));
+        memset(eth_ip, '\0', sizeof(eth_ip));
+        sprintf(cmd,"uci get network.lan.ipaddr");
+        kwn_sys_cmd_imp( &cmd[0], &eth_ip[0] ); 
+
+        memset(cmd, '\0', sizeof(cmd));
+        memset(eth_msk, '\0', sizeof(eth_msk));
+        sprintf(cmd,"uci get network.lan.netmask");
+        kwn_sys_cmd_imp( &cmd[0], &eth_msk[0] ); 
+
+        memset(cmd, '\0', sizeof(cmd));
+        memset(eth_gip, '\0', sizeof(eth_gip));
+        sprintf(cmd,"uci get network.lan.gateway");
+        kwn_sys_cmd_imp( &cmd[0], &eth_gip[0] ); 
+
         sprintf(cmd,"uci set network.lan.proto='static'");
         system(cmd);
         sprintf(cmd,"uci set network.lan.ipaddr='192.168.3.1'");
@@ -253,23 +274,70 @@ void kwn_reset_nwkmode_params()
         system(cmd);
         sprintf(cmd,"uci set network.lan.gateway='192.168.3.1'");
         system(cmd);
+        sprintf(cmd,"uci set network.kweth.ipaddr='%s'",eth_ip);
+        system(cmd);
+        sprintf(cmd,"uci set network.kweth.netmask='%s'",eth_msk);
+        system(cmd);
+        sprintf(cmd,"uci set network.kweth.gateway='%s'",eth_gip);
+        system(cmd);
     }
     else {
-        sprintf(cmd,"uci set network.lan.proto='static'");
+        memset(cmd, '\0', sizeof(cmd));
+        memset(eth_addtype, '\0', sizeof(eth_addtype));
+        sprintf(cmd,"uci get network.kweth.proto");
+        kwn_sys_cmd_imp( &cmd[0], &eth_addtype[0] ); 
+        
+        memset(cmd, '\0', sizeof(cmd));
+        memset(eth_ip, '\0', sizeof(eth_ip));
+        sprintf(cmd,"uci get network.kweth.ipaddr");
+        kwn_sys_cmd_imp( &cmd[0], &eth_ip[0] ); 
+
+        memset(cmd, '\0', sizeof(cmd));
+        memset(eth_msk, '\0', sizeof(eth_msk));
+        sprintf(cmd,"uci get network.kweth.netmask");
+        kwn_sys_cmd_imp( &cmd[0], &eth_msk[0] ); 
+
+        memset(cmd, '\0', sizeof(cmd));
+        memset(eth_gip, '\0', sizeof(eth_gip));
+        sprintf(cmd,"uci get network.kweth.gateway");
+        kwn_sys_cmd_imp( &cmd[0], &eth_gip[0] ); 
+
+        sprintf(cmd,"uci set network.lan.proto='%s'",eth_addtype);
         system(cmd);
-        sprintf(cmd,"uci set network.lan.ipaddr='192.168.1.1'");
+        sprintf(cmd,"uci set network.lan.ipaddr='%s'",eth_ip);
         system(cmd);
-        sprintf(cmd,"uci set network.lan.netmask='255.255.255.0'");
+        sprintf(cmd,"uci set network.lan.netmask='%s'",eth_msk);
         system(cmd);
-        sprintf(cmd,"uci set network.lan.gateway='192.168.1.1'");
+        sprintf(cmd,"uci set network.lan.gateway='%s'",eth_gip);
         system(cmd);
     }
 }
 
 void kwn_reset_radioparams()
 {
+    char cmd[100];
+    uint8_t cmd_buf[10];
+    uint8_t rad_mode[10];
+    
+    /* Get Radio Mode */
+    memset(cmd, '\0', sizeof(cmd));
+    memset(rad_mode, '\0', sizeof(rad_mode));
+    sprintf(cmd,"uci get wireless.@wifi-iface[1].mode");
+    kwn_sys_cmd_imp( &cmd[0], &rad_mode[0] );
+
+    /* Get Network Mode */
+    memset(cmd, '\0', sizeof(cmd));
+    memset(cmd_buf, '\0', sizeof(cmd_buf));
+    sprintf(cmd,"uci get network.param.networkmode");
+    kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] ); 
+
+    if( ( strcmp(rad_mode,"ap") == 0 ) && ( strcmp(cmd_buf,"2") == 0 ) ) {
+        memset(cmd, '\0', sizeof(cmd));
+        sprintf(cmd,"uci set network.param.networkmode='1'");
+        system( cmd );
+        kwn_reset_nwkmode_params();
+    }
     kwn_reset_channel();
-    kwn_reset_nwkmode_params();
 }
 
 void cfg_set( char *type, char *value )

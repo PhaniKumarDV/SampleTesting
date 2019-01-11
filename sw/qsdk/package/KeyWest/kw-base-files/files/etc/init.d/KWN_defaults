@@ -356,11 +356,14 @@ start_service() {
         uci set network.param.natstatus='0'
         uci set network.kweth=routing
         uci set network.kweth.type='bridge'
-        uci set network.kweth.proto='static'
+        ethaddtype=$(uci get network.lan.proto)
+        uci set network.kweth.proto=$ethaddtype
         ethipaddr=$(uci get network.lan.ipaddr)
         uci set network.kweth.ipaddr=$ethipaddr
         ethnetmask=$(uci get network.lan.netmask)
         uci set network.kweth.netmask=$ethnetmask
+        ethgateway=$(uci get network.lan.gateway)
+        uci set network.kweth.gateway=$ethgateway
     fi
     
     dmesg -n 1
