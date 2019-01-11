@@ -183,7 +183,7 @@ var type = "<%=uciget('uci get network.lan.proto')%>";
 updateparam(type);
 save_def_value();
 var mode = "<%=uciget('uci get wireless.@wifi-iface[1].mode')%>";
-var route_status = "<%=uciget('uci get network.param.routestatus')%>";
+var route_status = "<%=uciget('uci get network.param.networkmode')%>";
 if( mode == "ap" )
 {
     document.getElementById("linkid").style.display = "none";
@@ -205,11 +205,11 @@ else
         document.getElementById("bridge").style.display = "none";
         document.getElementById("routingwifi").style.display = "block";
         document.getElementById("routingeth").style.display = "block";
-        document.getElementById("wifi_ip").innerHTML="<input type='text' name='144' class='cbi-input-select' value='<%=uciget('uci get network.kwath.ipaddr')%>' >";
-        document.getElementById("wifi_mask").innerHTML="<input type='text' name='146' class='cbi-input-select' value='<%=uciget('uci get network.kwath.netmask')%>' >";
-        document.getElementById("wifi_gateway").innerHTML="<input type='text' name='147' class='cbi-input-select' value='<%=uciget('uci get network.kwath.gateway')%>' >";
-        document.getElementById("eth_ip").innerHTML="<input type='text' name='148' class='cbi-input-select' value='<%=uciget('uci get network.kweth.ipaddr')%>' >";
-        document.getElementById("eth_mask").innerHTML="<input type='text' name='150' class='cbi-input-select' value='<%=uciget('uci get network.kweth.netmask')%>' >";
+        document.getElementById("wifi_ip").innerHTML="<input type='text' name='23' class='cbi-input-select' value='<%=uciget('uci get network.lan.ipaddr')%>' >";
+        document.getElementById("wifi_mask").innerHTML="<input type='text' name='25' class='cbi-input-select' value='<%=uciget('uci get network.lan.netmask')%>' >";
+        document.getElementById("wifi_gateway").innerHTML="<input type='text' name='26' class='cbi-input-select' value='<%=uciget('uci get network.lan.gateway')%>' >";
+        document.getElementById("eth_ip").innerHTML="<input type='text' name='144' class='cbi-input-select' value='<%=uciget('uci get network.kweth.ipaddr')%>' >";
+        document.getElementById("eth_mask").innerHTML="<input type='text' name='146' class='cbi-input-select' value='<%=uciget('uci get network.kweth.netmask')%>' >";
     }
 }
 </script>

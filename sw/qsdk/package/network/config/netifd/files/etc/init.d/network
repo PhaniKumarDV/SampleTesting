@@ -7,31 +7,24 @@ USE_PROCD=1
 
 kwn_routing() {
     devmode=$(uci get wireless.@wifi-iface[1].mode)
-    routestatus=$(uci get network.param.routestatus)
+    nwkmode=$(uci get network.param.networkmode)
     natstatus=$(uci get network.param.natstatus)
-    athip=$(uci get network.kwath.ipaddr)
-    athgip=$(uci get network.kwath.gateway)
-    athmask=$(uci get network.kwath.netmask)
     ethip=$(uci get network.kweth.ipaddr)
     ethmask=$(uci get network.kweth.netmask)
-    langip=$(uci get network.lan.gateway)
     if [ "$devmode" == "ap" ]
     then
-        uci set network.param.routestatus='1'
+        uci set network.param.networkmode='1'
         uci set network.param.natstatus='0'
         ifconfig br-kweth down
         brctl delbr br-kweth
         iptables -F
     else
-        if [ $routestatus -eq "2" ]
+        if [ $nwkmode -eq "2" ]
         then
             uci set network.lan.proto='static'
             brctl delif br-lan eth0
             brctl addbr br-kweth
             brctl addif br-kweth eth0
-            ifconfig br-lan $athip netmask $athmask
-            route del -net 0.0.0.0 gw $langip netmask 0.0.0.0 dev br-lan
-            route add default gw $athgip br-lan
             ifconfig br-kweth $ethip netmask $ethmask
 
             if [ $natstatus -eq "1" ]

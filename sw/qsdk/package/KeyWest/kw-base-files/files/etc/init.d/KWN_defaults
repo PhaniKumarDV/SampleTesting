@@ -352,71 +352,13 @@ start_service() {
     if [ "$param" == "" ]
     then
         uci set network.param=routing
-    fi
-    routestatus=$(uci get network.param.routestatus)
-    if [ "$routestatus" == "" ]
-    then
-        uci set network.param.routestatus='1'
-    fi
-    natstatus=$(uci get network.param.natstatus)
-    if [ "$natstatus" == "" ]
-    then
+        uci set network.param.networkmode='1'
         uci set network.param.natstatus='0'
-    fi
-    athintf=$(uci get network.kwath)
-    if [ "$athintf" == "" ]
-    then
-        uci set network.kwath=routing
-    fi
-    athintftype=$(uci get network.kwath.type)
-    if [ "$athintftype" == "" ]
-    then
-        uci set network.kwath.type='bridge'
-    fi
-    athintfproto=$(uci get network.kwath.proto)
-    if [ "$athintfproto" == "" ]
-    then
-        uci set network.kwath.proto='static'
-    fi
-    athintfipaddr=$(uci get network.kwath.ipaddr)
-    if [ "$athintfipaddr" == "" ]
-    then
-        uci set network.kwath.ipaddr='192.168.3.1'
-    fi
-    athintfnetmask=$(uci get network.kwath.netmask)
-    if [ "$athintfnetmask" == "" ]
-    then
-        uci set network.kwath.netmask='255.255.255.0'
-    fi
-    athintfgateway=$(uci get network.kwath.gateway)
-    if [ "$athintfgateway" == "" ]
-    then
-        uci set network.kwath.gateway='192.168.3.1'
-    fi
-    ethintf=$(uci get network.kweth)
-    if [ "$ethintf" == "" ]
-    then
         uci set network.kweth=routing
-    fi
-    ethintftype=$(uci get network.kweth.type)
-    if [ "$ethintftype" == "" ]
-    then
         uci set network.kweth.type='bridge'
-    fi
-    ethintfproto=$(uci get network.kweth.proto)
-    if [ "$ethintfproto" == "" ]
-    then
         uci set network.kweth.proto='static'
-    fi
-    ethintfipaddr=$(uci get network.kweth.ipaddr)
-    if [ "$ethintfipaddr" == "" ]
-    then
         ethipaddr=$(uci get network.lan.ipaddr)
         uci set network.kweth.ipaddr=$ethipaddr
-    fi
-    ethintfnetmask=$(uci get network.kweth.netmask)
-    if [ "$ethintfnetmask" == "" ]
-    then
         ethnetmask=$(uci get network.lan.netmask)
         uci set network.kweth.netmask=$ethnetmask
     fi

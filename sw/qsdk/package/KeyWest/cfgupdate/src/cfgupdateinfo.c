@@ -227,6 +227,51 @@ void kwn_reset_tx_params()
     kwn_reset_datarate( stream );
 }
 
+void kwn_reset_nwkmode_params()
+{
+    char cmd[100];
+    uint8_t cmd_buf[50];
+    uint8_t rad_mode[10];
+
+    /* Get Radio Mode */
+    memset(cmd, '\0', sizeof(cmd));
+    memset(cmd_buf, '\0', sizeof(cmd_buf));
+    sprintf(cmd,"uci get wireless.@wifi-iface[1].mode");
+    kwn_sys_cmd_imp( &cmd[0], &rad_mode[0] );
+
+    memset(cmd, '\0', sizeof(cmd));
+    memset(cmd_buf, '\0', sizeof(cmd_buf));
+    sprintf(cmd,"uci get network.param.networkmode");
+    kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] ); 
+
+    if( ( strcmp(rad_mode,"sta") == 0 ) && ( strcmp(cmd_buf,"2") == 0 ) ) {
+        sprintf(cmd,"uci set network.lan.proto='static'");
+        system(cmd);
+        sprintf(cmd,"uci set network.lan.ipaddr='192.168.3.1'");
+        system(cmd);
+        sprintf(cmd,"uci set network.lan.netmask='255.255.255.0'");
+        system(cmd);
+        sprintf(cmd,"uci set network.lan.gateway='192.168.3.1'");
+        system(cmd);
+    }
+    else {
+        sprintf(cmd,"uci set network.lan.proto='static'");
+        system(cmd);
+        sprintf(cmd,"uci set network.lan.ipaddr='192.168.1.1'");
+        system(cmd);
+        sprintf(cmd,"uci set network.lan.netmask='255.255.255.0'");
+        system(cmd);
+        sprintf(cmd,"uci set network.lan.gateway='192.168.1.1'");
+        system(cmd);
+    }
+}
+
+void kwn_reset_radioparams()
+{
+    kwn_reset_channel();
+    kwn_reset_nwkmode_params();
+}
+
 void cfg_set( char *type, char *value )
 {
     char cmd[500];
@@ -242,7 +287,7 @@ void cfg_set( char *type, char *value )
         case UCI_ID_RADIO1_MODE:
             sprintf(cmd,"uci set wireless.@wifi-iface[1].mode='%s'",value);
             system( cmd );
-            kwn_reset_channel();
+            kwn_reset_radioparams();
             break;
         case UCI_ID_RADIO1_SSID:
             sprintf(cmd,"uci set wireless.@wifi-iface[1].ssid='%s'",value);
@@ -732,23 +777,13 @@ void cfg_set( char *type, char *value )
         case UCI_ID_SYSTEM_EMAIL:
             sprintf(cmd,"uci set system.@system[0].email='%s'",value);
             break;
-        case UCI_ID_ROUTING_STATUS:
-            sprintf(cmd,"uci set network.param.routestatus='%s'",value);
+        case UCI_ID_NETWORK_MODE:
+            sprintf(cmd,"uci set network.param.networkmode='%s'",value);
+            system( cmd );
+            kwn_reset_nwkmode_params();
             break;
         case UCI_ID_NAT_STATUS:
             sprintf(cmd,"uci set network.param.natstatus='%s'",value);
-            break;
-        case UCI_ID_ROUTE_WIFI_IP:
-            sprintf(cmd,"uci set network.kwath.ipaddr='%s'",value);
-            break;
-        case UCI_ID_ROUTE_WIFI_ADDR_TYPE:
-            sprintf(cmd,"uci set network.kwath.proto='%s'",value);
-            break;
-        case UCI_ID_ROUTE_WIFI_NETMASK:
-            sprintf(cmd,"uci set network.kwath.netmask='%s'",value);
-            break;
-        case UCI_ID_ROUTE_WIFI_GATEWAY:
-            sprintf(cmd,"uci set network.kwath.gateway='%s'",value);
             break;
         case UCI_ID_ROUTE_ETH_IP:
             sprintf(cmd,"uci set network.kweth.ipaddr='%s'",value);
