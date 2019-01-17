@@ -21,7 +21,7 @@
 	local eth1_status =  luci.sys.exec("cat /sys/class/net/eth0/operstate")
 	local eth1_speed =  luci.sys.exec("ethtool eth0 | grep Speed")
 	local eth1_duplex =  luci.sys.exec("ethtool eth0 | grep Duplex")
-    local gw = luci.sys.exec("ip route get 1 | awk '{print $NF;exit}'")
+    local gw_val = luci.sys.exec("ip route | grep default")
     local eth_has_link 
     local eth_has_no_link
 	local serial_no =  luci.sys.exec("fw_printenv -n amigoserial")
@@ -127,7 +127,6 @@
     eth1_speed = string.gsub(eth1_speed, "\n", "")
     eth1_duplex = string.gsub(eth1_duplex, "\n", "")
     cablen = string.gsub(cablen, "\n", "")
-    gw = string.gsub(gw, "\n", "")
 -%>
 
 <%+header%>
@@ -186,7 +185,11 @@ else if( country == 5017 ) {
 else {
     country = "RUSSIA";
 }
-var gw = "<%=gw %>";
+var gw_val = <%=luci.http.write_json(gw_val)%>;
+var g_val = gw_val.split(" ");
+var gw = "0.0.0.0";
+if( g_val != "" )
+    gw = g_val[2];
 var dyn_val = "<%=uciget("ifconfig br-lan | grep 'inet addr' | sed 's/          //'")%>";
 var val = dyn_val.split(" ");
 var ip = "0.0.0.0";

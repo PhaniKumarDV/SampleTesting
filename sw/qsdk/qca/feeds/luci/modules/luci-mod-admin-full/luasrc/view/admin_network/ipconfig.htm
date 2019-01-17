@@ -5,8 +5,7 @@
 -%>
 
 <%-
-    local gw = luci.sys.exec("ip route get 1 | awk '{print $NF;exit}'")
-        gw = string.gsub(gw, "\n", "")
+    local gw_val = luci.sys.exec("ip route | grep default")
         function uciget(cmd)
                 local res = luci.util.exec(cmd)
                 local str = string.gsub(res, "\n", "")
@@ -130,8 +129,11 @@ function updateparam(value)
     {
         var dyn_val = "<%=uciget("ifconfig br-lan | grep 'inet addr' | sed 's/          //'")%>";
         var val = dyn_val.split(" ");
-        var ip = "0.0.0.0", mask = "0.0.0.0";
-        var gw = "<%=gw %>";
+        var ip = "0.0.0.0", mask = "0.0.0.0", gw = "0.0.0.0";
+        var gw_val = <%=luci.http.write_json(gw_val)%>;
+        var g_val = gw_val.split(" ");
+        if( g_val != "" )
+            gw = g_val[2]; 
         if( val != "" )
         {
             ip = val[1].split(":");

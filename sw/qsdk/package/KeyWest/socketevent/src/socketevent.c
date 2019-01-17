@@ -125,7 +125,7 @@ void kwn_dhcp_inet_handle( const char* cmd, uint8_t* cmd_buf )
     return;
 }
 
-void kwn_dhcp_mask_handle(  const char* cmd, uint8_t* cmd_buf )
+void kwn_dhcp_mask_handle( const char* cmd, uint8_t* cmd_buf )
 {
     FILE *fp;
     char *tok, *p;
@@ -168,6 +168,58 @@ void kwn_dhcp_mask_handle(  const char* cmd, uint8_t* cmd_buf )
     printf("DHCP Mask : %s\n",ip);
     len = strlen( ip );
     memcpy(cmd_buf, ip, len);
+    return;
+}
+
+void kwn_dhcp_gateway_handle( const char* cmd, uint8_t* cmd_buf )
+{
+    FILE *fp;
+    char *tok, *p;
+    short int len;
+    char gip[20];
+    char a[100];
+    int i = 0, j = 0;
+
+    memset( a, '\0', sizeof( a ) );
+    memset( gip, '\0', sizeof( gip ) );
+    strcpy(gip,"0.0.0.0");
+
+    fp = popen( cmd, "r" );
+    while( fgets( a, sizeof( a ), fp ) != NULL )
+    {
+        /*printf("%s\n", a);*/
+        if( i == 1 )
+            break;
+        i++;
+    }
+    pclose( fp );
+
+    p = strstr(a,"default");
+
+    if( p == NULL )
+    {
+        printf("No occurance of default in ip route\n");
+    }
+    else
+    {
+        tok = strtok(a," ");
+
+        while( tok != NULL)
+        {
+            printf( " %s\n", tok );
+            if( j == 2 )
+            {
+                len = strlen(tok);
+                memcpy(gip,tok,len);
+                break;
+            }
+            j++;
+            tok = strtok(NULL," ");
+        }
+    }
+    printf("%s",gip);
+    len = strlen( gip );
+    memcpy(cmd_buf, gip, len);
     return;
 }
 
@@ -498,8 +550,8 @@ void kwn_get_config_from_device( kwn_cfg_data *dev_cfg )
 
     memset(cmd, '\0', sizeof(cmd));
     memset(cmd_buf, '\0', sizeof(cmd_buf));
-    sprintf( cmd,"ip route get 1 | awk '{print $NF;exit}'" );
-    kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] ); 
+    sprintf( cmd,"ip route | grep default" );
+    kwn_dhcp_gateway_handle( &cmd[0], &cmd_buf[0] );
     kwn_conv_str_to_ip(&cmd_buf[0],&d_gip_byte[0]);
     len = strlen(d_gip_byte);
     memcpy(dev_cfg->dyn_gip, d_gip_byte, len);
