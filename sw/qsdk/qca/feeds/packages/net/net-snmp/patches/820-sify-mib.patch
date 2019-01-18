@@ -1,7 +1,7 @@
 diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.c
 --- net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c	1970-01-01 05:30:00.000000000 +0530
-+++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.c	2019-01-18 18:29:54.245905516 +0530
-@@ -0,0 +1,5234 @@
++++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.c	2019-01-18 19:05:59.197182764 +0530
+@@ -0,0 +1,5305 @@
 +/****************************************************************************
 +*                                                                           *
 +*  File Name:           kwnmib.c                                           *
@@ -597,9 +597,8 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +        memcpy( ip, tok, len );
 +    }
 +    len = strlen( ip );
-+    memcpy(res_str, ip, len);
-+    res_str[ strlen( res_str ) ] = '\0';
-+    kwn_conv_str_to_ip( &res_str[0], &resaddr );
++    ip[len] = '\0';
++    kwn_conv_str_to_ip( &ip[0], &resaddr );
 +    res_ip = ntohl( resaddr );
 +    return;
 +}
@@ -633,7 +632,6 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +    }
 +    pclose( fp );
 +
-+    printf("%s", a);
 +    p = strstr(a,"Bcast");
 +
 +    if( p == NULL )
@@ -645,16 +643,76 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +        tok = strtok(a,": \n");
 +        while( tok != NULL)
 +        {
++            memset( ip, '\0', sizeof( ip ) );
 +            len = strlen(tok);
 +            memcpy(ip,tok,len);
 +            tok = strtok(NULL, ": \n");
 +        }
 +    }
-+    printf("%s",ip);
 +    len = strlen( ip );
-+    memcpy(res_str, ip, len);
-+    res_str[ strlen( res_str ) ] = '\0';
-+    kwn_conv_str_to_ip( &res_str[0], &resaddr );
++    ip[len] = '\0';
++    kwn_conv_str_to_ip( &ip[0], &resaddr );
++    res_ip = ntohl( resaddr );
++    return;
++}
++
++/**********************************************************************************
++*                                                                                 *
++*  kwn_dhcp_gateway_handle() - function to get gateway address during dhcp case   *
++*                                                                                 *
++***********************************************************************************/
++void kwn_dhcp_gateway_handle(  const char* cmd )
++{
++    FILE *fp;
++    char *tok, *p;
++    short int len;
++    char gip[20];
++    char a[100];
++    int i = 0, j = 0;
++    uint32_t resaddr = 0;
++
++    memset( a, '\0', sizeof( a ) );
++    memset( gip, '\0', sizeof( gip ) );
++    strcpy(gip,"0.0.0.0");
++
++    fp = popen( cmd, "r" );
++    while( fgets( a, sizeof( a ), fp ) != NULL )
++    {
++        /*printf("%s\n", a);*/
++        if( i == 1 )
++            break;
++        i++;
++    }
++    pclose( fp );
++
++    p = strstr(a,"default");
++
++    if( p == NULL )
++    {
++        printf("No occurance of default in ip route\n");
++    }
++    else
++    {
++        tok = strtok(a," ");
++
++        while( tok != NULL)
++        {
++            printf( " %s\n", tok );
++            if( j == 2 )
++            {
++                memset( gip, '\0', sizeof( gip ) );
++                len = strlen(tok);
++                memcpy(gip,tok,len);
++                break;
++            }
++            j++;
++            tok = strtok(NULL, " ");
++        }
++    }
++    printf("%s",gip);
++    len = strlen( gip );
++    gip[len] = '\0';
++    kwn_conv_str_to_ip( &gip[0], &resaddr );
 +    res_ip = ntohl( resaddr );
 +    return;
 +}
@@ -1588,6 +1646,7 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +            == MATCH_FAILED )
 +        return NULL;
 +
++    memset( cmd, '\0', sizeof( cmd ) );
 +    memset( res_str, '\0', sizeof( res_str ) );
 +    res_val = 0;
 +    res_ip = 0;
@@ -1602,12 +1661,15 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +            }
 +        case KWN_NWK_IP:
 +            {
++                memset( cmd, '\0', sizeof( cmd ) );
 +                sprintf( cmd, "uci get network.lan.proto" );
 +                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len, NULL );
 +                if( memcmp(res_str, "static", 6) == 0 )
 +                {
++                    memset( cmd, '\0', sizeof( cmd ) );
 +                    sprintf( cmd, "uci get network.param.networkmode" );
 +                    kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
++                    memset( cmd, '\0', sizeof( cmd ) );
 +                    if( res_val == 1 )
 +                    {
 +                        sprintf( cmd, "uci get network.lan.ipaddr" );
@@ -1620,6 +1682,7 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +                }
 +                else
 +                {
++                    memset( cmd, '\0', sizeof( cmd ) );
 +                    sprintf( cmd, "ifconfig br-lan" );
 +                    kwn_dhcp_inet_handle( cmd );
 +                }
@@ -1628,12 +1691,15 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +            }
 +        case KWN_NWK_MASK:
 +            {
++                memset( cmd, '\0', sizeof( cmd ) );
 +                sprintf( cmd, "uci get network.lan.proto" );
 +                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len, NULL );
 +                if( memcmp(res_str, "static", 6) == 0 )
 +                {
++                    memset( cmd, '\0', sizeof( cmd ) );
 +                    sprintf( cmd, "uci get network.param.networkmode" );
 +                    kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
++                    memset( cmd, '\0', sizeof( cmd ) );
 +                    if( res_val == 1 )
 +                    {
 +                        sprintf( cmd, "uci get network.lan.netmask" );
@@ -1646,6 +1712,7 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +                }
 +                else
 +                {
++                    memset( cmd, '\0', sizeof( cmd ) );
 +                    sprintf( cmd, "ifconfig br-lan" );
 +                    kwn_dhcp_mask_handle( cmd );
 +                }
@@ -1654,17 +1721,21 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +            }
 +        case KWN_NWK_GATEWAY:
 +            {
++                memset( cmd, '\0', sizeof( cmd ) );
 +                sprintf( cmd, "uci get network.lan.proto" );
 +                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len, NULL );
++                memset( cmd, '\0', sizeof( cmd ) );
 +                if( memcmp(res_str, "static", 6) == 0 )
 +                {
 +                    sprintf( cmd, "uci get network.lan.gateway" );
++                    kwn_get_value( KWN_TYPE_IP_ADDRESS, &cmd[0], var_len, NULL );
 +                }
 +                else
 +                {
-+                    sprintf( cmd, "ip route get 1 | awk '{print $NF;exit}'" );
++                    sprintf( cmd, "ip route | grep default" );
++                    kwn_dhcp_gateway_handle( cmd );
++                    *var_len = sizeof( in_addr_t );
 +                }
-+                kwn_get_value( KWN_TYPE_IP_ADDRESS, &cmd[0], var_len, NULL );
 +                return ( u_char * ) &res_ip;
 +            }
 +        case KWN_NWK_DNS:
