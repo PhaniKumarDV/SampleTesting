@@ -32,7 +32,14 @@ function index()
     entry({"admin", "monitor", "log_type"}, call("action_logtype"), nil).leaf = true
 	entry({"admin", "monitor", "clr_log"}, call("action_clr_log"), nil).leaf = true
 
-	entry({"admin", "monitor", "tools"}, template("admin_network/diagnostics"), _("Tools"), 4)
+	entry({"admin", "monitor", "traffic"}, alias("admin", "monitor", "traffic", "connections"), _("Live Traffic"), 4)
+	entry({"admin", "monitor", "traffic", "connections"}, template("admin_monitor/connections"), _("Connections"), 1).leaf = true
+	entry({"admin", "monitor", "traffic", "connections_status"}, call("action_connections")).leaf = true
+	entry({"admin", "monitor", "traffic", "bandwidth"}, template("admin_monitor/bandwidth"), _("Traffic"), 2).leaf = true
+	entry({"admin", "monitor", "traffic", "bandwidth_status"}, call("action_bandwidth")).leaf = true
+	entry({"admin", "monitor", "nameinfo"}, call("action_nameinfo")).leaf = true
+	
+	entry({"admin", "monitor", "tools"}, template("admin_network/diagnostics"), _("Tools"), 5)
     if (string.match(mode,"ap") and string.match(wds,"1") ) then
 	    entry({"admin", "monitor", "tools", "sascan"}, call("action_sascan"))
 	    entry({"admin", "monitor", "tools", "scantime"}, call("action_scantime"), nil).leaf = true
@@ -455,11 +462,69 @@ end
 function clrethstats()
 	luci.sys.exec("iwpriv ath1 kwnclrethstats 1")
 end
+
 function clrwifi1stats()
 	luci.sys.exec("athstatsclr -i wifi1")
 	luci.sys.exec("80211stats -i ath1 -e 1")
 end
+
 function clrwifi0stats()
 	luci.sys.exec("athstatsclr -i wifi0")
 	luci.sys.exec("80211stats -i ath0 -e 1")
+end
+
+function action_bandwidth(iface)
+	luci.http.prepare_content("application/json")
+
+	local bwc = io.popen("luci-bwc -i %q 2>/dev/null" % iface)
+	if bwc then
+		luci.http.write("[")
+
+		while true do
+			local ln = bwc:read("*l")
+			if not ln then break end
+			luci.http.write(ln)
+		end
+
+		luci.http.write("]")
+		bwc:close()
+	end
+end
+
+function action_connections()
+	local sys = require "luci.sys"
+
+	luci.http.prepare_content("application/json")
+
+	luci.http.write("{ connections: ")
+	luci.http.write_json(sys.net.conntrack())
+
+	local bwc = io.popen("luci-bwc -c 2>/dev/null")
+	if bwc then
+		luci.http.write(", statistics: [")
+
+		while true do
+			local ln = bwc:read("*l")
+			if not ln then break end
+			luci.http.write(ln)
+		end
+
+		luci.http.write("]")
+		bwc:close()
+	end
+
+	luci.http.write(" }")
+end
+
+function action_nameinfo(...)
+	local i
+	local rv = { }
+	for i = 1, select('#', ...) do
+		local addr = select(i, ...)
+		local fqdn = nixio.getnameinfo(addr)
+		rv[addr] = fqdn or (addr:match(":") and "[%s]" % addr or addr)
+	end
+
+	luci.http.prepare_content("application/json")
+	luci.http.write_json(rv)
 end

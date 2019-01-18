@@ -123,6 +123,8 @@ void kwn_reset_channel()
 #define RUSSIA   5011
 #define INDIA_UL 5016
 #define INDIA_L  5017
+#define INDIA    5018
+#define INDIA_5  5019
     
     char cmd[100];
     uint8_t cmd_buf[50];
@@ -156,6 +158,12 @@ void kwn_reset_channel()
             break;
         case INDIA_L:
             def_chan = 160; /* 145 to 175 */
+            break;
+        case INDIA:
+            def_chan = 120; /* 22 to 183 */
+            break;
+        case INDIA_5:
+            def_chan = 120; /* 22 to 183 */
             break;
         default:
             break;

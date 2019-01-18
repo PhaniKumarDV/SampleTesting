@@ -56,9 +56,9 @@
 <script type="text/javascript">
 	var freqlist = <%= luci.http.write_json(freqlist) %>;
     var modelist = [ "ap=Outdoor Base", "sta=Outdoor Subscriber" ];
-    var hwlist = [ "11a=Legacy", "11na=11NA", "11ac=11AC" ];
+    var hwlist = [ /*"11a=Legacy",*/ "11na=11NA", "11ac=11AC" ];
     var bwlist = [ "HT20=20MHz", "HT40+=40MHz", "HT80=80MHz" ];
-    var counlist = [ "5011=RUSSIA", "5016=INDIA_UL", "5017=INDIA L" ];
+    var counlist = [ "5018=INDIA", "5019=5GHz" ];
     var chanlist = [ "auto=Auto" ];
     if( freqlist != null ) {
 	    for (var i = 0; i < freqlist.length; i++) {
@@ -98,6 +98,7 @@ function save_value()
     XHR.get('<%=luci.dispatcher.build_url("admin")%>/cfg_set' + '/' + setdata, null,
 	    function(x, data) {
 		    if (data) { 
+                location.href='<%=luci.dispatcher.build_url("admin/config/config1")%>';
 		    }
 	    }
     );

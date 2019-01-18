@@ -56,7 +56,7 @@
 <script type="text/javascript">
 	var freqlist = <%= luci.http.write_json(freqlist) %>;
     var modelist = [ "ap=Access Point", "sta=Client" ];
-    var hwlist = [ "11g=Legacy", "11ng=11NG" ];
+    var hwlist = [ /*"11g=Legacy",*/ "11ng=11NG" ];
     var bwlist = [ "HT20=20MHz", "HT40+=40MHz" ];
     var chanlist = [ "auto=Auto" ];
     if( freqlist != null ) {
@@ -128,7 +128,8 @@ function getoptions( list, value )
        <form name="formTable">
           <div class="cbi-value">
             <label class="cbi-value-title">Radio Mode</label>
-            <div class="cbi-value-field"> Access Point
+            <div class="cbi-value-field" style="margin-top:5px;">
+              Access Point
               <!--<select class="cbi-input-select" name="15">
                  <script type="text/javascript">
                  //var mode = "<%=uciget('uci get wireless.@wifi-iface[0].mode')%>";
@@ -149,7 +150,7 @@ function getoptions( list, value )
               <script type="text/javascript">
                  var coun = "<%=uciget('uci get wireless.wifi0.country')%>";
                  if( coun == 643 )
-                     document.write("RUSSIA");
+                     document.write("INDIA");
                  else
                      document.write(coun);
               </script>
@@ -158,24 +159,31 @@ function getoptions( list, value )
           </div>
           <div class="cbi-value">
             <label class="cbi-value-title">Operational Mode</label>
-            <div class="cbi-value-field">
-              <select class="cbi-input-select" name="18">
+            <div class="cbi-value-field" style="margin-top:5px;">
+                <script type="text/javascript">
+                  var hw = "<%=uciget('uci get wireless.wifi0.hwmode')%>";
+                  if( hw == "11ng" )
+                      document.write("11NG");
+                  else
+                      document.write("Legacy");
+                </script>
+              <!--<select class="cbi-input-select" name="18">
                 <script type="text/javascript">
                   var hw = "<%=uciget('uci get wireless.wifi0.hwmode')%>";
                   getoptions( hwlist, hw );
                 </script>
-              </select>
+              </select>-->
             </div>
           </div>
           <div class="cbi-value">
             <label class="cbi-value-title">Bandwidth</label>
-            <div class="cbi-value-field">
-              <select class="cbi-input-select" name="19">
+            <div class="cbi-value-field" style="margin-top:5px;"> 20MHz
+              <!--<select class="cbi-input-select" name="19">
                 <script type="text/javascript">
                   var bw = "<%=uciget('uci get wireless.wifi0.htmode')%>";
                   getoptions( bwlist, bw );
                 </script>
-              </select>
+              </select>-->
             </div>
           </div>
           <div class="cbi-value">

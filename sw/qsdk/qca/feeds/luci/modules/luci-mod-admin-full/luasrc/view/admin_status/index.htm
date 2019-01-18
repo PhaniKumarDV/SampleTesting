@@ -359,6 +359,10 @@ function get_log()
                             document.getElementById("opmode1").innerHTML = "<%=uciget('uci get wireless.wifi1.hwmode')%>";
                             document.getElementById("bw1").innerHTML = "<%=uciget('uci get wireless.wifi1.htmode')%>";
                             document.getElementById("ssid1").innerHTML = net.ssid;
+                            var acs1 = "<%=uciget('uci get wireless.wifi1.channel')%>";
+                            document.getElementById("acs1").innerHTML = ( acs1 == "auto" ? "Enabled" : "Disabled" );
+                            var dcs1 = "<%=uciget('uci get wireless.wifi1.dcsstatus')%>";
+                            document.getElementById("dcs1").innerHTML = ( dcs1 == 1 ? "Enabled" : "Disabled" );
                             if( net.channel != undefined ) {
                                var freq = net.frequency * 1000;
                                document.getElementById("chan1").innerHTML = net.channel + " ( " + freq + " MHz )"
@@ -387,6 +391,9 @@ function get_log()
                             document.getElementById("opmode2").innerHTML = "<%=uciget('uci get wireless.wifi0.hwmode')%>";
                             document.getElementById("bw2").innerHTML = "<%=uciget('uci get wireless.wifi0.htmode')%>";
                             document.getElementById("ssid2").innerHTML = net.ssid;
+                            var acs2 = "<%=uciget('uci get wireless.wifi0.channel')%>";
+                            document.getElementById("acs2").innerHTML = ( acs2 == "auto" ? "Enabled" : "Disabled" );
+                            document.getElementById("dcs2").innerHTML = "Disabled";
                             if( net.channel != undefined ) {
                                var freq = net.frequency * 1000;
                                document.getElementById("chan2").innerHTML = net.channel + " ( " + freq + " MHz )"
@@ -539,6 +546,8 @@ function get_log()
        <tr><td>Operational Mode</td><td id="opmode1">-</td><td id="opmode2">-</td></tr>
        <tr><td>Bandwidth</td><td id="bw1">-</td><td id="bw2">-</td></tr>
        <tr><td>SSID</td><td id="ssid1">-</td><td id="ssid2">-</td></tr>
+       <tr><td>ACS</td><td id="acs1">-</td><td id="acs2">-</td></tr>
+       <tr><td>DCS</td><td id="dcs1">-</td><td id="dcs2">-</td></tr>
        <tr><td>Channel</td><td id="chan1">-</td><td id="chan2">-</td></tr>
        <tr><td>DDRS</td><td id="ddrs1">-</td><td id="ddrs2">-</td></tr>
        <tr><td>Data Rate</td><td id="rate1">-</td><td id="rate2">-</td></tr>

@@ -2378,6 +2378,7 @@ detect_qcawifi() {
 		dl_limit="409600"
         ssid_d="Sify"
         encrypt="none"
+        channel="auto"
 		case "${hwcaps}" in
 			*11bgn)
 				ht_mode="HT20"
@@ -2398,7 +2399,8 @@ detect_qcawifi() {
 				mode_11=na;;
                         *11an/ac)
 				ht_mode="HT20"
-				country_code="5016"
+				country_code="5018"
+                channel="120"
 				wds_mode="1"
 				ul_limit="867000"
 				dl_limit="867000"
@@ -2406,7 +2408,8 @@ detect_qcawifi() {
 				dying_gasp=1;;
                         *11abgn/ac)
 				ht_mode="HT80"
-				country_code="5016"
+				country_code="5018"
+                channel="120"
 				ul_limit="867000"
 				dl_limit="867000"
 				wds_mode="1"
@@ -2437,7 +2440,7 @@ detect_qcawifi() {
 		cat <<EOF
 config wifi-device  wifi$devidx
 	option type	qcawifi
-	option channel	auto
+	option channel	$channel
 	option macaddr	$(cat /sys/class/net/${dev}/address)
 	option hwmode	11${mode_11}
 	option htmode   $ht_mode

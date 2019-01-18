@@ -1397,8 +1397,8 @@ diff -urN qca-wifi-org/offload/wlan/regdmn/ol_regdomain.c qca-wifi-mod/offload/w
      ol_regdmn_handle->ol_regdmn_currentRD5G = rd5GHz.regDmnEnum;
 diff -urN qca-wifi-org/offload/wlan/regdmn/ol_regdomain_common.h qca-wifi-mod/offload/wlan/regdmn/ol_regdomain_common.h
 --- qca-wifi-org/offload/wlan/regdmn/ol_regdomain_common.h	2018-06-08 11:00:45.000000000 +0530
-+++ qca-wifi-mod/offload/wlan/regdmn/ol_regdomain_common.h	2018-12-25 11:06:23.188190654 +0530
-@@ -52,6 +52,14 @@
++++ qca-wifi-mod/offload/wlan/regdmn/ol_regdomain_common.h	2019-01-18 18:19:42.607585601 +0530
+@@ -52,6 +52,16 @@
  	NO_ENUMRD	= 0x00,
      OVERRIDE_RD = 0x01,
  	NULL1_WORLD	= 0x03,		/* For 11b-only countries (no 11a allowed) */
@@ -1409,11 +1409,13 @@ diff -urN qca-wifi-org/offload/wlan/regdmn/ol_regdomain_common.h qca-wifi-mod/of
 +	SF_RUSSIA_58_59 = 0x24,		/* Sify custom */
 +	SF_INDIA_UL     = 0x25,		/* Sify custom */
 +	SF_INDIA_L      = 0x27,		/* Sify custom */
++	SF_INDIA        = 0x28,		/* Sify custom */
++	SF_INDIA_5      = 0x29,		/* Sify custom */
 +
  	NULL1_ETSIB	= 0x07,		/* Israel */
  	NULL1_ETSIC	= 0x08,
  	FCC1_FCCA	= 0x10,		/* USA */
-@@ -216,7 +224,14 @@
+@@ -216,7 +226,16 @@
  
  	NULL1		= 0x0198,
  	WORLD		= 0x0199,
@@ -1426,10 +1428,12 @@ diff -urN qca-wifi-org/offload/wlan/regdmn/ol_regdomain_common.h qca-wifi-mod/of
 +    RUSSIA05    = 0x0205,   /* Sify custom */
 +    INDIAUL     = 0x0206,   /* Sify custom */
 +    INDIAL      = 0x0207,   /* Sify custom */
++    INDIA       = 0x0208,   /* Sify custom */
++    INDIA_5     = 0x0209,   /* Sify custom */
      OVER1_OVERA = 0x0200,
  };
  
-@@ -354,6 +369,13 @@
+@@ -354,6 +373,15 @@
  	{WORA_WORLD,	WORA_WORLD,	WORA_WORLD,	DISALLOW_ADHOC_11A | DISALLOW_ADHOC_11A_TURB, NO_REQ, PSCAN_DEFER, 0 },
  	{WORB_WORLD,	WORB_WORLD,	WORB_WORLD,	DISALLOW_ADHOC_11A | DISALLOW_ADHOC_11A_TURB, NO_REQ, PSCAN_DEFER, 0 },
  	{WORC_WORLD,	WORC_WORLD,	WORC_WORLD,	NO_REQ, NO_REQ, PSCAN_DEFER, 0 },
@@ -1438,28 +1442,32 @@ diff -urN qca-wifi-org/offload/wlan/regdmn/ol_regdomain_common.h qca-wifi-mod/of
 +	{SF_RUSSIA_53_56,	RUSSIA03,		WORLD,		DISALLOW_ADHOC_11A | DISALLOW_ADHOC_11A_TURB, NO_REQ, PSCAN_DEFER, 0 }, /* Sify custom */
 +	{SF_RUSSIA_56_58,	RUSSIA04,		WORLD,		DISALLOW_ADHOC_11A | DISALLOW_ADHOC_11A_TURB, NO_REQ, PSCAN_DEFER, 0 }, /* Sify custom */
 +	{SF_RUSSIA_58_59,	RUSSIA05,		WORLD,		DISALLOW_ADHOC_11A | DISALLOW_ADHOC_11A_TURB, NO_REQ, PSCAN_DEFER, 0 }, /* Sify custom */
-+	{SF_INDIA_UL,	    INDIAUL,		WORLD,		DISALLOW_ADHOC_11A | DISALLOW_ADHOC_11A_TURB, NO_REQ, PSCAN_DEFER, 0 },  /* Sify custom */
-+	{SF_INDIA_L,	    INDIAL,		WORLD,		DISALLOW_ADHOC_11A | DISALLOW_ADHOC_11A_TURB, NO_REQ, PSCAN_DEFER, 0 }  /* Sify custom */
++	{SF_INDIA_UL,	    INDIAUL,		WORLD,		DISALLOW_ADHOC_11A | DISALLOW_ADHOC_11A_TURB, NO_REQ, PSCAN_DEFER, 0 }, /* Sify custom */
++	{SF_INDIA_L,	    INDIAL,		    WORLD,		DISALLOW_ADHOC_11A | DISALLOW_ADHOC_11A_TURB, NO_REQ, PSCAN_DEFER, 0 }, /* Sify custom */
++	{SF_INDIA,	        INDIA,		    WORLD,		DISALLOW_ADHOC_11A | DISALLOW_ADHOC_11A_TURB, NO_REQ, PSCAN_DEFER, 0 }, /* Sify custom */
++	{SF_INDIA_5,        INDIA_5,	    WORLD,		DISALLOW_ADHOC_11A | DISALLOW_ADHOC_11A_TURB, NO_REQ, PSCAN_DEFER, 0 }  /* Sify custom */
  };
  
  /*
-@@ -561,7 +583,14 @@
+@@ -561,7 +589,16 @@
      {CTRY_VIRGIN_ISLANDS, FCC3_FCCA,  "VI", "VIRGIN ISLANDS", YES,  NO,  NO, YES, YES, YES, YES, YES, YES, YES, 7000 },
      {CTRY_WALLIS_FUTUNA, ETSI1_WORLD, "WF", "WALLIS AND FUTUNA", YES, YES, YES, YES, YES, YES, YES, YES, YES, YES, 7000 },
      {CTRY_YEMEN,       NULL1_WORLD,   "YE", "YEMEN",          YES,  NO, YES, YES, YES,  NO,  NO, NO, NO, NO, 7000 },
 -    {CTRY_ZIMBABWE,    ETSI1_WORLD,   "ZW", "ZIMBABWE",       YES,  NO, YES, YES, YES,  YES,  YES, YES, YES, YES, 7000 }
 +    {CTRY_ZIMBABWE,    ETSI1_WORLD,   "ZW", "ZIMBABWE",       YES,  NO, YES, YES, YES,  YES,  YES, YES, YES, YES, 7000 },
-+    {CTRY_RUSSIA_1, SF_RUSSIA_49_51,  "S1", "RUSSIA1",          YES,  NO,  NO, YES, YES, YES, YES, YES, YES, YES, 7000 },
-+    {CTRY_RUSSIA_2, SF_RUSSIA_51_53,  "S2", "RUSSIA2",          YES,  NO,  NO, YES, YES, YES, YES, YES, YES, YES, 7000 },
-+    {CTRY_RUSSIA_3, SF_RUSSIA_53_56,  "S3", "RUSSIA3",          YES,  NO,  NO, YES, YES, YES, YES, YES, YES, YES, 7000 },
-+    {CTRY_RUSSIA_4, SF_RUSSIA_56_58,  "S4", "RUSSIA4",          YES,  NO,  NO, YES, YES, YES, YES, YES, YES, YES, 7000 },
-+    {CTRY_RUSSIA_5, SF_RUSSIA_58_59,  "S5", "RUSSIA5",          YES,  NO,  NO, YES, YES, YES, YES, YES, YES, YES, 7000 },
-+    {CTRY_INDIA_UL,     SF_INDIA_UL,  "S6", "INDIA1",          YES,  NO,  NO, YES, YES, YES, YES, YES, YES, YES, 7000 },
-+    {CTRY_INDIA_L,      SF_INDIA_L,   "S7", "INDIA2",          YES,  NO,  NO, YES, YES, YES, YES, YES, YES, YES, 7000 }
++    {CTRY_RUSSIA_1, SF_RUSSIA_49_51,  "S1", "RUSSIA1",        YES,  NO,  NO, YES, YES, YES, YES, YES, YES, YES, 7000 },
++    {CTRY_RUSSIA_2, SF_RUSSIA_51_53,  "S2", "RUSSIA2",        YES,  NO,  NO, YES, YES, YES, YES, YES, YES, YES, 7000 },
++    {CTRY_RUSSIA_3, SF_RUSSIA_53_56,  "S3", "RUSSIA3",        YES,  NO,  NO, YES, YES, YES, YES, YES, YES, YES, 7000 },
++    {CTRY_RUSSIA_4, SF_RUSSIA_56_58,  "S4", "RUSSIA4",        YES,  NO,  NO, YES, YES, YES, YES, YES, YES, YES, 7000 },
++    {CTRY_RUSSIA_5, SF_RUSSIA_58_59,  "S5", "RUSSIA5",        YES,  NO,  NO, YES, YES, YES, YES, YES, YES, YES, 7000 },
++    {CTRY_INDIA_UL,     SF_INDIA_UL,  "S6", "INDIA1",         YES,  NO,  NO, YES, YES, YES, YES, YES, YES, YES, 7000 },
++    {CTRY_INDIA_L,      SF_INDIA_L,   "S7", "INDIA2",         YES,  NO,  NO, YES, YES, YES, YES, YES, YES, YES, 7000 },
++    {CTRY_SIFY_INDIA,   SF_INDIA,     "S8", "INDIA3",         YES,  NO,  NO, YES, YES, YES, YES, YES, YES, YES, 7000 },
++    {CTRY_SIFY_INDIA_5, SF_INDIA_5,   "S9", "INDIA4",         YES,  NO,  NO, YES, YES, YES, YES, YES, YES, YES, 7000 }
  };
  
  
-@@ -705,6 +734,13 @@
+@@ -705,6 +742,16 @@
  	W1_5260_5320,
  	W1_5745_5825,
  	W1_5500_5700,
@@ -1468,12 +1476,15 @@ diff -urN qca-wifi-org/offload/wlan/regdmn/ol_regdomain_common.h qca-wifi-mod/of
 +    RU_5350_5600,   /* Sify custom */
 +    RU_5600_5850,   /* Sify custom */
 +    RU_5850_5925,   /* Sify custom */
-+    INUL_5825_5875,   /* Sify custom */
-+    INL_5725_5875,   /* Sify custom */
++    INUL_5825_5875, /* Sify custom */
++    INL_5725_5875,  /* Sify custom */
++    IN_5110_5340,   /* Sify custom */
++    IN_5480_5915,   /* Sify custom */
++    IN5_5110_5915,  /* Sify custom */
  	A_DEMO_ALL_CHANNELS,
      OVERRIDE_MODE_ALL_CHANNELS_5,
      OVERRIDE_MODE_ALL_CHANNELS_10,
-@@ -844,6 +880,15 @@
+@@ -844,6 +891,18 @@
  	{ 5260, 5320, 30, 0, 20, 20, DFS_FCC3 | DFS_ETSI, PSCAN_WWR, 0 },		/* W1_5260_5320 */
  	{ 5745, 5825, 30, 0, 20, 20, NO_DFS, PSCAN_WWR, 0 },				/* W1_5745_5825 */
  	{ 5500, 5700, 30, 0, 20, 20, DFS_FCC3 | DFS_ETSI, PSCAN_WWR, 0 },		/* W1_5500_5700 */
@@ -1485,11 +1496,14 @@ diff -urN qca-wifi-org/offload/wlan/regdmn/ol_regdomain_common.h qca-wifi-mod/of
 +    { 5850, 5925, 30, 0, 20, 5, NO_DFS, PSCAN_ETSI, 0 },                /* RU_5850_5925 custom */
 +    { 5825, 5875, 30, 0, 20, 5, NO_DFS, PSCAN_ETSI, 0 },                /* INUL_5825_5875 custom */
 +    { 5725, 5875, 30, 0, 20, 5, NO_DFS, PSCAN_ETSI, 0 },                /* INL_5725_5875 custom */
++    { 5110, 5340, 30, 0, 20, 5, NO_DFS, PSCAN_ETSI, 0 },                /* IN_5110_5340 custom */
++    { 5480, 5915, 30, 0, 20, 5, NO_DFS, PSCAN_ETSI, 0 },                /* IN_5480_5915 custom */
++    { 5110, 5915, 30, 0, 20, 5, NO_DFS, PSCAN_ETSI, 0 },                /* IN5_5110_5915 custom */
 +
  	{ 4920, 6100, 30, 6, 20, 20, NO_DFS, NO_PSCAN, 0 },				/* A_DEMO_ALL_CHANNELS */
      { 4920, 6100, 50, 20, 20, 5,  DFS_FCC3 | DFS_ETSI | DFS_MKK4, NO_PSCAN, 0 },             /* OVERRIDE_MODE_ALL_CHANNELS_5 */
      { 4920, 6100, 50, 20, 20, 10, DFS_FCC3 | DFS_ETSI | DFS_MKK4, NO_PSCAN, 0 },             /* OVERRIDE_MODE_ALL_CHANNELS_10 */
-@@ -1066,7 +1111,7 @@
+@@ -1066,7 +1125,7 @@
  	{ 2412, 2472, 5,  6, 20, 5, NO_DFS, NO_PSCAN, 0},	/* F1_2412_2472 */
  	{ 2412, 2472, 20, 0, 20, 5, NO_DFS, PSCAN_MKKA, 30},/* F2_2412_2472 */
  	{ 2412, 2472, 30, 0, 20, 5, NO_DFS, NO_PSCAN, 4},	/* F3_2412_2472 */
@@ -1498,7 +1512,7 @@ diff -urN qca-wifi-org/offload/wlan/regdmn/ol_regdomain_common.h qca-wifi-mod/of
  
  	{ 2412, 2462, 30, 6, 20, 5, NO_DFS, NO_PSCAN, 12},	/* F1_2412_2462 */
  	{ 2412, 2462, 20, 0, 20, 5, NO_DFS, PSCAN_MKKA, 30},	/* F2_2412_2462 */
-@@ -1145,7 +1190,7 @@
+@@ -1145,7 +1204,7 @@
  	{ 2412, 2472, 5,  6, 20, 5, NO_DFS, NO_PSCAN, 0},	/* G1_2412_2472 */
  	{ 2412, 2472, 20, 0, 20, 5,  NO_DFS, PSCAN_MKKA_G | PSCAN_MKKA2 | PSCAN_MKKA | PSCAN_EXT_CHAN, 30},	/* G2_2412_2472 */
  	{ 2412, 2472, 30, 0, 20, 5, NO_DFS, NO_PSCAN, 4},	/* G3_2412_2472 */
@@ -1507,7 +1521,7 @@ diff -urN qca-wifi-org/offload/wlan/regdmn/ol_regdomain_common.h qca-wifi-mod/of
  
  	{ 2412, 2462, 30, 6, 20, 5, NO_DFS, NO_PSCAN, 12},	/* G1_2412_2462 */
  	{ 2412, 2462, 20, 0, 20, 5, NO_DFS, PSCAN_MKKA_G, 30},	/* G2_2412_2462 */
-@@ -1189,7 +1234,7 @@
+@@ -1189,7 +1248,7 @@
  static const REG_DMN_FREQ_BAND regDmn2Ghz11gTurboFreq[] = {
  	{ 2312, 2372, 5,  6, 40, 40, NO_DFS, NO_PSCAN, 0},  /* T1_2312_2372 */
  	{ 2437, 2437, 5,  6, 40, 40, NO_DFS, NO_PSCAN, 0},  /* T1_2437_2437 */
@@ -1516,7 +1530,7 @@ diff -urN qca-wifi-org/offload/wlan/regdmn/ol_regdomain_common.h qca-wifi-mod/of
  	{ 2437, 2437, 18, 6, 40, 40, NO_DFS, PSCAN_WWR, 0}, /* T3_2437_2437 */
  	{ 2512, 2732, 5,  6, 40, 40, NO_DFS, NO_PSCAN, 0},  /* T1_2512_2732 */
  };
-@@ -1221,6 +1266,70 @@
+@@ -1221,6 +1280,88 @@
       CHAN_TURBO_G_BMZERO
       },
  
@@ -1583,14 +1597,32 @@ diff -urN qca-wifi-org/offload/wlan/regdmn/ol_regdomain_common.h qca-wifi-mod/of
 +        CHAN_TURBO_G_BMZERO
 +    },
 +
++    {INDIA, ETSI, NO_DFS, NO_PSCAN, DISALLOW_ADHOC_11A | DISALLOW_ADHOC_11A_TURB,
++        BM(IN_5110_5340, IN_5480_5915, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1),
++        BMZERO,
++        BMZERO,
++        BMZERO,
++        BMZERO,
++        CHAN_TURBO_G_BMZERO
++    },
++
++    {INDIA_5, ETSI, NO_DFS, NO_PSCAN, DISALLOW_ADHOC_11A | DISALLOW_ADHOC_11A_TURB,
++        BM(IN5_5110_5915, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1),
++        BMZERO,
++        BMZERO,
++        BMZERO,
++        BMZERO,
++        CHAN_TURBO_G_BMZERO
++    },
++
 +
  #ifndef ATH_NO_5G_SUPPORT
  	{APL1, FCC, NO_DFS, NO_PSCAN, NO_REQ,
  	 BM(F4_5745_5825, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1),
 diff -urN qca-wifi-org/offload/wlan/regdmn/ol_regdomain.h qca-wifi-mod/offload/wlan/regdmn/ol_regdomain.h
 --- qca-wifi-org/offload/wlan/regdmn/ol_regdomain.h	2018-06-08 11:00:45.000000000 +0530
-+++ qca-wifi-mod/offload/wlan/regdmn/ol_regdomain.h	2018-07-03 10:12:53.956984596 +0530
-@@ -1063,7 +1063,14 @@
++++ qca-wifi-mod/offload/wlan/regdmn/ol_regdomain.h	2019-01-18 18:19:32.819676302 +0530
+@@ -1063,7 +1063,16 @@
      CTRY_CANADA2              = 5001,    /* Canada for AP only */
      CTRY_BELGIUM2             = 5002,    /* Belgium/Cisco implementation */
      CTRY_ARGENTINA2           = 5003,    /* Argentina for AP only */
@@ -1602,7 +1634,9 @@ diff -urN qca-wifi-org/offload/wlan/regdmn/ol_regdomain.h qca-wifi-mod/offload/w
 +    CTRY_RUSSIA_4             = 5014,    /* Russia 5600-5850 support */
 +    CTRY_RUSSIA_5             = 5015,    /* Russia 5850-5925 support */
 +    CTRY_INDIA_UL             = 5016,    /* India 5825-5875 support */
-+    CTRY_INDIA_L              = 5017     /* India 5725-5875 support */
++    CTRY_INDIA_L              = 5017,    /* India 5725-5875 support */
++    CTRY_SIFY_INDIA           = 5018,    /* India 5100-5925 support */
++    CTRY_SIFY_INDIA_5         = 5019     /* 5GHz 5100-5925 support */
  };
  
  

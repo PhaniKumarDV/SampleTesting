@@ -587,6 +587,10 @@ width: -moz-calc(100% - 275px); width: -ms-calc(100% - 275px); margin-bottom: 1p
     font-size: inherit;  text-rendering: auto;  -webkit-font-smoothing: antialiased;text-indent:inherit;
     -moz-osx-font-smoothing: grayscale; width:16px; height:17px; margin: 0!important;
     padding: 0!important;  border: 0!important;  position: absolute; top: 23px; left: 0px; }
+  .sidebar .Live a:after {  content: "\f1fe";  display: inline-block; font: normal normal normal 14px/1 FontAwesome;
+    font-size: inherit;  text-rendering: auto;  -webkit-font-smoothing: antialiased;text-indent:inherit;
+    -moz-osx-font-smoothing: grayscale; width:16px; height:17px; margin: 0!important;
+    padding: 0!important;  border: 0!important;  position: absolute; top: 23px; left: 0px; }
   .sidebar .Tools a:after {  content: "\f013";  display: inline-block; font: normal normal normal 14px/1 FontAwesome;
     font-size: inherit;  text-rendering: auto;  -webkit-font-smoothing: antialiased;text-indent:inherit;
     -moz-osx-font-smoothing: grayscale; width:16px; height:17px; margin: 0!important;

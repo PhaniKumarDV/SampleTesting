@@ -57,7 +57,7 @@
     var radiomode = "<%=uciget('uci get wireless.@wifi-iface[0].mode')%>";
 	var freqlist = <%= luci.http.write_json(freqlist) %>;
     var modelist = [ "ap=Access Point", "sta=Client" ];
-    var hwlist = [ "11g=Legacy", "11ng=11NG" ];
+    var hwlist = [ /*"11g=Legacy",*/ "11ng=11NG" ];
     var nbwlist = [ "HT20=20MHz", "HT40+=40MHz" ];
     var gbwlist = [ "HT20=20MHz"];
     var pwrlist = ["0=0dBm (1mW)", "8=8dBm (6mW)", "10=10dBm (10mW)", "12=12dBm (15mW)", "14=14dBm (25mW)", "16=16dBm (39mW)", "18=18dBm (63mW)", "20=20dBm (100mW)"];
@@ -129,10 +129,12 @@ function updateparam( hwvalue )
     if( hwvalue == "11g" ) {
         bwlist = gbwlist;
     }
+    /*
     var str ="<select class='cbi-input-select' name='19'>";
     str += returnoptions( bwlist, bw );
     str += "</select>";
     document.getElementById("bwid").innerHTML = str;
+    */
 }
 
 function getoptions( list, value )
@@ -171,7 +173,8 @@ function updatehidessid()
        <form name="formTable">
           <div class="cbi-value">
             <label class="cbi-value-title">Radio Mode</label>
-            <div class="cbi-value-field"> Access Point
+            <div class="cbi-value-field" style="margin-top:5px;">
+              Access Point
               <!--<select class="cbi-input-select" name="15">
                  <script type="text/javascript">
                  //var mode = "<%=uciget('uci get wireless.@wifi-iface[0].mode')%>";
@@ -214,7 +217,7 @@ function updatehidessid()
               <script type="text/javascript">
               var coun = "<%=uciget('uci get wireless.wifi0.country')%>";
               if( coun == 643 )
-                  document.write("RUSSIA");
+                  document.write("INDIA");
               else
                   document.write(coun);
               </script>
@@ -223,18 +226,25 @@ function updatehidessid()
           </div>
           <div class="cbi-value">
             <label class="cbi-value-title">Operational Mode</label>
-            <div class="cbi-value-field">
-              <select class="cbi-input-select" name="18" onchange="updateparam(this.value)">
+            <div class="cbi-value-field" style="margin-top:5px;">
+                <script type="text/javascript">
+                  var hw = "<%=uciget('uci get wireless.wifi0.hwmode')%>";
+                  if( hw == "11ng" )
+                      document.write("11NG");
+                  else
+                      document.write("Legacy");
+                </script>
+              <!--<select class="cbi-input-select" name="18" onchange="updateparam(this.value)">
                 <script type="text/javascript">
                   var hw = "<%=uciget('uci get wireless.wifi0.hwmode')%>";
                   getoptions( hwlist, hw );
                 </script>
-              </select>
+              </select>-->
             </div>
           </div>
           <div class="cbi-value">
             <label class="cbi-value-title">Bandwidth</label>
-            <div class="cbi-value-field" id="bwid">
+            <div class="cbi-value-field" id="bwid" style="margin-top:5px;">20MHz
             </div>
           </div>
           <div class="cbi-value">
@@ -248,7 +258,7 @@ function updatehidessid()
              </select>
            </div>
          </div>
-          <div class="cbi-value">
+          <!--<div class="cbi-value">
             <label class="cbi-value-title">Modulation Index</label>
             <div class="cbi-value-field">
               <select class="cbi-input-select" name="136">
@@ -258,7 +268,7 @@ function updatehidessid()
                 </script>
               </select>
             </div>
-          </div>
+          </div>-->
           <div class="cbi-value">
             <label class="cbi-value-title">Transmit Power</label>
             <div class="cbi-value-field">
