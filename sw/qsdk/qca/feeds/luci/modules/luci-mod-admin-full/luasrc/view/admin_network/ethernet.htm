@@ -89,11 +89,23 @@ function save_value()
               </select>
             </div>
         </div>
-        <div class="cbi-value" id="eth_inactivity">
-          <label class="cbi-value-title">Ethernet Inactivity</label>
-          <div class="cbi-value-field">          
-            <input type="text" name="77" class="cbi-input-select" value="<%=uciget('uci get ethernet.ethernet.ethtimer')%>" > &nbsp; minutes
-          </div>
+        <div class="cbi-value">
+            <label class="cbi-value-title">Ethernet Inactivity</label>
+            <div class="cbi-value-field">
+              <select class="cbi-input-select" name="77">
+                 <script type="text/javascript">
+                 var ethtime = "<%=uciget('uci get ethernet.ethernet.ethtimer')%>";
+                 document.write("<option value='0' ");
+                 if( ethtime == "0" )
+                     document.write(" selected");
+                 document.write(">Disable</option>");
+                 document.write("<option value='5' ");
+                 if( speed == "5" )
+                     document.write(" selected");
+                 document.write(">Enable</option>");
+                 </script>
+              </select>
+            </div>
         </div>
         <div class="cbi-value" id="eth_mtu">
           <label class="cbi-value-title">Ethernet MTU</label>
