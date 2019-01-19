@@ -4,6 +4,8 @@
 module("luci.controller.admin.index", package.seeall)
 
 function index()
+    local mode = luci.sys.exec("uci get wireless.@wifi-iface[1].mode")
+    local wds = luci.sys.exec("uci get wireless.@wifi-iface[1].wds")
 	local root = node()
 	if not root.target then
 		root.target = alias("admin")
@@ -33,8 +35,14 @@ function index()
 	entry({"admin", "reboot"}, call("action_reboot"), _("Reboot"), 89)
 	entry({"admin", "logout"}, call("action_logout"), _("Logout"), 90)
 	entry({"admin", "config"}, template("admin_status/system"), _("Quick Start"), 20)
+	entry({"admin", "config", "location"}, template("admin_status/location"))
     entry({"admin", "config", "config1"}, template("admin_status/basic_config1"))
     entry({"admin", "config", "config2"}, template("admin_status/basic_config2"))
+    if (string.match(mode,"sta") and string.match(wds,"1") ) then
+	    entry({"admin", "config", "survey"}, call("action_survey"))
+	    entry({"admin", "config", "surveyrefresh"}, call("action_surveyrefresh"), nil).leaf = true
+	    entry({"admin", "config", "surveyclear"}, call("action_surveyclear"), nil).leaf = true
+    end
     page = entry({"admin", "cfg_set"}, call("action_cfg_set"), nil)
 	page.leaf = true
 end
@@ -185,5 +193,25 @@ function action_get_descr()
 
     data = model_name.."=".. product_type
     luci.http.prepare_content("application/json")
+	luci.http.write_json(data)
+end
+
+function action_survey()
+	local surveyresult = luci.sys.exec("iwlist ath1 ap")
+	luci.template.render("admin_status/survey", {surveyresult=surveyresult})
+end
+
+function action_surveyrefresh()
+	local data = luci.sys.exec("iwlist ath1 ap")
+	luci.http.prepare_content("application/json")
+	luci.http.write_json(data)
+end
+
+function action_surveyclear()
+    local data = {}
+    luci.sys.exec("iwpriv ath1 kwn_flag 4")
+    luci.sys.exec("iwpriv ath1 s_scan_flush 1")
+	data = luci.sys.exec("iwlist ath1 ap")
+	luci.http.prepare_content("application/json")
 	luci.http.write_json(data)
 end

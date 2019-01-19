@@ -54,6 +54,7 @@
 
 <script type="text/javascript" src="<%=resource%>/cbi.js"></script>
 <script type="text/javascript">
+    var radmode = "<%=uciget('uci get wireless.@wifi-iface[1].mode')%>";
 	var freqlist = <%= luci.http.write_json(freqlist) %>;
     var modelist = [ "ap=Access Point", "sta=Client" ];
     var hwlist = [ /*"11g=Legacy",*/ "11ng=11NG" ];
@@ -121,8 +122,14 @@ function getoptions( list, value )
 <div class="cbi-map">
     <ul class="cbi-tabmenu">
         <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=luci.dispatcher.build_url("admin/config")%>"><%:System%></a></li>
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="location"><%:Location%></a></li>
         <li style="margin-right:4px" class="cbi-tab-disabled"><a href="config1"><%:5GHz Radio%></a></li>
         <li style="margin-right:4px" class="cbi-tab"><a href="#"><%:2.4GHz Radio%></a></li>
+        <script type="text/javascript">
+        if( radmode == "sta" ) {
+           document.write("<li style='margin-right:4px' class='cbi-tab-disabled'><a href='survey'><%:Survey%></a></li>");
+        }
+        </script>
     </ul>
     <fieldset class="cbi-section">
        <form name="formTable">

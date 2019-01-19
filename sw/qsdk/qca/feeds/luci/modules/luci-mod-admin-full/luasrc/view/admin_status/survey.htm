@@ -1,0 +1,106 @@
+<%#
+ Copyright 2008 Steven Barth <steven@midlink.org>
+ Copyright 2008 Jo-Philipp Wich <jow@openwrt.org>
+ Licensed to the public under the Apache License 2.0.
+-%>
+<%+header%>
+
+<script type="text/javascript">
+function get_values( data )
+{
+    var surveytable = document.getElementById('survey-list');
+    var values = data.split(",");
+    for( i=0; i<( values.length - 1); i++)
+    {
+        var x = values[i].split("@");
+        var mac = x[0];
+        var ssid =  x[1];
+        var chan = x[2];
+        var freq = x[3];
+        var qual = x[4];
+        var y = qual.split("Signal=");
+        var z = y[1].split("Noise=");
+        var signal = z[0];
+        var noise = z[1];
+        var tr = surveytable.insertRow(-1);
+        tr.className = 'cbi-section-table-row cbi-rowstyle-2';
+        tr.insertCell(-1).innerHTML = ssid;
+        tr.insertCell(-1).innerHTML = mac;
+        tr.insertCell(-1).innerHTML = chan;
+        tr.insertCell(-1).innerHTML = freq;
+        tr.insertCell(-1).innerHTML = signal;
+        tr.insertCell(-1).innerHTML = noise;
+    }
+}
+
+	XHR.poll(5, '<%=REQUEST_URI%>', { status: 1 },
+		function(x, info)
+        {
+            var id = 6;
+            XHR.get('<%=luci.dispatcher.build_url("admin", "config")%>/surveyrefresh/' + id, null,
+            function(x, data) {
+              if (data) { 
+                  var surveytable = document.getElementById('survey-list');
+                  if( surveytable ) {
+	                  while (surveytable.rows.length > 1)
+		                  surveytable.rows[1].parentNode.removeChild(surveytable.rows[1]);
+                      if( data.length > 10 )
+                      {
+                          get_values( data );
+                      }
+                  }
+               }
+            }
+            );
+        }
+    );
+function clear_scan()
+{
+    var id = 6;
+    XHR.get('<%=luci.dispatcher.build_url("admin", "config")%>/surveyclear/' + id, null,
+    function(x, data) {
+        if (data) { 
+            var surveytable = document.getElementById('survey-list');
+            if( surveytable ) {
+	            while (surveytable.rows.length > 1)
+		            surveytable.rows[1].parentNode.removeChild(surveytable.rows[1]);
+            }
+        }
+    }
+    );
+}
+</script>
+<div class="page-content">
+<h2><a id="content" name="content"><%:Quick Start%></a></h2>
+    <ul class="cbi-tabmenu">
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=luci.dispatcher.build_url("admin/config")%>"><%:System%></a></li>
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="location"><%:Location%></a></li>
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="config1"><%:5GHz Radio%></a></li>
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="config2"><%:2.4GHz Radio%></a></li>
+        <li style="margin-right:4px" class="cbi-tab"><a href="#"><%:Site Survey%></a></li>
+    </ul>
+<div class="cbi-page-actions right" style="padding:11px 220px 2px 150px;">
+<input type="button" id="s1" class="cbi-button" value="<%:Clear%>" onclick="clear_scan()" />
+</div>
+<div class="cbi-map">
+	<fieldset class="cbi-section">
+		<table class="cbi-section-table" style="width:750px; margin:10px;" id="survey-list">
+			<tr class="cbi-section-table-titles">
+				<th class="cbi-section-table-cell"><%:SSID%></th>
+				<th class="cbi-section-table-cell"><%:MAC Address%></th>
+				<th class="cbi-section-table-cell"><%:Channel%></th>
+				<th class="cbi-section-table-cell"><%:Frequency (MHz)%></th>
+				<th class="cbi-section-table-cell"><%:RSSI (dBm)%></th>
+				<th class="cbi-section-table-cell"><%:Noise (dBm)%></th>
+            </tr>
+        </table>
+    </fieldset>
+</div>
+<script type="text/javascript">
+var res = <%=luci.http.write_json(surveyresult)%>;
+if( res. length > 10 ) {             
+        get_values( res );
+}
+</script>
+</div>
+<%+footer%>

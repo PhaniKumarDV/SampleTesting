@@ -16,6 +16,7 @@
 <div class="page-content">
 <script type="text/javascript" src="<%=resource%>/cbi.js"></script>
 <script type="text/javascript">
+var radmode = "<%=uciget('uci get wireless.@wifi-iface[1].mode')%>";
 var def = new Array(8);
 function save_def_value()
 {
@@ -81,13 +82,209 @@ function updateparam(value)
         document.getElementById("gateway").innerHTML = gw;
     }
 }
+
+function delete_id(ind)
+{
+    document.getElementById("spin").innerHTML = "<i class='fa fa-spinner fa-pulse'></i>";
+    setTimeout("disable_spin()",1000);
+    var setdata = "";
+    var f = document.formTable;
+    for( i=0; i<f.elements.length; i++)
+    {
+        if( def[i] != f.elements[i].value ) {
+            def[i] = f.elements[i].value;
+            setdata += f.elements[i].name + "=" + f.elements[i].value + "~";
+        }
+    }
+
+    var vlanid = "<%=uciget('uci get vlan.vlan.trunkvlan')%>";
+    var res = "57=";
+    var id = vlanid.split(" ");
+    for(i=0; i<id.length; i++ )
+    {
+        if( i != ind ) {
+            res = res.concat(id[i]);
+            if( i == (id.length-1) || 
+                (i == (id.length -2) && ind == (id.length - 1) ) )
+            {
+            }
+            else {
+               res = res.concat(" ");
+            }
+        }
+    }
+    res = res.concat("~");
+    setdata += res;
+    XHR.get('<%=luci.dispatcher.build_url("admin")%>/cfg_set' + '/' + setdata, null,
+	    function(x, data) {
+		    if (data) { 
+                location.href = "<%=luci.dispatcher.build_url("admin/config")%>";
+		    }
+	    }
+    );
+}
+
+function add_id()
+{
+
+    document.getElementById("spin").innerHTML = "<i class='fa fa-spinner fa-pulse'></i>";
+    setTimeout("disable_spin()",1000);
+    var setdata = "";
+    var f = document.formTable;
+    for( i=0; i<f.elements.length; i++)
+    {
+        if( def[i] != f.elements[i].value ) {
+            def[i] = f.elements[i].value;
+            setdata += f.elements[i].name + "=" + f.elements[i].value + "~";
+        }
+    }
+
+    var newid = document.getElementById("newmac").value;
+    if( newid != "" )
+    {
+        var res;
+        var vlanid = "<%=uciget('uci get vlan.vlan.trunkvlan')%>";
+        if( vlanid != "" ) {
+            res = vlanid.concat(" ");
+            res = res.concat(newid);
+        }
+        else {
+            res = newid;
+        }
+        res = "57="+res+"~";
+        setdata += res;
+    }
+    XHR.get('<%=luci.dispatcher.build_url("admin")%>/cfg_set' + '/' + setdata, null,
+	    function(x, data) {
+		    if (data) { 
+                location.href = "<%=luci.dispatcher.build_url("admin/config")%>";
+		    }
+	    }
+    );
+}
+
+function updateparam_vlan()
+{
+    var stat  = document.getElementById("vlanstat").value;
+    if( stat == 2 )
+    {
+        document.getElementById("modeid").style.display = "none";
+        document.getElementById("tagmgmt").style.display = "none";
+        document.getElementById("mgmtvlan").style.display = "none";
+        document.getElementById("accessvlan").style.display = "none";
+        document.getElementById("trunkoption").style.display = "none";
+        document.getElementById("trunkvlan1").style.display = "none";
+        document.getElementById("trunkvlan2").style.display = "none";
+        document.getElementById("qinq").style.display = "none";
+        document.getElementById("ethertype").style.display = "none";
+        document.getElementById("macethertype").style.display = "none";
+        document.getElementById("bda").style.display = "none";
+        document.getElementById("bsa").style.display = "none";
+        document.getElementById("bvid").style.display = "none";
+        document.getElementById("bisid").style.display = "none";
+    }
+    else
+    {
+        document.getElementById("modeid").style.display = "block";
+        document.getElementById("tagmgmt").style.display = "block";
+        document.getElementById("mgmtvlan").style.display = "block";
+        hideparam();
+    }
+}
+
+function hideparam()
+{
+    var mode  = document.getElementById("vlanmode").value;
+    if( mode == 0 ) {
+        document.getElementById("accessvlan").style.display = "none";
+        document.getElementById("trunkoption").style.display = "none";
+        document.getElementById("trunkvlan1").style.display = "none";
+        document.getElementById("trunkvlan2").style.display = "none";
+        document.getElementById("qinq").style.display = "none";
+        document.getElementById("ethertype").style.display = "none";
+        document.getElementById("macethertype").style.display = "none";
+        document.getElementById("bda").style.display = "none";
+        document.getElementById("bsa").style.display = "none";
+        document.getElementById("bvid").style.display = "none";
+        document.getElementById("bisid").style.display = "none";
+    }
+    else if( mode == 1 ) {
+        document.getElementById("accessvlan").style.display = "block";
+        document.getElementById("trunkoption").style.display = "none";
+        document.getElementById("trunkvlan1").style.display = "none";
+        document.getElementById("trunkvlan2").style.display = "none";
+        document.getElementById("qinq").style.display = "none";
+        document.getElementById("ethertype").style.display = "none";
+        document.getElementById("macethertype").style.display = "none";
+        document.getElementById("bda").style.display = "none";
+        document.getElementById("bsa").style.display = "none";
+        document.getElementById("bvid").style.display = "none";
+        document.getElementById("bisid").style.display = "none";
+    }
+    else if( mode == 2 ) {
+        document.getElementById("accessvlan").style.display = "none";
+        document.getElementById("trunkoption").style.display = "block";
+        document.getElementById("trunkvlan1").style.display = "block";
+        document.getElementById("trunkvlan2").style.display = "block";
+        document.getElementById("qinq").style.display = "none";
+        document.getElementById("ethertype").style.display = "none";
+        document.getElementById("macethertype").style.display = "none";
+        document.getElementById("bda").style.display = "none";
+        document.getElementById("bsa").style.display = "none";
+        document.getElementById("bvid").style.display = "none";
+        document.getElementById("bisid").style.display = "none";
+    }
+    else if( mode == 3 ) {
+        document.getElementById("accessvlan").style.display = "none";
+        document.getElementById("trunkoption").style.display = "block";
+        document.getElementById("trunkvlan1").style.display = "block";
+        document.getElementById("trunkvlan2").style.display = "block";
+        document.getElementById("qinq").style.display = "block";
+        document.getElementById("ethertype").style.display = "block";
+        document.getElementById("macethertype").style.display = "none";
+        document.getElementById("bda").style.display = "none";
+        document.getElementById("bsa").style.display = "none";
+        document.getElementById("bvid").style.display = "none";
+        document.getElementById("bisid").style.display = "none";
+    }
+    else {
+        document.getElementById("accessvlan").style.display = "none";
+        document.getElementById("trunkoption").style.display = "block";
+        document.getElementById("trunkvlan1").style.display = "block";
+        document.getElementById("trunkvlan2").style.display = "block";
+        document.getElementById("qinq").style.display = "block";
+        document.getElementById("ethertype").style.display = "none";
+        document.getElementById("macethertype").style.display = "block";
+        document.getElementById("bda").style.display = "block";
+        document.getElementById("bsa").style.display = "block";
+        document.getElementById("bvid").style.display = "block";
+        document.getElementById("bisid").style.display = "block";
+    }
+    if( document.getElementById("trunkopt").value == 1 && 
+        ( mode == 2 || mode == 3 || mode == 4 ) )
+    {
+        document.getElementById("trunkvlan1").style.display = "block";
+        document.getElementById("trunkvlan2").style.display = "block";
+    }
+    else
+    {
+        document.getElementById("trunkvlan1").style.display = "none";
+        document.getElementById("trunkvlan2").style.display = "none";
+    }
+}
 </script>
 <h2><a id="content" name="content"><%:Quick Start%></a></h2>
 <div class="cbi-map">
     <ul class="cbi-tabmenu">
         <li style="margin-right:4px" class="cbi-tab"><a href="#"><%:System%></a></li>
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=REQUEST_URI%>/location"><%:Location%></a></li>
         <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=REQUEST_URI%>/config1"><%:5GHz Radio%></a></li>
         <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=REQUEST_URI%>/config2"><%:2.4GHz Radio%></a></li>
+        <script type="text/javascript">
+        if( radmode == "sta" ) {
+           document.write("<li style='margin-right:4px' class='cbi-tab-disabled'><a href='<%=REQUEST_URI%>/survey'><%:Survey%></a></li>");
+        }
+        </script>
     </ul>
     <form name="formTable">
       <fieldset class="cbi-section" id="bridge">
@@ -160,21 +357,201 @@ function updateparam(value)
           </div>
       </fieldset>
       <fieldset class="cbi-section">
-        <h2><a id="content" name="content"><%:System%></a></h2>
-          <div class="cbi-value">
-            <label class="cbi-value-title">Customer Name</label>
+      <h2><a id="content" name="content"><%: VLAN Configuration%></a></h2>
+      <div class="cbi-value">
+            <label class="cbi-value-title">VLAN Status</label>
             <div class="cbi-value-field">
-              <input type="text" name="13" class="cbi-input-select" value="<%=uciget('uci get wireless.wifi1.customername')%>" >
+              <select class="cbi-input-select" name="52" id="vlanstat" onchange="updateparam_vlan()">
+                 <script type="text/javascript">
+                 var stat = "<%=uciget('uci get vlan.vlan.status')%>";
+                 document.write("<option value='1' ");
+                 if( stat == "1" )
+                     document.write(" selected");
+                 document.write(">Enable</option>");
+                 document.write("<option value='2' ");
+                 if( stat == "2" )
+                     document.write(" selected");
+                 document.write(">Disable</option>");
+                 </script>
+              </select>
             </div>
           </div>
-          <div class="cbi-value" id="linkid">
-            <label class="cbi-value-title">Link Id</label>
+          <div class="cbi-value" id="modeid">
+            <label class="cbi-value-title">VLAN Mode</label>
             <div class="cbi-value-field">
-              <input type="text" name="14" class="cbi-input-select" value="<%=uciget('uci get wireless.wifi1.linkid')%>" >
+              <select class="cbi-input-select" name="53" id="vlanmode" onchange="hideparam()">
+                 <script type="text/javascript">
+                 var radiomode = "<%=uciget('uci get wireless.@wifi-iface[1].mode')%>";
+                 var mode = "<%=uciget('uci get vlan.vlan.mode')%>";
+                 document.write("<option value='0' ");
+                 if( mode == "0" )
+                     document.write(" selected");
+                 document.write(">Transparent</option>");
+                 if( radiomode == "sta" )
+                 {
+                    document.write("<option value='1' ");
+                    if( mode == "1" )
+                       document.write(" selected");
+                    document.write(">Access</option>");
+                    document.write("<option value='2' ");
+                    if( mode == "2" )
+                       document.write(" selected");
+                    document.write(">Trunk</option>");
+                    document.write("<option value='3' ");
+                    if( mode == "3" )
+                       document.write(" selected");
+                    document.write(">Q-in-Q</option>");
+                    document.write("<option value='4' ");
+                    if( mode == "4" )
+                       document.write(" selected");
+                    document.write(">MAC-in-MAC</option>");
+                 }
+                 </script>
+              </select>
+            </div>
+          </div>
+          <div class="cbi-value" id="tagmgmt">
+            <label class="cbi-value-title">Allow Tag Mgmt</label>
+            <div class="cbi-value-field">
+              <select class="cbi-input-select" name="116">
+                 <script type="text/javascript">
+                 var opt = "<%=uciget('uci get vlan.vlan.tagmgmt')%>";
+                 document.write("<option value='1' ");
+                 if( opt == "1" )
+                     document.write(" selected");
+                 document.write(">Enable</option>");
+                 document.write("<option value='0' ");
+                 if( opt == "0" )
+                     document.write(" selected");
+                 document.write(">Disable</option>");
+                 </script>
+              </select>
+            </div>
+          </div>
+          <div class="cbi-value" id="mgmtvlan">
+            <label class="cbi-value-title">Mgmt VLAN ID</label>
+            <div class="cbi-value-field">
+              <input type="text" name="54" class="cbi-input-select" value="<%=uciget('uci get vlan.vlan.mgmtvlan')%>">
+            </div>
+          </div>
+          <div class="cbi-value" id="accessvlan">
+            <label class="cbi-value-title">Access VLAN ID</label>
+            <div class="cbi-value-field">
+              <input type="text" name="55" class="cbi-input-select" value="<%=uciget('uci get vlan.vlan.accessvlan')%>">
+            </div>
+          </div>
+          <div class="cbi-value" id="bda">
+            <label class="cbi-value-title">B-DA</label>
+            <div class="cbi-value-field">
+              <input type="text" name="81" class="cbi-input-select" value="<%=uciget('uci get vlan.vlan.bda')%>">
+            </div>
+          </div>
+          <div class="cbi-value" id="bsa">
+            <label class="cbi-value-title">B-SA</label>
+            <div class="cbi-value-field">
+              <input type="text" name="82" class="cbi-input-select" value="<%=uciget('uci get vlan.vlan.bsa')%>">
+            </div>
+          </div>
+          <div class="cbi-value" id="bvid">
+            <label class="cbi-value-title">B-VID</label>
+            <div class="cbi-value-field">
+              <input type="text" name="83" class="cbi-input-select" value="<%=uciget('uci get vlan.vlan.bvid')%>">
+            </div>
+          </div>
+          <div class="cbi-value" id="bisid">
+            <label class="cbi-value-title">I-SID</label>
+            <div class="cbi-value-field">
+              <input type="text" name="84" class="cbi-input-select" value="<%=uciget('uci get vlan.vlan.bisid')%>">
+            </div>
+          </div>
+          <div class="cbi-value" id="qinq">
+            <label class="cbi-value-title">SVLAN ID</label>
+            <div class="cbi-value-field">
+              <input type="text" name="58" class="cbi-input-select" value="<%=uciget('uci get vlan.vlan.svlan')%>">
+            </div>
+          </div>
+          <div class="cbi-value" id="ethertype">
+            <label class="cbi-value-title">SVLAN EtherType</label>
+            <div class="cbi-value-field">
+              <select class="cbi-input-select" name="59">
+                 <script type="text/javascript">
+                 var opt = "<%=uciget('uci get vlan.vlan.svlanethertype')%>";
+                 document.write("<option value='0x0081' ");
+                 if( opt == "0x0081" )
+                     document.write(" selected");
+                 document.write(">0x8100</option>");
+                 document.write("<option value='0xa888' ");
+                 if( opt == "0xa888" )
+                     document.write(" selected");
+                 document.write(">0x88a8</option>");
+                 document.write("<option value='0x0091' ");
+                 if( opt == "0x0091" )
+                     document.write(" selected");
+                 document.write(">0x9100</option>");
+                 document.write("<option value='0x0092' ");
+                 if( opt == "0x0092" )
+                     document.write(" selected");
+                 document.write(">0x9200</option>");
+                 </script>
+              </select>
+            </div>
+          </div>
+          <div class="cbi-value" id="macethertype">
+            <label class="cbi-value-title">SVLAN EtherType</label>
+            <div class="cbi-value-field">0x88a8</div>
+          </div>
+          <div class="cbi-value" id="trunkoption">
+            <label class="cbi-value-title">Trunk Option</label>
+            <div class="cbi-value-field">
+              <select class="cbi-input-select" name="56" onchange="hideparam()" id="trunkopt">
+                 <script type="text/javascript">
+                 var opt = "<%=uciget('uci get vlan.vlan.trunkoption')%>";
+                 document.write("<option value='1' ");
+                 if( opt == "1" )
+                     document.write(" selected");
+                 document.write(">List</option>");
+                 document.write("<option value='2' ");
+                 if( opt == "2" )
+                     document.write(" selected");
+                 document.write(">All</option>");
+                 </script>
+              </select>
             </div>
           </div>
       </fieldset>
     </form>
+    <fieldset class="cbi-section" id="trunkvlan1">
+          <div class="cbi-value" style="padding-left:98px;">
+            <div class="cbi-value-field">
+            <label class="cbi-value-title">Trunk VLAN ID</label>&nbsp;&nbsp;
+              <input type="text" id="newmac" class="cbi-input-select" style="width:150px;" value="" >&nbsp;&nbsp;
+              <input type="button" class="cbi-input-select" style="width:50px;" value="Add" onclick="add_id()">
+            </div>
+          </div>
+      </fieldset>
+      <fieldset class="cbi-section" id="trunkvlan2">
+	  <table class="cbi-section-table" style="width:300px; margin-left:98px; margin-top:15px;">
+        <script type="text/javascript">
+           var trunkid = "<%=uciget('uci get vlan.vlan.trunkvlan')%>";
+           if( trunkid != "" )
+           {
+               var id = trunkid.split(" ");
+               for(i=0; i<id.length; i++ )
+               {
+                   document.write("<tr>");
+                     document.write("<td>");
+                     document.write(id[i]);
+                     document.write("</td>");
+                     document.write("<td>");
+                     var del = "<input type='button' value='Delete' onclick='delete_id("+i+")'>"
+                     document.write(del);
+                     document.write("</td>");
+                   document.write("</tr>");
+               }
+           }
+        </script>
+	  </table>
+    </fieldset>
 </div>
 <div class="cbi-page-actions left">
 <div id="spin"></div>
@@ -183,19 +560,18 @@ function updateparam(value)
 <script type="text/javascript">
 var type = "<%=uciget('uci get network.lan.proto')%>";
 updateparam(type);
+updateparam_vlan();
 save_def_value();
 var mode = "<%=uciget('uci get wireless.@wifi-iface[1].mode')%>";
 var route_status = "<%=uciget('uci get network.param.networkmode')%>";
 if( mode == "ap" )
 {
-    document.getElementById("linkid").style.display = "none";
     document.getElementById("bridge").style.display = "block";
     document.getElementById("routingwifi").style.display = "none";
     document.getElementById("routingeth").style.display = "none";
 }
 else
 {
-    document.getElementById("linkid").style.display = "block";
     if( route_status == "1")
     {
         document.getElementById("bridge").style.display = "block";

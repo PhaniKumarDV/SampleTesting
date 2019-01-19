@@ -16,6 +16,7 @@
 <div class="page-content">
 <script type="text/javascript" src="<%=resource%>/cbi.js"></script>
 <script type="text/javascript">
+var radmode = "<%=uciget('uci get wireless.@wifi-iface[1].mode')%>";
 var def = new Array(8);
 function save_def_value()
 {
@@ -52,12 +53,18 @@ function save_value()
     );
 }
 </script>
-<h2><a id="content" name="content"><%: System Configuration%></a></h2>
+<h2><a id="content" name="content"><%:Quick Start%></a></h2>
 <div class="cbi-map">
     <ul class="cbi-tabmenu">
-        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=luci.dispatcher.build_url("admin/system/system")%>"><%:General%></a></li>
-        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="logging"><%:Logging%></a></li>
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=luci.dispatcher.build_url("admin/config")%>"><%:System%></a></li>
         <li style="margin-right:4px" class="cbi-tab"><a href="#"><%:Location%></a></li>
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="config1"><%:5GHz Radio%></a></li>
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="config2"><%:2.4GHz Radio%></a></li>
+        <script type="text/javascript">
+        if( radmode == "sta" ) {
+           document.write("<li style='margin-right:4px' class='cbi-tab-disabled'><a href='survey'><%:Survey%></a></li>");
+        }
+        </script>
     </ul>
     <form name="formTable">
       <fieldset class="cbi-section">
