@@ -915,6 +915,7 @@ struct ieee80211_node_stats {
     int16_t  	noise_floor; 
     u_int8_t    rtx;
     u_int8_t    tx_pwr;
+    u_int8_t    tx_chainmask;
 } __packed;
 
 /* VHT - Node Stats*/
@@ -927,8 +928,8 @@ struct ieee80211_link_param {
     u_int8_t  	ipv4[20];
     u_int32_t  	ul_limit; 
     u_int32_t  	dl_limit; 
-    u_int8_t	link_id;
-    u_int8_t	customer_name[32];
+    u_int8_t	link_id[33];
+    u_int8_t	customer_name[33];
     u_int8_t	antenna_gain;
     u_int8_t    kwn_assem_frag;
     u_int16_t   kwn_max_pkt_size;
@@ -943,11 +944,11 @@ struct ieee80211_action_vht_link_param {
 
 struct ieee80211_dying_gasp_ie {
     u_int8_t    type;
-    u_int8_t	link_id;
+    u_int8_t	link_id[33];
     u_int16_t	seq_no;
     u_long   	ts;
     u_int8_t  	ipv4[20];
-    u_int8_t	customer_name[32];
+    u_int8_t	customer_name[33];
     
 } __packed;
 
@@ -2980,10 +2981,10 @@ struct ieee80211req_sta_info {
         u_int32_t isi_remote_mpdu_err;      /* Remote MPDU Err */
         u_int32_t isi_local_retries;        /* Local Retries */
         u_int32_t isi_remote_retries;       /* Remote Retries */
-        u_int8_t  isi_l_customer_name[32];
-        u_int8_t  isi_r_customer_name[32];
-        u_int8_t  isi_l_link_id;
-        u_int8_t  isi_r_link_id;
+        u_int8_t  isi_l_customer_name[33];
+        u_int8_t  isi_r_customer_name[33];
+        u_int8_t  isi_l_link_id[33];
+        u_int8_t  isi_r_link_id[33];
         int16_t   isi_l_noise_floor;
         int16_t   isi_r_noise_floor;
         u_int8_t  isi_kwn_tx_rate_mcs;

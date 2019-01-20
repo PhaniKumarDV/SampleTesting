@@ -487,8 +487,10 @@ void kwn_get_config_from_device( kwn_cfg_data *dev_cfg )
     memset(cmd_buf, '\0', sizeof(cmd_buf));
     sprintf( cmd,"uci get wireless.wifi1.linkid");
     kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] ); 
-    dev_cfg->linkid = atoi(cmd_buf);
-    printf("dev_cfg->Link_id : %d\n",dev_cfg->linkid);
+    len=strlen(cmd_buf);
+    memcpy(dev_cfg->linkid, cmd_buf, len);
+    printf("Len of Link Id : %d -",len);
+    printf("dev_cfg->linkid LINK ID : %s\n",dev_cfg->linkid);
 
     memset(cmd, '\0', sizeof(cmd));
     memset(cmd_buf, '\0', sizeof(cmd_buf));
@@ -724,9 +726,10 @@ void kwn_get_config_data( kwn_pkt* buf)
     len += llen;
 
     /* LINKID */
-    printf("LinkID: %d\n",data.linkid);
+    printf("LinkID: %s\n",data.linkid);
     llen = sizeof(data.linkid);     /* length */
     memcpy(buf->data+len, &llen,sizeof(uint16_t));
+    printf("llen of linkid : %d\n",llen);
     len += sizeof(uint16_t);
     type = KWN_CFG_LINKID;           /* type */
     memcpy(buf->data+len, &type,sizeof(uint8_t));
@@ -995,9 +998,9 @@ void kwn_set_config_data( kwn_pkt* buf )
             }
             case KWN_CFG_LINKID:
             {
-                uint8_t linkid;
+                uint8_t linkid[33]={'\0'};
                 memcpy(&linkid, buf->data+len,llen);
-                printf("Linkid: %d \n",linkid);
+                printf("Linkid: %s \n",linkid);
                 sprintf(cmd, "uci set wireless.wifi1.linkid='%d'",linkid);
                 system(cmd);
                 break;
