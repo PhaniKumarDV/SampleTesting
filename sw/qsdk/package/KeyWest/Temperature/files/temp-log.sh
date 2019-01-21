@@ -2,6 +2,7 @@
 
 # First arg interval
 int=$1
+temp_timer=`expr $int \* 60`;
 
 # Temp log app
 TEMP_LOG_APP="/usr/sbin/temp-log"
@@ -16,5 +17,5 @@ while [ 1 ]; do
     	fi
     fi
     $TEMP_LOG_APP $2
-    sleep "${int}"
+    sleep "${temp_timer}"
 done

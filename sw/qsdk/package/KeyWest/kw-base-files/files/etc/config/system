@@ -3,7 +3,7 @@ config system
 	option timezone	UTC
 	option log_size	64
     option templogstatus 1
-    option temploginterval 300
+    option temploginterval 30
     option temperature 0
     option log_ip '192.168.1.100'
     option log_port '514'
