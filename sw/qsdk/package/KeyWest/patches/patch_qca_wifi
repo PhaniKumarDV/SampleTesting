@@ -149,7 +149,7 @@ diff -urN qca-wifi-org/include/_ieee80211.h qca-wifi-mod/include/_ieee80211.h
      IEEE80211_VENDOR_IE_PARAM_UPDATE,
 diff -urN qca-wifi-org/include/ieee80211.h qca-wifi-mod/include/ieee80211.h
 --- qca-wifi-org/include/ieee80211.h	2018-06-08 11:00:50.000000000 +0530
-+++ qca-wifi-mod/include/ieee80211.h	2019-01-20 19:33:36.245956862 +0530
++++ qca-wifi-mod/include/ieee80211.h	2019-01-21 08:27:46.016138066 +0530
 @@ -768,6 +768,13 @@
  #define IEEE80211_ACTION_TPC_REQUEST        2   /* Transmit Power control */
  #define IEEE80211_ACTION_TPC_REPORT         3
@@ -249,7 +249,7 @@ diff -urN qca-wifi-org/include/ieee80211.h qca-wifi-mod/include/ieee80211.h
 +    u_int8_t  	ipv4[20];
 +    u_int32_t  	ul_limit; 
 +    u_int32_t  	dl_limit; 
-+    u_int8_t	link_id[33];
++    u_int8_t	link_id[11];
 +    u_int8_t	customer_name[33];
 +    u_int8_t	antenna_gain;
 +    u_int8_t    kwn_assem_frag;
@@ -265,7 +265,7 @@ diff -urN qca-wifi-org/include/ieee80211.h qca-wifi-mod/include/ieee80211.h
 +
 +struct ieee80211_dying_gasp_ie {
 +    u_int8_t    type;
-+    u_int8_t	link_id[33];
++    u_int8_t	link_id[11];
 +    u_int16_t	seq_no;
 +    u_long   	ts;
 +    u_int8_t  	ipv4[20];
@@ -361,8 +361,8 @@ diff -urN qca-wifi-org/include/ieee80211.h qca-wifi-mod/include/ieee80211.h
 +        u_int32_t isi_remote_retries;       /* Remote Retries */
 +        u_int8_t  isi_l_customer_name[33];
 +        u_int8_t  isi_r_customer_name[33];
-+        u_int8_t  isi_l_link_id[33];
-+        u_int8_t  isi_r_link_id[33];
++        u_int8_t  isi_l_link_id[11];
++        u_int8_t  isi_r_link_id[11];
 +        int16_t   isi_l_noise_floor;
 +        int16_t   isi_r_noise_floor;
 +        u_int8_t  isi_kwn_tx_rate_mcs;
@@ -2071,7 +2071,7 @@ diff -urN qca-wifi-org/os/linux/include/ieee80211_ioctl.h qca-wifi-mod/os/linux/
  #endif /* _NET80211_IEEE80211_IOCTL_H_ */
 diff -urN qca-wifi-org/os/linux/src/ieee80211_wireless.c qca-wifi-mod/os/linux/src/ieee80211_wireless.c
 --- qca-wifi-org/os/linux/src/ieee80211_wireless.c	2018-06-08 11:00:40.000000000 +0530
-+++ qca-wifi-mod/os/linux/src/ieee80211_wireless.c	2019-01-20 19:34:28.599098957 +0530
++++ qca-wifi-mod/os/linux/src/ieee80211_wireless.c	2019-01-21 08:30:45.846458610 +0530
 @@ -106,6 +106,11 @@
  int ieee80211_authorise_local_peer(wlan_if_t vap, char *params);
  #endif
@@ -2138,7 +2138,7 @@ diff -urN qca-wifi-org/os/linux/src/ieee80211_wireless.c qca-wifi-mod/os/linux/s
      if (freq->e == 1)
          i = (u_int8_t)wlan_mhz2ieee(osnetdev->os_devhandle, freq->m / 100000, 0);
      else
-@@ -600,6 +644,51 @@
+@@ -600,6 +644,53 @@
  }
  
  static int
@@ -2158,7 +2158,8 @@ diff -urN qca-wifi-org/os/linux/src/ieee80211_wireless.c qca-wifi-mod/os/linux/s
 +	    data->length = IEEE80211_NWID_LEN;
 +    if ( vap->iv_ic->ic_str_type == CUSTOMER_NAME ) {
 +	    OS_MEMZERO(vap->iv_ic->ic_customer_name, 32);
-+	    OS_MEMCPY(vap->iv_ic->ic_customer_name, ssid, sizeof(vap->iv_ic->ic_customer_name));
++		strncpy(vap->iv_ic->ic_customer_name, ssid, 32);
++	    //OS_MEMCPY(vap->iv_ic->ic_customer_name, ssid, sizeof(vap->iv_ic->ic_customer_name));
 +	    printk("Cusname: %s \n",vap->iv_ic->ic_customer_name);
 +    }
 +    else if ( vap->iv_ic->ic_str_type == LONGITUDE ) {
@@ -2178,8 +2179,9 @@ diff -urN qca-wifi-org/os/linux/src/ieee80211_wireless.c qca-wifi-mod/os/linux/s
 +	    OS_MEMCPY(vap->iv_ic->ic_ipaddr, ssid, data->length);
 +    }
 +    else if ( vap->iv_ic->ic_str_type == LINK_ID ) {
-+	    OS_MEMZERO(vap->iv_ic->ic_link_id, 32);
-+	    OS_MEMCPY(vap->iv_ic->ic_link_id, ssid, sizeof(vap->iv_ic->ic_link_id));
++	    OS_MEMZERO(vap->iv_ic->ic_link_id, 10);
++		strncpy(vap->iv_ic->ic_link_id, ssid, 10);
++	    //OS_MEMCPY(vap->iv_ic->ic_link_id, ssid, sizeof(vap->iv_ic->ic_link_id));
 +	    printk("Link Id: %s \n",vap->iv_ic->ic_link_id);
 +    }
 +    vap->iv_ic->ic_str_type = 0;
@@ -2190,7 +2192,7 @@ diff -urN qca-wifi-org/os/linux/src/ieee80211_wireless.c qca-wifi-mod/os/linux/s
  ieee80211_ioctl_giwessid(struct net_device *dev,
      struct iw_request_info *info,
      struct iw_point *data, char *essid)
-@@ -1148,6 +1237,7 @@
+@@ -1148,6 +1239,7 @@
      wlan_if_t vap;
      struct sockaddr addr[IW_MAX_AP];
      struct iw_quality qual[IW_MAX_AP];
@@ -2198,7 +2200,7 @@ diff -urN qca-wifi-org/os/linux/src/ieee80211_wireless.c qca-wifi-mod/os/linux/s
      int i;
  };
  
-@@ -1161,6 +1251,9 @@
+@@ -1161,6 +1253,9 @@
      u_int8_t *se_macaddr = wlan_scan_entry_macaddr(se);
      u_int8_t *se_bssid = wlan_scan_entry_bssid(se);
      u_int8_t se_rssi = wlan_scan_entry_rssi(se);
@@ -2208,7 +2210,7 @@ diff -urN qca-wifi-org/os/linux/src/ieee80211_wireless.c qca-wifi-mod/os/linux/s
  
      if (i >= IW_MAX_AP)
          return 0;
-@@ -1171,6 +1264,9 @@
+@@ -1171,6 +1266,9 @@
          IEEE80211_ADDR_COPY(req->addr[i].sa_data, se_bssid);
  
      set_quality(&req->qual[i], se_rssi);
@@ -2218,7 +2220,7 @@ diff -urN qca-wifi-org/os/linux/src/ieee80211_wireless.c qca-wifi-mod/os/linux/s
  
      req->i = i+1;
  
-@@ -1199,12 +1295,39 @@
+@@ -1199,12 +1297,39 @@
      data->flags = 1;        /* signal quality present (sort of) */
      OS_MEMCPY(extra + req->i*sizeof(req->addr[0]), &req->qual,
          req->i*sizeof(req->qual[0]));
@@ -2258,7 +2260,7 @@ diff -urN qca-wifi-org/os/linux/src/ieee80211_wireless.c qca-wifi-mod/os/linux/s
  #ifdef SIOCGIWSCAN
  static int
  ieee80211_ioctl_siwscan(struct net_device *dev,
-@@ -10106,7 +10229,7 @@
+@@ -10106,7 +10231,7 @@
   */
  static int
  ieee80211_ioctl_addmac(struct net_device *dev, struct iw_request_info *info,
@@ -2267,7 +2269,7 @@ diff -urN qca-wifi-org/os/linux/src/ieee80211_wireless.c qca-wifi-mod/os/linux/s
  {
      osif_dev *osifp = ath_netdev_priv(dev);
      wlan_if_t vap = osifp->os_if;
-@@ -10115,8 +10238,47 @@
+@@ -10115,8 +10240,47 @@
  
      debug_print_ioctl(dev->name, IEEE80211_IOCTL_ADDMAC, "addmac") ;
  
@@ -2317,7 +2319,7 @@ diff -urN qca-wifi-org/os/linux/src/ieee80211_wireless.c qca-wifi-mod/os/linux/s
  }
  
  /**
-@@ -11208,6 +11370,29 @@
+@@ -11208,6 +11372,29 @@
  
      debug_print_ioctl(dev->name, 0xffff, "getscanresults");
  
@@ -2347,7 +2349,7 @@ diff -urN qca-wifi-org/os/linux/src/ieee80211_wireless.c qca-wifi-mod/os/linux/s
      if (!(dev->flags & IFF_UP)) {
          return -EINVAL;
      }
-@@ -14947,6 +15132,275 @@
+@@ -14947,6 +15134,275 @@
      IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1, 0, "dfs_notify" },
      { IEEE80211_PARAM_DFS_INFO_NOTIFY_APP,
      0, IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1, "g_dfs_notify" },
@@ -2623,7 +2625,7 @@ diff -urN qca-wifi-org/os/linux/src/ieee80211_wireless.c qca-wifi-mod/os/linux/s
  };
  
  static const iw_handler ieee80211_handlers[] = {
-@@ -14992,7 +15446,7 @@
+@@ -14992,7 +15448,7 @@
  #endif /* SIOCGIWSCAN */
      (iw_handler) ieee80211_ioctl_siwessid,      /* SIOCSIWESSID */
      (iw_handler) ieee80211_ioctl_giwessid,      /* SIOCGIWESSID */
@@ -2632,7 +2634,7 @@ diff -urN qca-wifi-org/os/linux/src/ieee80211_wireless.c qca-wifi-mod/os/linux/s
      (iw_handler) NULL,      /* SIOCGIWNICKN */
      (iw_handler) NULL,              /* -- hole -- */
      (iw_handler) NULL,              /* -- hole -- */
-@@ -15309,11 +15763,26 @@
+@@ -15309,11 +15765,26 @@
      {
  
      case SIOCG80211STATS:
@@ -5951,7 +5953,7 @@ diff -urN qca-wifi-org/umac/include/ieee80211_mlme.h qca-wifi-mod/umac/include/i
                             u_int32_t                            beacon_frame_length,
 diff -urN qca-wifi-org/umac/include/ieee80211_node.h qca-wifi-mod/umac/include/ieee80211_node.h
 --- qca-wifi-org/umac/include/ieee80211_node.h	2018-06-08 11:00:49.000000000 +0530
-+++ qca-wifi-mod/umac/include/ieee80211_node.h	2019-01-20 19:34:50.465905269 +0530
++++ qca-wifi-mod/umac/include/ieee80211_node.h	2019-01-21 08:30:52.378397609 +0530
 @@ -142,6 +142,51 @@
      u_int64_t  ni_last_ack_jiffies;
  } ni_ctrl_stats_t;
@@ -6020,7 +6022,7 @@ diff -urN qca-wifi-org/umac/include/ieee80211_node.h qca-wifi-mod/umac/include/i
 +    u_int32_t   local_retries;
 +    u_int32_t   remote_retries;
 +    u_int8_t	customer_name[33];
-+    u_int8_t	link_id[33];
++    u_int8_t	link_id[11];
 +    int16_t	    remote_noise_floor;
 +    int8_t      kwn_txrate;
 +    int8_t      kwn_txpwr;
@@ -6075,7 +6077,7 @@ diff -urN qca-wifi-org/umac/include/ieee80211_vap.h qca-wifi-mod/umac/include/ie
  #endif
 diff -urN qca-wifi-org/umac/include/ieee80211_var.h qca-wifi-mod/umac/include/ieee80211_var.h
 --- qca-wifi-org/umac/include/ieee80211_var.h	2018-06-08 11:00:49.000000000 +0530
-+++ qca-wifi-mod/umac/include/ieee80211_var.h	2019-01-20 19:35:04.133159188 +0530
++++ qca-wifi-mod/umac/include/ieee80211_var.h	2019-01-21 08:30:59.202333879 +0530
 @@ -590,6 +590,7 @@
  #define RNR_MAX_SIZE               256    /* >= RNR_MAX_ENTRIES * (sizeof(rnr_ap_info_t) + sizeof(rnr_tbtt_info_t)) */
  #define ACR_MAX_ENTRIES            16     /* AP Channel Report entries */
@@ -6136,7 +6138,7 @@ diff -urN qca-wifi-org/umac/include/ieee80211_var.h qca-wifi-mod/umac/include/ie
 +    int                                 sta_freq;        /* setting in Mhz */
 +    u_int32_t                           dying_gasp;
 +    u_int32_t                           ic_str_type;
-+    u_int8_t                            ic_link_id[33];
++    u_int8_t                            ic_link_id[11];
 +    char	   			ic_customer_name[33];
 +    char				ic_longitude[32];
 +    char				ic_latitude[32];
@@ -6355,7 +6357,7 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt_ap.c qca-wifi-mod/umac/mlme/ieee
              if (iswpaoui(frm)) {
 diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee80211_mgmt.c
 --- qca-wifi-org/umac/mlme/ieee80211_mgmt.c	2018-06-08 11:00:48.000000000 +0530
-+++ qca-wifi-mod/umac/mlme/ieee80211_mgmt.c	2019-01-20 19:35:53.214479888 +0530
++++ qca-wifi-mod/umac/mlme/ieee80211_mgmt.c	2019-01-21 08:31:06.418266488 +0530
 @@ -22,10 +22,21 @@
  #include "ieee80211_wifipos_pvt.h"
  #endif
@@ -6767,7 +6769,7 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee802
 +				strncpy( frame->at_dying_gasp.ipv4, ic->ic_ipaddr, sizeof( ic->ic_ipaddr ) );
 +				frame->at_dying_gasp.ts = jiffies;
 +				frame->at_dying_gasp.seq_no = dg_seq++;
-+				strncpy(frame->at_dying_gasp.link_id,ic->ic_link_id,32);
++				strncpy(frame->at_dying_gasp.link_id,ic->ic_link_id,10);
 +				strncpy(frame->at_dying_gasp.customer_name,ic->ic_customer_name,32);
 +			}
 +			else if ( actionargs->arg1 == 1 ) {
