@@ -655,6 +655,9 @@ enable_qcawifi() {
     # using AMSDU instead of kwn_amsdu
 	iwpriv "$phy" kwn_amsdu 1
 
+    config_get linkid "$device" linkid
+	[ -n "$linkid" ] && iwpriv "$phy" linkid $linkid
+
 	config_get dyinggasp "$vif" dyinggasp
 	[ -n "$dyinggasp" ] && iwpriv "$phy" dying_gasp $dyinggasp
 	
@@ -1170,10 +1173,6 @@ enable_qcawifi() {
         config_get name "$device" customername
 		iwpriv "$phy" str_type 1
 		[ -n "$name" ] && iwconfig $ifname nickname $name
-
-        config_get linkid "$device" linkid
-		iwpriv "$phy" str_type 5
-		[ -n "$name" ] && iwconfig $ifname nickname $linkid
 
 		case "$enc" in
 			none)

@@ -172,7 +172,7 @@ typedef struct
 }__attribute__((packed)) kwn_pkt_hdr;
 
 /* configuration update structure */
-/* Size of kwn_cfg_update = 4+1+33+1+1+1+1+6+2+4+4+33+33+1+1+1+1+1+1+1+4+4+4 = 143 bytes */
+/* Size of kwn_cfg_update = 4+1+33+1+1+1+1+6+2+4+4+33+1+1+1+1+1+1+1+1+4+4+4 = 111 bytes */
 typedef struct
 {
     uint8_t  ip[4];         /*                ipaddress -  4 bytes */
@@ -187,7 +187,7 @@ typedef struct
     uint8_t  gip[4];        /*                  gateway -  4 bytes */
     uint8_t  netmask[4];    /*                  netmask -  4 bytes */
     uint8_t  cust_name[33]; /*                cust_name - 33 bytes */
-    uint8_t  linkid[33];    /*                   linkid - 33 byte  */
+    uint8_t  linkid;        /*                   linkid -  1 byte  */
     uint8_t  ddrs_status;   /*               ddrsstatus -  1 byte  */
     uint8_t  stream;        /*           spatial stream -  1 byte  */
     uint8_t  modindex;      /*         Modulation index -  1 byte  */

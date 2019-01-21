@@ -1,6 +1,6 @@
 diff -urN libiwinfo-2015-06-01_org/include/iwinfo.h libiwinfo-2015-06-01_mod/include/iwinfo.h
 --- libiwinfo-2015-06-01_org/include/iwinfo.h	2018-07-09 13:57:34.289239779 +0530
-+++ libiwinfo-2015-06-01_mod/include/iwinfo.h	2019-01-21 08:33:46.780768846 +0530
++++ libiwinfo-2015-06-01_mod/include/iwinfo.h	2019-01-21 16:47:22.809245962 +0530
 @@ -102,6 +102,34 @@
      char local_long[32];
      char remote_lat[32];
@@ -20,8 +20,8 @@ diff -urN libiwinfo-2015-06-01_org/include/iwinfo.h libiwinfo-2015-06-01_mod/inc
 +	uint32_t remote_retries;
 +    uint8_t l_customer_name[33];
 +    uint8_t r_customer_name[33];
-+    uint8_t l_link_id[11];
-+    uint8_t r_link_id[11];
++    uint8_t l_link_id;
++    uint8_t r_link_id;
 +    int16_t l_noise_floor;
 +    int16_t r_noise_floor;
 +    uint8_t tx_rate_mcs;
@@ -38,7 +38,7 @@ diff -urN libiwinfo-2015-06-01_org/include/iwinfo.h libiwinfo-2015-06-01_mod/inc
  struct iwinfo_txpwrlist_entry {
 diff -urN libiwinfo-2015-06-01_org/iwinfo_lua.c libiwinfo-2015-06-01_mod/iwinfo_lua.c
 --- libiwinfo-2015-06-01_org/iwinfo_lua.c	2018-07-09 13:58:03.333239283 +0530
-+++ libiwinfo-2015-06-01_mod/iwinfo_lua.c	2019-01-20 19:50:22.304148958 +0530
++++ libiwinfo-2015-06-01_mod/iwinfo_lua.c	2019-01-21 16:47:57.701804728 +0530
 @@ -272,6 +272,9 @@
  
  			lua_newtable(L);
@@ -95,10 +95,10 @@ diff -urN libiwinfo-2015-06-01_org/iwinfo_lua.c libiwinfo-2015-06-01_mod/iwinfo_
 +			lua_pushstring(L, e->r_customer_name);
 +			lua_setfield(L, -2, "r_customer_name");
 +
-+			lua_pushstring(L, e->l_link_id);
++			lua_pushnumber(L, e->l_link_id);
 +			lua_setfield(L, -2, "l_link_id");
 +
-+			lua_pushstring(L, e->r_link_id);
++			lua_pushnumber(L, e->r_link_id);
 +			lua_setfield(L, -2, "r_link_id");
 +
 +			lua_pushnumber(L, e->l_noise_floor);
@@ -139,7 +139,7 @@ diff -urN libiwinfo-2015-06-01_org/iwinfo_lua.c libiwinfo-2015-06-01_mod/iwinfo_
  				lua_pushnumber(L, e->rx_rate.mcs);
 diff -urN libiwinfo-2015-06-01_org/iwinfo_qcawifi.c libiwinfo-2015-06-01_mod/iwinfo_qcawifi.c
 --- libiwinfo-2015-06-01_org/iwinfo_qcawifi.c	2018-07-09 13:58:28.057238861 +0530
-+++ libiwinfo-2015-06-01_mod/iwinfo_qcawifi.c	2019-01-20 19:50:40.910884434 +0530
++++ libiwinfo-2015-06-01_mod/iwinfo_qcawifi.c	2019-01-21 16:47:41.381543297 +0530
 @@ -799,6 +799,35 @@
  			memcpy(entry.local_long, si->isi_l_longitude+5, sizeof(entry.local_long));
  			memcpy(entry.remote_lat, si->isi_r_latitude+5, sizeof(entry.local_long));
@@ -159,8 +159,8 @@ diff -urN libiwinfo-2015-06-01_org/iwinfo_qcawifi.c libiwinfo-2015-06-01_mod/iwi
 +			entry.remote_retries = si->isi_remote_retries;
 +			memcpy(entry.l_customer_name, si->isi_l_customer_name, sizeof(entry.l_customer_name));
 +			memcpy(entry.r_customer_name, si->isi_r_customer_name, sizeof(entry.r_customer_name));
-+			memcpy(entry.l_link_id, si->isi_l_link_id, sizeof(entry.l_link_id));
-+			memcpy(entry.r_link_id, si->isi_r_link_id, sizeof(entry.r_link_id));
++			entry.l_link_id = si->isi_l_link_id;
++			entry.r_link_id = si->isi_r_link_id;
 +			entry.l_noise_floor = si->isi_l_noise_floor;
 +			entry.r_noise_floor = si->isi_r_noise_floor;
 +			entry.tx_rate_mcs = si->isi_kwn_tx_rate_mcs;
