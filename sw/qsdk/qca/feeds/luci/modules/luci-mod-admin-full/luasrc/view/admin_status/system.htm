@@ -431,13 +431,13 @@ function hideparam()
           <div class="cbi-value" id="mgmtvlan">
             <label class="cbi-value-title">Mgmt VLAN ID</label>
             <div class="cbi-value-field">
-              <input type="text" name="54" class="cbi-input-select" value="<%=uciget('uci get vlan.vlan.mgmtvlan')%>">
+              <input type="text" name="54" class="cbi-input-select" value="<%=uciget('uci get vlan.vlan.mgmtvlan')%>"> &nbsp; (1-4094)
             </div>
           </div>
           <div class="cbi-value" id="accessvlan">
             <label class="cbi-value-title">Access VLAN ID</label>
             <div class="cbi-value-field">
-              <input type="text" name="55" class="cbi-input-select" value="<%=uciget('uci get vlan.vlan.accessvlan')%>">
+              <input type="text" name="55" class="cbi-input-select" value="<%=uciget('uci get vlan.vlan.accessvlan')%>"> &nbsp; (1-4094)
             </div>
           </div>
           <div class="cbi-value" id="bda">
@@ -467,7 +467,7 @@ function hideparam()
           <div class="cbi-value" id="qinq">
             <label class="cbi-value-title">SVLAN ID</label>
             <div class="cbi-value-field">
-              <input type="text" name="58" class="cbi-input-select" value="<%=uciget('uci get vlan.vlan.svlan')%>">
+              <input type="text" name="58" class="cbi-input-select" value="<%=uciget('uci get vlan.vlan.svlan')%>"> &nbsp; (1-4094)
             </div>
           </div>
           <div class="cbi-value" id="ethertype">

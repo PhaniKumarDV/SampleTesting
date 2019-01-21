@@ -121,7 +121,7 @@ function updateparam(value)
           <div class="cbi-value">
             <label class="cbi-value-title">Primary Server Port</label>
             <div class="cbi-value-field">
-              <input type="text" name="34" class="cbi-input-select" value="<%=uciget('uci get wrt-radauth.sys.primaryPort')%>" >
+              <input type="text" name="34" class="cbi-input-select" value="<%=uciget('uci get wrt-radauth.sys.primaryPort')%>" > &nbsp; (1-65535)
             </div>
           </div>
           <div class="cbi-value">
@@ -146,7 +146,7 @@ function updateparam(value)
           <div class="cbi-value">
             <label class="cbi-value-title">Secondary Server Port</label>
             <div class="cbi-value-field">
-              <input type="text" name="37" class="cbi-input-select" value="<%=uciget('uci get wrt-radauth.sys.secondaryPort')%>" >
+              <input type="text" name="37" class="cbi-input-select" value="<%=uciget('uci get wrt-radauth.sys.secondaryPort')%>" > &nbsp; (1-65535)
             </div>
           </div>
           <div class="cbi-value">
@@ -165,25 +165,25 @@ function updateparam(value)
           <div class="cbi-value">
             <label class="cbi-value-title">Reauthentication Time</label>
             <div class="cbi-value-field">
-              <input type="text" name="39" class="cbi-input-select" value="<%=uciget('uci get wrt-radauth.sys.reauthTime')%>" >&nbsp;sec
+              <input type="text" name="39" class="cbi-input-select" value="<%=uciget('uci get wrt-radauth.sys.reauthTime')%>" > &nbsp; (10-65535) sec
             </div>
           </div>
           <div class="cbi-value">
             <label class="cbi-value-title">Retry Time</label>
             <div class="cbi-value-field">
-              <input type="text" name="40" class="cbi-input-select" value="<%=uciget('uci get wrt-radauth.sys.retryTime')%>" >&nbsp;sec
+              <input type="text" name="40" class="cbi-input-select" value="<%=uciget('uci get wrt-radauth.sys.retryTime')%>" > &nbsp; (10-65535) sec
             </div>
           </div>
           <div class="cbi-value">
             <label class="cbi-value-title">Retry Count</label>
             <div class="cbi-value-field">
-              <input type="text" name="41" class="cbi-input-select" value="<%=uciget('uci get wrt-radauth.sys.requestRetries')%>" >
+              <input type="text" name="41" class="cbi-input-select" value="<%=uciget('uci get wrt-radauth.sys.requestRetries')%>" > &nbsp; (1-65535)
             </div>
           </div>
           <div class="cbi-value">
             <label class="cbi-value-title">Retry Count Period</label>
             <div class="cbi-value-field">
-              <input type="text" name="42" class="cbi-input-select" value="<%=uciget('uci get wrt-radauth.sys.requestTimeout')%>" >&nbsp;sec
+              <input type="text" name="42" class="cbi-input-select" value="<%=uciget('uci get wrt-radauth.sys.requestTimeout')%>" > &nbsp; (1-65535) sec
             </div>
           </div>
           </fieldset>

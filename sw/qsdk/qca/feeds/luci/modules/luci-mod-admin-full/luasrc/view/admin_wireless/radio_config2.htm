@@ -208,7 +208,7 @@ function updatehidessid()
           <div class="cbi-value">
             <label class="cbi-value-title">SSID</label>
             <div class="cbi-value-field">
-              <input type="text" name="16" class="cbi-input-select" value="<%=uciget('uci get wireless.@wifi-iface[0].ssid')%>" >
+              <input type="text" name="16" class="cbi-input-select" value="<%=uciget('uci get wireless.@wifi-iface[0].ssid')%>" > &nbsp; (1-32) characters
             </div>
           </div>
           <div class="cbi-value">
@@ -272,7 +272,7 @@ function updatehidessid()
           <div class="cbi-value">
             <label class="cbi-value-title">Transmit Power</label>
             <div class="cbi-value-field">
-              <input type="text" name="21" class="cbi-input-select" value="<%=uciget('uci get wireless.wifi0.TXPowLim2G')%>" > &nbsp; dBm
+              <input type="text" name="21" class="cbi-input-select" value="<%=uciget('uci get wireless.wifi0.TXPowLim2G')%>" > &nbsp; (1-23) dBm
               <!--<select class="cbi-input-select" name="21">
                  <script type="text/javascript">
                  var pwr = "<%=uciget('uci get wireless.wifi0.TXPowLim2G')%>";

@@ -202,7 +202,7 @@ function updatehidessid()
           <div class="cbi-value">
             <label class="cbi-value-title">SSID</label>
             <div class="cbi-value-field">
-              <input type="text" name="2" class="cbi-input-select" value="<%=uciget('uci get wireless.@wifi-iface[1].ssid')%>" >
+              <input type="text" name="2" class="cbi-input-select" value="<%=uciget('uci get wireless.@wifi-iface[1].ssid')%>" > &nbsp; (1-32) characters
             </div>
           </div>
           <div class="cbi-value">
@@ -246,7 +246,7 @@ function updatehidessid()
          <div class="cbi-value">
             <label class="cbi-value-title">Distance</label>
             <div class="cbi-value-field">
-              <input type="text" name="73" class="cbi-input-select" value="<%=uciget('uci get wireless.wifi1.distance')%>" > &nbsp; Km
+              <input type="text" name="73" class="cbi-input-select" value="<%=uciget('uci get wireless.wifi1.distance')%>" > &nbsp; (1-30) Km
             </div>
           </div>
           <div class="cbi-value">
@@ -272,13 +272,13 @@ function updatehidessid()
           <div class="cbi-value">
             <label class="cbi-value-title">Uplink Limit</label>
             <div class="cbi-value-field">
-              <input type="text" name="10" class="cbi-input-select" value="<%=uciget('uci get wireless.@wifi-iface[1].ullmt')%>" > &nbsp; Kbps
+              <input type="text" name="10" class="cbi-input-select" value="<%=uciget('uci get wireless.@wifi-iface[1].ullmt')%>" > &nbsp; (0-867000) Kbps
             </div>
           </div>
           <div class="cbi-value">
             <label class="cbi-value-title">Downlink Limit</label>
             <div class="cbi-value-field">
-              <input type="text" name="11" class="cbi-input-select" value="<%=uciget('uci get wireless.@wifi-iface[1].dllmt')%>" > &nbsp; Kbps
+              <input type="text" name="11" class="cbi-input-select" value="<%=uciget('uci get wireless.@wifi-iface[1].dllmt')%>" > &nbsp; (0-867000) Kbps
             </div>
           </div>
           <div class="cbi-value">
