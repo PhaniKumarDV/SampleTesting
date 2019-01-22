@@ -6,6 +6,24 @@
 
 <%
 	local fs = require "nixio.fs"
+	local uci = require "luci.model.uci".cursor()
+	local ntm = require "luci.model.network"
+	ntm.init(uci)
+
+	local devices  = ntm:get_wifidevs()
+
+	local netlist = { }
+	local netdevs = { }
+
+	local dev
+	for _, dev in ipairs(devices) do
+		local net
+		for _, net in ipairs(dev:get_wifinets()) do
+			netlist[#netlist+1] = net:id()
+			netdevs[net:id()] = dev:name()
+		end
+	end
+
 	local util = require "luci.util"
 	local stat = require "luci.tools.status"
 	local ver = require "luci.version"
@@ -26,7 +44,6 @@
     local eth_has_no_link
 	local serial_no =  luci.sys.exec("fw_printenv -n amigoserial")
 
-    local uci  = require "luci.model.uci".cursor()
     local currTemperature = uci:get_first("system", "system", "temperature")
     local cablen = luci.sys.exec("ssdk_sh port cdt run 5 0 | grep cable")
    
@@ -185,6 +202,9 @@ else if( country == 5017 ) {
 else if( country == 5018 ) {
     country = "INDIA";
 }
+else if( country == 5019 ) {
+    country = "5GHz";
+}
 else {
     country = "RUSSIA";
 }
@@ -203,6 +223,92 @@ if( val != "" )
     ip = ( network_mode == 1 ? ip[1] : route_ip );
     mask = val[5].split(":");
     mask = ( network_mode == 1 ? mask[1] : route_mask );
+}
+
+function get_mcs_rate( mcs_indx, radio )
+{
+                               /*  0     1     2     3      4       5      6     7      8      9      10      11    12     13     14     15     16     17    18     19  */
+    var rate_11ac_5_shortgi  = [  1.8,  3.6,  5.4,   7.2, 10.8 ,  14.4,  16.2,  18  ,   0  ,   0  ,   3.6,   7.2,  10.8,  14.4,  21.7,  28.9,  32.5,  36.1,   0,     0   ];
+    var rate_11ac_10_shortgi = [  3.6,  7.2, 10.8,  14.4, 21.7 ,  28.9,  32.5,  36.1,   0  ,   0  ,   7.2,  14.4,  21.7,  28.9,  43.3,  57.8,  65  ,  72.2,   0  ,   0   ];
+    var rate_11ac_20_shortgi = [  7.2, 14.4, 21.7,  28.9, 43.3 ,  57.8,  65  ,  72.2,  86.7,  96  ,  14.4,  28.9,  43.3,  57.8,  86.7, 115.6, 130  , 144.4, 173.3, 192   ];
+    var rate_11ac_40_shortgi = [ 15  , 30  , 45  ,  60  , 90   , 120  , 135  , 150  , 180  , 200  ,  30  ,    60,  90  , 120  , 180  , 240  , 270  , 300  , 360  , 400   ];
+    var rate_11ac_80_shortgi = [ 32.5, 65  , 97.5,  130 , 195  , 260  , 292.5, 325  , 390  , 433.3,  65  ,   130, 195  , 260  , 390  , 520  , 585  , 650  , 780  , 866.7 ];
+    
+                               /*  0     1     2     3      4       5      6     7      8      9      10      11    12     13     14     15     16     17    18     19  */
+    var rate_11ac_5_fullgi   = [  1.6,  3.3,  4.9,   6.5,   9.7,  13  ,  14.6,  16.2,   0  ,   0  ,   3.3,   6.5,   9.7,  13  ,  19.5,  26  ,  29.3,  32.5,   0  ,   0   ];
+    var rate_11ac_10_fullgi  = [  3.3,  6.5,  9.7,  13  ,  19.5,  26  ,  29.3,  32.5,   0  ,   0  ,   6.5,  13  ,  19.5,  26  ,  39  ,  52  ,  58.5,  65  ,   0  ,   0   ];
+    var rate_11ac_20_fullgi  = [  6.5, 13  , 19.5,  26  ,  39  ,  52  ,  58.5,  65  ,  78  ,  86  ,  13  ,  26  ,  39  ,  52  ,  78  , 104  , 117  , 130  , 156  , 173   ];
+    var rate_11ac_40_fullgi  = [ 13.5, 27  , 40.5,  54  ,  81  , 108  , 121.5, 135  , 162  , 180  ,  27  ,  54  ,  81  , 108  , 162  , 216  , 243  , 270  , 324  , 360   ];
+    var rate_11ac_80_fullgi  = [ 29.3, 58.5, 87.8, 117  , 175.5, 234  , 263.3, 292.5, 351  , 390  ,  58.5, 117  , 175.5, 234  , 351  , 468  , 526.5, 585  , 702  , 780   ];
+
+                               /*  0     1     2     3      4       5      6     7      8      9      10      11    12     13     14     15     16     17    18     19  */
+    var rate_11na_5_shortgi  = [  1.8,  3.6,  5.4,   7.2,  10.8,  14.4,  16.2,  18  , 3.6  ,   7.2,  10.8,  14.4,  21.7,  28.9,  32.5,  36.1,    0,     0,    0,     0  ];
+    var rate_11na_10_shortgi = [  3.6,  7.2, 10.8,  14.4,  21.7,  28.9,  32.5,  36.1, 7.2  ,  14.4,  21.7,  28.9,  43.3,  57.8,  65  ,  72.2,    0,     0,    0,     0  ];
+    var rate_11na_20_shortgi = [  7.2, 14.4, 21.7,  28.9,  43.3,  57.8,  65  ,  72.2,  14.4,  28.9,  43.3,  57.8,  86.7, 115.6, 130  , 144.4,    0,     0,    0,     0  ];
+    var rate_11na_40_shortgi = [ 15  , 30  , 45  ,  60  ,  90  , 120  , 135  , 150  ,  30  ,  60  ,  90  , 120  , 180  , 240  , 270  , 300  ,    0,     0,    0,     0  ];
+
+                               /*  0     1     2     3      4       5      6     7      8      9      10      11    12     13     14     15     16     17    18     19  */
+    var rate_11na_5_fullgi   = [  1.6,  3.3,  4.9,   6.5,   9.7,  13  ,  14.6,  16.2,   3.3,   6.5,   9.7,  13  ,  19.5,  26  ,  29.3,  32.5,    0,     0,    0,     0  ];
+    var rate_11na_10_fullgi  = [  3.3,  6.5,  9.7,  13  ,  19.5,  26  ,  29.3,  32.5,   6.5,  13  ,  19.5,  26  ,  39  ,  52  ,  58.5,  65  ,    0,     0,    0,     0  ];
+    var rate_11na_20_fullgi  = [  6.5, 13  , 19.5,  26  ,  39  ,  52  ,  58.5,  65  ,  13  ,  26  ,  39  ,  52  ,  78  , 104  , 117  , 130  ,    0,     0,    0,     0  ];
+    var rate_11na_40_fullgi  = [ 13.5, 27  , 40.5,  54  ,  81  , 108  , 121.5, 135  ,  27  ,  54  ,  81  , 108  , 162  , 216  , 243  , 270  ,    0,     0,    0,     0  ];
+
+    if( radio == 2 )
+    {
+        return rate_11na_20_fullgi[mcs_indx];
+    }
+
+    var opmode = "<%=uciget('uci get wireless.wifi1.hwmode')%>";
+    var bw = "<%=uciget('uci get wireless.wifi1.htmode')%>";
+    var gi = "<%=uciget('uci get wireless.@wifi-iface[1].shortgi')%>";
+    switch( bw )
+    {
+        case "HT10":
+        {
+            if( opmode == "11ac" )
+                rate_array = ( gi == 1 ? rate_11ac_10_shortgi : rate_11ac_10_fullgi );
+            else if( opmode == "11na" )
+                rate_array = ( gi == 1 ? rate_11na_10_shortgi : rate_11na_10_fullgi );
+            else
+                return -1;
+        }
+        break;
+        case "HT20":
+        {
+            if( opmode == "11ac" )
+                rate_array = ( gi == 1 ? rate_11ac_20_shortgi : rate_11ac_20_fullgi );
+            else if( opmode == "11na" )
+                rate_array = ( gi == 1 ? rate_11na_20_shortgi : rate_11na_20_fullgi );
+            else
+                return -1;
+        }
+        break;
+        case "HT40+":
+        case "HT40-":
+        {
+            if( opmode == "11ac" )
+                rate_array = ( gi == 1 ? rate_11ac_40_shortgi : rate_11ac_40_fullgi );
+            else if( opmode == "11na" )
+                rate_array = ( gi == 1 ? rate_11na_40_shortgi : rate_11na_40_fullgi );
+            else
+                return -1;
+        }
+        break;
+        case "HT80":
+        {
+            if( opmode == "11ac" )
+                rate_array = ( gi == 1 ? rate_11ac_80_shortgi : rate_11ac_80_fullgi );
+            else if( opmode == "11na" )
+                rate_array = ( gi == 1 ? rate_11na_80_shortgi : rate_11na_80_fullgi );
+            else
+                return -1;
+        }
+        break;
+        default:
+                return -1;
+        break;
+    }
+    return rate_array[mcs_indx];
 }
 
 	function progressbar(v, m)
@@ -244,6 +350,7 @@ function get_links()
             var l2 = ( ( l[1] > 1 ) ? ( l[1] - 1 ) : 0 );
 			document.getElementById("links1").innerHTML = l1;
 			document.getElementById("links2").innerHTML = l2;
+            link_stats( l1 );
 		}
 	}
     );
@@ -261,6 +368,66 @@ function get_links()
 	}
     );
 }
+
+function link_stats( links )
+{
+    /* DDRS 5GHz Radio */
+    var ddrs1 = "<%=uciget('uci get wireless.wifi1.ddrsstatus')%>";
+    document.getElementById("ddrs1").innerHTML = ( ddrs1 == 1 ? "Enabled" : "Disabled" );
+    if( links != 1 ) {
+        if( ddrs1 == 2 ) {
+            document.getElementById("rate1").innerHTML = get_mcs_rate("<%=uciget('uci get wireless.wifi1.ddrsrate')%>", 1) + " Mbps";
+        }
+        else {
+            document.getElementById("rate1").innerHTML = "-";
+        }
+    }
+    /* DDRS 2.4GHz Radio */
+    var rate = "<%=uciget('uci get wireless.wifi0.rate')%>";
+    document.getElementById("ddrs2").innerHTML = (rate == 21 ? "Enabled" : "Disabled");
+    if( rate != 21 ) {
+        document.getElementById("rate2").innerHTML = get_mcs_rate("<%=uciget('uci get wireless.wifi0.rate')%>", 2) + " Mbps";
+    }
+
+    /* ATPC 5GHz Radio */
+    var atpc1 = "<%=uciget('uci get wireless.wifi1.atpcstatus')%>";
+    document.getElementById("atpc1").innerHTML = ( atpc1 == 1 ? "Enabled" : "Disabled" );
+    if( links != 1 ) {
+        if( atpc1 == 2 ) {
+            document.getElementById("pow1").innerHTML = "<%=uciget('uci get wireless.wifi1.atpcpower')%>" + " dBm";
+        }
+        else {
+            document.getElementById("pow1").innerHTML = "-";
+        }
+    }
+    /* ATPC 2.4GHz Radio */
+    document.getElementById("atpc2").innerHTML = "Disabled";
+    document.getElementById("pow2").innerHTML = "<%=uciget('uci get wireless.wifi0.TXPowLim2G')%>" + " dBm";
+
+    if( links == 1 ) {
+        XHR.get('<%=luci.dispatcher.build_url("admin", "wireless", "wireless_status", table.concat(netlist, ","))%>', null,
+		    function(x, st)
+		    {
+			    if (st)
+			    {
+				    i = 1;
+					var iw = st[i];
+					var assoclist = [ ];
+					for( var bssid in iw.assoclist )
+					{
+						assoclist.push(iw.assoclist[bssid]);
+						assoclist[assoclist.length-1].bssid = bssid;
+					}
+					assoclist.sort(function(a, b) { a.bssid < b.bssid });
+                    j = 0;
+                    document.getElementById("rate1").innerHTML = assoclist[j].tx_rate / 1000 + " Mbps";
+                    document.getElementById("pow1").innerHTML = assoclist[j].l_tx_power + " dBm";
+                }
+            }
+        );
+    }
+}
+
 function get_desc()
 {
     var id = 1;
@@ -370,16 +537,6 @@ function get_log()
                                var freq = net.frequency * 1000;
                                document.getElementById("chan1").innerHTML = net.channel + " ( " + freq + " MHz )"
                             }
-                            var ddrs1 = "<%=uciget('uci get wireless.wifi1.ddrsstatus')%>";
-                            document.getElementById("ddrs1").innerHTML = ( ddrs1 == 1 ? "Enabled" : "Disabled" );
-                            if( ddrs1 == 2 ) {
-                                 document.getElementById("rate1").innerHTML = "MCS" + "<%=uciget('uci get wireless.wifi1.ddrsrate')%>";
-                            }
-                            var atpc1 = "<%=uciget('uci get wireless.wifi1.atpcstatus')%>";
-                            document.getElementById("atpc1").innerHTML = ( atpc1 == 1 ? "Enabled" : "Disabled" );
-                            if( atpc1 == 2 ) {
-                                 document.getElementById("pow1").innerHTML = "<%=uciget('uci get wireless.wifi1.atpcpower')%>" + " dBm";
-                            }
                             document.getElementById("dis1").innerHTML = "<%=uciget('uci get wireless.wifi1.distance')%>" + " Km";
                             var enc = "None";
                             if( net.encryption != "None" ) 
@@ -401,13 +558,6 @@ function get_log()
                                var freq = net.frequency * 1000;
                                document.getElementById("chan2").innerHTML = net.channel + " ( " + freq + " MHz )"
                             }
-                            var rate = "<%=uciget('uci get wireless.wifi0.rate')%>";
-                            document.getElementById("ddrs2").innerHTML = (rate == 21 ? "Enabled" : "Disabled");
-                            if( rate != 21 ) {
-                                 document.getElementById("rate2").innerHTML = "MCS" + "<%=uciget('uci get wireless.wifi0.rate')%>";
-                            }
-                            document.getElementById("atpc2").innerHTML = "Disabled";
-                            document.getElementById("pow2").innerHTML = "<%=uciget('uci get wireless.wifi0.TXPowLim2G')%>" + " dBm";
                             document.getElementById("dis2").innerHTML = "300 m";
                             var enc = "none";
                             if( net.encryption != "None" ) 
