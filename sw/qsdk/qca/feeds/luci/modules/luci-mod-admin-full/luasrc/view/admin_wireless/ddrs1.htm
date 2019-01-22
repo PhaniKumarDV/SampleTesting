@@ -71,16 +71,25 @@ function returnoptions( min, total, value )
 
 function updateparam()
 {
+    var anttype = "<%=uciget('uci get wireless.wifi1.antennatype')%>";
     var atpc = "<%=uciget('uci get wireless.wifi1.atpcstatus')%>";
     if( atpc == 1 ) {
        document.getElementById("power").style.display = "none";
        document.getElementById("eirp").style.display = "block";
-       document.getElementById("gain").style.display = "block";
+       if( anttype == 1 ) {
+          document.getElementById("intgain").style.display = "block";
+          document.getElementById("congain").style.display = "none";
+       }
+       else {
+          document.getElementById("intgain").style.display = "none";
+          document.getElementById("congain").style.display = "block";
+       }
     }
     else {
        document.getElementById("power").style.display = "block";
        document.getElementById("eirp").style.display = "none";
-       document.getElementById("gain").style.display = "none";
+       document.getElementById("intgain").style.display = "none";
+       document.getElementById("congain").style.display = "none";
     }
 
     var stream = "<%=uciget('uci get wireless.wifi1.spatialstream')%>";
@@ -286,8 +295,13 @@ function getoptions( list, value )
              </select>
            </div>
          </div>
-          <div class="cbi-value" id="gain">
-            <label class="cbi-value-title">Antenna Gain</label>
+          <div class="cbi-value" id="intgain">
+            <label class="cbi-value-title">Integrated Antenna Gain</label>
+            <div class="cbi-value-field" style="margin-top:5px;"><%=uciget('uci get wireless.wifi1.antennagain')%> &nbsp; dBi
+            </div>
+          </div>
+          <div class="cbi-value" id="congain">
+            <label class="cbi-value-title">Connectorized Antenna Gain</label>
             <div class="cbi-value-field">
               <input type="text" name="115" class="cbi-input-select" value="<%=uciget('uci get wireless.wifi1.antennagain')%>" > &nbsp; (0-23) dBi
             </div>
