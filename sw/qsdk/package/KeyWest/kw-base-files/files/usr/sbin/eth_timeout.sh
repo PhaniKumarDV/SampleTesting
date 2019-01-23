@@ -1,7 +1,7 @@
 #!/bin/sh/
 #
 # To check ethernet ideal time
-
+LOG_FILE="/tmp/eth_events.txt"
 ethtimer=$(uci get ethernet.ethernet.ethtimer)
 eth_timer=`expr $ethtimer \* 60`;
 rm -rf /tmp/.rx_pkt_cur
@@ -11,7 +11,7 @@ rm -rf /tmp/.tx_pkt_backup
 
 eth_inactivity(){
     
-date=$(date)
+date=`date | sed 's/UTC //g'`
 
 limit=$(ls -l /tmp/eth_events.txt | awk '{print $5}')
     
@@ -38,16 +38,14 @@ then
     Rx_diff=`expr $current_rx_packet - $last_rx_packet`;
     
     if [ "$last_rx_packet" -eq "$current_rx_packet" ]; then
-
         if [ "$last_tx_packet" -eq "$current_tx_packet" ]; then
-        
+	        echo "$date: Ethernet inactivity triggered" >> $LOG_FILE
             ifconfig eth0 down    
             sleep 1
             ifconfig eth0 up
             return 1    
         fi
     fi
-    
 else
     ifconfig eth0 | grep "RX packets" |awk '{print $2}' | cut  -d':' -f2 > /tmp/.rx_pkt_cur
     ifconfig eth0 | grep "TX packets" |awk '{print $2}' | cut  -d':' -f2 > /tmp/.tx_pkt_cur

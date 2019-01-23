@@ -2,6 +2,7 @@
 #
 # To check wireless ideal time
 
+LOG_FILE="/tmp/wifi_packet_logs"
 radio_mode=$(uci get wireless.@wifi-iface[1].mode)
 wifitimer=$(uci get wireless.wifi1.wifitimer)
 wifi_timer=`expr $wifitimer \* 60`;
@@ -9,7 +10,7 @@ rm -rf /tmp/.link_cur
 rm -rf /tmp/.link_backup
 
 wifi_inactivity(){ 
-   date=$(date)
+   date=`date | sed 's/UTC //g'`
    file_backup="/tmp/.link_backup"
 
    if [ -f "$file_backup" ]
@@ -22,6 +23,7 @@ wifi_inactivity(){
   
        if [ $last_link -le 1 ];then
            if [ $current_link -le 1 ];then
+	          echo "$date: Wireless inactivity triggered" >> $LOG_FILE
               /etc/init.d/network reload 
               sleep 30
               return 1    

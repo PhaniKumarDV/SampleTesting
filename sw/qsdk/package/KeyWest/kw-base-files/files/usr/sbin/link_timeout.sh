@@ -2,6 +2,7 @@
 #
 # To check link ideal time
 
+LOG_FILE="/tmp/wifi_packet_logs"
 radio_mode=$(uci get wireless.@wifi-iface[1].mode)
 linktimer=$(uci get wireless.wifi1.linktimer)
 link_timer=`expr $linktimer \* 60`;
@@ -9,7 +10,7 @@ rm -rf /tmp/.tx_wifipkt_cur
 rm -rf /tmp/.tx_wifipkt_backup
 
 link_inactivity(){ 
-   date=$(date)
+   date=`date | sed 's/UTC //g'`
    file_backup="/tmp/.tx_wifipkt_backup"
    links=$(wlanconfig ath1 list sta | wc -l)
 
@@ -38,6 +39,7 @@ link_inactivity(){
        cp -rf /tmp/.tx_wifipkt_cur /tmp/.tx_wifipkt_backup
        echo "############ Last:$last_tx_packet Current:$current_tx_packet ##############"
        if [ "$last_tx_packet" -eq "$current_tx_packet" ]; then        
+	        echo "$date: Link inactivity triggered" >> $LOG_FILE
             /etc/init.d/network reload 
             sleep 30
             return 1    
