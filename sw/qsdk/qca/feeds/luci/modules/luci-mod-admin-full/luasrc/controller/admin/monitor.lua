@@ -28,9 +28,15 @@ function index()
 	entry({"admin", "monitor", "stats", "starttool"}, call("starttool"), nil).leaf = true
 	entry({"admin", "monitor", "stats", "stoptool"}, call("stoptool"), nil).leaf = true
 
-	entry({"admin", "monitor", "syslog"}, call("action_syslog"), _("Logs"), 3)
-    entry({"admin", "monitor", "log_type"}, call("action_logtype"), nil).leaf = true
-	entry({"admin", "monitor", "clr_log"}, call("action_clr_log"), nil).leaf = true
+	entry({"admin", "monitor", "logs"}, call("action_wifilog"), _("Logs"), 3) 
+    entry({"admin", "monitor", "logs", "wireless_logtype"}, call("action_wifi_logtype"), nil).leaf = true
+	entry({"admin", "monitor", "logs", "wireless_clrlog"}, call("action_wifi_clrlog"), nil).leaf = true
+    entry({"admin", "monitor", "logs", "eth_log"}, call("action_ethlog"))
+    entry({"admin", "monitor", "logs", "eth_logtype"}, call("action_eth_logtype"), nil).leaf = true
+	entry({"admin", "monitor", "logs", "eth_clrlog"}, call("action_eth_clrlog"), nil).leaf = true
+	entry({"admin", "monitor", "logs", "syslog"}, call("action_syslog"))
+    entry({"admin", "monitor", "logs", "log_type"}, call("action_logtype"), nil).leaf = true
+	entry({"admin", "monitor", "logs", "clr_log"}, call("action_clr_log"), nil).leaf = true
 
 	entry({"admin", "monitor", "traffic"}, alias("admin", "monitor", "traffic", "connections"), _("Live Traffic"), 4)
 	entry({"admin", "monitor", "traffic", "connections"}, template("admin_monitor/connections"), _("Connections"), 1).leaf = true
@@ -177,40 +183,91 @@ end
 
 function action_wifi_logtype( logtype )
 	local data = {}
+	data = "Invalid Logtype"
 	if( string.match(logtype,"1") ) then
 		data = luci.util.exec("/usr/sbin/sify_linkstatistics 1")
 	end
 	if( string.match(logtype,"2") ) then
 		data = luci.util.exec("/usr/sbin/sify_linkstatistics 4")
-	end
+    end
 	if( string.match(logtype,"3") ) then
+		data = luci.util.exec("/usr/sbin/sify_linkstatistics 5")
+	end
+	if( string.match(logtype,"4") ) then
 		if string.len(string.sub(luci.util.exec("cat /tmp/wifi_packet_logs"),1,-2) ) > 20 then
 			data = luci.util.exec("cat /tmp/wifi_packet_logs")
 		else
 			data = "Wireless Log file is empty."
 		end
 	end
-	if( string.match(logtype,"4") ) then
+	if( string.match(logtype,"5") ) then
 		if string.len(string.sub(luci.util.exec("cat /etc/log/wifi_packet_logs"),1,-2) ) > 20 then
 			data = luci.util.exec("cat /etc/log/wifi_packet_logs")
 		else
 			data = "Wireless Log file is empty."
 		end
 	end
-	if( string.match(logtype,"5") ) then
-		data = luci.util.exec("athstats -i wifi1")
+	if( string.match(logtype,"6") ) then
+        luci.util.exec("echo '' > /tmp/stats5_output")
+        luci.util.exec("/usr/sbin/stats 1")
+        local res = luci.util.exec("cat /tmp/stats5_output")
+        data = string.gsub(res, "\n", "")
 	end
 	luci.http.prepare_content("application/json")
 	luci.http.write_json(data)
 end
 
+function action_wifi_clrlog( logtype )
+	local data = {}
+	data = "Wireless Log file is empty."
+	if( string.match(logtype,"6") ) then
+	    luci.sys.exec("athstatsclr -i wifi1")
+	    luci.sys.exec("80211stats -i ath1 -e 1")
+        luci.util.exec("echo '' > /tmp/stats5_output")
+        luci.util.exec("/usr/sbin/stats 1")
+        local res = luci.util.exec("cat /tmp/stats5_output")
+        data = string.gsub(res, "\n", "")
+    end
+	luci.http.prepare_content("application/json")
+	luci.http.write_json(data)
+end
+
+function adv_eth_stats()
+    local res = luci.util.exec("iwpriv ath1 g_kwn_ethtxpkt | sed 's/ath1      g_kwn_ethtxpkt://'")
+    local txpkt = string.gsub(res, "\n", "")
+    res = luci.util.exec("iwpriv ath1 g_kwn_ethrxpkt | sed 's/ath1      g_kwn_ethrxpkt://'")
+    local rxpkt = string.gsub(res, "\n", "")
+    res = luci.util.exec("iwpriv ath1 g_kwnethtxfail | sed 's/ath1      g_kwnethtxfail://'")
+    local txfail = string.gsub(res, "\n", "")
+    res = luci.util.exec("iwpriv ath1 g_kwnethrxfail | sed 's/ath1      g_kwnethrxfail://'")
+    local rxfail = string.gsub(res, "\n", "")
+    res = luci.util.exec("iwpriv ath1 g_kwethcrcerrs | sed 's/ath1      g_kwethcrcerrs://'")
+    local rxcrcerr = string.gsub(res, "\n", "")
+    res = luci.util.exec("iwpriv ath1 g_kwethoversize | sed 's/ath1      g_kwethoversize://'")
+    local rxovrsize = string.gsub(res, "\n", "")
+    res = luci.util.exec("iwpriv ath1 g_kwethoverrun | sed 's/ath1      g_kwethoverrun://'")
+    local rxovrrun = string.gsub(res, "\n", "")
+    res = luci.util.exec("iwpriv ath1 g_kwnethtxmcpkt | sed 's/ath1      g_kwnethtxmcpkt://'")
+    local txmcpkt = string.gsub(res, "\n", "")
+    res = luci.util.exec("iwpriv ath1 g_kwnethrxmcpkt | sed 's/ath1      g_kwnethrxmcpkt://'")
+    local rxmcpkt = string.gsub(res, "\n", "")
+    res = luci.util.exec("iwpriv ath1 g_kwnethtxucpkt | sed 's/ath1      g_kwnethtxucpkt://'")
+    local txucpkt = string.gsub(res, "\n", "")
+    res = luci.util.exec("iwpriv ath1 g_kwnethrxucpkt | sed 's/ath1      g_kwnethrxucpkt://'")
+    local rxucpkt = string.gsub(res, "\n", "")
+    local data = txpkt..","..rxpkt..","..txfail..","..rxfail..","..rxcrcerr..","..rxovrsize..","..rxovrrun
+    data = data..","..txmcpkt..","..rxmcpkt..","..txucpkt..","..rxucpkt
+    return data
+end
+
 function action_eth_logtype( logtype )
 	local data = {}
+	data = "Invalid Logtype"
 	if( string.match(logtype,"1") ) then
-		data = luci.util.exec("/usr/sbin/sify_linkstatistics 1")
+		data = luci.util.exec("/usr/sbin/sify_linkstatistics 3")
 	end
 	if( string.match(logtype,"2") ) then
-		data = luci.util.exec("/usr/sbin/sify_linkstatistics 4")
+		data = luci.util.exec("/usr/sbin/sify_linkstatistics 6")
 	end
 	if( string.match(logtype,"3") ) then
 		if string.len(string.sub(luci.util.exec("cat /tmp/eth_events.txt"),1,-2) ) > 20 then
@@ -227,8 +284,19 @@ function action_eth_logtype( logtype )
 		end
 	end
 	if( string.match(logtype,"5") ) then
-		data = luci.util.exec("athstats -i wifi1")
+        data = adv_eth_stats()
 	end
+	luci.http.prepare_content("application/json")
+	luci.http.write_json(data)
+end
+
+function action_eth_clrlog( logtype )
+	local data = {}
+	data = "Ethernet Log file is empty."
+	if( string.match(logtype,"5") ) then
+	    luci.sys.exec("iwpriv ath1 kwnclrethstats 1")
+        data = adv_eth_stats()
+    end
 	luci.http.prepare_content("application/json")
 	luci.http.write_json(data)
 end
@@ -332,7 +400,6 @@ function action_clr_learntbl()
 	luci.template.render("admin_monitor/learntbl", {learntbl=learntbl})
 end
 
-
 function action_arptbl()
 --    local arptbl = luci.util.exec("arp")
 --     local arptbl = luci.sys.net.arptable()
@@ -383,26 +450,14 @@ function action_logtype( logtype )
 	end
     -- Config Log
 	if( string.match(logtype,"4") ) then
-		data = luci.sys.exec("cat /etc/uci_delta")
-	end
-    -- Wireless Events
-	if( string.match(logtype,"5") ) then
-        if string.len(string.sub(luci.util.exec("cat /etc/wifi_packet_logs"),1,-2) ) > 5 then
-            data = luci.sys.exec("cat /etc/wifi_packet_logs")
+        if string.len(string.sub(luci.util.exec("cat /etc/uci_delta"),1,-2) ) > 5 then
+		    data = luci.sys.exec("cat /etc/uci_delta")
         else
-            data = "Wireless Log file is empty."
-        end
-	end
-    -- Ethernet Events
-	if( string.match(logtype,"6") ) then
-        if string.len(string.sub(luci.util.exec("cat /etc/eth_events.txt"),1,-2) ) > 5 then
-            data = luci.sys.exec("cat /etc/eth_events.txt")
-        else
-            data = "Ethernet Log file is empty."
+            data = "Configuration Log file is empty."
         end
 	end
     -- Reboot Log
-	if( string.match(logtype,"7") ) then
+	if( string.match(logtype,"5") ) then
         if string.len(string.sub(luci.util.exec("cat /etc/reboot_logs"),1,-2) ) > 20 then
             data = luci.sys.exec("cat /etc/reboot_logs")
         else
@@ -418,14 +473,23 @@ function action_conflog()
 	luci.template.render("admin_monitor/conflog", {conflog=conflog})
 end
 
+function action_wifilog()
+    local data = {}
+    data = luci.util.exec("/usr/sbin/sify_linkstatistics 1")
+	local wireless_log = data
+	luci.template.render("admin_monitor/wireless_log", {wireless_log=wireless_log})
+end
+
+function action_ethlog()
+    local data = {}
+    data = luci.util.exec("/usr/sbin/sify_linkstatistics 3")
+	local eth_log = data
+	luci.template.render("admin_monitor/eth_log", {eth_log=eth_log})
+end
+
 function action_syslog()
     local data = {}
-
-    if string.len(string.sub(luci.util.exec("cat /etc/wifi_packet_logs"),1,-2) ) > 5 then
-        data = luci.sys.exec("cat /etc/wifi_packet_logs")
-    else
-        data = "Wireless Log file is empty."
-    end
+    data = luci.sys.syslog()
 	local syslog = data
 	luci.template.render("admin_monitor/syslog", {syslog=syslog})
 end
@@ -446,14 +510,6 @@ function action_clr_log( logtype )
 	if( string.match(logtype,"3") ) then
         luci.sys.exec("rm -rf /tmp/temp-log")
 	    data = "Temperature Log is cleared"
-    end
-	if( string.match(logtype,"5") ) then
-        luci.sys.exec("rm -rf /etc/wifi_packet_logs")
-	    data = "Wireless Events are cleared"
-    end
-	if( string.match(logtype,"6") ) then
-        luci.sys.exec("rm -rf /etc/eth_events.txt")
-	    data = "Ethernet Events are cleared"
     end
 	luci.http.prepare_content("application/json")
 	luci.http.write_json(data)

@@ -10,11 +10,11 @@ function get_results()
 {
     var id = document.getElementById("logtype").value;
     var x = document.getElementById("s3");
-    if( id == 3 || id == 5 || id == 6 )
+    if( id == 3 )
         x.style.visibility = "visible";
     else
         x.style.visibility = "hidden";
-    XHR.get('<%=luci.dispatcher.build_url("admin", "monitor")%>/log_type' + '/' + id, null,
+    XHR.get('<%=luci.dispatcher.build_url("admin", "monitor", "logs")%>/log_type' + '/' + id, null,
 	function(x, data) {
 		if (data) { 
 			document.getElementById("result").innerHTML=data;
@@ -25,7 +25,7 @@ function get_results()
 function clear_log()
 {
     var id = document.getElementById("logtype").value;
-    XHR.get('<%=luci.dispatcher.build_url("admin", "monitor")%>/clr_log' + '/' + id, null,
+    XHR.get('<%=luci.dispatcher.build_url("admin", "monitor", "logs")%>/clr_log' + '/' + id, null,
 	function(x, data) {
 		if (data) { 
 			document.getElementById("result").innerHTML=data;
@@ -36,16 +36,19 @@ function clear_log()
 </script>
 <div class="page-content">
 <h2><a id="content" name="content"><%:Logs%></a></h2>
+    <ul class="cbi-tabmenu">
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=luci.dispatcher.build_url("admin/monitor/logs")%>"><%:Wireless%></a></li>
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="eth_log"><%:Ethernet%></a></li>
+        <li style="margin-right:4px" class="cbi-tab"><a href="#"><%:System%></a></li>
+    </ul>
 <div class="cbi-page-actions left">
         Show log type
         <select id="logtype">
-             <option value=5>Wireless Events</option>
-             <option value=6>Ethernet Events</option>
-             <option value=7>Reboot Log</option>
-             <option value=3>Temperature Log</option>
-             <option value=4>Configuration Log</option>
              <option value=1>System log</option>
              <option value=2>Kernel Log</option>
+             <option value=3>Temperature Log</option>
+             <option value=4>Configuration Log</option>
+             <option value=5>Reboot Log</option>
         </select>
         <input type="button" id="s1" class="cbi-button" value="<%:Submit%>" onclick="get_results()" />
         <input type="button" id="s2" class="cbi-button" value="<%:Refresh%>" onclick="get_results()" />
@@ -56,4 +59,12 @@ function clear_log()
 <textarea readonly="readonly" wrap="off" style="width:100%; height:500px;" rows="<%=syslog:cmatch("\n")+2%>" id="result"><%=syslog:pcdata()%></textarea>
 </div>
 </div>
+<script type="text/javascript">
+var id = document.getElementById("logtype").value;
+var x = document.getElementById("s3");
+if( id == 3 )
+    x.style.visibility = "visible";
+else
+    x.style.visibility = "hidden";
+</script>
 <%+footer%>
