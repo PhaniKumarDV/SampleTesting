@@ -53,7 +53,7 @@ void sify_file_write(char *sify_buf,int status, int reason)
 	}
 
 	/*Open file for writting */
-	sify_fp = fopen("/etc/wifi_packet_logs", "a+");
+	sify_fp = fopen("/tmp/wifi_packet_logs", "a+");
 
 	if (sify_fp == NULL) {
 		PRINTF("File opening error\n");

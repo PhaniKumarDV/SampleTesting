@@ -51,7 +51,7 @@ void kwn_ethevent_file_write( char *ifName, char *ifUpp, char *ifRunn )
     t[len] = '\0';
 
 	/*Open file for writting */
-	sify_fp = fopen("/etc/eth_events.txt", "a+");
+	sify_fp = fopen("/tmp/eth_events.txt", "a+");
 
 	if (sify_fp == NULL) {
 		printf("File opening error\n");
