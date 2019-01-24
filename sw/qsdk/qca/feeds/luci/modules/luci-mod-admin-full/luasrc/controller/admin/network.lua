@@ -27,7 +27,9 @@ function index()
 	page.leaf = true
 	page = entry({"admin", "network", "dhcp"}, template("admin_network/dhcp"), _("DHCP Server"), 5)
 	page.leaf = true
-	page = entry({"admin", "network", "filtering"}, template("admin_network/filtering"), _("Filtering"), 6)
+	page = entry({"admin", "network", "staticlease"}, cbi("admin_network/fixedlease"), _("DHCP Fixed Leases"), 6)
+	page.leaf = true
+	page = entry({"admin", "network", "filtering"}, template("admin_network/filtering"), _("Filtering"), 7)
 	page.leaf = true
 --	if page.inreq then
 		local has_switch = false

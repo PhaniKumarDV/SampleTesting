@@ -638,7 +638,7 @@ fieldset.cbi-section.half fieldset.cbi-section.two { margin-top: 25px;}
     font-size: inherit; text-rendering: auto;  -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale; width:19px; height:18px;   margin: 0!important;
     padding: 0!important;  border: 0!important;  position: absolute; top: 21px; left: 30px; }
-.sidebar ul.nav .dropdown-menu {  transition: all 0.5s ease 0s;     max-height: 252px;
+.sidebar ul.nav .dropdown-menu {  transition: all 0.5s ease 0s;     max-height: 300px;
     overflow-y: auto;  overflow-x: hidden;  -webkit-transition: all 0.5s ease 0s;  -moz-transition: all 0.5s ease 0s;
     position: static;  background: transparent;  box-shadow: none; text-shadow: none; border: 0; padding: 0 0px; width: 100%; float: left; max-width: 100%;}
 .sidebar ul.nav li .dropdown-menu li a:hover {  color: #c0d731; background: transparent; box-shadow: none;}
