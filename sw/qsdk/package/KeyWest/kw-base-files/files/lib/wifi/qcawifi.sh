@@ -2111,6 +2111,9 @@ enable_qcawifi() {
 #KWN_CHANGES for link Inactivity
 	done
 
+    config_get qboost_enable "$vif" qboost_enable
+	[ -n "$qboost_enable" ] && iwpriv "$phy" qboost_enable $qboost_enable
+
         config_get primaryradio "$device" primaryradio
         [ -n "$primaryradio" ] && iwpriv "$phy" primaryradio "${primaryradio}"
 
