@@ -713,20 +713,20 @@ function get_log()
 <table>
 <tr>
 <td style="border-top:0px;">
-<fieldset class="cbi-section" style="width:420px;min-height:230px;padding:20px 20px;">
+<fieldset class="cbi-section" style="width:440px;min-height:230px;padding:20px 20px;">
 	<legend><%:System%></legend>
 	<table width="100%" cellspacing="10">
-		<tr><td width="35%"><%:Host Name%></td><td><%=luci.sys.hostname() or "?"%></td></tr>
-		<tr><td width="35%"><%:Hardware Version%></td><td>VER 3.0</td></tr>
-		<tr><td width="35%"><%:Model%></td><td><script type="text/javascript">document.write(modelname)</script></td></tr>
-		<tr><td width="35%"><%:Firmware Version%></td><td id="desc"></td></tr>
-		<tr><td width="35%"><%:Serial Number%></td><td><%=serial_no %></td></tr>
-		<tr><td width="35%"><%:Local Time%></td><td id="localtime">-</td></tr>
-		<tr><td width="35%"><%:Uptime%></td><td id="uptime">-</td></tr>
-		<tr><td width="35%">Temperature</td><td><%=currTemperature%> &#8451;</td></tr>
-		<tr><td width="35%"><%:GPS%></td><td><script type="text/javascript">document.write(gps)</script></td></tr>
-		<tr><td width="35%"><%:Customer Name%></td><td><%=uciget('uci get wireless.wifi1.customername')%></td></tr>
-		<tr><td width="35%"><%:Country%></td><td><script type="text/javascript">document.write(country)</script></td></tr>
+		<tr><td width="47%"><%:Host Name%></td><td><%=luci.sys.hostname() or "?"%></td></tr>
+		<tr><td width="47%"><%:Hardware Version%></td><td>VER 3.0</td></tr>
+		<tr><td width="47%"><%:Model%></td><td><script type="text/javascript">document.write(modelname)</script></td></tr>
+		<tr><td width="47%"><%:Firmware Version%></td><td id="desc"></td></tr>
+		<tr><td width="47%"><%:Serial Number%></td><td><%=serial_no %></td></tr>
+		<tr><td width="47%"><%:Local Time%></td><td id="localtime">-</td></tr>
+		<tr><td width="47%"><%:Uptime%></td><td id="uptime">-</td></tr>
+		<tr><td width="47%">Temperature</td><td><%=currTemperature%> &#8451;</td></tr>
+		<tr><td width="47%"><%:GPS%></td><td><script type="text/javascript">document.write(gps)</script></td></tr>
+		<tr><td width="47%"><%:Customer Name%></td><td><%=uciget('uci get wireless.wifi1.customername')%></td></tr>
+		<tr><td width="47%"><%:Country%></td><td><script type="text/javascript">document.write(country)</script></td></tr>
 	</table>
 </fieldset>
 </td>
@@ -756,7 +756,7 @@ function get_log()
        <tr><td>&nbsp;</td><td></td><td></td></tr>
     </table>
     <table width="100%" cellspacing="10">
-       <tr><td width="35%" style="color:#a5bc23">( Mbps )</td><td width="33%" style="color:#a5bc23"><b>TX<b></td><td style="color:#a5bc23"><b>RX<b></td><td>&nbsp;</td></tr>
+       <tr><td width="40%" style="color:#a5bc23">( Mbps )</td><td width="33%" style="color:#a5bc23"><b>TX<b></td><td style="color:#a5bc23"><b>RX<b></td><td>&nbsp;</td></tr>
        <tr><td style="padding-top:10px;">Ethernet</td><td id="ethtx" style="padding-top:10px;">-</td><td id="ethrx" style="padding-top:10px;">-</td><td>&nbsp;</td></tr>
        <tr><td>5 GHz</td><td id="wi1tx">-</td><td id="wi1rx">-</td><td>&nbsp;</td></tr>
        <tr><td>2.4 GHz</td><td id="wi2tx">-</td><td id="wi2rx">-</td><td>&nbsp;</td></tr>
@@ -766,11 +766,11 @@ function get_log()
 </tr>
 <tr>
 <td style="border-top:0px;">
-<fieldset class="cbi-section" style="width:420px;min-height:230px;padding:20px 20px;">
+<fieldset class="cbi-section" style="width:440px;min-height:230px;padding:20px 20px;">
 	<legend><%:Network%></legend>
 	<table width="100%" cellspacing="10">
-		<tr><td width="35%"><%:Ethernet MAC%></td><td><%=eth_mac%></td></tr>
-		<tr><td width="35%"><%:Ethernet Status%></td><td>
+		<tr><td width="47%"><%:Ethernet MAC%></td><td><%=eth_mac%></td></tr>
+		<tr><td width="47%"><%:Ethernet Status%></td><td>
         <script type="text/javascript">
         if( eth1_status == "up" ) {
             var str = "Up " + eth1_speed + " Duplex: " + eth1_duplex;
@@ -780,18 +780,18 @@ function get_log()
             document.write(" Down ");
         </script>
         </td></tr>
-		<tr><td width="35%"><%:Cable Length%></td><td><script type="text/javascript">document.write(cablen[2])</script>&nbsp;m</td></tr>
-		<tr><td width="35%"><%:IP Address%></td><td><script type="text/javascript">document.write(ip)</script></td></tr>
-		<tr><td width="35%"><%:Subnet Mask%></td><td><script type="text/javascript">document.write(mask)</script></td></tr>
-		<tr><td width="35%"><%:Gateway IP%></td><td><script type="text/javascript">document.write(gw)</script></td></tr>
-		<tr><td width="35%"><%:DNS IP%></td><td><script type="text/javascript">document.write(dns)</script></td></tr>
-		<tr><td width="35%"><%:VLAN Status%></td><td><script type="text/javascript">document.write(vlan)</script></td></tr>
-		<tr><td width="35%"><%:DHCP Client%></td><td><script type="text/javascript">document.write(dhcp)</script></td></tr>
-		<tr><td width="35%"><%:Routing Mode%></td><td><script type="text/javascript">document.write(route)</script></td></tr>
-		<tr><td width="35%"><%:Traffic Shaping%></td><td><script type="text/javascript">document.write(shaping)</script></td></tr>
-		<tr><td width="35%"><%:Uplink Limit%></td><td><script type="text/javascript">document.write(ullmt)</script>&nbsp;Mbps</td></tr>
-		<tr><td width="35%"><%:Downlink Limit%></td><td><script type="text/javascript">document.write(dllmt)</script>&nbsp;Mbps</td></tr>
-		<tr><td width="35%"><%:Link Id%></td><td>
+		<tr><td width="47%"><%:Cable Length%></td><td><script type="text/javascript">document.write(cablen[2])</script>&nbsp;m</td></tr>
+		<tr><td width="47%"><%:IP Address%></td><td><script type="text/javascript">document.write(ip)</script></td></tr>
+		<tr><td width="47%"><%:Subnet Mask%></td><td><script type="text/javascript">document.write(mask)</script></td></tr>
+		<tr><td width="47%"><%:Gateway IP%></td><td><script type="text/javascript">document.write(gw)</script></td></tr>
+		<tr><td width="47%"><%:DNS IP%></td><td><script type="text/javascript">document.write(dns)</script></td></tr>
+		<tr><td width="47%"><%:VLAN Status%></td><td><script type="text/javascript">document.write(vlan)</script></td></tr>
+		<tr><td width="47%"><%:DHCP Client%></td><td><script type="text/javascript">document.write(dhcp)</script></td></tr>
+		<tr><td width="47%"><%:Routing Mode%></td><td><script type="text/javascript">document.write(route)</script></td></tr>
+		<tr><td width="47%"><%:Traffic Shaping%></td><td><script type="text/javascript">document.write(shaping)</script></td></tr>
+		<tr><td width="47%"><%:Uplink Limit%></td><td><script type="text/javascript">document.write(ullmt)</script>&nbsp;Mbps</td></tr>
+		<tr><td width="47%"><%:Downlink Limit%></td><td><script type="text/javascript">document.write(dllmt)</script>&nbsp;Mbps</td></tr>
+		<tr><td width="47%"><%:Link Id%></td><td>
         <script type="text/javascript">
           var mode = "<%=uciget('uci get wireless.@wifi-iface[1].mode')%>";
           var link_id = "-";
