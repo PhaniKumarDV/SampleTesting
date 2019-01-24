@@ -311,7 +311,7 @@ start_service() {
     fi
 #5 Radio Default values
     uci set wireless.wifi1.enable_ol_stats='1'
-    uci set wireless.@wifi-iface[1].qboost_enable='1'
+    uci set wireless.@wifi-iface[1].qboost_enable='0'
 #2.4 Radio Default values
     uci set wireless.wifi0.txchainmask='3'
     uci set wireless.wifi0.rxchainmask='3'
