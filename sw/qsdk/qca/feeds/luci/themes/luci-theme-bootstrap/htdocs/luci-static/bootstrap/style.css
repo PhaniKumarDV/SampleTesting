@@ -435,7 +435,7 @@ font-size:15px; margin:0 6px; background-repeat: no-repeat;
     background-position: 10px 10px;
     padding-top: 0; padding-bottom: 0; padding-left: 30px;  padding-right: 30px;}
 .cbi-page-actions input.cbi-button:hover {background:#a6bc20; color:#fff;}
-.page-content .cbi-map-descr {font-size: 15px; font-weight: normal; line-height: 1.5; margin-bottom: 25px;}
+.page-content .cbi-map-descr {font-size: 13px; font-weight: 600; line-height: 1.5; margin-bottom: 25px; color: #a5bc23}
 #maincontent ul.tabs li a { background: #fff; border: 1px solid rgba(153, 153, 153, 0.58);
     border-bottom: 0px; color: #999; font-size: 17px; font-weight: 400;  padding: 0 15px; margin-right: 2px; line-height: 34px;}
 #maincontent ul.tabs { width: calc(100% - 275px); float: right; width: -webkit-calc(100% - 275px);

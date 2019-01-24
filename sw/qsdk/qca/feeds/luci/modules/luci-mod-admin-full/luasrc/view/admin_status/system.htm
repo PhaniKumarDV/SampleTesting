@@ -174,6 +174,7 @@ function updateparam_vlan()
         document.getElementById("accessvlan").style.display = "none";
         document.getElementById("trunkoption").style.display = "none";
         document.getElementById("trunkvlan1").style.display = "none";
+        document.getElementById("note").style.display = "none";
         document.getElementById("trunkvlan2").style.display = "none";
         document.getElementById("qinq").style.display = "none";
         document.getElementById("ethertype").style.display = "none";
@@ -199,6 +200,7 @@ function hideparam()
         document.getElementById("accessvlan").style.display = "none";
         document.getElementById("trunkoption").style.display = "none";
         document.getElementById("trunkvlan1").style.display = "none";
+        document.getElementById("note").style.display = "none";
         document.getElementById("trunkvlan2").style.display = "none";
         document.getElementById("qinq").style.display = "none";
         document.getElementById("ethertype").style.display = "none";
@@ -212,6 +214,7 @@ function hideparam()
         document.getElementById("accessvlan").style.display = "block";
         document.getElementById("trunkoption").style.display = "none";
         document.getElementById("trunkvlan1").style.display = "none";
+        document.getElementById("note").style.display = "none";
         document.getElementById("trunkvlan2").style.display = "none";
         document.getElementById("qinq").style.display = "none";
         document.getElementById("ethertype").style.display = "none";
@@ -225,6 +228,7 @@ function hideparam()
         document.getElementById("accessvlan").style.display = "none";
         document.getElementById("trunkoption").style.display = "block";
         document.getElementById("trunkvlan1").style.display = "block";
+        document.getElementById("note").style.display = "block";
         document.getElementById("trunkvlan2").style.display = "block";
         document.getElementById("qinq").style.display = "none";
         document.getElementById("ethertype").style.display = "none";
@@ -238,6 +242,7 @@ function hideparam()
         document.getElementById("accessvlan").style.display = "none";
         document.getElementById("trunkoption").style.display = "block";
         document.getElementById("trunkvlan1").style.display = "block";
+        document.getElementById("note").style.display = "block";
         document.getElementById("trunkvlan2").style.display = "block";
         document.getElementById("qinq").style.display = "block";
         document.getElementById("ethertype").style.display = "block";
@@ -251,6 +256,7 @@ function hideparam()
         document.getElementById("accessvlan").style.display = "none";
         document.getElementById("trunkoption").style.display = "block";
         document.getElementById("trunkvlan1").style.display = "block";
+        document.getElementById("note").style.display = "block";
         document.getElementById("trunkvlan2").style.display = "block";
         document.getElementById("qinq").style.display = "block";
         document.getElementById("ethertype").style.display = "none";
@@ -264,11 +270,13 @@ function hideparam()
         ( mode == 2 || mode == 3 || mode == 4 ) )
     {
         document.getElementById("trunkvlan1").style.display = "block";
+        document.getElementById("note").style.display = "block";
         document.getElementById("trunkvlan2").style.display = "block";
     }
     else
     {
         document.getElementById("trunkvlan1").style.display = "none";
+        document.getElementById("note").style.display = "none";
         document.getElementById("trunkvlan2").style.display = "none";
     }
 }
@@ -524,7 +532,7 @@ function hideparam()
           <div class="cbi-value" style="padding-left:98px;">
             <div class="cbi-value-field">
             <label class="cbi-value-title">Trunk VLAN ID</label>&nbsp;&nbsp;
-              <input type="text" id="newmac" class="cbi-input-select" style="width:150px;" value="" >&nbsp;&nbsp;
+              <input type="text" id="newmac" class="cbi-input-select" style="width:90px;" value="" > &nbsp; (1-4094)
               <input type="button" class="cbi-input-select" style="width:50px;" value="Add" onclick="add_id()">
             </div>
           </div>
@@ -552,6 +560,9 @@ function hideparam()
         </script>
 	  </table>
     </fieldset>
+    <div class="cbi-map-descr" id="note">
+      Note:<br>1. A maximum of 100 Trunk entries can be added.
+    </div>
 </div>
 <div class="cbi-page-actions left">
 <div id="spin"></div>

@@ -171,6 +171,8 @@ var network_mode = "<%=uciget('uci get network.param.networkmode')%>";
 var route_ip = "<%=uciget('uci get network.kweth.ipaddr')%>";
 var route_mask = "<%=uciget('uci get network.kweth.netmask')%>";
 var dhcp = "<%=uciget('uci get network.lan.proto')%>";
+var vlan = "<%=uciget('uci get vlan.vlan.status')%>";
+var vlanmode = "<%=uciget('uci get vlan.vlan.mode')%>";
 var country = "<%=uciget('uci get wireless.wifi1.country')%>";
 var shaping = "<%=uciget('uci get wireless.@wifi-iface[1].shaping')%>";
 var ullmt = "<%=uciget('uci get wireless.@wifi-iface[1].ullmt')%>";
