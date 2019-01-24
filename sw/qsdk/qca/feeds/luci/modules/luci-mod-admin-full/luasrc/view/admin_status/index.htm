@@ -159,6 +159,15 @@
     border: 1px solid #C1C1BF;
     background-color: #C1C1BF;
 }
+.page-content fieldset.cbi-section table td 
+{
+    border-top:0px; 
+    line-height: 15px; 
+    text-align: left; 
+    font-size: 14px; 
+    font-family: 'Roboto', sans-serif; 
+    color: #494949;
+}
 </style>
 <script type="text/javascript" src="<%=resource%>/cbi.js"></script>
 <script type="text/javascript">//<![CDATA[
@@ -170,15 +179,23 @@ var dns = "<%=uciget('uci get network.lan.dns')%>";
 var network_mode = "<%=uciget('uci get network.param.networkmode')%>";
 var route_ip = "<%=uciget('uci get network.kweth.ipaddr')%>";
 var route_mask = "<%=uciget('uci get network.kweth.netmask')%>";
-var dhcp = "<%=uciget('uci get network.lan.proto')%>";
 var vlan = "<%=uciget('uci get vlan.vlan.status')%>";
 var vlanmode = "<%=uciget('uci get vlan.vlan.mode')%>";
+var radmode = "<%=uciget('uci get wireless.@wifi-iface[1].mode')%>";
+var dhcp = "<%=uciget('uci get network.lan.proto')%>";
 var country = "<%=uciget('uci get wireless.wifi1.country')%>";
 var shaping = "<%=uciget('uci get wireless.@wifi-iface[1].shaping')%>";
 var ullmt = "<%=uciget('uci get wireless.@wifi-iface[1].ullmt')%>";
 var dllmt = "<%=uciget('uci get wireless.@wifi-iface[1].dllmt')%>";
 var gps_n = "<%=uciget('uci get system.gps.latitude')%>";
 var gps_e = "<%=uciget('uci get system.gps.longitude')%>";
+var modname = "<%=uciget('uci get variant.variant.model')%>"
+if( modname == "1" ) 
+   modelname = "API-18-5G-AC2x2-W2";
+else if( modname == "3" )
+   modelname = "SUI-18-5G-AC2x2-W2";
+else
+   model_name = "SUI-23-5G-AC2x2-W2";
 var gps = "-";
 if( gps_n != 0 ) {
     gps = gps_n + " " + gps_e;
@@ -192,6 +209,22 @@ ullmt = ullmt > 1000 ? (ullmt / 1000) : 0;
 dllmt = dllmt > 1000 ? (dllmt / 1000) : 0;
 shaping = ( shaping == 0 ? "Disabled" : "Enabled" );
 route = ( network_mode == 1 ? "Disabled" : "Enabled" );
+if( vlan == "1" ) {
+    if( vlanmode == "0" )
+        vlan = "Enabled ( Transparent )";
+    else if( (vlanmode == "1") && (radmode == "sta") )
+        vlan = "Enabled ( Access )";
+    else if( vlanmode == "2" && (radmode == "sta") )
+        vlan = "Enabled ( Trunk )";
+    else if( vlanmode == "3" && (radmode == "sta") )
+        vlan = "Enabled ( Q-in-Q )";
+    else if( vlanmode == "4" && (radmode == "sta") )
+        vlan = "Enabled ( MAC-in-MAC )";
+    else
+        vlan = "Undefined";
+} else {
+    vlan = "Disabled";   
+}
 dhcp = ( dhcp == "static" ? "Disabled" : "Enabled" );
 if( dns == "" )
     dns = "0.0.0.0";
@@ -450,9 +483,13 @@ function get_desc()
                 prod_type = m[1];
             }
             if( model_name == "1" ) 
-                model_name = "MAP100";
+                model_name = "API-18-5G-AC2x2-W2";
+            else if( model_name == "3" )
+                model_name = "SUI-18-5G-AC2x2-W2";
+            else
+                model_name = "SUI-23-5G-AC2x2-W2";
             prod_type = ( prod_type == 1 ? "PTP" : "PTMP" );
-            var str = model_name + " - " + prod_type + " - " + maj_num + "." + min_num + " ( " + build_no + " )";
+            var str = prod_type + " - " + maj_num + "." + min_num + " ( " + build_no + " )";
 			document.getElementById("desc").innerHTML=str;
 		}
 	}
@@ -544,6 +581,7 @@ function get_log()
                             if( net.encryption != "None" ) 
                                 enc = "WPA2-PSK"
                             document.getElementById("sec1").innerHTML = enc;
+                            document.getElementById("bstid1").innerHTML = "<%=uciget('uci get system.@system[0].bstid')%>";
                         }
                         else {
                             document.getElementById("mac2").innerHTML = "<%=uciget('uci get wireless.wifi0.macaddr')%>"; 
@@ -669,17 +707,19 @@ function get_log()
 
 <div class="main-page"> 
 <div class="sidebar"> <%+sidebar%></div>                                                                                                                                   
-<div class="page-content index">
+<div class="page-content index" style="padding-bottom: 0px;">
 <h2><a id="content" name="content"><%:Summary%></a></h2>
 
 <table>
 <tr>
 <td style="border-top:0px;">
-<fieldset class="cbi-section" style="width:430px;min-height:230px;padding:20px 20px;">
+<fieldset class="cbi-section" style="width:420px;min-height:230px;padding:20px 20px;">
 	<legend><%:System%></legend>
 	<table width="100%" cellspacing="10">
 		<tr><td width="35%"><%:Host Name%></td><td><%=luci.sys.hostname() or "?"%></td></tr>
-		<tr><td width="35%"><%:Description%></td><td id="desc"></td></tr>
+		<tr><td width="35%"><%:Hardware Version%></td><td>VER 3.0</td></tr>
+		<tr><td width="35%"><%:Model%></td><td><script type="text/javascript">document.write(modelname)</script></td></tr>
+		<tr><td width="35%"><%:Firmware Version%></td><td id="desc"></td></tr>
 		<tr><td width="35%"><%:Serial Number%></td><td><%=serial_no %></td></tr>
 		<tr><td width="35%"><%:Local Time%></td><td id="localtime">-</td></tr>
 		<tr><td width="35%"><%:Uptime%></td><td id="uptime">-</td></tr>
@@ -691,7 +731,7 @@ function get_log()
 </fieldset>
 </td>
 <td rowspan="2" style="border-top:0px;">
-<fieldset class="cbi-section" style="width:470px;height:718px;padding:20px 20px;">
+<fieldset class="cbi-section" style="width:470px;height:727px;padding:20px 20px;">
 	<legend><%:Wireless%></legend>
 	<table width="100%" cellspacing="10">
        <tr><td></td><td style="color:#a5bc23"><b>5 GHz<b></td><td style="color:#a5bc23"><b>2.4 GHz<b></td></tr>
@@ -700,7 +740,7 @@ function get_log()
        <tr><td>Radio Status</td><td id="status1">-</td><td id="status2">-</td></tr>
        <tr><td>Operational Mode</td><td id="opmode1">-</td><td id="opmode2">-</td></tr>
        <tr><td>Bandwidth</td><td id="bw1">-</td><td id="bw2">-</td></tr>
-       <tr><td>SSID</td><td id="ssid1">-</td><td id="ssid2">-</td></tr>
+       <tr><td>SSID</td><td id="ssid1" style="width: 45px;word-break: break-all;">-</td><td id="ssid2" style="width: 45px;word-break: break-all;">-</td></tr>
        <tr><td>ACS</td><td id="acs1">-</td><td id="acs2">-</td></tr>
        <tr><td>DCS</td><td id="dcs1">-</td><td id="dcs2">-</td></tr>
        <tr><td>Channel</td><td id="chan1">-</td><td id="chan2">-</td></tr>
@@ -710,6 +750,7 @@ function get_log()
        <tr><td>Tx Power</td><td id="pow1">-</td><td id="pow2">-</td></tr>
        <tr><td>Security</td><td id="sec1">-</td><td id="sec2">-</td></tr>
        <tr><td>Distance</td><td id="dis1">-</td><td id="dis2">-</td></tr>
+       <tr><td>Base Station ID</td><td id="bstid1">-</td><td id="bstid2">-</td></tr>
        <tr><td>Remote Partners</td><td id="links1">-</td><td id="links2">-</td></tr>
        <tr><td>&nbsp;</td><td></td><td></td></tr>
        <tr><td>&nbsp;</td><td></td><td></td></tr>
@@ -725,7 +766,7 @@ function get_log()
 </tr>
 <tr>
 <td style="border-top:0px;">
-<fieldset class="cbi-section" style="width:430px;min-height:230px;padding:20px 20px;">
+<fieldset class="cbi-section" style="width:420px;min-height:230px;padding:20px 20px;">
 	<legend><%:Network%></legend>
 	<table width="100%" cellspacing="10">
 		<tr><td width="35%"><%:Ethernet MAC%></td><td><%=eth_mac%></td></tr>
@@ -744,6 +785,7 @@ function get_log()
 		<tr><td width="35%"><%:Subnet Mask%></td><td><script type="text/javascript">document.write(mask)</script></td></tr>
 		<tr><td width="35%"><%:Gateway IP%></td><td><script type="text/javascript">document.write(gw)</script></td></tr>
 		<tr><td width="35%"><%:DNS IP%></td><td><script type="text/javascript">document.write(dns)</script></td></tr>
+		<tr><td width="35%"><%:VLAN Status%></td><td><script type="text/javascript">document.write(vlan)</script></td></tr>
 		<tr><td width="35%"><%:DHCP Client%></td><td><script type="text/javascript">document.write(dhcp)</script></td></tr>
 		<tr><td width="35%"><%:Routing Mode%></td><td><script type="text/javascript">document.write(route)</script></td></tr>
 		<tr><td width="35%"><%:Traffic Shaping%></td><td><script type="text/javascript">document.write(shaping)</script></td></tr>

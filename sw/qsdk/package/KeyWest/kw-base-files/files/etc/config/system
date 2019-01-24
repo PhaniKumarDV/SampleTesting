@@ -22,7 +22,7 @@ config timeserver ntp
 
 config gps 'gps'
         option status 1
-        option interval 600
+        option interval 60
         option latitude 0
         option longitude 0
         option altitude 0
