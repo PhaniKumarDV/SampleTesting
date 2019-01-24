@@ -136,7 +136,7 @@ function updateparam()
     if( stat == 2 )
     {
         document.getElementById("modeid").style.display = "none";
-        document.getElementById("tagmgmt").style.display = "none";
+        //document.getElementById("tagmgmt").style.display = "none";
         document.getElementById("mgmtvlan").style.display = "none";
         document.getElementById("accessvlan").style.display = "none";
         document.getElementById("trunkoption").style.display = "none";
@@ -154,7 +154,7 @@ function updateparam()
     else
     {
         document.getElementById("modeid").style.display = "block";
-        document.getElementById("tagmgmt").style.display = "block";
+        //document.getElementById("tagmgmt").style.display = "block";
         document.getElementById("mgmtvlan").style.display = "block";
         hideparam();
     }
@@ -304,7 +304,7 @@ function hideparam()
               </select>
             </div>
           </div>
-          <div class="cbi-value" id="tagmgmt">
+          <!--<div class="cbi-value" id="tagmgmt">
             <label class="cbi-value-title">Allow Tag Mgmt</label>
             <div class="cbi-value-field">
               <select class="cbi-input-select" name="116">
@@ -321,7 +321,7 @@ function hideparam()
                  </script>
               </select>
             </div>
-          </div>
+          </div>-->
           <div class="cbi-value" id="mgmtvlan">
             <label class="cbi-value-title">Mgmt VLAN ID</label>
             <div class="cbi-value-field">
