@@ -109,10 +109,10 @@ function clear_log()
     Show log type&nbsp;
     <script type="text/javascript">
         document.write("<select id='logtype' style='width: 360px'>");
-            document.write("<option value='1'>Display Wireless Statitics</option>");
+            document.write("<option value='1'>Display Wireless Statistics</option>");
             var radiomode = "<%=uciget('uci get wireless.@wifi-iface[1].mode')%>";
             if( radiomode == "ap" )
-                document.write("<option value='2'>MAC ID, RSSI And SNR For Remote Devices Assosiated</option>");
+                document.write("<option value='2'>MAC ID, RSSI And SNR For Remote Devices Associated</option>");
             else
                 document.write("<option value='3'>SNR, RSSI For The Device</option>");
             document.write("<option value='4'>Wireless Events</option>");
