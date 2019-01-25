@@ -876,6 +876,9 @@ void cfg_set( char *type, char *value )
         case UCI_ID_SYSTEM_BASESTATION_ID:
             sprintf(cmd,"uci set system.@system[0].bstid='%s'",value);
             break;
+        case UCI_ID_RADIO1_SU_SERVICE:
+            sprintf(cmd,"uci set wireless.wifi1.suservice='%s'",value);
+            break;
         default:
             break;
     }

@@ -158,10 +158,12 @@ function updatelinkid( val )
     if( val == "ap" ) {
        document.getElementById("wifitimer").style.display = "none";
        document.getElementById("linktimer").style.display = "none";
+       document.getElementById("suservice").style.display = "none";
     }
     else { 
        document.getElementById("wifitimer").style.display = "block";
        document.getElementById("linktimer").style.display = "block";
+       document.getElementById("suservice").style.display = "block";
     }
 }
 function updatehidessid()
@@ -306,6 +308,26 @@ function updatehidessid()
               <input type="text" name="134" class="cbi-input-select" value="<%=uciget('uci get wireless.wifi1.linktimer')%>" > &nbsp; Minutes
             </div>
           </div>
+          <div class="cbi-value" id="suservice">
+            <label class="cbi-value-title">SU Service</label>
+            <div class="cbi-value-field">
+               <select name="148" class="cbi-input-select">
+               <script type="text/javascript">
+                  var service = "<%=uciget('uci get wireless.wifi1.suservice')%>";
+                  document.write("<option value='1' ");
+                  if( service == 1 ) {
+                      document.write(" selected");
+                  }
+                  document.write(">Enable</option>");
+                  document.write("<option value='0' ");
+                  if( service == 0 ) {
+                     document.write(" selected");
+                  }
+                  document.write(">Disable</option>");
+                </script>
+               </select>
+           </div>
+         </div>
     </form>
     </fieldset>
 </div>

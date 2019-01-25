@@ -488,6 +488,7 @@ _disable_qcawifi() {
         wifi1)
             kill -9  `ps | grep wifi_timeout.sh | awk '{print $1}'` 
             kill -9  `ps | grep link_timeout.sh | awk '{print $1}'` 
+            kill -9  `ps | grep suservicetrap.sh | awk '{print $1}'` 
             ;;
         *)
             echo "############### Invalid interface" > /dev/console
@@ -2083,6 +2084,7 @@ enable_qcawifi() {
 		config_get radiomode "$vif" mode
 		config_get wifi_timer "$device" wifitimer
 		config_get link_timer "$device" linktimer
+		config_get suservice "$device" suservice
 
         if [ "$radiomode" == "sta" ]
         then
@@ -2101,6 +2103,12 @@ enable_qcawifi() {
                       sh /usr/sbin/link_timeout.sh
                    else
                       echo "Link inactivity timer functionality is disabled"
+                   fi
+                   if [ "$suservice" -eq 0 ]
+                   then
+                      sh /usr/sbin/suservicetrap.sh
+                   else
+                      echo "SU Service is enabled"
                    fi
                    ;;
                *)

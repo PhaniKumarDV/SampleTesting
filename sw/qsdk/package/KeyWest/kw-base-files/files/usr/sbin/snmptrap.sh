@@ -41,3 +41,10 @@ if [ "$1" -eq 4 ]; then
     exit
 fi
 
+if [ "$1" -eq 5 ]; then
+    trapmsg="SU service is disabled"
+    trapoid="1.3.6.1.4.1.52619.1.3.4.5"
+	trap_send
+    exit
+fi
+

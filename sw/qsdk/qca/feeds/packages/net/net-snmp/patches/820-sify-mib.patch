@@ -5374,8 +5374,8 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +}
 diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.h
 --- net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h	1970-01-01 05:30:00.000000000 +0530
-+++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.h	2019-01-24 18:14:44.370874584 +0530
-@@ -0,0 +1,514 @@
++++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.h	2019-01-25 16:51:05.833543192 +0530
+@@ -0,0 +1,515 @@
 +/****************************************************************************
 +*                                                                           *
 +*  File Name:           kwnmib.h                                      *
@@ -5829,7 +5829,8 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h net-snmp-5.4.4-mod/agent/mi
 +    KWN_ASSOCIATED_TRAP = 1,
 +    KWN_DISASSOCIATED_TRAP = 2,
 +    KWN_DYINGGASP_REMOTE_DEVICE_TRAP = 3,
-+    KWN_DYINGGASP_BSU_TRAP = 4
++    KWN_DYINGGASP_BSU_TRAP = 4,
++    KWN_SU_SERVICE = 5
 +};
 +
 +/* Structure Definitions */
@@ -5916,8 +5917,8 @@ diff -urN net-snmp-5.4.4-org/include/net-snmp/net-snmp-config.h.in net-snmp-5.4.
  
 diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWEST-MIB.mib
 --- net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib	1970-01-01 05:30:00.000000000 +0530
-+++ net-snmp-5.4.4-mod/mibs/KEYWEST-MIB.mib	2019-01-24 18:14:21.746838746 +0530
-@@ -0,0 +1,2922 @@
++++ net-snmp-5.4.4-mod/mibs/KEYWEST-MIB.mib	2019-01-25 16:50:35.937887503 +0530
+@@ -0,0 +1,2928 @@
 +------------------------------------------------------------------------
 +------------------------------------------------------------------------
 +--
@@ -8838,5 +8839,11 @@ diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWES
 +        STATUS       current
 +        DESCRIPTION  "This trap is generated when Outdoor Base is power off."
 +::= { traps 4 }
++
++suServiceTrap  NOTIFICATION-TYPE
++        OBJECTS { genericTrap }
++        STATUS       current
++        DESCRIPTION  "This trap is generated when Outdoor Subscriber Service is disabled."
++::= { traps 5 }
 +
 +END
