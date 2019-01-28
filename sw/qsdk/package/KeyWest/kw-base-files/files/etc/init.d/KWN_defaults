@@ -5,7 +5,7 @@ USE_PROCD=1
 start_service() {
     procd_open_instance
 #VARIANT
-    uci set variant.variant.buildno='250119'
+    uci set variant.variant.buildno='280119'
     uci set variant.variant.model='1'
     uci set variant.variant.majnum='1'
     uci set variant.variant.minnum='0'
@@ -363,7 +363,7 @@ start_service() {
     fi
     if [ "$bstid" == "" ]
     then
-        uci set system.@system[0].bstid='base_station_id'
+        uci set system.@system[0].bstid='mh-mum-air-T1-st'
     fi
 #ROUTING
     param=$(uci get network.param)
