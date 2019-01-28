@@ -489,6 +489,9 @@ _disable_qcawifi() {
             kill -9  `ps | grep wifi_timeout.sh | awk '{print $1}'` 
             kill -9  `ps | grep link_timeout.sh | awk '{print $1}'` 
             kill -9  `ps | grep suservicetrap.sh | awk '{print $1}'` 
+            kill -9  `ps | grep softreset.sh | awk '{print $1}'` 
+            sleep 1
+            sh /usr/sbin/softreset.sh
             ;;
         *)
             echo "############### Invalid interface" > /dev/console
