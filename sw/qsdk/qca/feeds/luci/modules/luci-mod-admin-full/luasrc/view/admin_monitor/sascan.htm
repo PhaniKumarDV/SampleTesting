@@ -14,6 +14,9 @@
                 return str
         end
 -%>
+<script src="<%=media%>/chartist.js"></script>
+<script src="<%=media%>/chartist-plugin-axistitle.js" type="text/javascript"></script>
+<link rel="stylesheet" href="<%=media%>/chartist.css">
 <script type="text/javascript">
     var noise_off = "<%=uciget('uci get wireless.wifi1.kwnnoiseoff')%>";
 	var freqlist = <%= luci.http.write_json(freqlist) %>;
@@ -43,6 +46,8 @@ function stop_scan()
 }
 function start_scan()
 {
+    var reset = "";
+    get_values(reset);
     var time = document.getElementById("time").value;
     var start = document.getElementById("start").value;
     var end = document.getElementById("end").value;
@@ -78,15 +83,19 @@ function start_scan()
 
 function get_values( data )
 {
+    var chan_plot = new Array();
+    var util_plot = new Array();
     var values = data.split(",");
     for( i = 0; i < values.length - 1; i++ )
     {
         var x = values[i].split("=");
-        var chan = x[0];
+        var chan = parseInt(x[0]);
         var freq =  x[1];
-        var util = x[2];
+        var util = parseInt(x[2]);
         var noise = x[3].split("-");
         noise = ( noise == 0 ? 0 : parseInt( noise[1] ) );
+        chan_plot.push(chan);
+        util_plot.push(util);
         var scantable = document.getElementById('scan-list');
         var tr = scantable.insertRow(-1);
         tr.className = 'cbi-section-table-row cbi-rowstyle-2';
@@ -95,6 +104,47 @@ function get_values( data )
         tr.insertCell(-1).innerHTML = util;
         tr.insertCell(-1).innerHTML = noise == 0 ? 0 : noise_off - noise;
     }
+
+      new Chartist.Line('.ct-chart', {
+      labels: chan_plot,
+        series: [
+            util_plot
+              ]
+      }, 
+      {
+      fullWidth: true,
+      axisX: {
+          labelInterpolationFnc: function(value) {
+              return value % 5 == 0 ? value : null;
+          }
+      },
+      plugins: [
+          Chartist.plugins.ctAxisTitle({
+               axisX: {
+                  axisTitle: 'Channel Number',
+                  axisClass: 'ct-axis-title',
+                  offset: {
+                      x: 0,
+                      y: 30
+                  },
+                  textAnchor: 'middle'
+               },
+               axisY: {
+                  axisTitle: 'Utilization',
+                  axisClass: 'ct-axis-title',
+                  offset: {
+                      x: 0,
+                      y: 0
+                  },
+                  textAnchor: 'middle',
+                  flipTitle: false
+               }
+        })
+      ],
+      chartPadding: {
+          right: 40
+      }
+    });
 }
 	XHR.poll(5, '<%=REQUEST_URI%>', { status: 1 },
 		function(x, info)
@@ -157,7 +207,8 @@ function get_values( data )
     </fieldset>
 	<fieldset class="cbi-section">
     <div id="msg"></div>
-		<table class="cbi-section-table" style="width:600px; margin:10px;" id="scan-list">
+    <div class="ct-chart" style="width:100%;"></div>
+		<table class="cbi-section-table" style="width:600px; margin:30px;" id="scan-list">
 			<tr class="cbi-section-table-titles">
 				<th class="cbi-section-table-cell"><%:Channel%></th>
 				<th class="cbi-section-table-cell"><%:Frequency (MHz)%></th>
