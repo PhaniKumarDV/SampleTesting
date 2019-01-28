@@ -2083,42 +2083,43 @@ enable_qcawifi() {
 
         iwpriv "$ifname" scanentryage 600
 
-#KWN_CHANGES for link Inactivity
+#KWN_CHANGES for link Inactivity and Ethernet MTU
 		config_get radiomode "$vif" mode
 		config_get wifi_timer "$device" wifitimer
 		config_get link_timer "$device" linktimer
 		config_get suservice "$device" suservice
 
-        if [ "$radiomode" == "sta" ]
-        then
            case "$phy" in
                wifi0)
                    ;;
                wifi1)
-                   if [ "$wifi_timer" -ge 1 ]
+                   sh /usr/sbin/ethmtu.sh
+                   if [ "$radiomode" == "sta" ]
                    then
-                      sh /usr/sbin/wifi_timeout.sh
-                   else
-                      echo "Wireless inactivity timer functionality is disabled"
-                   fi
-                   if [ "$link_timer" -ge 1 ]
-                   then
-                      sh /usr/sbin/link_timeout.sh
-                   else
-                      echo "Link inactivity timer functionality is disabled"
-                   fi
-                   if [ "$suservice" -eq 0 ]
-                   then
-                      sh /usr/sbin/suservicetrap.sh
-                   else
-                      echo "SU Service is enabled"
+                       if [ "$wifi_timer" -ge 1 ]
+                       then
+                           sh /usr/sbin/wifi_timeout.sh
+                       else
+                           echo "Wireless inactivity timer functionality is disabled"
+                       fi
+                       if [ "$link_timer" -ge 1 ]
+                       then
+                           sh /usr/sbin/link_timeout.sh
+                       else
+                           echo "Link inactivity timer functionality is disabled"
+                       fi
+                       if [ "$suservice" -eq 0 ]
+                       then
+                           sh /usr/sbin/suservicetrap.sh
+                       else
+                           echo "SU Service is enabled"
+                       fi
                    fi
                    ;;
                *)
                    echo "############### Invalid interface" > /dev/console
                    ;;
             esac
-         fi
 #KWN_CHANGES for link Inactivity
 	done
 

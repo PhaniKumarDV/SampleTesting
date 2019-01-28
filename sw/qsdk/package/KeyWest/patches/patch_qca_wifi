@@ -2839,7 +2839,7 @@ diff -urN qca-wifi-org/os/linux/src/ieee80211_wireless.c qca-wifi-mod/os/linux/s
              return -EPERM;
 diff -urN qca-wifi-org/os/linux/src/osif_umac.c qca-wifi-mod/os/linux/src/osif_umac.c
 --- qca-wifi-org/os/linux/src/osif_umac.c	2018-06-08 11:00:41.000000000 +0530
-+++ qca-wifi-mod/os/linux/src/osif_umac.c	2018-08-14 17:29:25.045491751 +0530
++++ qca-wifi-mod/os/linux/src/osif_umac.c	2019-01-28 19:47:23.973636901 +0530
 @@ -2425,7 +2425,7 @@
      struct ev_msg msg;
  
@@ -2881,6 +2881,17 @@ diff -urN qca-wifi-org/os/linux/src/osif_umac.c qca-wifi-mod/os/linux/src/osif_u
      WIRELESS_SEND_EVENT(dev, IWEVEXPIRED, &wreq, NULL);
  
      IEEE80211_ADDR_COPY(msg.addr, macaddr);
+@@ -6362,8 +6366,8 @@
+ static int
+ osif_change_mtu(struct net_device *dev, int mtu)
+ {
+-    if (!(IEEE80211_MTU_MIN < mtu && mtu <= IEEE80211_MTU_MAX))
+-        return -EINVAL;
++    //if (!(IEEE80211_MTU_MIN < mtu && mtu <= IEEE80211_MTU_MAX))
++    //    return -EINVAL;
+     dev->mtu = mtu;
+     /* XXX coordinate with parent device */
+     return 0;
 diff -urN qca-wifi-org/os/linux/src/umac_exports.c qca-wifi-mod/os/linux/src/umac_exports.c
 --- qca-wifi-org/os/linux/src/umac_exports.c	2018-06-08 11:00:41.000000000 +0530
 +++ qca-wifi-mod/os/linux/src/umac_exports.c	2018-11-28 14:03:50.137864238 +0530
