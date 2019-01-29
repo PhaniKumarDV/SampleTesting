@@ -4,6 +4,7 @@
 # To set Ethernet MTU
 
 mtu=$(uci get network.lan.mtu)
+gw=$(uci get network.lan.gateway)
 
 brctl delif br-lan ath1
 brctl delif br-lan eth0
@@ -15,7 +16,6 @@ ifconfig eth0 mtu $mtu
 ifconfig eth1 mtu $mtu
 
 sleep 1
-ifconfig br-lan down
 
 brctl addif br-lan ath1
 brctl addif br-lan eth0
@@ -25,6 +25,8 @@ ifconfig eth1 up
 ifconfig br-lan up
 
 sleep 1
+route del -net 0.0.0.0 gw $gw netmask 0.0.0.0 dev br-lan
+route add default gw $gw br-lan
 assemfrag=0
 if [ "$mtu" -gt 1500 ]
 then

@@ -11,6 +11,7 @@ kwn_routing() {
     natstatus=$(uci get network.param.natstatus)
     ethip=$(uci get network.kweth.ipaddr)
     ethmask=$(uci get network.kweth.netmask)
+    mtu=$(uci get network.lan.mtu)
     if [ "$devmode" == "ap" ]
     then
         uci set network.param.networkmode='1'
@@ -26,6 +27,7 @@ kwn_routing() {
             brctl addbr br-kweth
             brctl addif br-kweth eth0
             ifconfig br-kweth $ethip netmask $ethmask
+            ifconfig br-kweth mtu $mtu
 
             if [ $natstatus -eq "1" ]
             then
