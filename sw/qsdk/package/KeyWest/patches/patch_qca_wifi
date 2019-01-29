@@ -3294,7 +3294,7 @@ diff -urN qca-wifi-org/os/linux/tools/athstats.c qca-wifi-mod/os/linux/tools/ath
      fprintf(fd,"ast_tx_xretries     :\t%u\n",tx->tx_xretry);
 diff -urN qca-wifi-org/qca_ol/osif_ol.c qca-wifi-mod/qca_ol/osif_ol.c
 --- qca-wifi-org/qca_ol/osif_ol.c	2018-06-08 11:00:50.000000000 +0530
-+++ qca-wifi-mod/qca_ol/osif_ol.c	2019-01-29 16:29:33.083031275 +0530
++++ qca-wifi-mod/qca_ol/osif_ol.c	2019-01-29 19:22:48.686682834 +0530
 @@ -73,6 +73,9 @@
  #include <osif_nss_wifiol_vdev_if.h>
  #endif
@@ -3363,7 +3363,7 @@ diff -urN qca-wifi-org/qca_ol/osif_ol.c qca-wifi-mod/qca_ol/osif_ol.c
      while (skb_list) {
          struct sk_buff *skb;
          skb = skb_list;
-@@ -569,9 +595,154 @@
+@@ -569,9 +595,157 @@
  	}
  #endif  /* HOST_SW_LRO_ENABLE */
  
@@ -3401,51 +3401,54 @@ diff -urN qca-wifi-org/qca_ol/osif_ol.c qca-wifi-mod/qca_ol/osif_ol.c
 +        comdev = osdev->os_comdev;
 +        scn = ath_netdev_priv(comdev);
 +        eh = (struct ether_header *)(skb->data);
-+        ret = wds_find(scn, eh->ether_shost, &mac[0], NULL);  
-+        if ( ret == 0 ) {
-+            ni = ieee80211_find_txnode(vap, mac);
-+            if ( ni ) {
-+                /* inc Tx packets/bytes offered by kernel to us */
-+                ni->rx_offer_pkt_cnt++;
-+                ni->rx_offer_pkt_bytes_cnt += skb->len;
-+
-+                if ( ni->kwn_rx_tput_last_jiffies == 0 ) {
-+                    ni->kwn_rx_tput_last_jiffies = jiffies;
-+                } else {
-+                    if ( (jiffies - ni->kwn_rx_tput_last_jiffies) >= 1000 )
-+                    {
-+                        ni->rx_tput_mbps = ni->rx_offer_pkt_cnt > 0 ? 
-+                            ( (ni->rx_offer_pkt_bytes_cnt * 8)) : 0;
-+                        ni->kwn_rx_tput_last_jiffies = jiffies;
-+                        ni->rx_offer_pkt_cnt = 0;
-+                        ni->rx_offer_pkt_bytes_cnt = 0;
-+                        //printk(": RX Tput: %llu\n",ni->rx_tput_mbps);
-+                    }
-+                }
-+                /* Re-assembly */
-+                if ( skb->len > 20 &&
-+                        (memcmp( &skb->data[sizeof(struct ether_header)], kwn_frag_dsap, sizeof(kwn_frag_dsap)) == 0 )) {
-+                    struct kwn_frag_params *kparams;
-+                    kparams = (struct kwn_frag_params *)&skb->data[sizeof(struct ether_header) + sizeof(kwn_frag_dsap)];
-+                    if ( ntohs(kparams->kwn_frag_flags) == 0 ) {
-+                        struct sk_buff *nskb;
-+                        /* Add packet to Q */
-+                        vap->iv_pkt_q_add( &ni->kwn_txq, skb );
-+                        nskb = vap->iv_pkt_q_assemble( &ni->kwn_txq );
-+                        vap->iv_pkt_q_purge( &ni->kwn_txq );
-+                        vap->iv_pkt_q_init( &ni->kwn_txq );
-+                        osif_send_to_nss(osif, nskb, nwifi); 
-+                        ieee80211_free_node(ni);
-+                        continue;
-+                    } else {
-+                        /* Add packet to Q */
-+                        vap->iv_pkt_q_add( &ni->kwn_txq, skb );
-+                        ieee80211_free_node(ni);
-+                        continue;
-+                    }
-+                }
-+                ieee80211_free_node(ni);
++        ni = ieee80211_find_txnode(vap, eh->ether_shost);
++        if ( ni == NULL ) {
++            ret = wds_find(scn, eh->ether_shost, &mac[0], NULL);  
++            if ( ret == 0 ) {
++                ni = ieee80211_find_txnode(vap, mac);
 +            }
++        }
++        if ( ni ) {
++            /* inc Tx packets/bytes offered by kernel to us */
++            ni->rx_offer_pkt_cnt++;
++            ni->rx_offer_pkt_bytes_cnt += skb->len;
++
++            if ( ni->kwn_rx_tput_last_jiffies == 0 ) {
++                ni->kwn_rx_tput_last_jiffies = jiffies;
++            } else {
++                if ( (jiffies - ni->kwn_rx_tput_last_jiffies) >= 1000 )
++                {
++                    ni->rx_tput_mbps = ni->rx_offer_pkt_cnt > 0 ? 
++                        ( (ni->rx_offer_pkt_bytes_cnt * 8)) : 0;
++                    ni->kwn_rx_tput_last_jiffies = jiffies;
++                    ni->rx_offer_pkt_cnt = 0;
++                    ni->rx_offer_pkt_bytes_cnt = 0;
++                    //printk(": RX Tput: %llu\n",ni->rx_tput_mbps);
++                }
++            }
++            /* Re-assembly */
++            if ( skb->len > 20 &&
++                    (memcmp( &skb->data[sizeof(struct ether_header)], kwn_frag_dsap, sizeof(kwn_frag_dsap)) == 0 )) {
++                struct kwn_frag_params *kparams;
++                kparams = (struct kwn_frag_params *)&skb->data[sizeof(struct ether_header) + sizeof(kwn_frag_dsap)];
++                if ( ntohs(kparams->kwn_frag_flags) == 0 ) {
++                    struct sk_buff *nskb;
++                    /* Add packet to Q */
++                    vap->iv_pkt_q_add( &ni->kwn_txq, skb );
++                    nskb = vap->iv_pkt_q_assemble( &ni->kwn_txq );
++                    vap->iv_pkt_q_purge( &ni->kwn_txq );
++                    vap->iv_pkt_q_init( &ni->kwn_txq );
++                    osif_send_to_nss(osif, nskb, nwifi); 
++                    ieee80211_free_node(ni);
++                    continue;
++                } else {
++                    /* Add packet to Q */
++                    vap->iv_pkt_q_add( &ni->kwn_txq, skb );
++                    ieee80211_free_node(ni);
++                    continue;
++                }
++            }
++            ieee80211_free_node(ni);
 +        }
 +    } else {
 +        /* KWN: Extra Padding */
@@ -3519,7 +3522,7 @@ diff -urN qca-wifi-org/qca_ol/osif_ol.c qca-wifi-mod/qca_ol/osif_ol.c
  #if HOST_SW_LRO_ENABLE
      if ((dev->features & NETIF_F_LRO) || osdev->os_if->lro_to_flush) {
          ath_lro_flush_all(dev);         /* flush all LRO pkts */
-@@ -830,14 +1001,109 @@
+@@ -830,14 +1004,111 @@
      struct ol_ath_softc_net80211 *pscn = NULL;
  #endif
      struct ieee80211_stats *iv_stats;
@@ -3583,53 +3586,55 @@ diff -urN qca-wifi-org/qca_ol/osif_ol.c qca-wifi-mod/qca_ol/osif_ol.c
 +        comdev = osdev->os_comdev;
 +        scn = ath_netdev_priv(comdev);
 +        eh = (struct ether_header *)(skb->data);
-+        ret = wds_find(scn, eh->ether_dhost, &mac[0], NULL);  
-+        if ( ret == 0 ) {
-+            //printk(": EtherMac: %x:%x: Ret: %d: PeerMac: %x:%x\n",eh->ether_dhost[4], eh->ether_dhost[5], ret, mac[4], mac[5]);
-+            ni = ieee80211_find_txnode(vap, mac);
-+            if ( ni ) {
-+                bw_limit = 0;
-+                /* Update the bw_limit per-node basis */
-+                if( vap->kwn_traffic_shaping ) {
-+                    bw_limit = ni->kwn_dl_limit;
-+                }
++        ni = ieee80211_find_txnode(vap, eh->ether_dhost);
++        if ( ni == NULL ) {
++            ret = wds_find(scn, eh->ether_dhost, &mac[0], NULL);  
++            if ( ret == 0 ) {
++                ni = ieee80211_find_txnode(vap, mac);
++            }
++        }
++        if ( ni ) {
++            bw_limit = 0;
++            /* Update the bw_limit per-node basis */
++            if( vap->kwn_traffic_shaping ) {
++                bw_limit = ni->kwn_dl_limit;
++            }
 +
-+                /* inc Tx packets/bytes offered by kernel to us */
-+                ni->tx_offer_pkt_cnt++;
-+                ni->tx_offer_pkt_bytes_cnt += skb->len;
++            /* inc Tx packets/bytes offered by kernel to us */
++            ni->tx_offer_pkt_cnt++;
++            ni->tx_offer_pkt_bytes_cnt += skb->len;
 +
-+                if ( ni->kwn_tx_tput_last_jiffies == 0 ) {
++            if ( ni->kwn_tx_tput_last_jiffies == 0 ) {
++                ni->kwn_tx_tput_last_jiffies = jiffies;
++            } else {
++                if ( (jiffies - ni->kwn_tx_tput_last_jiffies) >= 1000 )
++                {
++                    ni->tx_tput_mbps = ni->tx_offer_pkt_cnt > 0 ? 
++                        ( (ni->tx_offer_pkt_bytes_cnt * 8)) : 0;
 +                    ni->kwn_tx_tput_last_jiffies = jiffies;
-+                } else {
-+                    if ( (jiffies - ni->kwn_tx_tput_last_jiffies) >= 1000 )
-+                    {
-+                        ni->tx_tput_mbps = ni->tx_offer_pkt_cnt > 0 ? 
-+                            ( (ni->tx_offer_pkt_bytes_cnt * 8)) : 0;
-+                        ni->kwn_tx_tput_last_jiffies = jiffies;
-+                        ni->tx_offer_pkt_cnt = 0;
-+                        ni->tx_offer_pkt_bytes_cnt = 0;
-+                        //printk(": TX Tput: %llu\n",ni->tx_tput_mbps);
-+                    }
-+                    else {
-+                        /* If Traffic Shaping enabled or SU Service disabled, drop if total byte cnt > bw_limit in 1 sec */
-+                        if( bw_limit ) {
-+                            if( ni->tx_offer_pkt_bytes_cnt > ( ( bw_limit * 1000 ) / 8 ) ) {
-+                                ni->tx_byte_drop_cnt += skb->len;
-+                                ieee80211_free_node(ni);
-+                                goto bad1;
-+                            }
++                    ni->tx_offer_pkt_cnt = 0;
++                    ni->tx_offer_pkt_bytes_cnt = 0;
++                    //printk(": TX Tput: %llu\n",ni->tx_tput_mbps);
++                }
++                else {
++                    /* If Traffic Shaping enabled or SU Service disabled, drop if total byte cnt > bw_limit in 1 sec */
++                    if( bw_limit ) {
++                        if( ni->tx_offer_pkt_bytes_cnt > ( ( bw_limit * 1000 ) / 8 ) ) {
++                            ni->tx_byte_drop_cnt += skb->len;
++                            ieee80211_free_node(ni);
++                            goto bad1;
 +                        }
 +                    }
 +                }
-+                ieee80211_free_node(ni);
 +            }
++            ieee80211_free_node(ni);
 +        }
 +    }
 +
      qdf_nbuf_count_inc(skb);
      if (qdf_unlikely((dev->flags & (IFF_RUNNING|IFF_UP)) != (IFF_RUNNING|IFF_UP))) {
  	    goto bad1;
-@@ -968,9 +1234,158 @@
+@@ -968,9 +1239,158 @@
      }
  #endif
  
