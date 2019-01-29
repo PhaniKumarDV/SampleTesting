@@ -143,7 +143,7 @@ start_service() {
     fi
     if [ "$stream1" == "" ]
     then
-        uci set wireless.wifi1.spatialstream='1'
+        uci set wireless.wifi1.spatialstream='3'
     fi
     if [ "$ddrs1" == "" ]
     then
@@ -159,7 +159,7 @@ start_service() {
     fi
     if [ "$ddrsmaxrate1" == "" ]
     then
-        uci set wireless.wifi1.ddrsmaxrate='9'
+        uci set wireless.wifi1.ddrsmaxrate='19'
     fi
     if [ "$ddrsinctimer1" == "" ]
     then

@@ -3,7 +3,6 @@
 #
 # To set Ethernet MTU
 
-echo "############# Ethernet MTU Script #################" > /dev/console
 mtu=$(uci get network.lan.mtu)
 
 brctl delif br-lan ath1
