@@ -3294,7 +3294,7 @@ diff -urN qca-wifi-org/os/linux/tools/athstats.c qca-wifi-mod/os/linux/tools/ath
      fprintf(fd,"ast_tx_xretries     :\t%u\n",tx->tx_xretry);
 diff -urN qca-wifi-org/qca_ol/osif_ol.c qca-wifi-mod/qca_ol/osif_ol.c
 --- qca-wifi-org/qca_ol/osif_ol.c	2018-06-08 11:00:50.000000000 +0530
-+++ qca-wifi-mod/qca_ol/osif_ol.c	2019-01-29 19:22:48.686682834 +0530
++++ qca-wifi-mod/qca_ol/osif_ol.c	2019-01-30 11:50:26.641011716 +0530
 @@ -73,6 +73,9 @@
  #include <osif_nss_wifiol_vdev_if.h>
  #endif
@@ -3634,7 +3634,7 @@ diff -urN qca-wifi-org/qca_ol/osif_ol.c qca-wifi-mod/qca_ol/osif_ol.c
      qdf_nbuf_count_inc(skb);
      if (qdf_unlikely((dev->flags & (IFF_RUNNING|IFF_UP)) != (IFF_RUNNING|IFF_UP))) {
  	    goto bad1;
-@@ -968,9 +1239,158 @@
+@@ -968,9 +1239,163 @@
      }
  #endif
  
@@ -3648,7 +3648,8 @@ diff -urN qca-wifi-org/qca_ol/osif_ol.c qca-wifi-mod/qca_ol/osif_ol.c
 +		    }
 +	    }
 +    }
-+
+ 
+-    osdev->iv_vap_send(osdev->iv_txrx_handle, skb);
 +    /* KWN: AMSDU at Host */
 +    if ( vap->kwn_assem_frag == 1 ) {
 +        if ( skb->len < vap->kwn_max_pkt_size ) {
@@ -3678,7 +3679,7 @@ diff -urN qca-wifi-org/qca_ol/osif_ol.c qca-wifi-mod/qca_ol/osif_ol.c
 +                if ( nskb == NULL ) {
 +                    break;
 +                }
-+
+ 
 +                /* Fill the skb content */
 +                offset = 0;
 +                skb_reserve( nskb, eth_reserve );
@@ -3720,9 +3721,13 @@ diff -urN qca-wifi-org/qca_ol/osif_ol.c qca-wifi-mod/qca_ol/osif_ol.c
 +                /* Update New Pkt Len */
 +                ooffset += nskb_max_len;
 +                oskb_max_len = oskb_max_len - nskb_max_len - elen;
-+                nskb_max_len = oskb_max_len;
- 
--    osdev->iv_vap_send(osdev->iv_txrx_handle, skb);
++                if( oskb_max_len > vap->kwn_max_pkt_size ) {
++                    nskb_max_len = vap->kwn_frag_pkt_size;
++                }
++                else {
++                    nskb_max_len = oskb_max_len;
++                }
++
 +                /* Pull the first 24 bytes */
 +                skb_pull( nskb, 24 );
 +            }
@@ -3753,7 +3758,7 @@ diff -urN qca-wifi-org/qca_ol/osif_ol.c qca-wifi-mod/qca_ol/osif_ol.c
 +        if ( nskb == NULL ) {
 +            goto bad;
 +        }
- 
++
 +        /* Fill the skb content */
 +        offset = 0;
 +        skb_reserve( nskb, eth_reserve );
