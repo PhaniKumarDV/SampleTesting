@@ -206,13 +206,13 @@ function updateparam()
           <div class="cbi-value" id="serverip">
             <label class="cbi-value-title">Server IP Address</label>
             <div class="cbi-value-field">
-              <input type="text" name="119" class="cbi-input-select" value="<%=uciget('uci get tftp.tftp.serverip')%>" >
+              <input type="text" name="119" class="cbi-input-select" id="tftpserverip" value="<%=uciget('uci get tftp.tftp.serverip')%>" >
             </div>
           </div> 
           <div class="cbi-value" id="filename">
             <label class="cbi-value-title">File Name</label>
             <div class="cbi-value-field">
-              <input type="text" name="117" class="cbi-input-select" value="<%=uciget('uci get tftp.tftp.filename')%>" >
+              <input type="text" name="117" class="cbi-input-select" id="tftpfilename" value="<%=uciget('uci get tftp.tftp.filename')%>" >
             </div>
           </div>
           <div class="cbi-value">
@@ -258,7 +258,7 @@ function updateparam()
             <input type="button" class="cbi-button" value="<%:Upgrade%>" onclick="upgrade_retrieve(1)">
           </div>
           <div class="cbi-page-actions left" id="retrieve" style="display:none">
-            <input type="button" class="cbi-button" value="<%:Retrieve%>" onclick="upgrade_retrieve(2)">
+            <input type="button" class="cbi-button cbi-button-apply" value="<%:Retrieve%>" onclick="upgrade_retrieve(2)">
           </div> 
           <div class="cbi-value" id="dotbar" style="display:none">
             <span id="msg"></span>

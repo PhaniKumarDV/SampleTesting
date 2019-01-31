@@ -4,4 +4,23 @@
  Licensed to the public under the Apache License 2.0.
 -%>
 
-<% include("themes/" .. theme .. "/footer") %>
+<% include("themes/" .. theme .. "/footer") 
+local loginuser = luci.dispatcher.context.authuser
+%>
+<script type="text/javascript">
+   var loginuser = <%=luci.http.write_json(loginuser)%>;
+   if( loginuser == "user" ) {
+      $('input').prop('disabled',true);
+      $('select').prop('disabled',true);
+      $('.cbi-input-user').prop("disabled", false);
+      $('.cbi-input-password').prop("disabled", false);
+      $('.cbi-button-apply').prop("disabled", false);
+      $('.cbi-button-reset').prop("disabled", false);
+      $('#logtype').prop("disabled", false);
+      $('.nwktool').prop("disabled", false);
+      $('#ret').prop("disabled", false);
+      $('#tftpserverip').prop("disabled", false);
+      $('#filetype').prop("disabled", false);
+      $('#tftpfilename').prop("disabled", false);
+   }
+</script>

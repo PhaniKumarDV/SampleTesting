@@ -28,16 +28,13 @@
         else
             end_freq = freqlist[i].mhz;
     }
-function enable()
-{
-    document.getElementById("s1").disabled=false;
-}
 function stop_scan()
 {
     id = 1;
     XHR.get('<%=luci.dispatcher.build_url("admin", "monitor","tools")%>/stopscan' + '/' + id, null,
     function(x, data) {
-            document.getElementById("s1").innerHTML="<input type='button' class='cbi-button' value='Start' onclick='start_scan()' />";
+            document.getElementById("start_button").style.display = "block";
+            document.getElementById("stop_button").style.display = "none";
             document.getElementById("msg").innerHTML="";
         if (data) { 
         }
@@ -51,7 +48,8 @@ function start_scan()
     var time = document.getElementById("time").value;
     var start = document.getElementById("start").value;
     var end = document.getElementById("end").value;
-    document.getElementById("s1").innerHTML="<input type='button' class='cbi-button' value='Stop' onclick='stop_scan()' />";
+    document.getElementById("start_button").style.display = "none";
+    document.getElementById("stop_button").style.display = "block";
     document.getElementById("msg").innerHTML="Spectral scan is in progress...";
     var scantable = document.getElementById('scan-list');
             if( scantable ) {
@@ -171,7 +169,8 @@ function get_values( data )
             function(x, data) {
               if (data) { 
                   if( data == 0 ) {
-                      document.getElementById("s1").innerHTML="<input type='button' class='cbi-button' value='Start' onclick='start_scan()' />";
+                      document.getElementById("start_button").style.display = "block";
+                      document.getElementById("stop_button").style.display = "none";
                       document.getElementById("msg").innerHTML="";
                   }
                }
@@ -199,12 +198,15 @@ function get_values( data )
                 <td>Start Frequency&nbsp;<input type="text" class="cbi-input-select" id="start" style="width:100px;" value="">&nbsp; (0-10000) MHz</td>
                 <td>End Frequency&nbsp;<input type="text" class="cbi-input-select" id="end" style="width:100px;" value="">&nbsp; (0-10000) MHz</td>
           </tr>
-          <tr>
-            <td style="border-top:0px;"><span id="s1" style="padding-left:0px;" class="cbi-page-actions right"><input type="button" class="cbi-button" value="Start" onclick="start_scan()" /></span></td>
-          </tr>
         </table>
         </form>
     </fieldset>
+    <div class="cbi-page-actions right" id="start_button">
+       <input type="button" class="cbi-button" value="Start" onclick="start_scan()" />
+    </div>
+    <div class="cbi-page-actions right" id="stop_button" style="display:none">
+       <input type="button" class="cbi-button" value="Stop" onclick="stop_scan()" />
+    </div>
 	<fieldset class="cbi-section">
     <div id="msg"></div>
     <div class="ct-chart" style="width:100%;"></div>

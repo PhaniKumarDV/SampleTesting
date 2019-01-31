@@ -1,4 +1,7 @@
-	<%- if pageaction then -%>
+<% 
+   local loginuser = luci.dispatcher.context.authuser 
+%>
+<%- if pageaction then -%>
 	<div class="cbi-page-actions">
 		<% if redirect then %>
 		<div style="float:left">
@@ -19,7 +22,25 @@
 			<!--<input class="cbi-button cbi-button-reset" type="button" value="<%:Reset%>" onclick="location.href='<%=REQUEST_URI%>'" />-->
 		<% end %>
 
-		<script type="text/javascript">cbi_d_update();</script>
+		<script type="text/javascript">
+        cbi_d_update();
+        var loginuser = <%=luci.http.write_json(loginuser)%>;
+        if( loginuser == "user" ) {
+           $('input').prop('disabled',true);
+           $('select').prop('disabled',true);
+
+           $('.cbi-input-user').prop("disabled", false);
+           $('.cbi-input-password').prop("disabled", false);
+           $('.cbi-button-apply').prop("disabled", false);
+           $('.cbi-button-reset').prop("disabled", false);
+           $('#logtype').prop("disabled", false);
+           $('.nwktool').prop("disabled", false);
+           $('#ret').prop("disabled", false);
+           $('#tftpserverip').prop("disabled", false);
+           $('#filetype').prop("disabled", false);
+           $('#tftpfilename').prop("disabled", false);
+        }
+        </script>
 	</div>
 	<%- end -%>
 </form>
