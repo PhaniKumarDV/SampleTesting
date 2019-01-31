@@ -3294,7 +3294,7 @@ diff -urN qca-wifi-org/os/linux/tools/athstats.c qca-wifi-mod/os/linux/tools/ath
      fprintf(fd,"ast_tx_xretries     :\t%u\n",tx->tx_xretry);
 diff -urN qca-wifi-org/qca_ol/osif_ol.c qca-wifi-mod/qca_ol/osif_ol.c
 --- qca-wifi-org/qca_ol/osif_ol.c	2018-06-08 11:00:50.000000000 +0530
-+++ qca-wifi-mod/qca_ol/osif_ol.c	2019-01-30 11:50:26.641011716 +0530
++++ qca-wifi-mod/qca_ol/osif_ol.c	2019-01-31 13:08:25.663728611 +0530
 @@ -73,6 +73,9 @@
  #include <osif_nss_wifiol_vdev_if.h>
  #endif
@@ -3634,7 +3634,7 @@ diff -urN qca-wifi-org/qca_ol/osif_ol.c qca-wifi-mod/qca_ol/osif_ol.c
      qdf_nbuf_count_inc(skb);
      if (qdf_unlikely((dev->flags & (IFF_RUNNING|IFF_UP)) != (IFF_RUNNING|IFF_UP))) {
  	    goto bad1;
-@@ -968,9 +1239,163 @@
+@@ -968,9 +1239,159 @@
      }
  #endif
  
@@ -3659,27 +3659,28 @@ diff -urN qca-wifi-org/qca_ol/osif_ol.c qca-wifi-mod/qca_ol/osif_ol.c
 +            struct sk_buff *nskb;
 +            struct ether_header *neth;
 +            struct ether_header *oeth;
-+            int offset = 0;
-+            int oskb_max_len = 0;
-+            int nskb_max_len = vap->kwn_frag_pkt_size;
++            int frag_len = vap->kwn_frag_pkt_size;
 +            struct kwn_frag_params *kparams;
-+            int ecsum = 0;
 +            int eth_reserve = 64;
 +            int pkt_size = 0;
++            int offset = 0;
 +            int ooffset = 0;
 +            int flen = sizeof(kwn_frag_dsap) + sizeof(struct kwn_frag_params);
 +            int elen = sizeof(struct ether_header);
++            int nlen = elen + flen;
++            int oskb_max_len = 0;
 +
-+            oskb_max_len = skb->len;
-+            for ( ; nskb_max_len > 0 ; ) {
++            //printk(": PktSize: %d\n",skb->len);
++            oskb_max_len = skb->len - elen;
++            ooffset += elen;
++            for ( ; frag_len > 0 ; ) {
 +
 +                /* Create a packet */
-+                pkt_size = elen + flen + nskb_max_len + ecsum;
++                pkt_size = nlen + frag_len;
 +                nskb = dev_alloc_skb ( pkt_size + eth_reserve );
 +                if ( nskb == NULL ) {
 +                    break;
 +                }
- 
 +                /* Fill the skb content */
 +                offset = 0;
 +                skb_reserve( nskb, eth_reserve );
@@ -3696,9 +3697,6 @@ diff -urN qca-wifi-org/qca_ol/osif_ol.c qca-wifi-mod/qca_ol/osif_ol.c
 +                IEEE80211_ADDR_COPY( neth->ether_shost, oeth->ether_shost );
 +                neth->ether_type = oeth->ether_type;
 +                offset += elen;
-+                if ( oskb_max_len > vap->kwn_max_pkt_size ) {
-+                    ooffset +=  elen;
-+                }
 +
 +                /* DSAP + Flags */
 +                memcpy(&nskb->data[ offset ], kwn_frag_dsap, sizeof(kwn_frag_dsap));
@@ -3710,26 +3708,24 @@ diff -urN qca-wifi-org/qca_ol/osif_ol.c qca-wifi-mod/qca_ol/osif_ol.c
 +                    kparams->kwn_frag_flags = htons(0);
 +                    kparams->kwn_tot_len = htons(0);
 +                }
-+
++                offset += flen;
+ 
 +                /* Payload : New Offset will be ahead by 6 bytes compared with old Offset */
-+                memcpy(&nskb->data[ offset + flen ], &skb->data[ ooffset ], nskb_max_len);
-+
++                memcpy(&nskb->data[ offset ], &skb->data[ ooffset ], frag_len);
 +                skb_reset_mac_header( nskb );
 +                /* TX Pkt */
 +                osdev->iv_vap_send(osdev->iv_txrx_handle, nskb);
 +
++                //printk(": Before: ooffset: %d FragLen: %d Nksb: %d\n",ooffset, frag_len, nskb->len);
 +                /* Update New Pkt Len */
-+                ooffset += nskb_max_len;
-+                oskb_max_len = oskb_max_len - nskb_max_len - elen;
-+                if( oskb_max_len > vap->kwn_max_pkt_size ) {
-+                    nskb_max_len = vap->kwn_frag_pkt_size;
++                ooffset += frag_len;
++                oskb_max_len = oskb_max_len - frag_len;
++                if ( oskb_max_len >= vap->kwn_max_pkt_size ) {
++                    frag_len = vap->kwn_frag_pkt_size;
++                } else {
++                    frag_len = oskb_max_len;
 +                }
-+                else {
-+                    nskb_max_len = oskb_max_len;
-+                }
-+
-+                /* Pull the first 24 bytes */
-+                skb_pull( nskb, 24 );
++                //printk(": After: ooffset: %d FragLen: %d Nksb: %d\n",ooffset, frag_len, nskb->len);
 +            }
 +            /* Drop the original packet */
 +            if (skb != NULL)
@@ -6162,8 +6158,8 @@ diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.h qca-wifi-mod/umac/base/ieee802
  #endif //IEEE80211_UCFG_H_
 diff -urN qca-wifi-org/umac/base/ieee80211_vap.c qca-wifi-mod/umac/base/ieee80211_vap.c
 --- qca-wifi-org/umac/base/ieee80211_vap.c	2018-06-08 11:00:49.000000000 +0530
-+++ qca-wifi-mod/umac/base/ieee80211_vap.c	2019-01-29 16:28:25.175310149 +0530
-@@ -37,6 +37,460 @@
++++ qca-wifi-mod/umac/base/ieee80211_vap.c	2019-01-31 13:08:32.303703739 +0530
+@@ -37,6 +37,462 @@
  void acfg_clean(struct ieee80211com *ic);
  #endif
  
@@ -6344,6 +6340,8 @@ diff -urN qca-wifi-org/umac/base/ieee80211_vap.c qca-wifi-mod/umac/base/ieee8021
 +    int plen = elen + flen;
 +    int nlen = 0;
 +
++    /* Subtract the Extra Headers before allocating the Jumbo Frame memory */
++    nskb_len = nskb_len - ((q->count * flen) + (( q->count - 1 ) * elen));
 +    /* Create a Jumbo Ethernet packet */
 +    nskb = dev_alloc_skb ( nskb_len + nskb_reserve );
 +    if ( nskb == NULL ) {
@@ -6624,7 +6622,7 @@ diff -urN qca-wifi-org/umac/base/ieee80211_vap.c qca-wifi-mod/umac/base/ieee8021
  #if DYNAMIC_BEACON_SUPPORT
  static OS_TIMER_FUNC(ieee80211_dbeacon_suspend_beacon)
  {
-@@ -502,6 +956,21 @@
+@@ -502,6 +958,21 @@
          }
  #endif
  
@@ -6646,7 +6644,7 @@ diff -urN qca-wifi-org/umac/base/ieee80211_vap.c qca-wifi-mod/umac/base/ieee8021
      vap->offchan_requestor = 0;
      vap->iv_csmode = IEEE80211_CSA_MODE_AUTO; /* csmode will be calculated dynamically */
      vap->iv_enable_ecsaie = true; /* Extended channel switch ie is enabled by default */
-@@ -552,7 +1021,18 @@
+@@ -552,7 +1023,18 @@
  ieee80211_vap_detach(struct ieee80211vap *vap)
  {
      int i;
@@ -6665,7 +6663,7 @@ diff -urN qca-wifi-org/umac/base/ieee80211_vap.c qca-wifi-mod/umac/base/ieee8021
      ieee80211_quiet_vdetach(vap);
      ieee80211_vap_ath_info_detach(vap->iv_vap_ath_info_handle);
      ieee80211_node_latevdetach(vap);
-@@ -597,6 +1077,8 @@
+@@ -597,6 +1079,8 @@
  
      spin_lock_destroy(&vap->iv_lock);
      spin_lock_destroy(&vap->init_lock);

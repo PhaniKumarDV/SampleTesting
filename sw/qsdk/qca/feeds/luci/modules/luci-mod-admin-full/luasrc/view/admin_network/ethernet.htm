@@ -110,7 +110,7 @@ function save_value()
         <div class="cbi-value" id="eth_mtu">
           <label class="cbi-value-title">Ethernet MTU</label>
           <div class="cbi-value-field">          
-            <input type="text" name="114" class="cbi-input-select" value="<%=uciget('uci get network.lan.mtu')%>" > &nbsp; bytes
+            <input type="text" name="114" class="cbi-input-select" value="<%=uciget('uci get network.lan.mtu')%>" > &nbsp; (1500-9000) Bytes
           </div>
         </div>
     </form>
