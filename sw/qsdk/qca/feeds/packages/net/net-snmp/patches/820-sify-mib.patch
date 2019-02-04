@@ -1,6 +1,6 @@
 diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.c
 --- net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c	1970-01-01 05:30:00.000000000 +0530
-+++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.c	2019-02-01 18:50:46.828896175 +0530
++++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.c	2019-02-04 23:42:45.987250954 +0530
 @@ -0,0 +1,5438 @@
 +/****************************************************************************
 +*                                                                           *
@@ -121,7 +121,7 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +  { 12   , ASN_INTEGER    , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_DOWNLINK_LIMIT } },
 +  { 13   , ASN_INTEGER    , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_HIDE_ESSID } },
 +  { 14   , ASN_OCTET_STR  , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_CUSTOMER_NAME } },
-+  { 15   , ASN_INTEGER    , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_LINKID } },
++  { 15   , ASN_OCTET_STR  , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_LINKID } },
 +  { 16   , ASN_OCTET_STR  , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_SECURITY_ENC } },
 +  { 17   , ASN_OCTET_STR  , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_SECURITY_KEY } },
 +  { 18   , ASN_OCTET_STR  , RWRITE, var_WlanTable, 6, { KWN_SMAC, KWN_CONFIGURATION, KWN_WIRELESS, KWN_WLANTABLE, KWN_WLANENTRY, KWN_WLAN_MACFILTER } },
@@ -376,8 +376,8 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +  { 245  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_NOISE_FLOOR } },
 +  { 246  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_CUSTOMERNAME } },
 +  { 247  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_CUSTOMERNAME } },
-+  { 248  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_LINKID } },
-+  { 249  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_LINKID } },
++  { 248  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_LINKID } },
++  { 249  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_LINKID } },
 +};
 +
 +/****************************************************************************
@@ -1138,8 +1138,8 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +        kwn_assoc_list.sta[ num ].remote_noise_floor = (long) si->isi_r_noise_floor;
 +        memcpy( kwn_assoc_list.sta[ num ].l_customername, si->isi_l_customer_name, sizeof( kwn_assoc_list.sta[num].l_customername ) );
 +        memcpy( kwn_assoc_list.sta[ num ].r_customername, si->isi_r_customer_name, sizeof( kwn_assoc_list.sta[num].r_customername ) );
-+        kwn_assoc_list.sta[ num ].l_linkid = ( long ) si->isi_l_link_id;
-+        kwn_assoc_list.sta[ num ].r_linkid = ( long ) si->isi_r_link_id;
++        memcpy( kwn_assoc_list.sta[ num ].l_linkid, si->isi_l_link_id, sizeof( kwn_assoc_list.sta[num].l_linkid ) );
++        memcpy( kwn_assoc_list.sta[ num ].r_linkid, si->isi_r_link_id, sizeof( kwn_assoc_list.sta[num].r_linkid ) );
 +        num ++;
 +        cp += si->isi_len, len -= si->isi_len;
 +    } while( len >= sizeof( struct ieee80211req_sta_info ) );
@@ -1301,8 +1301,8 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +        case KWN_WLAN_LINKID:
 +            {
 +                sprintf( cmd, "uci get wireless.wifi%d.linkid", ind );
-+                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
-+                return ( u_char * ) &res_val;
++                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len, NULL );
++                return ( u_char * ) res_str;
 +            }
 +        case KWN_WLAN_SECURITY_ENC:
 +            {
@@ -3743,13 +3743,13 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +            }
 +        case KWN_ASSOC_LOCAL_LINKID:
 +            {
-+                *var_len = sizeof ( long );
-+                return (u_char *) &kwn_assoc_list.sta[sec_ind].l_linkid;
++                *var_len = strlen( kwn_assoc_list.sta[sec_ind].l_linkid );
++                return (u_char *) kwn_assoc_list.sta[sec_ind].l_linkid;
 +            }
 +        case KWN_ASSOC_REMOTE_LINKID:
 +            {
-+                *var_len = sizeof( long );
-+                return (u_char *) &kwn_assoc_list.sta[sec_ind].r_linkid;
++                *var_len = strlen( kwn_assoc_list.sta[sec_ind].r_linkid );
++                return (u_char *) kwn_assoc_list.sta[sec_ind].r_linkid;
 +            }
 +        default:
 +            ERROR_MSG ( "" );
@@ -3864,7 +3864,7 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +                        /* Configuration of link id is not supported for 2.4 Radio */
 +                        if( ind == 0 )
 +                            return SNMP_ERR_GENERR;
-+                        sprintf( cmd, "uci set wireless.wifi%d.linkid='%d'", ind, long_val );
++                        sprintf( cmd, "uci set wireless.wifi%d.linkid='%s'", ind, var_val );
 +                        system( cmd );
 +                        break;
 +                    case KWN_WLAN_SECURITY_ENC:
@@ -5442,8 +5442,8 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +}
 diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.h
 --- net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h	1970-01-01 05:30:00.000000000 +0530
-+++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.h	2019-02-01 18:48:14.632418967 +0530
-@@ -0,0 +1,526 @@
++++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.h	2019-02-04 23:42:59.879187870 +0530
+@@ -0,0 +1,527 @@
 +/****************************************************************************
 +*                                                                           *
 +*  File Name:           kwnmib.h                                      *
@@ -5471,8 +5471,9 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h net-snmp-5.4.4-mod/agent/mi
 +#define KWN_PRIVATE_MIB_OID              52619
 +#define KWN_UCI_CMD_OUTPUT_LEN_MAX       255 * 15
 +#define KWN_MAC_ADDR_LEN                 6
-+#define KWN_GPS_LEN                      33
++#define KWN_GPS_LEN                      16
 +#define KWN_CUSTNAME_LEN                 33
++#define KWN_LINKID_LEN                   16
 +#define KWN_LINKS_MAX                    20
 +#define KWN_UCI_STR_ENUM_LEN             10
 +
@@ -5935,8 +5936,8 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h net-snmp-5.4.4-mod/agent/mi
 +    long remote_noise_floor;
 +    char l_customername[ KWN_CUSTNAME_LEN ];
 +    char r_customername[ KWN_CUSTNAME_LEN ];
-+    uint8_t l_linkid;
-+    uint8_t r_linkid;
++    char l_linkid[ KWN_LINKID_LEN ];
++    char r_linkid[ KWN_LINKID_LEN ];
 +}kwn_link_stats;
 +
 +typedef struct
@@ -5996,7 +5997,7 @@ diff -urN net-snmp-5.4.4-org/include/net-snmp/net-snmp-config.h.in net-snmp-5.4.
  
 diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWEST-MIB.mib
 --- net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib	1970-01-01 05:30:00.000000000 +0530
-+++ net-snmp-5.4.4-mod/mibs/KEYWEST-MIB.mib	2019-02-01 18:47:31.744214666 +0530
++++ net-snmp-5.4.4-mod/mibs/KEYWEST-MIB.mib	2019-02-04 23:42:28.499330370 +0530
 @@ -0,0 +1,2990 @@
 +------------------------------------------------------------------------
 +------------------------------------------------------------------------
@@ -6133,7 +6134,7 @@ diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWES
 +                wirelessCustomerName
 +                    DisplayString,
 +                wirelessLinkId
-+                    Integer32,
++                    DisplayString,
 +                wirelessSecurityEncryption
 +                    DisplayString,
 +                wirelessSecurityKey
@@ -6321,10 +6322,10 @@ diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWES
 +::= { wirelessEntry 14 }
 +
 +wirelessLinkId OBJECT-TYPE
-+        SYNTAX      Integer32
++        SYNTAX      DisplayString
 +        MAX-ACCESS  read-write
 +        STATUS      current
-+        DESCRIPTION "This parameter represents LinkId.
++        DESCRIPTION "This parameter represents LinkId in 1 to 15 digits.
 +                     It can be configured only for 5 GHz radio
 +                     in Outdoor Subscriber mode."
 +::= { wirelessEntry 15 }
@@ -8689,9 +8690,9 @@ diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWES
 +                assocRemoteCustomername
 +                    DisplayString,
 +                assocLocalLinkid
-+                    Integer32,
++                    DisplayString,
 +                assocRemoteLinkid
-+                    Integer32
++                    DisplayString
 +        }
 +
 +assocRadioIndex OBJECT-TYPE
@@ -8934,7 +8935,7 @@ diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWES
 +::= { assocEntry 29 }
 +
 +assocLocalLinkid OBJECT-TYPE
-+        SYNTAX      Integer32
++        SYNTAX      DisplayString
 +        MAX-ACCESS  read-only
 +        STATUS      current
 +        DESCRIPTION "This parameter represents the Local Linkid
@@ -8942,7 +8943,7 @@ diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWES
 +::= { assocEntry 30 }
 +
 +assocRemoteLinkid OBJECT-TYPE
-+        SYNTAX      Integer32
++        SYNTAX      DisplayString
 +        MAX-ACCESS  read-only
 +        STATUS      current
 +        DESCRIPTION "This parameter represents the Remote Linkid

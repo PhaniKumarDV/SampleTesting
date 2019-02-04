@@ -485,9 +485,10 @@ void kwn_get_config_from_device( kwn_cfg_data *dev_cfg )
 
     memset(cmd, '\0', sizeof(cmd));
     memset(cmd_buf, '\0', sizeof(cmd_buf));
-    sprintf( cmd,"uci get wireless.wifi1.linkid");
-    kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] ); 
-    dev_cfg->linkid = atoi(cmd_buf);
+    //sprintf( cmd,"uci get wireless.wifi1.linkid");
+    //kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] ); 
+    //dev_cfg->linkid = atoi(cmd_buf);
+    dev_cfg->linkid = 0;
     printf("dev_cfg->Link_id : %d\n",dev_cfg->linkid);
 
     memset(cmd, '\0', sizeof(cmd));

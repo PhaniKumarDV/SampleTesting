@@ -916,6 +916,7 @@ struct ieee80211_node_stats {
     u_int8_t    rtx;
     u_int8_t    tx_pwr;
     u_int8_t    tx_chainmask;
+    u_int64_t   tx_tput_mbps;
 } __packed;
 
 /* VHT - Node Stats*/
@@ -928,7 +929,7 @@ struct ieee80211_link_param {
     u_int8_t  	ipv4[20];
     u_int32_t  	ul_limit; 
     u_int32_t  	dl_limit; 
-    u_int8_t	link_id;
+    u_int8_t	link_id[16];
     u_int8_t	customer_name[33];
     u_int8_t	antenna_gain;
     u_int8_t    kwn_assem_frag;
@@ -944,7 +945,7 @@ struct ieee80211_action_vht_link_param {
 
 struct ieee80211_dying_gasp_ie {
     u_int8_t    type;
-    u_int8_t	link_id;
+    u_int8_t	link_id[16];
     u_int16_t	seq_no;
     u_long   	ts;
     u_int8_t  	ipv4[20];
@@ -2964,10 +2965,10 @@ struct ieee80211req_sta_info {
         u_int8_t isi_tx_rate_mcs;
         u_int8_t isi_tx_rate_flags;
 #endif
-        u_int8_t isi_r_latitude[32];
-        u_int8_t isi_r_longitude[32];
-        u_int8_t isi_l_latitude[32];
-        u_int8_t isi_l_longitude[32];
+        u_int8_t isi_r_latitude[16];
+        u_int8_t isi_r_longitude[16];
+        u_int8_t isi_l_latitude[16];
+        u_int8_t isi_l_longitude[16];
         u_int64_t isi_tx_tput;             /* Tx Thput */
         u_int64_t isi_rx_tput;             /* Rx Thput */
         u_int8_t isi_local_snr_a1;        /* Local SNR A1 */
@@ -2983,8 +2984,8 @@ struct ieee80211req_sta_info {
         u_int32_t isi_remote_retries;       /* Remote Retries */
         u_int8_t  isi_l_customer_name[33];
         u_int8_t  isi_r_customer_name[33];
-        u_int8_t  isi_l_link_id;
-        u_int8_t  isi_r_link_id;
+        u_int8_t  isi_l_link_id[16];
+        u_int8_t  isi_r_link_id[16];
         int16_t   isi_l_noise_floor;
         int16_t   isi_r_noise_floor;
         u_int8_t  isi_kwn_tx_rate_mcs;
