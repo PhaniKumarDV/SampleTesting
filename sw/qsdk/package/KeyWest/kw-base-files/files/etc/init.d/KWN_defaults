@@ -38,6 +38,7 @@ start_service() {
     ddrsmaxrate1=$(uci get wireless.wifi1.ddrsmaxrate)
     ddrsinctimer1=$(uci get wireless.wifi1.ddrsinctimer)
     ddrsdectimer1=$(uci get wireless.wifi1.ddrsdectimer)
+    ddrsbackoff1=$(uci get wireless.wifi1.ddrsbackoff)
     ddrsincthrld1=$(uci get wireless.wifi1.ddrsincthrld)
     ddrsrtxinc1=$(uci get wireless.wifi1.ddrsrtxinc)
     ddrsrtxdec1=$(uci get wireless.wifi1.ddrsrtxdec)
@@ -168,6 +169,10 @@ start_service() {
     if [ "$ddrsdectimer1" == "" ]
     then
         uci set wireless.wifi1.ddrsdectimer='1'
+    fi
+    if [ "$ddrsbackoff1" == "" ]
+    then
+        uci set wireless.wifi1.ddrsbackoff='300'
     fi
     if [ "$ddrsincthrld1" == "" ]
     then
@@ -312,6 +317,7 @@ start_service() {
 #5 Radio Default values
     uci set wireless.wifi1.enable_ol_stats='1'
     uci set wireless.@wifi-iface[1].qboost_enable='0'
+    uci set wireless.@wifi-iface[1].data_txstats='1'
 #2.4 Radio Default values
     uci set wireless.wifi0.txchainmask='3'
     uci set wireless.wifi0.rxchainmask='3'
