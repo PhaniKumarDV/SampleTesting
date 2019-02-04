@@ -665,6 +665,9 @@ enable_qcawifi() {
 	config_get dyinggasp "$vif" dyinggasp
 	[ -n "$dyinggasp" ] && iwpriv "$phy" dying_gasp $dyinggasp
 	
+	config_get data_txstats "$vif" data_txstats
+	[ -n "$data_txstats" ] && iwpriv "$phy" data_txstats $data_txstats
+
 	config_get dgackdisable "$vif" dgackdisable
 	[ -n "$dgackdisable" ] && iwpriv "$phy" dgackdisable $dgackdisable
 
@@ -1871,6 +1874,7 @@ enable_qcawifi() {
 		config_get ddrsmaxrate "$device" ddrsmaxrate
 		config_get ddrsinctimer "$device" ddrsinctimer
 		config_get ddrsdectimer "$device" ddrsdectimer
+		config_get ddrsbackoff "$device" ddrsbackoff
 		config_get ddrsincthrld "$device" ddrsincthrld
 		config_get ddrsrtxinc "$device" ddrsrtxinc
 		config_get ddrsrtxdec "$device" ddrsrtxdec
@@ -1887,6 +1891,7 @@ enable_qcawifi() {
             [ -n "$ddrsmaxrate" ] && iwpriv "$ifname" kwnddrsmax "$ddrsmaxrate"
             [ -n "$ddrsinctimer" ] && iwpriv "$ifname" kwnddrsinc "$ddrsinctimer"
             [ -n "$ddrsdectimer" ] && iwpriv "$ifname" kwnddrsdec "$ddrsdectimer"
+            [ -n "$ddrsbackoff" ] && iwpriv "$ifname" kwnbackoff "$ddrsbackoff"
             [ -n "$ddrsincthrld" ] && iwpriv "$ifname" kwnincthrld "$ddrsincthrld"
             [ -n "$ddrsrtxinc" ] && iwpriv "$ifname" kwnrtxinc "$ddrsrtxinc"
             [ -n "$ddrsrtxdec" ] && iwpriv "$ifname" kwnrtxdec "$ddrsrtxdec"
