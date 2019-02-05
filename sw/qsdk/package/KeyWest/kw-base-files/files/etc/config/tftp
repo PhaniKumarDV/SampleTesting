@@ -4,3 +4,10 @@ config tftp 'tftp'
     option serverip '192.168.1.100'
     option opstatus '1'
     option optype   '0'
+
+config http 'http'
+    option filetype 1
+    option optype 0
+
+config retip 'retip'
+    option retainip 0

@@ -389,7 +389,23 @@ start_service() {
         ethgateway=$(uci get network.lan.gateway)
         uci set network.kweth.gateway=$ethgateway
     fi
-    
+#RETAINIP
+    retip=$(uci get tftp.retip)
+    if [ "$retip" == "" ]
+    then
+        uci set tftp.retip=retip
+        uci set tftp.retip.retainip='0'
+    fi
+    if [ -f "/etc/retainip" ]
+    then
+        filename='/etc/retainip'
+        while read p
+        do 
+            $p
+        done < $filename
+        rm -rf /etc/retainip
+    fi
+
     dmesg -n 1
 
     procd_close_instance

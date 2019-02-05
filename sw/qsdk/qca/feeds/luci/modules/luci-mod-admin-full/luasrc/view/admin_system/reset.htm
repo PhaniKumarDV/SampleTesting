@@ -4,6 +4,13 @@
  Licensed to the public under the Apache License 2.0.
 -%>
 
+<%-
+        function uciget(cmd)
+                local res = luci.util.exec(cmd)
+                local str = string.gsub(res, "\n", "")
+                return str
+        end
+-%>
 <%+header%>
 <style>
 .dot {
@@ -19,33 +26,44 @@
 <script type="text/javascript">
 var index = 0;
 var myVar;
+var addr = "192.168.1.1";
 function inc ()
 {
-    var addr = "192.168.1.1";
     index++;
     document.getElementById("custom-style").innerHTML = ".dots .dot:nth-child( -n + " + index + "){background-color: #a5bc23;}"
     if( index == 20 ) {
-       clearInterval( myVar );
-       //location.href = ('https:' == document.location.protocol ? 'https://' : 'http://') + '<%=addr or luci.http.getenv("SERVER_NAME")%>/';
-       //location.href='<%=luci.dispatcher.build_url("admin")%>';
-       location.href='http://192.168.1.1';
+        clearInterval( myVar );
+        //location.href = ('https:' == document.location.protocol ? 'https://' : 'http://') + '<%=addr or luci.http.getenv("SERVER_NAME")%>/';
+        //location.href='<%=luci.dispatcher.build_url("admin")%>';
+        location.href='http://'+addr;
     }
 }
 
 function performreset() 
 {
-    var type = 3;
-   document.getElementById("cont").style.display="none";
-   document.getElementById("reset").style.display="none";
-   document.getElementById("msg").innerHTML="Please wait while resetting configuration...";
-   document.getElementById("dotbar").style.display="block";
-   myVar = setInterval(inc,5000);
-    XHR.get('<%=luci.dispatcher.build_url("admin","system","flashops")%>/action_reset' + '/' + type, null,
+    var dev_mode = "<%=uciget('uci get network.param.networkmode')%>";
+    var retipadd=document.getElementById("retip1").value;
+    if( (retipadd == 1) && (dev_mode == 1) )
+        addr = "<%=uciget('uci get network.lan.ipaddr')%>";
+    document.getElementById("cont").style.display="none";
+    document.getElementById("reset").style.display="none";
+    document.getElementById("msg").innerHTML="Please wait while resetting configuration...";
+    document.getElementById("dotbar").style.display="block";
+    myVar = setInterval(inc,5000);
+    XHR.get('<%=luci.dispatcher.build_url("admin","system","flashops")%>/action_reset' + '/' + retipadd, null,
 	    function(x, data) {
 		    if (data) { 
 		    }
 	    }
     );
+}
+
+function retainipaddr()
+{             
+    if( document.getElementById("retip2").checked == "1" )
+        document.getElementById("retip1").value = 1;
+    else      
+        document.getElementById("retip1").value = 0;
 }
 </script>
 <h2><a id="content" name="content"><%: Upgrade / Reset%></a></h2>
@@ -56,6 +74,14 @@ function performreset()
         <li style="margin-right:4px" class="cbi-tab"><a href="#"><%:Reset%></a></li>
     </ul>
     <p id="cont"><%:Factory reset the configuration of device%></p>
+    <div class="cbi-value" id="retip">
+      <label class="cbi-value-title" style="padding-right: 15px;">Retain IP</label>
+      <div style="display:none"><input type="text" id="retip1" name="149" value="<%=uciget('uci get tftp.retip.retainip')%>"></div>
+        <script type="text/javascript">
+           var retip = "<%=uciget('uci get tftp.retip.retainip')%>";
+           document.write("<input type='checkbox' id='retip2' class='cibi-input-select' onchange='retainipaddr()' >");
+        </script>
+    </div>
     <div class="cbi-page-actions left" id="reset" style="padding-left:0px">
         <input type="button" class="cbi-button" value="<%:Perform Reset%>" onclick="performreset()">
     </div>
@@ -85,5 +111,11 @@ function performreset()
   <span class="dot"></span>
 </div>
 </div>
+<script type="text/javascript">
+retainipaddr();
+var dev_mode = "<%=uciget('uci get network.param.networkmode')%>";
+if( dev_mode == "2")
+    document.getElementById("retip").style.display="none";
+</script>
 </div>
 <%+footer%>

@@ -187,18 +187,20 @@ function action_packages()
 	end
 end
 
-function action_reset()
-	local sys = require "luci.sys"
-	local fs  = require "nixio.fs"
-	local reset_avail   = os.execute([[grep -E '"rootfs_data"|"ubi"' /proc/mtd >/dev/null 2>&1]]) == 0
-
+function action_reset( retip )
+	--local sys = require "luci.sys"
+	--local fs  = require "nixio.fs"
+	--local reset_avail   = os.execute([[grep -E '"rootfs_data"|"ubi"' /proc/mtd >/dev/null 2>&1]]) == 0
     luci.util.exec("/usr/sbin/sify_reboot_log.sh 4")
-	luci.template.render("admin_system/applyreboot", {
-			title = luci.i18n.translate("Erasing..."),
-			msg   = luci.i18n.translate("The system is erasing the configuration partition now and will reboot itself when finished."),
-			addr  = "192.168.1.1"
-	})
-	fork_exec("sleep 1; killall dropbear uhttpd; sleep 1; jffs2reset -y && reboot")
+    local data = "uci set tftp.retip.retainip="..retip
+    luci.sys.exec(data)
+    luci.sys.exec("sh /usr/sbin/retainip.sh")
+	--luci.template.render("admin_system/applyreboot", {
+	--		title = luci.i18n.translate("Erasing..."),
+	--		msg   = luci.i18n.translate("The system is erasing the configuration partition now and will reboot itself when finished."),
+	--		addr  = "192.168.1.1"
+	--})
+	--fork_exec("sleep 1; killall dropbear uhttpd; sleep 1; jffs2reset -y && reboot")
 end
 
 function action_flashops()

@@ -22,7 +22,7 @@ while [ 1 ] ; do
 	elif [ "$CMD" == "reset" ]; then
 		echo "Device is resetting to factory defaults...."
         /usr/sbin/sify_reboot_log.sh 6
-		firstboot
+        sh /usr/sbin/retainip.sh
 	else
 		a=`echo "$CMD" | cut -d' ' -f 1`
 		if [ "$a" != "uci" ]; then

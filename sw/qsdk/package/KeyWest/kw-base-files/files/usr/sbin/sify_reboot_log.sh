@@ -7,7 +7,7 @@
 
 webreboot ()
 {
-        date=`date`
+        date=`date | sed 's/UTC //g'`
         echo "$date: Reboot initiated through Web"  >> /etc/reboot_logs
         #echo "web"  > /etc/reboot_type
         #echo > /etc/soft_reboot_check
@@ -15,7 +15,7 @@ webreboot ()
 
 webfactreboot ()
 {
-        date=`date`
+        date=`date | sed 's/UTC //g'`
         echo "$date: Reboot initiated through Web for Factory reset" >> /etc/reboot_logs
         #echo "web"  > /etc/reboot_type
         #echo > /etc/soft_reboot_check
@@ -29,7 +29,7 @@ webfactreboot ()
 
 frmupreboot ()
 {
-        date=`date`
+        date=`date | sed 's/UTC //g'`
         echo "$date: Reboot initiated during Firmware upgrade" >> /etc/reboot_logs
         #echo "web"  > /etc/reboot_type
         #echo > /etc/soft_reboot_check
@@ -37,7 +37,7 @@ frmupreboot ()
 
 clireboot ()
 {
-        date=`date`
+        date=`date | sed 's/UTC //g'`
         echo "$date: Reboot initiated through Cli" >> /etc/reboot_logs
         #echo "cli"  > /etc/reboot_type
         #echo > /etc/soft_reboot_check
@@ -45,7 +45,7 @@ clireboot ()
 
 clifactreboot ()
 {
-        date=`date`
+        date=`date | sed 's/UTC //g'`
         echo "$date: Reboot initiated through Cli for Factory reset" >> /etc/reboot_logs
         #echo "cli"  > /etc/reboot_type
         #echo > /etc/soft_reboot_check
@@ -82,7 +82,7 @@ if [ "$1" -eq 6 ]; then
         exit
 fi
 if [ "$1" -eq 7 ]; then
-        date=`date`
+        date=`date | sed 's/UTC //g'`
         echo "$date: Reboot initiated through Configuration Restore " >> /etc/reboot_logs
         exit
 fi
