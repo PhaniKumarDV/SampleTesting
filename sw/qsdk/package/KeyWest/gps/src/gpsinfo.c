@@ -65,7 +65,6 @@ int i2c_strobe(int nFile)
 	struct timeval tv;
 	struct timeval tv1;
 #endif
-
 	//for nmea packet, latch bit 15
 	nStrobeChoice = RTK_I2C_STROBE_DFT;
 	
@@ -80,45 +79,35 @@ int i2c_strobe(int nFile)
 	
 	// do the i2c strobe
 	nRet = write(nFile, cBuf, 6);
-	
-	if (nRet < 0)
-	{
+	if (nRet < 0) {
 		printf("I2C write fail: reg = 0x%X, data = 0x%X\n", nReg, cBuf[0]);
 		return nRet;
 	}	
 #if SHOW_WAIT_TIME
 	gettimeofday(&tv,NULL);
 #endif
-	
-	do{
+	do {
 		// filter out the first 4 bytes first
 		nRet = read(nFile, cBuf1, 4);
-		
-		if (nRet < 0)
-		{
+		if (nRet < 0) {
 			printf("I2C read fail: reg = 0x%X, data = 0x%X\n", nReg, cBuf[0]);
 			return nRet;
 		}
-        
 		// read the strobe result
 		nRet = read(nFile, (char *)&nReadStatus, 2);
-		
-		if (nRet < 0)
-		{
+		if (nRet < 0) {
 			printf("I2C read fail: reg = 0x%X, i2c_strobe status = 0x%X\n", nReg, nStrobeChoice);
 			return nRet;
 		} 
 		nCount++;
 		//printf("i2c_strobe status = 0x%x \n",nReadStatus);
 		// the latch bit must be clear if the data is ready
-		
-		if(nCount > 100)
-		{
+		if(nCount > 100) {
 			nCount = 0;
 			write(nFile, cBuf, 6);
 			printf("send strobe again \n");
 		}
-	}while((nReadStatus & nStrobeChoice) != 0 && nRunning);
+	} while((nReadStatus & nStrobeChoice) != 0 && nRunning);
 	printf("out of loop, strobe status =0x%X \n", nReadStatus );
 #if SHOW_WAIT_TIME
 	gettimeofday(&tv1,NULL);	
@@ -128,7 +117,6 @@ int i2c_strobe(int nFile)
 	printf("time spent to wait = %u s \n",nDiffTime);
 	printf("time spent to wait = %u us \n",nDiffTimeus);
 #endif
-	
 	return 0;
 }
 
@@ -147,26 +135,19 @@ int Read_NMEA_Packet_Len(int nFile)
 	
 	// send request to read packet
 	nRet = write(nFile, cBuf, 4);
-	
-	if (nRet < 0)
-	{
+	if (nRet < 0) {
 		printf("I2C write fail: reg = 0x%X, data = 0x%X\n", nReg, cBuf[0]);
 		return nRet;
 	}
-	
 	// read the packet length, which is the first 4 bytes
 	nRet = read(nFile, (char *)&nNMEALen, 4);
-	
-	if (nRet < 0)
-	{
+	if (nRet < 0) {
 		printf("I2C read fail: reg = 0x%X, data = 0x%X\n", nReg, cBuf[0]);
 		return nRet;
 	}
-	
 	// check if the len is greater than buffer size
 	if(NMEA_BUF_SIZE < nNMEALen)
 		return 0;
-	
 	return nNMEALen;	
 }
 
@@ -183,18 +164,15 @@ int Read_NMEA_String(int nFile,unsigned char * cNMEABuf,unsigned int nLength)
 	cBuf[0] = (unsigned char)((nReg >> 24) & 0xFF);
 
 	nRet = write(nFile, cBuf, 4);
-	if (nRet < 0)
-	{
+	if (nRet < 0) {
 		printf("I2C send fail: opaddr_l = 0x%X, data = 0x%X\n", nReg, cBuf[0]);
 		return nRet;
 	}
 	nRet = read(nFile, cNMEABuf, nLength);
-	if (nRet < 0)
-	{
+	if (nRet < 0) {
 		printf("I2C read fail: opaddr_l = 0x%X, data = 0x%X\n", nReg, cNMEABuf[0]);
 		return nRet;
 	}
-	
 	return 0;	
 }
 
@@ -248,9 +226,7 @@ void UpdateUCI(cmd)
         printf("Failed in commit\n");
         return 0;
     }
-    
     uci_free_context(c);
-
     return 1;
 }
 
@@ -353,9 +329,7 @@ int ReadGPSInfo(char *da, int fLen)
                     deafult: 
                         break;
                 }
-
-                if(!isValid) break;
-
+                if( !isValid ) break;
                 type++;
                 tok = strtok(NULL, ",");
             }
@@ -380,25 +354,23 @@ int ReadGPSInfo(char *da, int fLen)
                 printf("Time: %s\n", gps.time);
                 snprintf(cmd, 128, "system.gps.time=%s", gps.time);
                 UpdateUCI(cmd);
-		
-		/* Update latitude and longitude to driver*/
-		system("iwpriv wifi1 str_type 2");		
+
+                /* Update latitude and longitude to driver*/
+                system("iwpriv wifi1 str_type 2");		
                 snprintf(cmd, 128, "iwconfig ath1 nickname %s", gps.lng);
-		system(cmd);
+                system(cmd);
 
-		system("iwpriv wifi1 str_type 3");		
+                system("iwpriv wifi1 str_type 3");		
                 snprintf(cmd, 128, "iwconfig ath1 nickname %s", gps.lat);
-		system(cmd);
-
+                system(cmd);
             } 
             break;
         } else {
-            pos+=REQ_GPS_PREFIX_LEN;
+            pos += REQ_GPS_PREFIX_LEN;
         }
     }
     return 0;
 }
-
 
 int main(int argc, char **argv)
 {
@@ -410,68 +382,57 @@ int main(int argc, char **argv)
 	unsigned int nPPS = 0;
 	unsigned int pid = 0;
 	int interval = 0;
+    int ret = 0;
 
     if(argc != 2) {
         printf("Invalid arguments..");
         exit(1);
     }
     interval = atoi(argv[1]);
-   printf("%d\n", interval); 
-	signal(SIGINT, SigKill_Handler);
-	signal(SIGKILL, SigKill_Handler);
-	
+    signal(SIGINT, SigKill_Handler);
+    signal(SIGKILL, SigKill_Handler);
 	if ((nI2cFile = open(I2C_DEV_NAME, O_RDWR)) < 0) {
 		/* ERROR HANDLING: you can check errno to see what went wrong */
 		printf("Failed to open the i2c bus \n");
 		exit(1);
 	}
-	
 	// set the slave address, Realtek GNSS device fixed to 0x10
 	if (ioctl(nI2cFile, I2C_SLAVE, GPSS_I2C_ADDR) < 0) {
 		printf("Failed to acquire bus access and/or talk to slave.\n");
 		exit(1);
 	}
-	
 	if ((nGpsFile = open(SIFY_DEV_NAME, O_RDWR)) < 0) {
 		/* ERROR HANDLING: you can check errno to see what went wrong */
 		printf("Failed to open the i2c bus \n");
 		exit(1);
 	}
-     
     do {
         nNMEAlen = 0;
-	    ioctl(nGpsFile,GET_NMEA_READ_PERIOD,&nPPS);
-        //if(nPPS)
-        {		
-//            printf("nPPS = %d \n",nPPS);
-            {
-                i2c_strobe(nI2cFile);		
-
-                nNMEAlen = Read_NMEA_Packet_Len(nI2cFile);
-
-//                printf("NMEAlen = %d \n",nNMEAlen);
-
-                if(nNMEAlen > 0)
-                {
-                    Read_NMEA_String(nI2cFile,cNMEAbuf,nNMEAlen);
-//                    printf(" %s \n",cNMEAbuf);
-                    ReadGPSInfo(cNMEAbuf, nNMEAlen);
+	    if ( ioctl(nGpsFile,GET_NMEA_READ_PERIOD,&nPPS) < 0 ) {
+            printf(": Unable to fetch PPS pulse Period.\n");
+        }
+        /* I2C - Give I2C Slave command to RTK I2C Master to read the NMEA data */
+        ret = i2c_strobe(nI2cFile);		
+        if ( ret == 0 ) {
+            /* If Success, then read the NMEA Packet Length */
+            nNMEAlen = Read_NMEA_Packet_Len(nI2cFile);
+            if(nNMEAlen > 0) {
+                /* If Success, then read the NMEA String */
+                ret = Read_NMEA_String(nI2cFile,cNMEAbuf,nNMEAlen);
+                if ( ret == 0 ) {
+                    /* If Success, then parse the NMEA String to get the GPS Information */
+                    ret = ReadGPSInfo(cNMEAbuf, nNMEAlen);
                 }
             }
         }
-        // if((!nNMEAlen && !interval) || !nNMEAlen) {
         if(((nNMEAlen == 0) || !interval)) { // instead of multiple checks, ok to have an extra 5 Sec sleep before exit, 
             sleep(5);
         } else {
             for(int i = 0; i < interval && nRunning ; i++)
                 sleep(1);
         }
-
     } while( (interval || nNMEAlen == 0 ) && nRunning);
-	
 	close(nI2cFile);	
 	close(nGpsFile);
-		
 	return 0;
 }
-
