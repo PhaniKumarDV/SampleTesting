@@ -16,12 +16,6 @@ start_service() {
     local status="$(uci_get system.gps.status)"
     local int="$(uci_get system.gps.interval)"
     
-    uci_set system gps satelites '0'
-    uci_set system gps latitude '0'
-    uci_set system gps longitude '0'
-    uci_set system gps altitude '0'
-    uci_set system gps time '0'
-    uci_commit system
 
     if [ "${status}" == "1" ] ; then
         echo "Starting GPS"
