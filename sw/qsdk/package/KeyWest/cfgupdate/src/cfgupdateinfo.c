@@ -882,6 +882,9 @@ void cfg_set( char *type, char *value )
         case UCI_ID_RETAINIP_ONRESET:
             sprintf(cmd,"uci set tftp.retip.retainip='%s'",value);
             break;
+        case UCI_ID_WIRELESS_LINKTYPE:
+            sprintf(cmd,"uci set wireless.wifi1.linktype='%s'",value);
+            break;
         default:
             break;
     }

@@ -18,19 +18,22 @@ function index()
 	page.leaf = true
     local mode = luci.sys.exec("uci get wireless.@wifi-iface[1].mode")
     local wds = luci.sys.exec("uci get wireless.@wifi-iface[1].wds")
-    if (string.match(mode,"ap") and string.match(wds,"1") ) then
-		entry({"admin", "network", "radius1"}, template("admin_wireless/radius1"), _("RADIUS"), 2)
+    local linktype = luci.sys.exec("uci get wireless.wifi1.linktype")
+    if (string.match(linktype,"1") or string.match(linktype,"3") ) then
+        if (string.match(mode,"ap") and string.match(wds,"1") ) then
+            entry({"admin", "network", "radius1"}, template("admin_wireless/radius1"), _("RADIUS"), 2)
+        end
+        page = entry({"admin", "network", "vlan"}, template("admin_network/vlan"), _("VLAN"), 3)
+        page.leaf = true
+        page = entry({"admin", "network", "ethernet"}, template("admin_network/ethernet"), _("Ethernet"), 4)
+        page.leaf = true
+        page = entry({"admin", "network", "dhcp"}, template("admin_network/dhcp"), _("DHCP Server"), 5)
+        page.leaf = true
+        page = entry({"admin", "network", "staticlease"}, cbi("admin_network/fixedlease"), _("DHCP Fixed Leases"), 6)
+        page.leaf = true
+        page = entry({"admin", "network", "filtering"}, template("admin_network/filtering"), _("Filtering"), 7)
+        page.leaf = true
     end
-	page = entry({"admin", "network", "vlan"}, template("admin_network/vlan"), _("VLAN"), 3)
-	page.leaf = true
-	page = entry({"admin", "network", "ethernet"}, template("admin_network/ethernet"), _("Ethernet"), 4)
-	page.leaf = true
-	page = entry({"admin", "network", "dhcp"}, template("admin_network/dhcp"), _("DHCP Server"), 5)
-	page.leaf = true
-	page = entry({"admin", "network", "staticlease"}, cbi("admin_network/fixedlease"), _("DHCP Fixed Leases"), 6)
-	page.leaf = true
-	page = entry({"admin", "network", "filtering"}, template("admin_network/filtering"), _("Filtering"), 7)
-	page.leaf = true
 --	if page.inreq then
 		local has_switch = false
 

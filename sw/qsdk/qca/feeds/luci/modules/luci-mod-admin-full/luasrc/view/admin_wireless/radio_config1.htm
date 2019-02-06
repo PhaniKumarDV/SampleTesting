@@ -191,6 +191,28 @@ function updatehidessid()
     <fieldset class="cbi-section">
        <form name="formTable">
           <div class="cbi-value">
+            <label class="cbi-value-title">Link Type</label>
+            <div class="cbi-value-field">
+              <select class="cbi-input-select" id="linktype" name="150"">
+                 <script type="text/javascript">
+                 var value = "<%=uciget('uci get wireless.wifi1.linktype')%>";
+                 document.write("<option value='1'");
+                 if( value == "1" )
+                     document.write("selected");
+                 document.write(">PTP</option>");
+                 document.write("<option value='2'");
+                 if( value == "2" )
+                     document.write("selected");
+                 document.write(">Backhaul</option>");
+                 document.write("<option value='3'");
+                 if( value == "3" )
+                     document.write("selected");
+                 document.write(">PTMP</option>");
+                 </script>
+              </select>
+            </div>
+          </div>
+          <div class="cbi-value">
             <label class="cbi-value-title">Radio Mode</label>
             <div class="cbi-value-field">
               <select class="cbi-input-select" name="1" onchange="updatelinkid(this.value)">

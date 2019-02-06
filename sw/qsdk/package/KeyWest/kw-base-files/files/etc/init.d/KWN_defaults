@@ -9,10 +9,7 @@ start_service() {
     uci set variant.variant.model='1'
     uci set variant.variant.majnum='1'
     uci set variant.variant.minnum='0'
-    if [ "$maxsu" == "" ]
-    then
-        uci set variant.variant.maxsu='1'
-    fi
+    uci set variant.variant.maxsu='32'
     uci set variant.variant.anttype1='1'
     uci set variant.variant.anttype2='1'
     uci set variant.variant.antgain1='23'
@@ -69,6 +66,8 @@ start_service() {
     wifi_timer1=$(uci get wireless.wifi1.wifitimer)
     link_timer1=$(uci get wireless.wifi1.linktimer)
     rate0=$(uci get wireless.wifi0.rate)
+    maxsta=$(fw_printenv -n maxsu)
+    linktype=$(uci get wireless.wifi1.linktype)
 #RADIO 2.4
     tx_power_radio2=$(uci get wireless.wifi0.TXPowLim2G)
     hidden_radio0=$(uci get wireless.@wifi-iface[0].hidden)
@@ -82,8 +81,6 @@ start_service() {
     http=$(uci get tftp.http)
     httpfiletype=$(uci get tftp.http.filetype)
     httpoptype=$(uci get tftp.http.optype)
-#VARIANT
-    maxsu=$(uci get variant.variant.maxsu)
 #SYSTEM
     location=$(uci get system.@system[0].location)
     contact=$(uci get system.@system[0].contact)
@@ -299,6 +296,16 @@ start_service() {
     if [ "$link_timer1" == "" ]
     then
         uci set wireless.wifi1.linktimer='0'
+    fi
+    if [ "$maxsta" == "" ]
+    then
+        uci set wireless.@wifi-iface[1].maxsta=$(uci get variant.variant.maxsu)
+    else
+        uci set wireless.@wifi-iface[1].maxsta=$maxsta
+    fi
+    if [ "$linktype" == "" ]
+    then
+        uci set wireless.wifi1.linktype='3'
     fi
 #Ethernet
     if [ "$eth_timer" == "" ]

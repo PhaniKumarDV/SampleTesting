@@ -1438,8 +1438,14 @@ enable_qcawifi() {
 		config_get chanbw "$vif" chanbw
 		[ -n "$chanbw" ] && iwpriv "$ifname" chanbw "$chanbw"
 
-		config_get maxsta "$vif" maxsta
-		[ -n "$maxsta" ] && iwpriv "$ifname" maxsta "$maxsta"
+		config_get linktype "$device" linktype
+        if [ "$linktype" == "3" ]
+        then
+		    config_get maxsta "$vif" maxsta
+		    [ -n "$maxsta" ] && iwpriv "$ifname" maxsta "$maxsta"
+        else
+            iwpriv "$ifname" maxsta 1
+        fi
 
 		config_get sko_max_xretries "$vif" sko_max_xretries
 		[ -n "$sko_max_xretries" ] && iwpriv "$ifname" sko "$sko_max_xretries"
