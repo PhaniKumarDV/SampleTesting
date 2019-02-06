@@ -44,6 +44,7 @@ kwn_routing() {
             iptables -F
         fi
     fi
+    /etc/init.d/KWtelnetssh reload
 }
 
 init_switch() {

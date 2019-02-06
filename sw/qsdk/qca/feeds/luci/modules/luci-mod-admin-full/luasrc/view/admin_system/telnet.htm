@@ -88,7 +88,7 @@ function updatessh()
               </script>
             </div>
           </div>
-          <div class="cbi-value">
+          <div class="cbi-value" style="display:none">
             <label class="cbi-value-title">Telnet Port</label>
             <div class="cbi-value-field">
               <input type="text" name="99" class="cbi-input-select" value="<%=uciget('uci get telnetssh.telnet.port')%>" >
@@ -114,7 +114,7 @@ function updatessh()
               </script>
             </div>
           </div>
-          <div class="cbi-value">
+          <div class="cbi-value" style="display:none">
             <label class="cbi-value-title">SSH Port</label>
             <div class="cbi-value-field">
               <input type="text" name="102" class="cbi-input-select" value="<%=uciget('uci get telnetssh.ssh.port')%>" >
