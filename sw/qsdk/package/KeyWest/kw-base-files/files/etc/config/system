@@ -1,6 +1,6 @@
 config system
 	option hostname	Sify
-	option timezone	UTC
+	option timezone	IST-5:30
 	option log_size	64
     option templogstatus 1
     option temploginterval 30
