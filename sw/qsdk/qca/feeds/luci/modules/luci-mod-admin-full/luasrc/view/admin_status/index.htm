@@ -489,7 +489,7 @@ function get_desc()
             else
                 model_name = "SUI-23-5G-AC2x2-W2";
             prod_type = ( prod_type == 1 ? "PTP" : "PTMP" );
-            var str = prod_type + " - " + maj_num + "." + min_num + " ( " + build_no + " )";
+            var str = maj_num + "." + min_num + " ( " + build_no + " )";
 			document.getElementById("desc").innerHTML=str;
 		}
 	}
@@ -582,6 +582,13 @@ function get_log()
                                 enc = "WPA2-PSK"
                             document.getElementById("sec1").innerHTML = enc;
                             document.getElementById("bstid1").innerHTML = "<%=uciget('uci get system.@system[0].bstid')%>";
+                            var ltype = "<%=uciget('uci get wireless.wifi1.linktype')%>";
+                            if( ltype == 1 )
+                                document.getElementById("linktype1").innerHTML = "PTP";
+                            else if( ltype == 2 )
+                                document.getElementById("linktype1").innerHTML = "Backhaul";
+                            else
+                                document.getElementById("linktype1").innerHTML = "PTMP";
                         }
                         else {
                             document.getElementById("mac2").innerHTML = "<%=uciget('uci get wireless.wifi0.macaddr')%>"; 
@@ -737,6 +744,7 @@ function get_log()
        <tr><td></td><td style="color:#a5bc23"><b>5 GHz<b></td><td style="color:#a5bc23"><b>2.4 GHz<b></td></tr>
        <tr><td style="padding-top:10px;">MAC</td><td id="mac1" style="padding-top:10px;">-</td><td id="mac2" style="padding-top:10px;">-</td></tr>
        <tr><td>Radio Mode</td><td id="mode1">-</td><td id="mode2">-</td></tr>
+       <tr><td>Link Type</td><td id="linktype1">-</td><td id="linktype2">-</td></tr>
        <tr><td>Radio Status</td><td id="status1">-</td><td id="status2">-</td></tr>
        <tr><td>Operational Mode</td><td id="opmode1">-</td><td id="opmode2">-</td></tr>
        <tr><td>Bandwidth</td><td id="bw1">-</td><td id="bw2">-</td></tr>
