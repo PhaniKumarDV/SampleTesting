@@ -6,14 +6,10 @@
 
 <%+header%>
 <div class="page-content">
-   <h2><a id="content" name="content"><%:Network Statistics%></a></h2>
+   <h2><a id="content" name="content"><%:LAN Table%></a></h2>
     <ul class="cbi-tabmenu">
-        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=luci.dispatcher.build_url("admin/monitor/nwkstats")%>"><%:5GHz Radio%></a></li>
-        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="radio2nwkstats"><%:2.4GHz Radio%></a></li>
-        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="ethnwkstats"><%:Ethernet%></a></li>
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=luci.dispatcher.build_url("admin/monitor/lantable")%>"><%:Bridge%></a></li>
         <li style="margin-right:4px" class="cbi-tab"><a href="#">ARP</a></li>
-        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="learntbl"><%:Bridge%></a></li>
-        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="dhcplease"><%:DHCP Lease%></a></li>
     </ul>
    <h2><a id="content" name="content"><%:ARP Table%></a></h2>
    <fieldset>
@@ -23,8 +19,8 @@
    </fieldset>
    <div>&nbsp;</div>
    <div class="cbi-page-actions left">
-    <input type="button" class="cbi-button cbi-button-apply" value="<%:Refresh%>" onclick="location.href='<%=luci.dispatcher.build_url("admin/monitor/nwkstats/arptbl")%>'" />
-    <input type="button" class="cbi-button" value="<%:Clear%>" onclick="location.href='<%=luci.dispatcher.build_url("admin/monitor/nwkstats/clr_arptbl")%>'" />
+    <input type="button" class="cbi-button cbi-button-apply" value="<%:Refresh%>" onclick="location.href='<%=luci.dispatcher.build_url("admin/monitor/lantable/arptbl")%>'" />
+    <input type="button" class="cbi-button" value="<%:Clear%>" onclick="location.href='<%=luci.dispatcher.build_url("admin/monitor/lantable/clr_arptbl")%>'" />
     </div>
 </div>
 <%+footer%>

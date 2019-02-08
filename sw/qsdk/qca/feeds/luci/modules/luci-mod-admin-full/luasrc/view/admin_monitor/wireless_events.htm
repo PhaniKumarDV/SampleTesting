@@ -1,0 +1,64 @@
+<%#
+ Copyright 2008 Steven Barth <steven@midlink.org>
+ Copyright 2008 Jo-Philipp Wich <jow@openwrt.org>
+ Licensed to the public under the Apache License 2.0.
+-%>
+<%-
+        function uciget(cmd)
+                local res = luci.util.exec(cmd)
+                local str = string.gsub(res, "\n", "")
+                return str
+        end
+-%>
+<%+header%>
+<script type="text/javascript">
+function get_results()
+{
+    var id = document.getElementById("logtype").value;
+    XHR.get('<%=luci.dispatcher.build_url("admin", "monitor", "logs")%>/wireless_eventtype' + '/' + id, null,
+	function(x, data) {
+		if (data) { 
+			document.getElementById("result").innerHTML=data;
+		}
+	}
+    );
+}
+function clear_log()
+{
+    var id = document.getElementById("logtype").value;
+    XHR.get('<%=luci.dispatcher.build_url("admin", "monitor", "logs")%>/wireless_clrevent' + '/' + id, null,
+	function(x, data) {
+		if (data) {
+            document.getElementById("result").innerHTML=data;
+        }
+	}
+    );
+}
+</script>
+<div class="page-content">
+<h2><a id="content" name="content"><%:Logs%></a></h2>
+    <ul class="cbi-tabmenu">
+        <li style="margin-right:4px" class="cbi-tab"><a href="#"><%:Wireless%></a></li>
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=REQUEST_URI%>/eth_event"><%:Ethernet%></a></li>
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=REQUEST_URI%>/syslog"><%:System%></a></li>
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=REQUEST_URI%>/conflog"><%:Configuration%></a></li>
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=REQUEST_URI%>/rebootlog"><%:Reboot%></a></li>
+    </ul>
+<div class="cbi-page-actions left" style="padding-left: 19px;">
+    Show log type&nbsp;
+    <script type="text/javascript">
+        document.write("<select id='logtype' style='width: 210px'>");
+            document.write("<option value='1'>Wireless Events</option>");
+            document.write("<option value='2'>Wireless Events Last Boot Log</option>");
+        document.write("</select>");
+    </script>
+    <input type="button" id="s1" class="cbi-button cbi-button-apply" value="<%:Submit%>" onclick="get_results()" />
+    <input type="button" id="s2" class="cbi-button cbi-button-apply" value="<%:Refresh%>" onclick="get_results()" />
+    <input type="button" id="s3" class="cbi-button" value="<%:Clear%>" onclick="clear_log()" />
+</div>
+<div>&nbsp;</div>
+<div id="content_syslog">
+<textarea readonly="readonly" wrap="off" style="width:100%; height:500px;" rows="<%=wifi_events:cmatch("\n")+2%>" id="result"><%=wifi_events:pcdata()%></textarea>
+</div>
+</div>
+<%+footer%>

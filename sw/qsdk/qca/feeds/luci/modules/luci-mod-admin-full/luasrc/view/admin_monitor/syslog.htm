@@ -38,8 +38,10 @@ function clear_log()
 <h2><a id="content" name="content"><%:Logs%></a></h2>
     <ul class="cbi-tabmenu">
         <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=luci.dispatcher.build_url("admin/monitor/logs")%>"><%:Wireless%></a></li>
-        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="eth_log"><%:Ethernet%></a></li>
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="eth_event"><%:Ethernet%></a></li>
         <li style="margin-right:4px" class="cbi-tab"><a href="#"><%:System%></a></li>
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="conflog"><%:Configuration%></a></li>
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="rebootlog"><%:Reboot%></a></li>
     </ul>
 <div class="cbi-page-actions left">
         Show log type
@@ -47,8 +49,6 @@ function clear_log()
              <option value=1>System log</option>
              <option value=2>Kernel Log</option>
              <option value=3>Temperature Log</option>
-             <option value=4>Configuration Log</option>
-             <option value=5>Reboot Log</option>
         </select>
         <input type="button" id="s1" class="cbi-button cbi-button-apply" value="<%:Submit%>" onclick="get_results()" />
         <input type="button" id="s2" class="cbi-button cbi-button-apply" value="<%:Refresh%>" onclick="get_results()" />
