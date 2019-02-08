@@ -51,6 +51,33 @@ function save_value()
 	    }
     );
 }
+
+function validateval()
+{
+    var f = document.formTable;
+    var valid;
+    for( i=0; i<f.elements.length; i++)
+    {
+        valid = f.elements[i].value;
+        if( f.elements[i].value == "" ) {
+            alert("Fields must not be empty");
+            return false;
+        }
+        if( f.elements[i].name == "147" ) {
+            if(!(/^([A-Za-z0-9_\-\.])+\-([A-Za-z0-9_\-\.])+\-([A-Za-z0-9_\-\.])+\-([A-Za-z0-9_\-\.])+\-([A-Za-z0-9_\-\.])/.test(valid)) ) {
+                alert("Basestation ID should be in proper format");
+                return false;
+            }
+        }
+        if( f.elements[i].name == "140" ) {
+            if(!(/^[0-9]*$/.test(valid)) ) {
+                alert("Customer Phone allows only numbers for configuration");
+                return false;
+            }
+        }
+    }
+    save_value();
+}
 </script>
 <h2><a id="content" name="content"><%: System Configuration%></a></h2>
 <div class="cbi-map">
@@ -88,7 +115,7 @@ function save_value()
           <div class="cbi-value">
             <label class="cbi-value-title">Base Station ID</label>
             <div class="cbi-value-field">
-              <input type="text" name="147" class="cbi-input-select" value="<%=uciget('uci get system.@system[0].bstid')%>" >
+              <input type="text" name="147" class="cbi-input-select" value="<%=uciget('uci get system.@system[0].bstid')%>" > &nbsp; (Ex: mh-mum-air-T1-st)
             </div>
           </div>
           <div class="cbi-value" id="linkid">
@@ -102,7 +129,7 @@ function save_value()
 </div>
 <div class="cbi-page-actions left">
 <div id="spin"></div>
-<input type="button" class="cbi-button" value="<%:Save%>" onclick="save_value()" />
+<input type="button" class="cbi-button" value="<%:Save%>" onclick="validateval()" />
 </div>
 <script type="text/javascript">
 save_def_value();
