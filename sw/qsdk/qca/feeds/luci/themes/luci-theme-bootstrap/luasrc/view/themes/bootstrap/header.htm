@@ -238,7 +238,7 @@
         <%- 
                 if nnode.title == "Apply" then                                                                   
          %>
-                <li title="Apply"><a href="<%=pcdata(href)%>"> <i class="fa fa-external-link fa-2x" aria-hidden="true"></i></a></li>  
+                <li title="Apply"><a href="<%=pcdata(href)%>"> <i class="fa fa-floppy-o fa-2x" style="<% if ucichanges > 0 then %> color:red <% end %>" aria-hidden="true"></i></a></li>  
         <%-
                  end
                 if nnode.title == "Reboot" then                                                                   
