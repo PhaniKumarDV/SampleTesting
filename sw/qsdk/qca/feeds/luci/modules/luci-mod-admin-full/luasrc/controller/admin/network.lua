@@ -27,10 +27,12 @@ function index()
         page.leaf = true
         page = entry({"admin", "network", "ethernet"}, template("admin_network/ethernet"), _("Ethernet"), 4)
         page.leaf = true
-        page = entry({"admin", "network", "dhcp"}, template("admin_network/dhcp"), _("DHCP Server"), 5)
-        page.leaf = true
-        page = entry({"admin", "network", "staticlease"}, cbi("admin_network/fixedlease"), _("DHCP Fixed Leases"), 6)
-        page.leaf = true
+        if (string.match(mode,"ap") and string.match(wds,"1") ) then
+            entry({"admin", "network", "dhcp"}, template("admin_network/dhcp"), _("DHCP Server"), 5)
+            entry({"admin", "network", "dhcp", "dhcplease"}, template("admin_network/dhcplease"))
+            page = entry({"admin", "network", "staticlease"}, cbi("admin_network/fixedlease"), _("DHCP Fixed Leases"), 6)
+            page.leaf = true
+        end
         page = entry({"admin", "network", "filtering"}, template("admin_network/filtering"), _("Filtering"), 7)
         page.leaf = true
     end
