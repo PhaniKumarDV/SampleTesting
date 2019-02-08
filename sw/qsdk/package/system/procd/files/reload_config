@@ -13,3 +13,4 @@ MD5FILE=/var/run/config.md5
 }
 md5sum /var/run/config.check/* > $MD5FILE
 rm -rf /var/run/config.check
+rm -rf /tmp/.uci/*

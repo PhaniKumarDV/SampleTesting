@@ -37,6 +37,7 @@ void sify_file_write(char *sify_buf,int status, int reason)
 	FILE *sify_fp;
     int len;
     char t[50];
+    char cmd[100];
     char trap_cmd[100];
 
 	/* Get current time */
@@ -75,6 +76,8 @@ void sify_file_write(char *sify_buf,int status, int reason)
         switch( reason )
         {
             case IEEE80211_EV_BASE_DYING_GASP:
+                sprintf(cmd,"echo %s: Reboot initiated due to Dying Gasp >> /etc/reboot_logs",t);
+                system(cmd);
                 fprintf(sify_fp, "%s: Outdoor Base( MAC : %s) Power Off \n",t,sify_buf);
                 syslog(LOG_INFO, " Outdoor Base ( MAC : %s )Power Off \n",sify_buf);		       
                 sprintf( trap_cmd, "/usr/sbin/snmptrap.sh 4 %s  > /dev/null 2>&1", sify_buf);

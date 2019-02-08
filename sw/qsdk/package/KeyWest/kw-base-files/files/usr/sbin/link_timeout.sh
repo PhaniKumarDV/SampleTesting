@@ -10,7 +10,7 @@ rm -rf /tmp/.tx_wifipkt_cur
 rm -rf /tmp/.tx_wifipkt_backup
 
 link_inactivity(){ 
-   date=`date | sed 's/UTC //g'`
+   date=`date '+%a %b %Oe %H:%M:%S %Y'`
    file_backup="/tmp/.tx_wifipkt_backup"
    links=$(wlanconfig ath1 list sta | wc -l)
 

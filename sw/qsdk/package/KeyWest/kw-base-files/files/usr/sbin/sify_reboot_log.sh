@@ -4,10 +4,9 @@
 # Tool to Reboot log statistics 
 #
 
-
+date=`date '+%a %b %Oe %H:%M:%S %Y'`
 webreboot ()
 {
-        date=`date | sed 's/UTC //g'`
         echo "$date: Reboot initiated through Web"  >> /etc/reboot_logs
         #echo "web"  > /etc/reboot_type
         #echo > /etc/soft_reboot_check
@@ -15,7 +14,6 @@ webreboot ()
 
 webfactreboot ()
 {
-        date=`date | sed 's/UTC //g'`
         echo "$date: Reboot initiated through Web for Factory reset" >> /etc/reboot_logs
         #echo "web"  > /etc/reboot_type
         #echo > /etc/soft_reboot_check
@@ -29,7 +27,6 @@ webfactreboot ()
 
 frmupreboot ()
 {
-        date=`date | sed 's/UTC //g'`
         echo "$date: Reboot initiated during Firmware upgrade" >> /etc/reboot_logs
         #echo "web"  > /etc/reboot_type
         #echo > /etc/soft_reboot_check
@@ -37,7 +34,6 @@ frmupreboot ()
 
 clireboot ()
 {
-        date=`date | sed 's/UTC //g'`
         echo "$date: Reboot initiated through Cli" >> /etc/reboot_logs
         #echo "cli"  > /etc/reboot_type
         #echo > /etc/soft_reboot_check
@@ -45,7 +41,6 @@ clireboot ()
 
 clifactreboot ()
 {
-        date=`date | sed 's/UTC //g'`
         echo "$date: Reboot initiated through Cli for Factory reset" >> /etc/reboot_logs
         #echo "cli"  > /etc/reboot_type
         #echo > /etc/soft_reboot_check
@@ -55,6 +50,11 @@ clifactreboot ()
         #cp -rf /etc/reboot_type /mnt/part2/
         #cp -rf /etc/soft_reboot_check /mnt/part2/
         #umount /mnt/part2
+}
+
+dyinggasp ()
+{
+        echo "$date: Reboot initiated due to Dying Gasp" >> /etc/reboot_logs
 }
 
 if [ "$1" -eq 1 ]; then
@@ -81,8 +81,13 @@ if [ "$1" -eq 6 ]; then
 	clifactreboot 
         exit
 fi
+
 if [ "$1" -eq 7 ]; then
-        date=`date | sed 's/UTC //g'`
         echo "$date: Reboot initiated through Configuration Restore " >> /etc/reboot_logs
+        exit
+fi
+
+if [ "$1" -eq 8 ]; then
+	dyinggasp 
         exit
 fi

@@ -137,7 +137,6 @@ void kwn_get_http_config( kwn_http_config *dev_cfg )
 
 void kwn_config_upgrade( )
 {
-    printf("\n %s : %d\n",__func__,__LINE__);
     FILE *fin = NULL;
     char buff_up[200];
     char cmdimp[300];
@@ -160,7 +159,6 @@ void kwn_config_upgrade( )
     printf(" %s\n",cmd );
     system( cmd );
     
-    printf("\n %s : %d\n",__func__,__LINE__);
     if( access( KWN_NEW_CONFIG_FILE, 0 ) == 0 ) {
         fin = fopen( KWN_NEW_CONFIG_FILE, "r" );
 
@@ -184,6 +182,7 @@ void kwn_config_upgrade( )
         memset( cmd, '\0', sizeof( cmd ) );
         sprintf( cmd,"rm %s", KWN_NEW_CONFIG_FILE );
         system( cmd );
+        system("uci commit");
         return;
     }
     memset( cmd, '\0', sizeof( cmd ) );
@@ -191,7 +190,7 @@ void kwn_config_upgrade( )
     system( cmd );
     printf("Upload from remote to embedded device is failed\n");
 
-    printf("\n %s : %d\n",__func__,__LINE__);
+    system("uci commit");
     return;
 }
 
@@ -234,7 +233,6 @@ void kwn_image_upgrade( )
     }
 
     if( image_success ){
-        printf("\n %s : %d\n",__func__,__LINE__);
         memset( cmd, '\0', sizeof( cmd ) );
         if( data.keep_set == 1 ){
             sprintf( cmd, "sysupgrade -c %s", KWN_NEW_IMAGE_FILE );
@@ -249,6 +247,7 @@ void kwn_image_upgrade( )
         sprintf( cmd," uci set tftp.tftp.opstatus='%d'", KWN_UPLOAD_SUCCESS );
         system( cmd );
 
+        system("uci commit");
         printf("\nUpload from remote to embedded device");
 
         return;
@@ -259,6 +258,7 @@ void kwn_image_upgrade( )
     memset( cmd, '\0', sizeof( cmd ) );
     sprintf( cmd," uci set tftp.tftp.opstatus='%d'", KWN_UPLOAD_FAILURE );
     system( cmd );
+    system("uci commit");
     printf("\nNot a valid image");
 
     return;
@@ -266,7 +266,6 @@ void kwn_image_upgrade( )
 
 void kwn_config_retrieve( )
 {
-    printf("\n %s : %d\n",__func__,__LINE__);
     FILE *fp1 = NULL;
     FILE *fp = NULL;
     char *tok;
@@ -306,8 +305,8 @@ void kwn_config_retrieve( )
     sprintf(cmd,"uci set tftp.tftp.opstatus='%d'",KWN_DOWNLOAD_SUCCESS);
     system(cmd);
 
+    system("uci commit");
     printf("\nRetrieve from embedded device\n");
-    printf("\n %s : %d\n",__func__,__LINE__);
 
     return;
 }
@@ -345,6 +344,7 @@ void kwn_http_config_upgrade()
         sprintf( cmd," uci set tftp.tftp.opstatus='%d'", KWN_UPLOAD_SUCCESS );
         system( cmd );
 
+        system("uci commit");
         printf("\nUpload from remote to embedded device");
         memset( cmd, '\0', sizeof( cmd ) );
         sprintf( cmd,"rm %s", KWN_HTTP_NEW_CONFIG_FILE );
@@ -355,6 +355,7 @@ void kwn_http_config_upgrade()
     memset( cmd, '\0', sizeof( cmd ) );
     sprintf( cmd," uci set tftp.tftp.opstatus='%d'", KWN_UPLOAD_FAILURE );
     system( cmd );
+    system("uci commit");
     printf("\nFile not found");
 
     return;

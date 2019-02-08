@@ -1148,7 +1148,7 @@ diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_ath_config.c qca-wifi-
                 (scn->target_type == TARGET_TYPE_QCA9888) || (scn->target_type == TARGET_TYPE_IPQ4019))
 diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_vap.c qca-wifi-mod/offload/wlan/lmac_offload_if/ol_if_vap.c
 --- qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_vap.c	2018-06-08 11:00:45.000000000 +0530
-+++ qca-wifi-mod/offload/wlan/lmac_offload_if/ol_if_vap.c	2019-02-05 00:55:57.680662197 +0530
++++ qca-wifi-mod/offload/wlan/lmac_offload_if/ol_if_vap.c	2019-02-08 17:43:31.040766782 +0530
 @@ -32,6 +32,7 @@
  #if ATH_SUPPORT_GREEN_AP
  #include "ath_green_ap.h"
@@ -1289,7 +1289,7 @@ diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_vap.c qca-wifi-mod/off
 +        osif_dev  *osdev = ath_netdev_priv(dev);
 +        wlan_if_t vap = osdev->os_if;
 +
-+        if (ieee80211vap_get_opmode(vap) == IEEE80211_M_HOSTAP ) {
++        if ( 1 /*ieee80211vap_get_opmode(vap) == IEEE80211_M_HOSTAP*/ ) {
 +            struct ieee80211com *ic = vap->iv_ic;
 +            struct net_device *dev_br;
 +            struct ieee80211_node   *ni = NULL; 
@@ -1332,7 +1332,7 @@ diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_vap.c qca-wifi-mod/off
 +                /* Issue: In the case when power is down and up within 20ms, DG Timer gets triggered and keeps on sending DG packets forever
 +                 * which creates no link issue. This issue happens only in BSU.
 +                 * Fix: In this case stop the DG Timer after 1sec and reset the dg triggered flag */
-+                if( diff > 1000 ) {
++                if( diff > 5000 ) {
 +                    printk(": DG: current jiffies %llu  last jiffies %llu diff %lu \n",curr_jiffies, vap->iv_ic->ic_dg_jiffies,diff);
 +                    printk(": DG: Delete Timer\n");
 +                    vap->iv_ic->ic_dg_triggered = 0;

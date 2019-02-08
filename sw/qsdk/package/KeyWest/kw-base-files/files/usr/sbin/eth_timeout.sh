@@ -11,7 +11,7 @@ rm -rf /tmp/.tx_pkt_backup
 
 eth_inactivity(){
     
-date=`date | sed 's/UTC //g'`
+date=`date '+%a %b %Oe %H:%M:%S %Y'`
 
 limit=$(ls -l /tmp/eth_events.txt | awk '{print $5}')
     

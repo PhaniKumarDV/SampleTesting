@@ -10,7 +10,7 @@ rm -rf /tmp/.link_cur
 rm -rf /tmp/.link_backup
 
 wifi_inactivity(){ 
-   date=`date | sed 's/UTC //g'`
+   date=`date '+%a %b %Oe %H:%M:%S %Y'`
    file_backup="/tmp/.link_backup"
 
    if [ -f "$file_backup" ]
