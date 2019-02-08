@@ -1,6 +1,6 @@
-diff -urN uci-2015-08-27.1_org/file.c uci-2015-08-27.1_mod/file.c
---- uci-2015-08-27.1_org/file.c	2018-05-21 11:38:59.983646328 +0530
-+++ uci-2015-08-27.1_mod/file.c	2018-05-21 16:03:02.329220398 +0530
+diff -urN uci-2015-08-27.1-org/file.c uci-2015-08-27.1-mod/file.c
+--- uci-2015-08-27.1-org/file.c	2018-05-24 05:10:08.000000000 +0530
++++ uci-2015-08-27.1-mod/file.c	2019-02-08 19:14:49.090039248 +0530
 @@ -28,6 +28,7 @@
  #include <glob.h>
  #include <string.h>
@@ -353,7 +353,7 @@ diff -urN uci-2015-08-27.1_org/file.c uci-2015-08-27.1_mod/file.c
  
  static void uci_file_commit(struct uci_context *ctx, struct uci_package **package, bool overwrite)
  {
-@@ -752,6 +1090,106 @@
+@@ -752,6 +1090,120 @@
  	/* flush unsaved changes and reload from delta file */
  	UCI_TRAP_SAVE(ctx, done);
  	if (p->has_delta) {
@@ -386,13 +386,27 @@ diff -urN uci-2015-08-27.1_org/file.c uci-2015-08-27.1_mod/file.c
 +			bool secret = 0;
 +			bool action = 0;
 +			time_t mytime;
-+			char *ip = NULL;
++            char *ip = NULL;
++            static char cmd1[128];
++            time_t rawtime;
++            struct tm *timeinfo;
++            int len;
++            char t[50];
++            /* Get current time */
++            time( &rawtime );
++            timeinfo = localtime( &rawtime );
++            len = strlen( asctime( timeinfo ) ) - 1;
++            memcpy( t, asctime( timeinfo ), len );
++            t[len] = '\0';
++
 +			mytime = time(NULL);
 +			ptr.package = p->e.name;
 +			ptr.section = h->section;
 +			ptr.option = h->e.name;
 +			ptr.flags = 0;
 +			uci_get_help_txt (&ptr, &help,&secret,&action);
++            sprintf(cmd1,"echo %s: %s.%s.%s='%s' >> /etc/kwncfg.txt",t,ptr.package,ptr.section,ptr.option,(((strlen(h->value) != 0) && (strcmp(h->value," ") != 0))?h->value:"nil"));
++            system(cmd1);
 +			if (help)
 +			{
 +					if (header == false)
@@ -460,9 +474,9 @@ diff -urN uci-2015-08-27.1_org/file.c uci-2015-08-27.1_mod/file.c
  		if (!overwrite) {
  			name = uci_strdup(ctx, p->e.name);
  			path = uci_strdup(ctx, p->path);
-diff -urN uci-2015-08-27.1_org/uci.h uci-2015-08-27.1_mod/uci.h
---- uci-2015-08-27.1_org/uci.h	2018-05-21 11:38:59.928646161 +0530
-+++ uci-2015-08-27.1_mod/uci.h	2018-05-21 11:41:02.253018314 +0530
+diff -urN uci-2015-08-27.1-org/uci.h uci-2015-08-27.1-mod/uci.h
+--- uci-2015-08-27.1-org/uci.h	2018-05-24 05:10:08.000000000 +0530
++++ uci-2015-08-27.1-mod/uci.h	2019-02-08 19:14:08.034052251 +0530
 @@ -459,6 +459,14 @@
  	} v;
  };

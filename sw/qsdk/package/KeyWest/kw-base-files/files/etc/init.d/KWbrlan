@@ -25,5 +25,7 @@ start_service() {
         uci commit
         reload_config
 
+        date=`date '+%a %b %Oe %H:%M:%S %Y'`
+        echo "--------------------------------------------------------------------"  >> /etc/kwncfg.txt
         procd_close_instance
 }
