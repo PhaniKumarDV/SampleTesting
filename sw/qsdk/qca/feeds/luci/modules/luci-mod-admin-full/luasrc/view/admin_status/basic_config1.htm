@@ -207,7 +207,7 @@ function getoptions( list, value )
               </select>
             </div>
           </div>
-          <div class="cbi-value">
+          <div class="cbi-value" id="chan">
             <label class="cbi-value-title">Channel</label>
             <div class="cbi-value-field">
               <select class="cbi-input-select" name="6">
@@ -227,6 +227,9 @@ function getoptions( list, value )
 </div>
 <script type="text/javascript">
 save_def_value();
+var radmode = "<%=uciget('uci get wireless.@wifi-iface[1].mode')%>";
+if( radmode == "sta" )
+   document.getElementById('chan').style.display="none";
 </script>
 </div>
 <%+footer%>
