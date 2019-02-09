@@ -20,9 +20,11 @@ function index()
 	entry({"admin", "monitor", "stats", "stoptool"}, call("stoptool"), nil).leaf = true
 
     entry({"admin", "monitor", "lantable"}, call("action_learntbl"), _("LAN Table"), 2)
-    entry({"admin", "monitor", "lantable", "clr_learntbl"}, call("action_clr_learntbl"))
+    entry({"admin", "monitor", "lantable", "ref_learntbl"}, call("refresh_learntbl"), nil).leaf = true
+    entry({"admin", "monitor", "lantable", "clr_learntbl"}, call("clear_learntbl"), nil).leaf = true
     entry({"admin", "monitor", "lantable", "arptbl"}, call("action_arptbl"))
-    entry({"admin", "monitor", "lantable", "clr_arptbl"}, call("action_clr_arptbl"))
+    entry({"admin", "monitor", "lantable", "ref_arptbl"}, call("refresh_arptbl"), nil).leaf = true
+    entry({"admin", "monitor", "lantable", "clr_arptbl"}, call("clear_arptbl"), nil).leaf = true
 	
     entry({"admin", "monitor", "logs"}, call("action_wifievents"), _("Logs"), 3) 
     entry({"admin", "monitor", "logs", "wireless_eventtype"}, call("action_wifi_events"), nil).leaf = true
@@ -212,7 +214,9 @@ function action_eth_clrlog( logtype )
 	local data = {}
 	data = "Ethernet Log file is empty."
 	luci.sys.exec("iwpriv ath1 kwnclrethstats 1")
-    data = adv_eth_stats()
+	if( string.match(logtype,"3") ) then
+        data = adv_eth_stats()
+	end
 	luci.http.prepare_content("application/json")
 	luci.http.write_json(data)
 end
@@ -250,11 +254,20 @@ function action_learntbl()
 	luci.template.render("admin_monitor/learntbl", {learntbl=learntbl})
 end
 
-function action_clr_learntbl()
+function refresh_learntbl()
+	local data = {}
+    data = luci.util.exec("brctl showmacs br-lan")
+	luci.http.prepare_content("application/json")
+	luci.http.write_json(data)
+end
+
+function clear_learntbl()
+	local data = {}
     luci.util.exec("brctl clearmacs br-lan")
     luci.util.exec("sleep 1")
-    local learntbl = luci.util.exec("brctl showmacs br-lan")
-	luci.template.render("admin_monitor/learntbl", {learntbl=learntbl})
+    data = luci.util.exec("brctl showmacs br-lan")
+	luci.http.prepare_content("application/json")
+	luci.http.write_json(data)
 end
 
 function action_arptbl()
@@ -264,11 +277,20 @@ function action_arptbl()
 	luci.template.render("admin_monitor/arptbl", {arptbl=arptbl})
 end
 
-function action_clr_arptbl()
+function refresh_arptbl()
+	local data = {}
+    data = luci.util.exec("cat /proc/net/arp")
+	luci.http.prepare_content("application/json")
+	luci.http.write_json(data)
+end
+
+function clear_arptbl()
+	local data = {}
     luci.util.exec("ip -s neigh flush all")
     luci.util.exec("sleep 1")
-    local arptbl = luci.util.exec("cat /proc/net/arp")
-	luci.template.render("admin_monitor/arptbl", {arptbl=arptbl})
+    data = luci.util.exec("cat /proc/net/arp")
+	luci.http.prepare_content("application/json")
+	luci.http.write_json(data)
 end
 
 function action_wifievents()
