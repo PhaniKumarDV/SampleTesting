@@ -354,6 +354,7 @@ int ReadGPSInfo(char *da, int fLen)
                 printf("Time: %s\n", gps.time);
                 snprintf(cmd, 128, "system.gps.time=%s", gps.time);
                 UpdateUCI(cmd);
+                system("sh /usr/sbin/rtc.sh");
 
                 /* Update latitude and longitude to driver*/
                 system("iwpriv wifi1 str_type 2");		
