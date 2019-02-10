@@ -1,7 +1,7 @@
 diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.c
 --- net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c	1970-01-01 05:30:00.000000000 +0530
-+++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.c	2019-02-06 20:03:11.923219068 +0530
-@@ -0,0 +1,5466 @@
++++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.c	2019-02-10 15:57:49.400405682 +0530
+@@ -0,0 +1,5448 @@
 +/****************************************************************************
 +*                                                                           *
 +*  File Name:           kwnmib.c                                           *
@@ -1787,36 +1787,18 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +            }
 +        case KWN_NWK_NATSTATUS:
 +            {
-+                sprintf( cmd, "uci get network.param.networkmode" );
-+                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
-+                if( res_val == 1 )
-+                {
-+                    return SNMP_ERR_GENERR;
-+                }
 +                sprintf( cmd, "uci get network.param.natstatus" );
 +                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
 +                return ( u_char * ) &res_val;
 +            }
 +        case KWN_NWK_WIRELESS_IP:
 +            {
-+                sprintf( cmd, "uci get network.param.networkmode" );
-+                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
-+                if( res_val == 1 )
-+                {
-+                    return SNMP_ERR_GENERR;
-+                }
 +                sprintf( cmd, "uci get network.lan.ipaddr" );
 +                kwn_get_value( KWN_TYPE_IP_ADDRESS, &cmd[0], var_len, NULL );
 +                return ( u_char * ) &res_ip;
 +            }
 +        case KWN_NWK_WIRELESS_MASK:
 +            {
-+                sprintf( cmd, "uci get network.param.networkmode" );
-+                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
-+                if( res_val == 1 )
-+                {
-+                    return SNMP_ERR_GENERR;
-+                }
 +                sprintf( cmd, "uci get network.lan.netmask" );
 +                kwn_get_value( KWN_TYPE_IP_ADDRESS, &cmd[0], var_len, NULL );
 +                return ( u_char * ) &res_ip;
