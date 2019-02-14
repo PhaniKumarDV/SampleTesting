@@ -68,9 +68,16 @@ start_service() {
     rate0=$(uci get wireless.wifi0.rate)
     maxsta=$(fw_printenv -n maxsu)
     linktype=$(uci get wireless.wifi1.linktype)
+    macfilter1=$(uci get wireless.@wifi-iface[1].macfilter)
 #RADIO 2.4
     tx_power_radio2=$(uci get wireless.wifi0.TXPowLim2G)
     hidden_radio0=$(uci get wireless.@wifi-iface[0].hidden)
+    macfilter0=$(uci get wireless.@wifi-iface[0].macfilter)
+    radiostatus0=$(uci get wireless.@wifi-iface[0].disabled)
+#Network
+    dnsip=$(uci get network.lan.dns)
+#Radius
+    radiusstatus=$(uci get wrt-radauth.sys.enableRadAuth)
 #Ethernet
     eth_timer=$(uci get ethernet.ethernet.ethtimer)
     eth_mtu=$(uci get network.lan.mtu)
@@ -307,6 +314,10 @@ start_service() {
     then
         uci set wireless.wifi1.linktype='3'
     fi
+    if [ "$macfilter1" == "" ]
+    then
+        uci set wireless.@wifi-iface[1].macfilter='disable'       
+    fi
 #Ethernet
     if [ "$eth_timer" == "" ]
     then
@@ -335,6 +346,24 @@ start_service() {
     if [ "$hidden_radio0" == "" ]
     then
         uci set wireless.@wifi-iface[0].hidden='0'
+    fi
+    if [ "$macfilter0" == "" ]
+    then
+        uci set wireless.@wifi-iface[0].macfilter='disable'       
+    fi
+    if [ "$radiostatus0" == "" ]
+    then
+        uci set wireless.@wifi-iface[0].disabled='0'             
+    fi
+#Network
+    if [ "$dnsip" == "" ]
+    then
+        uci set network.lan.dns='0.0.0.0'       
+    fi
+#Radius
+    if [ "$radiusstatus" == "" ]
+    then
+        uci set wrt-radauth.sys.enableRadAuth='0'       
     fi
 #DHCP
     ignore=$(uci get dhcp.lan.ignore)
