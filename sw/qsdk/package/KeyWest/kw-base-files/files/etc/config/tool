@@ -1,6 +1,6 @@
 config tool 'tool'
     option mac '00:00:00:00:00:00'
-    option dur '120'
+    option dur '180'
     option size '1400'
     option dir '1'
     option cnt '1'
