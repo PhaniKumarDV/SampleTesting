@@ -69,6 +69,8 @@ start_service() {
     maxsta=$(fw_printenv -n maxsu)
     linktype=$(uci get wireless.wifi1.linktype)
     macfilter1=$(uci get wireless.@wifi-iface[1].macfilter)
+    icb1=$(uci get wireless.wifi1.icb)
+    macinmac1=$(uci get wireless.wifi1.macinmac)
 #RADIO 2.4
     tx_power_radio2=$(uci get wireless.wifi0.TXPowLim2G)
     hidden_radio0=$(uci get wireless.@wifi-iface[0].hidden)
@@ -317,6 +319,14 @@ start_service() {
     if [ "$macfilter1" == "" ]
     then
         uci set wireless.@wifi-iface[1].macfilter='disable'       
+    fi
+    if [ "$icb1" == "" ]
+    then
+        uci set wireless.wifi1.icb='1'
+    fi
+    if [ "$macinmac1" == "" ]
+    then
+        uci set wireless.wifi1.macinmac='1'
     fi
 #Ethernet
     if [ "$eth_timer" == "" ]

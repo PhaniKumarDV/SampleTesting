@@ -351,6 +351,46 @@ function updatehidessid()
                </select>
            </div>
          </div>
+          <div class="cbi-value" id="icb">
+            <label class="cbi-value-title">Intra Cell Blocking</label>
+            <div class="cbi-value-field">
+               <select name="151" class="cbi-input-select">
+               <script type="text/javascript">
+                  var icb = "<%=uciget('uci get wireless.wifi1.icb')%>";
+                  document.write("<option value='1' ");
+                  if( icb == 1 ) {
+                      document.write(" selected");
+                  }
+                  document.write(">Enable</option>");
+                  document.write("<option value='0' ");
+                  if( icb == 0 ) {
+                     document.write(" selected");
+                  }
+                  document.write(">Disable</option>");
+                </script>
+               </select>
+           </div>
+         </div>
+          <div class="cbi-value" id="macinmac">
+            <label class="cbi-value-title">MAC in MAC</label>
+            <div class="cbi-value-field">
+               <select name="152" class="cbi-input-select">
+               <script type="text/javascript">
+                  var macinmac = "<%=uciget('uci get wireless.wifi1.macinmac')%>";
+                  document.write("<option value='1' ");
+                  if( macinmac == 1 ) {
+                      document.write(" selected");
+                  }
+                  document.write(">Enable</option>");
+                  document.write("<option value='0' ");
+                  if( macinmac == 0 ) {
+                     document.write(" selected");
+                  }
+                  document.write(">Disable</option>");
+                </script>
+               </select>
+           </div>
+         </div>
     </form>
     </fieldset>
 </div>

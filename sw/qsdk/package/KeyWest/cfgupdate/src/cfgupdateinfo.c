@@ -885,6 +885,12 @@ void cfg_set( char *type, char *value )
         case UCI_ID_WIRELESS_LINKTYPE:
             sprintf(cmd,"uci set wireless.wifi1.linktype='%s'",value);
             break;
+        case UCI_ID_WIRELESS_ICB:
+            sprintf(cmd,"uci set wireless.wifi1.icb='%s'",value);
+            break;
+        case UCI_ID_WIRELESS_MACINMAC:
+            sprintf(cmd,"uci set wireless.wifi1.macinmac='%s'",value);
+            break;
         default:
             break;
     }

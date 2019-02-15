@@ -1945,6 +1945,18 @@ enable_qcawifi() {
 		config_get sukbps "$device" sukbps
         [ -n "$sukbps" ] && iwpriv "$ifname" kwnsukbps "$sukbps"
 
+		config_get icb "$device" icb
+        if [ $icb -eq "1" ]; then
+        then
+            icb=0
+        else
+            icb=1
+        fi
+        [ -n "$icb" ] && iwpriv "$ifname" ap_bridge "$icb"
+
+		config_get macinmac "$device" macinmac
+        [ -n "$macinmac" ] && iwpriv "$ifname" kwnmacmac "$macinmac"
+
 		config_get dcsstatus "$device" dcsstatus
 		config_get dcsthrld "$device" dcsthrld
 		config_get dcstime "$device" dcstime
@@ -1968,7 +1980,7 @@ enable_qcawifi() {
 			ap|wrap|ap_monitor|ap_smart_monitor|mesh|ap_lp_iot)
 
 
-				iwpriv "$ifname" ap_bridge "$((isolate^1))"
+				#iwpriv "$ifname" ap_bridge "$((isolate^1))"
 
 				config_get_bool l2tif "$vif" l2tif
 				[ -n "$l2tif" ] && iwpriv "$ifname" l2tif "$l2tif"
