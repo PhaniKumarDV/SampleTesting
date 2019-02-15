@@ -142,19 +142,27 @@ end
 
 function action_cfg_set( setdata )
 	local data = "1"
-    luci.util.exec("echo "..setdata.." > /tmp/setcfgfile.txt")
-    luci.util.exec("cfgupdate")
+    local loginuser = luci.dispatcher.context.authuser
+    if (string.match(loginuser,"user")) then
+    else
+       luci.util.exec("echo "..setdata.." > /tmp/setcfgfile.txt")
+       luci.util.exec("cfgupdate")
+    end
 	luci.http.prepare_content("application/json")
 	luci.http.write_json(data)
 end
 
 function action_apply()
 	local apply = luci.http.formvalue("apply")
+    local loginuser = luci.dispatcher.context.authuser
 	luci.template.render("admin_system/apply", {apply=apply})
-	if apply then
-		luci.util.exec("uci commit")
-		luci.util.exec("reload_config")
-	end
+    if (string.match(loginuser,"user")) then
+    else
+	    if apply then
+		    luci.util.exec("uci commit")
+		    luci.util.exec("reload_config")
+	    end
+    end
 end
 
 function action_reboot()
