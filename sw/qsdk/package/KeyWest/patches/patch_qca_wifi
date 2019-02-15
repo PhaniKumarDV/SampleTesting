@@ -5064,7 +5064,7 @@ diff -urN qca-wifi-org/umac/base/ieee80211_node.c qca-wifi-mod/umac/base/ieee802
      OS_BEACON_WRITE_LOCK(&nt->nt_nodelock, &lock_state, flags);
 diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.c qca-wifi-mod/umac/base/ieee80211_ucfg.c
 --- qca-wifi-org/umac/base/ieee80211_ucfg.c	2018-06-08 11:00:49.000000000 +0530
-+++ qca-wifi-mod/umac/base/ieee80211_ucfg.c	2019-02-06 15:57:25.941021440 +0530
++++ qca-wifi-mod/umac/base/ieee80211_ucfg.c	2019-02-15 18:13:09.320628985 +0530
 @@ -50,6 +50,61 @@
  #define HIGHEST_BASIC_RATE 24000
  #define THREE_HUNDRED_FIFTY_MBPS 350000
@@ -5293,7 +5293,7 @@ diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.c qca-wifi-mod/umac/base/ieee802
 +        if( ni != NULL ) {
 +            rate = ni->ni_ic->ic_node_getrate(ni, IEEE80211_RATE_TX);
 +            vap->kwn_tput_test_pkt_per_ms = ( rate / ( 8 * vap->kwn_tput_test_pkt_size ) );
-+            vap->kwn_tput_test_pkt_per_ms = (u_int32_t) ( vap->kwn_tput_test_pkt_per_ms / 2 );
++            vap->kwn_tput_test_pkt_per_ms = (u_int32_t) ( vap->kwn_tput_test_pkt_per_ms / 8 );
 +            ieee80211_free_node( ni );
 +        }
 +        vap->kwn_tput_test_pkt_per_ms = vap->kwn_tput_test_pkt_per_ms <= 0 ? 1 : vap->kwn_tput_test_pkt_per_ms;
