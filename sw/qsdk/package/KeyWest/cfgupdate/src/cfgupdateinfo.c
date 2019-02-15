@@ -577,7 +577,7 @@ void cfg_set( char *type, char *value )
             sprintf(cmd,"uci set system.@system[0].hostname='%s'",value);
             break;
         case UCI_ID_TIMEZONE:
-            sprintf(cmd,"uci set system.@system[0].timezone='%s'",value);
+            sprintf(cmd,"uci set system.@system[0].timezone=%s",value);
             break;
         case UCI_ID_GPS:
             sprintf(cmd,"uci set system.gps.status='%s'",value);
