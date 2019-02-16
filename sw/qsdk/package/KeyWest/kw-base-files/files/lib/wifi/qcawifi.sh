@@ -1946,7 +1946,7 @@ enable_qcawifi() {
         [ -n "$sukbps" ] && iwpriv "$ifname" kwnsukbps "$sukbps"
 
 		config_get icb "$device" icb
-        if [ $icb -eq "1" ]; then
+        if [ "$icb" -eq 1 ]
         then
             icb=0
         else
