@@ -1,7 +1,7 @@
 diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.c
 --- net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c	1970-01-01 05:30:00.000000000 +0530
-+++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.c	2019-02-10 15:57:49.400405682 +0530
-@@ -0,0 +1,5448 @@
++++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.c	2019-02-17 01:34:59.392903105 +0530
+@@ -0,0 +1,5490 @@
 +/****************************************************************************
 +*                                                                           *
 +*  File Name:           kwnmib.c                                           *
@@ -319,67 +319,71 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +  { 190  , ASN_OCTET_STR  , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_ASSOCRESLAST } },
 +  { 191  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MPDU_ERRORS } },
 +  { 192  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_PHY_ERRORS } },
++  { 193  , ASN_OCTET_STR  , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_TX_WIFI_THRPUT } },
++  { 194  , ASN_OCTET_STR  , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_RX_WIFI_THRPUT } },
 +  /* Ethernet Stats MIBS */
-+  { 193  , ASN_INTEGER    , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_INDEX } },
-+  { 194  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_STATUS } },
-+  { 195  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_MACADDRESS } },
-+  { 196  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_SPEED } },
-+  { 197  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_DUPLEX } },
-+  { 198  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_TXTOTALPACKETS } },
-+  { 199  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_RXTOTALPACKETS } },
-+  { 200  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_TXTOTALBYTES } },
-+  { 201  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_RXTOTALBYTES } },
-+  { 202  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_TXERRORS } },
-+  { 203  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_RXERRORS } },
-+  { 204  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_TX_L2MCASTDROPCNT } },
-+  { 205  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_RX_L2MCASTDROPCNT } },
-+  { 206  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_TX_L3MCASTDROPCNT } },
-+  { 207  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_RX_L3MCASTDROPCNT } },
-+  { 208  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_TX_L2BCASTDROPCNT } },
-+  { 209  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_RX_L2BCASTDROPCNT } },
-+  { 210  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_TX_L3BCASTDROPCNT } },
-+  { 211  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_RX_L3BCASTDROPCNT } },
-+  { 212  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_TX_DROPPED } },
-+  { 213  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_RX_DROPPED } },
-+  { 214  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_TX_MULTICAST } },
-+  { 215  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_RX_MULTICAST } },
-+  { 216  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_TX_UNICAST } },
-+  { 217  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_RX_UNICAST } },
-+  { 218  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_RX_CRC_ERRORS } },
-+  { 219  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_RX_OVERSIZE_ERRORS } },
-+  { 220  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_RX_OVERRUN_ERRORS } },
++  { 195  , ASN_INTEGER    , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_INDEX } },
++  { 196  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_STATUS } },
++  { 197  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_MACADDRESS } },
++  { 198  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_SPEED } },
++  { 199  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_DUPLEX } },
++  { 200  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_TXTOTALPACKETS } },
++  { 201  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_RXTOTALPACKETS } },
++  { 202  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_TXTOTALBYTES } },
++  { 203  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_RXTOTALBYTES } },
++  { 204  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_TXERRORS } },
++  { 205  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_RXERRORS } },
++  { 206  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_TX_L2MCASTDROPCNT } },
++  { 207  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_RX_L2MCASTDROPCNT } },
++  { 208  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_TX_L3MCASTDROPCNT } },
++  { 209  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_RX_L3MCASTDROPCNT } },
++  { 210  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_TX_L2BCASTDROPCNT } },
++  { 211  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_RX_L2BCASTDROPCNT } },
++  { 212  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_TX_L3BCASTDROPCNT } },
++  { 213  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_RX_L3BCASTDROPCNT } },
++  { 214  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_TX_DROPPED } },
++  { 215  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_RX_DROPPED } },
++  { 216  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_TX_MULTICAST } },
++  { 217  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_RX_MULTICAST } },
++  { 218  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_TX_UNICAST } },
++  { 219  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_RX_UNICAST } },
++  { 220  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_RX_CRC_ERRORS } },
++  { 221  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_RX_OVERSIZE_ERRORS } },
++  { 222  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_RX_OVERRUN_ERRORS } },
++  { 223  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_TX_THRPUT } },
++  { 224  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_RX_THRPUT } },
 +  /* Assoc MIBS */
-+  { 221  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_RADIO_INDEX } },
-+  { 222  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_SEC_INDEX } },
-+  { 223  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_MAC } },
-+  { 224  , ASN_IPADDRESS  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_IP } },
-+  { 225  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_LAT } },
-+  { 226  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_LONG } },
-+  { 227  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_LAT } },
-+  { 228  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_LONG } },
-+  { 229  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_RX_RATE } },
-+  { 230  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_TX_RATE } },
-+  { 231  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_RX_TPUT } },
-+  { 232  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_TX_TPUT } },
-+  { 233  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_SNR_A1 } },
-+  { 234  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_SNR_A2 } },
-+  { 235  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_SNR_A1 } },
-+  { 236  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_SNR_A2 } },
-+  { 237  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_PHY_ERR } },
-+  { 238  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_PHY_ERR } },
-+  { 239  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_MPDU_ERR } },
-+  { 240  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_MPDU_ERR } },
-+  { 241  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_RETRIES } },
-+  { 242  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_RETRIES } },
-+  { 243  , ASN_INTEGER    , RWRITE, var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LINKTEST_DUR } },
-+  { 244  , ASN_INTEGER    , RWRITE, var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LINKTEST_DIR } },
-+  { 245  , ASN_INTEGER    , RWRITE, var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LINKTEST_START_STOP } },
-+  { 246  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_NOISE_FLOOR } },
-+  { 247  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_NOISE_FLOOR } },
-+  { 248  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_CUSTOMERNAME } },
-+  { 249  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_CUSTOMERNAME } },
-+  { 250  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_LINKID } },
-+  { 251  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_LINKID } },
++  { 225  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_RADIO_INDEX } },
++  { 226  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_SEC_INDEX } },
++  { 227  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_MAC } },
++  { 228  , ASN_IPADDRESS  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_IP } },
++  { 229  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_LAT } },
++  { 230  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_LONG } },
++  { 231  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_LAT } },
++  { 232  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_LONG } },
++  { 233  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_RX_RATE } },
++  { 234  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_TX_RATE } },
++  { 235  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_RX_TPUT } },
++  { 236  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_TX_TPUT } },
++  { 237  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_SNR_A1 } },
++  { 238  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_SNR_A2 } },
++  { 239  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_SNR_A1 } },
++  { 240  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_SNR_A2 } },
++  { 241  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_PHY_ERR } },
++  { 242  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_PHY_ERR } },
++  { 243  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_MPDU_ERR } },
++  { 244  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_MPDU_ERR } },
++  { 245  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_RETRIES } },
++  { 246  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_RETRIES } },
++  { 247  , ASN_INTEGER    , RWRITE, var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LINKTEST_DUR } },
++  { 248  , ASN_INTEGER    , RWRITE, var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LINKTEST_DIR } },
++  { 249  , ASN_INTEGER    , RWRITE, var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LINKTEST_START_STOP } },
++  { 250  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_NOISE_FLOOR } },
++  { 251  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_NOISE_FLOOR } },
++  { 252  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_CUSTOMERNAME } },
++  { 253  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_CUSTOMERNAME } },
++  { 254  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_LINKID } },
++  { 255  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_LINKID } },
 +};
 +
 +/****************************************************************************
@@ -3302,6 +3306,30 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
 +                return ( u_char * ) &res_val;
 +            }
++        case KWN_WIRELESSSTATS_TX_WIFI_THRPUT:
++            {
++                if( radio_ind == 0 ) {
++                    sprintf( cmd, "iwpriv ath0 g_kwn_witxthr | sed 's/ath0      g_kwn_witxthr://'" );
++                }
++                else {
++                    sprintf( cmd, "iwpriv ath1 g_kwn_witxthr | sed 's/ath1      g_kwn_witxthr://'" );
++                }
++                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len, NULL );
++                kwn_rm_str_space(var_len);
++                return ( u_char * ) res_str;
++            }
++        case KWN_WIRELESSSTATS_RX_WIFI_THRPUT:
++            {
++                if( radio_ind == 0 ) {
++                    sprintf( cmd, "iwpriv ath0 g_kwn_wirxthr | sed 's/ath0      g_kwn_wirxthr://'" );
++                }
++                else {
++                    sprintf( cmd, "iwpriv ath1 g_kwn_wirxthr | sed 's/ath1      g_kwn_wirxthr://'" );
++                }
++                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len, NULL );
++                kwn_rm_str_space(var_len);
++                return ( u_char * ) res_str;
++            }
 +        default:
 +            ERROR_MSG ( "" );
 +    }
@@ -3523,6 +3551,20 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +        case KWN_ETHSTATS_RX_OVERRUN_ERRORS:
 +            {
 +                sprintf( cmd, "iwpriv ath1 g_kwethoverrun | sed 's/ath1      g_kwethoverrun://'" );
++                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len, NULL );
++                kwn_rm_str_space(var_len);
++                return (u_char *) res_str;
++            }
++        case KWN_ETHSTATS_TX_THRPUT:
++            {
++                sprintf( cmd, "iwpriv ath1 g_kwn_ethtxthr | sed 's/ath1      g_kwn_ethtxthr://'" );
++                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len, NULL );
++                kwn_rm_str_space(var_len);
++                return (u_char *) res_str;
++            }
++        case KWN_ETHSTATS_RX_THRPUT:
++            {
++                sprintf( cmd, "iwpriv ath1 g_kwn_ethrxthr | sed 's/ath1      g_kwn_ethrxthr://'" );
 +                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len, NULL );
 +                kwn_rm_str_space(var_len);
 +                return (u_char *) res_str;
@@ -4875,7 +4917,7 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +                        }
 +                    case KWN_SYSTEM_NTP_TIMEZONE:
 +                        {
-+                            sprintf( cmd, "uci set system.@system[0].timezone='%s'", var_val );
++                            sprintf( cmd, "uci set system.@system[0].timezone=%s", var_val );
 +                            system( cmd );
 +                            break;
 +                        }
@@ -5452,8 +5494,8 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +}
 diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.h
 --- net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h	1970-01-01 05:30:00.000000000 +0530
-+++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.h	2019-02-06 20:02:18.071632131 +0530
-@@ -0,0 +1,529 @@
++++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.h	2019-02-17 01:33:49.633203025 +0530
+@@ -0,0 +1,533 @@
 +/****************************************************************************
 +*                                                                           *
 +*  File Name:           kwnmib.h                                      *
@@ -5837,7 +5879,9 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h net-snmp-5.4.4-mod/agent/mi
 +    KWN_WIRELESSSTATS_MGMT_DEASSOCREQRECV = 26,
 +    KWN_WIRELESSSTATS_MGMT_ASSOCRESLAST = 27,
 +    KWN_WIRELESSSTATS_MPDU_ERRORS = 28,
-+    KWN_WIRELESSSTATS_PHY_ERRORS = 29
++    KWN_WIRELESSSTATS_PHY_ERRORS = 29,
++    KWN_WIRELESSSTATS_TX_WIFI_THRPUT = 30,
++    KWN_WIRELESSSTATS_RX_WIFI_THRPUT = 31
 +};
 +
 +enum KWN_ETHERNETSTATS {
@@ -5872,7 +5916,9 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h net-snmp-5.4.4-mod/agent/mi
 +    KWN_ETHSTATS_RX_UNICAST = 25,
 +    KWN_ETHSTATS_RX_CRC_ERRORS = 26,
 +    KWN_ETHSTATS_RX_OVERSIZE_ERRORS = 27,
-+    KWN_ETHSTATS_RX_OVERRUN_ERRORS = 28
++    KWN_ETHSTATS_RX_OVERRUN_ERRORS = 28,
++    KWN_ETHSTATS_TX_THRPUT = 29,
++    KWN_ETHSTATS_RX_THRPUT = 30
 +};
 +
 +enum KWN_ASSOCLIST {
@@ -6009,8 +6055,8 @@ diff -urN net-snmp-5.4.4-org/include/net-snmp/net-snmp-config.h.in net-snmp-5.4.
  
 diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWEST-MIB.mib
 --- net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib	1970-01-01 05:30:00.000000000 +0530
-+++ net-snmp-5.4.4-mod/mibs/KEYWEST-MIB.mib	2019-02-06 20:02:01.351760354 +0530
-@@ -0,0 +1,3021 @@
++++ net-snmp-5.4.4-mod/mibs/KEYWEST-MIB.mib	2019-02-17 01:33:15.945347860 +0530
+@@ -0,0 +1,3067 @@
 +------------------------------------------------------------------------
 +------------------------------------------------------------------------
 +--
@@ -6408,7 +6454,10 @@ diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWES
 +        MAX-ACCESS  read-write
 +        STATUS      current
 +        DESCRIPTION "This parameter is used to configure the 
-+                     Rx Chainmask."
++                     Rx Chainmask. It is configured as
++                     '1' - A1
++                     '2' - A2
++                     '3' - A1 & A2"
 +::= { wirelessEntry 22 }
 +
 +wirelessActiveChannel OBJECT-TYPE
@@ -6700,7 +6749,11 @@ diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWES
 +        SYNTAX      Integer32
 +        MAX-ACCESS  read-write
 +        STATUS      current
-+        DESCRIPTION "This parameter represents the TxChainMask."
++        DESCRIPTION "This parameter represents the TxChainMask.
++                     It is configured as
++                     '1' - A1
++                     '2' - A2
++                     '3' - A1 & A2."
 +::= { linkProfileEntry 13 }
 +
 +linkProfileDDRSRateIncrThrld OBJECT-TYPE
@@ -7113,9 +7166,6 @@ diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWES
 +ethernetMode OBJECT-TYPE
 +        SYNTAX      INTEGER {
 +            autoNegotation (0),
-+            half10Mbps     (1),
-+            full10Mbps     (2),
-+            half100Mbps    (3),
 +            full100Mbps    (4),
 +            full1000Mbps   (5)
 +        }
@@ -7124,21 +7174,23 @@ diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWES
 +        DESCRIPTION "This parameter represents the Ethernet 
 +                     Mode and Speed. It can be configured as
 +                     '0' - Auto Negotiation,
-+                     '1' - 10Mbps-Half,
-+                     '2' - 10Mbps-Full,
-+                     '3' - 100Mbps-Half,
 +                     '4' - 100Mbps-Full,
 +                     '5' - 1000Mbps-Full."
 +        DEFVAL      { autoNegotation }
 +::= { ethernet 1 }
 +
 +ethernetInactivity OBJECT-TYPE
-+        SYNTAX      Integer32
++        SYNTAX      INTEGER {
++            disable (0),
++            enable  (5)
++        }
 +        MAX-ACCESS  read-write
 +        STATUS      current
 +        DESCRIPTION "This parameter is used to Configuration 
 +                     the Ethernet Inactivity in minutes. 
-+                     Default value is 0"
++                     It can be configured as
++                     '0' - Disable
++                     '5' - Enable."
 +::= { ethernet 2 }
 +
 +ethernetMTU OBJECT-TYPE
@@ -8096,7 +8148,11 @@ diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWES
 +                wirelessStatsMPDUErrors
 +                    Integer32,
 +                wirelessStatsPhyErrors
-+                    Integer32
++                    Integer32,
++                wirelessStatsTxThroughput
++                    DisplayString,
++                wirelessStatsRxThroughput
++                    DisplayString
 +        }
 +
 +wirelessStatsRadioIndex OBJECT-TYPE
@@ -8334,7 +8390,7 @@ diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWES
 +        MAX-ACCESS  read-only
 +        STATUS      current
 +        DESCRIPTION "This parameter represents the MPDU Errors
-+                     in Wireless Statistcs."
++                     in Wireless Statistics."
 +::= { wirelessStatsEntry 28 }
 +
 +wirelessStatsPhyErrors OBJECT-TYPE
@@ -8342,8 +8398,24 @@ diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWES
 +        MAX-ACCESS  read-only
 +        STATUS      current
 +        DESCRIPTION "This parameter represents the Phy Errors
-+                     in Wireless Statistcs."
++                     in Wireless Statistics."
 +::= { wirelessStatsEntry 29 }
++
++wirelessStatsTxThroughput OBJECT-TYPE
++        SYNTAX      DisplayString
++        MAX-ACCESS  read-only
++        STATUS      current
++        DESCRIPTION "This parameter represents the Tx Throughput
++                     in Wireless Statistics."
++::= { wirelessStatsEntry 30 }
++
++wirelessStatsRxThroughput OBJECT-TYPE
++        SYNTAX      DisplayString
++        MAX-ACCESS  read-only
++        STATUS      current
++        DESCRIPTION "This parameter represents the Rx Throughput
++                     in Wireless Statistics."
++::= { wirelessStatsEntry 31 }
 +
 +------------------------------------------------------------------------
 +------------------------------------------------------------------------
@@ -8423,6 +8495,10 @@ diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWES
 +                ethernetRxFrameOverSizeErrors
 +                    DisplayString,
 +                ethernetRxFrameOverrunErrors
++                    DisplayString,
++                ethernetTxThroughput
++                    DisplayString,
++                ethernetRxThroughput
 +                    DisplayString
 +        }
 +
@@ -8649,6 +8725,22 @@ diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWES
 +        DESCRIPTION "This parameter represents the Rx Frame over
 +                     Run Errors in ethernet statistics table."
 +::= { ethernetStatsEntry 28 }
++
++ethernetTxThroughput OBJECT-TYPE
++        SYNTAX      DisplayString
++        MAX-ACCESS  read-only
++        STATUS      current
++        DESCRIPTION "This parameter represents the Tx Through
++                     put in ethernet statistics table."
++::= { ethernetStatsEntry 29 }
++
++ethernetRxThroughput OBJECT-TYPE
++        SYNTAX      DisplayString
++        MAX-ACCESS  read-only
++        STATUS      current
++        DESCRIPTION "This parameter represents the Rx Through
++                     put in ethernet statistics table."
++::= { ethernetStatsEntry 30 }
 +
 +------------------------------------------------------------------------
 +------------------------------------------------------------------------
