@@ -95,6 +95,8 @@ start_service() {
     contact=$(uci get system.@system[0].contact)
     email=$(uci get system.@system[0].email)
     bstid=$(uci get system.@system[0].bstid)
+    tcpcnt=$(uci get system.@system[0].tcpcnt)
+    tcpintvl=$(uci get system.@system[0].tcpintvl)
 
     if [ "$tx_power_radio1" == "" ]
     then
@@ -416,6 +418,14 @@ start_service() {
     if [ "$bstid" == "" ]
     then
         uci set system.@system[0].bstid='mh-mum-air-T1-st'
+    fi
+    if [ "$tcpcnt" == "" ]
+    then
+        uci set system.@system[0].tcpcnt='5'
+    fi
+    if [ "$tcpintvl" == "" ]
+    then
+        uci set system.@system[0].tcpintvl='1'
     fi
 #ROUTING
     param=$(uci get network.param)

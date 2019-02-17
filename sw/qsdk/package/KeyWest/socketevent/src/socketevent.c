@@ -1,32 +1,25 @@
-
-
-#include <sys/ioctl.h>
-#include <sys/types.h>
-#include <sys/file.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <linux/netlink.h>
-#include <linux/rtnetlink.h>
-#include <linux/types.h>
-#include <linux/if.h>
-#include <linux/wireless.h>
-#include <linux/if_arp.h>
-#include <string.h>
-#include <uci.h>
-#include <errno.h>
+/*************************************************************/
+/* Purpose : This file is intended to capture and handle the */
+/*           TCP socket events from Mobile application.      */
+/*  Author : KeyWest Networks                                */
+/*************************************************************/
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/time.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
+#include <string.h>
+#include <uci.h>
+#include <errno.h>
 #include <unistd.h>
-#include <poll.h>
-#include <sys/ioctl.h> 
 #include <sys/time.h>
-#include <signal.h>
-#include <linux/ioctl.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <sys/ioctl.h>
+#include <sys/time.h>
+#include <arpa/inet.h>
+#include <netinet/tcp.h>
+#include <fcntl.h>
+#include <endian.h>
+#include <linux/wireless.h>
 #include "socketevent.h"
 
 #include <endian.h>
@@ -72,14 +65,14 @@ void kwn_conv_str_to_ip( int8_t* conv_ip, uint8_t* byte )
         tok=strtok(NULL,".");
     }
 
-    printf(" Equivalent 32-bit int is : %u\n",ip_addr);
+    /*printf(" Equivalent 32-bit int is : %u\n",ip_addr);*/
 
     byte[0] = ((ip_addr >> 24) & 0xFF);
     byte[1] = ((ip_addr >> 16) & 0xFF);
     byte[2] = ((ip_addr >> 8) & 0xFF);
     byte[3] = (ip_addr & 0xFF);
 
-    printf("IP: %d.%d.%d.%d \n",byte[0],byte[1],byte[2],byte[3]);
+    /*printf("IP: %d.%d.%d.%d \n",byte[0],byte[1],byte[2],byte[3]);*/
     return;
 }
 
@@ -106,7 +99,7 @@ void kwn_dhcp_inet_handle( const char* cmd, uint8_t* cmd_buf )
     } 
     pclose( fp );
 
-    printf("%s", a);
+    /*printf("%s", a);*/
     p = strstr(a,"Bcast");
 
     if( p == NULL )
@@ -119,7 +112,7 @@ void kwn_dhcp_inet_handle( const char* cmd, uint8_t* cmd_buf )
         len = strlen( tok );
         memcpy( ip, tok, len );
     }   
-    printf("DHCP IP : %s\n",ip);
+    /*printf("DHCP IP : %s\n",ip);*/
     len = strlen( ip );
     memcpy(cmd_buf, ip, len);
     return;
@@ -160,12 +153,13 @@ void kwn_dhcp_mask_handle( const char* cmd, uint8_t* cmd_buf )
         tok = strtok(a,": \n");
         while( tok != NULL)
         {
+            memset( ip, '\0', sizeof( ip ) );
             len = strlen(tok);
             memcpy(ip,tok,len);
             tok = strtok(NULL, ": \n");
         }
     }   
-    printf("DHCP Mask : %s\n",ip);
+    /*printf("DHCP Mask : %s\n",ip);*/
     len = strlen( ip );
     memcpy(cmd_buf, ip, len);
     return;
@@ -275,7 +269,7 @@ uint8_t kwn_dev_radio_mode( uint8_t* dev_radio_mode, uint16_t radio_mode_len )
       printf("DEV Radio Mode : %s\n",dev_radio_mode);
       printf("WDS_MODE : %d\n",wds_mode);*/
 
-    for (i=0; i<lent; i++)
+    for( i=0; i<lent; i++ )
     {
         if( strncmp( dev_radio_mode, *(kwn_dev_mode+i), radio_mode_len ) == 0 )
             radio_mode = i;
@@ -316,7 +310,7 @@ uint8_t kwn_iptype_to_enum( uint8_t* ipaddr_type, uint16_t ipaddr_type_len)
       printf("IP_TYPE_LEN : %d\n",ipaddr_type_len);
       printf("IP_TYPE : %s\n",ipaddr_type);*/
 
-    for (i=0; i<lent; i++)
+    for( i=0; i<lent; i++ )
     {
         if( strncmp( ipaddr_type, *(kwn_ip_type+i), ipaddr_type_len ) == 0 )
         {
@@ -339,7 +333,7 @@ uint8_t kwn_opmode_to_enum( uint8_t* dev_opmode, uint16_t opmode_len )
       printf("OPMODE_LEN : %d\n",opmode_len);
       printf("DEV opmode Mode : %s\n",dev_opmode);*/
 
-    for (i=0; i<lent; i++)
+    for( i=0; i<lent; i++ )
     {
         if( strncmp( dev_opmode, *(kwn_opmode+i), opmode_len ) == 0 )
         {
@@ -361,7 +355,7 @@ uint8_t kwn_bwidth_to_enum( uint8_t* dev_bwidth, uint16_t bwidth_len )
       printf("Bwidth_LEN : %d\n",bwidth_len);
       printf("DEV Bandwidth : %s\n",dev_bwidth);*/
 
-    for (i=0; i<lent; i++)
+    for( i=0; i<lent; i++ )
     {
         if( strncmp( dev_bwidth, *(kwn_bandwidth+i), bwidth_len ) == 0 )
             bwidth = i;
@@ -480,16 +474,15 @@ void kwn_get_config_from_device( kwn_cfg_data *dev_cfg )
     kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] );
     len=strlen(cmd_buf);
     memcpy(dev_cfg->cust_name, cmd_buf, len);
-    printf("Len of custname : %d -",len);
-    printf("dev_cfg->cust_name CUSTOMER Name : %s\n",dev_cfg->cust_name);
+    printf("dev_cfg->cust_name : %s - Len of custname : %d \n",dev_cfg->cust_name,len);
 
     memset(cmd, '\0', sizeof(cmd));
     memset(cmd_buf, '\0', sizeof(cmd_buf));
-    //sprintf( cmd,"uci get wireless.wifi1.linkid");
-    //kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] ); 
-    //dev_cfg->linkid = atoi(cmd_buf);
-    dev_cfg->linkid = 0;
-    printf("dev_cfg->Link_id : %d\n",dev_cfg->linkid);
+    sprintf( cmd,"uci get wireless.wifi1.linkid");
+    kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] ); 
+    len=strlen(cmd_buf);
+    memcpy(dev_cfg->linkid, cmd_buf, len);
+    printf("dev_cfg->Link_id : %s - Len of Linkid : %d \n",dev_cfg->linkid, len);
 
     memset(cmd, '\0', sizeof(cmd));
     memset(cmd_buf, '\0', sizeof(cmd_buf));
@@ -584,14 +577,13 @@ void kwn_get_config_data( kwn_pkt* buf)
     buf->hdr.type = KWN_TYPE_GET_RESPONSE;
     buf->hdr.sub_type = KWN_SUBTYPE_CONFIG_DATA;
     buf->hdr.ptmp = 0;
-    buf->hdr.more = 1;
 
     /* IP_TYPE */
     printf("IP_TYPE : %d\n",data.ip_type);
-    llen = sizeof(data.ip_type);     /* length */
+    llen = sizeof(data.ip_type); /* length */
     memcpy(buf->data+len, &llen,sizeof(uint16_t));
     len += sizeof(uint16_t);
-    type = KWN_CFG_IP_TYPE;             /* type */
+    type = KWN_CFG_IP_TYPE; /* type */
     memcpy(buf->data+len, &type,sizeof(uint8_t));
     len += sizeof(uint8_t);
     memcpy(buf->data+len, &data.ip_type,llen); /* value */
@@ -599,23 +591,22 @@ void kwn_get_config_data( kwn_pkt* buf)
 
     /* IP_ADDRESS */
     if( data.ip[0] != '\0' )
-        printf("Data IP: %d.%d.%d.%d \n",data.ip[0],data.ip[1],data.ip[2],data.ip[3]);
-    llen = sizeof(data.ip);     /* length */
+        printf("Static IP: %d.%d.%d.%d \n",data.ip[0],data.ip[1],data.ip[2],data.ip[3]);
+    llen = sizeof(data.ip); /* length */
     memcpy(buf->data+len, &llen,sizeof(uint16_t));
     len += sizeof(uint16_t);
-    type = KWN_CFG_IP;           /* type */
+    type = KWN_CFG_IP; /* type */
     memcpy(buf->data+len, &type,sizeof(uint8_t));
     len += sizeof(uint8_t);
     memcpy(buf->data+len, &data.ip,llen); /* value */
     len += llen;
 
     /* SSID */
-    printf("SSID : %s - ",data.ssid);
-    llen = strlen(data.ssid);     /* length */
+    printf("SSID : %s\n",data.ssid);
+    llen = strlen(data.ssid); /* length */
     memcpy(buf->data+len, &llen,sizeof(uint16_t));
-    printf("llen of ssid : %d\n",llen);
     len += sizeof(uint16_t);
-    type = KWN_CFG_SSID;             /* type */
+    type = KWN_CFG_SSID; /* type */
     memcpy(buf->data+len, &type,sizeof(uint8_t));
     len += sizeof(uint8_t);
     memcpy(buf->data+len, &data.ssid,llen); /* value */
@@ -623,10 +614,10 @@ void kwn_get_config_data( kwn_pkt* buf)
 
     /* OPMODE */
     printf("OPMODE: %d\n",data.opmode);
-    llen = sizeof(data.opmode);     /* length */
+    llen = sizeof(data.opmode); /* length */
     memcpy(buf->data+len, &llen,sizeof(uint16_t));
     len += sizeof(uint16_t);
-    type = KWN_CFG_OPMODE;           /* type */
+    type = KWN_CFG_OPMODE; /* type */
     memcpy(buf->data+len, &type,sizeof(uint8_t));
     len += sizeof(uint8_t);
     memcpy(buf->data+len, &data.opmode,llen); /* value */
@@ -634,10 +625,10 @@ void kwn_get_config_data( kwn_pkt* buf)
 
     /* BANDWIDTH */
     printf("Bandwidth: %d\n",data.bandwidth);
-    llen = sizeof(data.bandwidth);     /* length */
+    llen = sizeof(data.bandwidth); /* length */
     memcpy(buf->data+len, &llen,sizeof(uint16_t));
     len += sizeof(uint16_t);
-    type = KWN_CFG_BANDWIDTH;            /* type */
+    type = KWN_CFG_BANDWIDTH; /* type */
     memcpy(buf->data+len, &type,sizeof(uint8_t));
     len += sizeof(uint8_t);
     memcpy(buf->data+len, &data.bandwidth,llen); /* value */
@@ -645,10 +636,10 @@ void kwn_get_config_data( kwn_pkt* buf)
 
     /* CHANNEL */
     printf("Channel: %d\n",data.channel);
-    llen = sizeof(data.channel);     /* length */
+    llen = sizeof(data.channel); /* length */
     memcpy(buf->data+len, &llen,sizeof(uint16_t));
     len += sizeof(uint16_t);
-    type = KWN_CFG_CHANNEL;          /* type */
+    type = KWN_CFG_CHANNEL; /* type */
     memcpy(buf->data+len, &type,sizeof(uint8_t));
     len += sizeof(uint8_t);
     memcpy(buf->data+len, &data.channel,llen); /* value */
@@ -656,10 +647,10 @@ void kwn_get_config_data( kwn_pkt* buf)
 
     /* RADIO_MODE */
     printf("Mode: %d\n",data.mode);
-    llen = sizeof(data.mode);     /* length */
+    llen = sizeof(data.mode); /* length */
     memcpy(buf->data+len, &llen,sizeof(uint16_t));
     len += sizeof(uint16_t);
-    type = KWN_CFG_DEV_MODE;          /* type */
+    type = KWN_CFG_DEV_MODE; /* type */
     memcpy(buf->data+len, &type,sizeof(uint8_t));
     len += sizeof(uint8_t);
     memcpy(buf->data+len, &data.mode,llen); /* value */
@@ -668,10 +659,10 @@ void kwn_get_config_data( kwn_pkt* buf)
     /* LOCAL_MAC */
     printf("MAC = %2.2X:%2.2X:%2.2X:%2.2X:%2.2X:%2.2X\n",data.local_mac[0],data.local_mac[1],data.local_mac[2],
             data.local_mac[3],data.local_mac[4],data.local_mac[5]);
-    llen = KWN_MAC_ADDR_LEN;     /* length */
+    llen = KWN_MAC_ADDR_LEN; /* length */
     memcpy(buf->data+len, &llen,sizeof(uint16_t));
     len += sizeof(uint16_t);
-    type = KWN_CFG_MAC;          /* type */
+    type = KWN_CFG_MAC; /* type */
     memcpy(buf->data+len, &type,sizeof(uint8_t));
     len += sizeof(uint8_t);
     memcpy(buf->data+len, &data.local_mac,llen); /* value */
@@ -679,10 +670,10 @@ void kwn_get_config_data( kwn_pkt* buf)
 
     /* RADIO_MODE */
     printf("Country: %u\n",data.country);
-    llen = sizeof(data.country);     /* length */
+    llen = sizeof(data.country); /* length */
     memcpy(buf->data+len, &llen,sizeof(uint16_t));
     len += sizeof(uint16_t);
-    type = KWN_CFG_CTRY;          /* type */
+    type = KWN_CFG_CTRY; /* type */
     memcpy(buf->data+len, &type,sizeof(uint8_t));
     len += sizeof(uint8_t);
     memcpy(buf->data+len, &data.country,llen); /* value */
@@ -690,11 +681,11 @@ void kwn_get_config_data( kwn_pkt* buf)
 
     /* GATEWAY_IP_ADDRESS */
     if( data.gip[0] != '\0' )
-        printf("Gateway IP: %d.%d.%d.%d \n",data.gip[0],data.gip[1],data.gip[2],data.gip[3]);
-    llen = sizeof(data.gip);     /* length */
+        printf("Static Gateway IP: %d.%d.%d.%d \n",data.gip[0],data.gip[1],data.gip[2],data.gip[3]);
+    llen = sizeof(data.gip); /* length */
     memcpy(buf->data+len, &llen,sizeof(uint16_t));
     len += sizeof(uint16_t);
-    type = KWN_CFG_GIP;           /* type */
+    type = KWN_CFG_GIP; /* type */
     memcpy(buf->data+len, &type,sizeof(uint8_t));
     len += sizeof(uint8_t);
     memcpy(buf->data+len, &data.gip,llen); /* value */
@@ -702,11 +693,11 @@ void kwn_get_config_data( kwn_pkt* buf)
 
     /* NETMASK_IP_ADDRESS */
     if( data.netmask[0] != '\0' )
-        printf("Mask IP: %d.%d.%d.%d \n",data.netmask[0],data.netmask[1],data.netmask[2],data.netmask[3]);
-    llen = sizeof(data.netmask);     /* length */
+        printf("Static Mask IP: %d.%d.%d.%d \n",data.netmask[0],data.netmask[1],data.netmask[2],data.netmask[3]);
+    llen = sizeof(data.netmask); /* length */
     memcpy(buf->data+len, &llen,sizeof(uint16_t));
     len += sizeof(uint16_t);
-    type = KWN_CFG_NETMASK;           /* type */
+    type = KWN_CFG_NETMASK; /* type */
     memcpy(buf->data+len, &type,sizeof(uint8_t));
     len += sizeof(uint8_t);
     memcpy(buf->data+len, &data.netmask,llen); /* value */
@@ -714,22 +705,21 @@ void kwn_get_config_data( kwn_pkt* buf)
 
     /* CUSTOMER NAME*/
     printf("CUSTOMER ID: %s - ",data.cust_name);
-    llen = strlen(data.cust_name);     /* length */
+    llen = strlen(data.cust_name); /* length */
     memcpy(buf->data+len, &llen,sizeof(uint16_t));
-    printf("llen of customername : %d\n",llen);
     len += sizeof(uint16_t);
-    type = KWN_CFG_CUST_NAME;             /* type */
+    type = KWN_CFG_CUST_NAME; /* type */
     memcpy(buf->data+len, &type,sizeof(uint8_t));
     len += sizeof(uint8_t);
     memcpy(buf->data+len, &data.cust_name,llen); /* value */
     len += llen;
 
     /* LINKID */
-    printf("LinkID: %d\n",data.linkid);
-    llen = sizeof(data.linkid);     /* length */
+    printf("LinkID: %s\n",data.linkid);
+    llen = strlen(data.linkid); /* length */
     memcpy(buf->data+len, &llen,sizeof(uint16_t));
     len += sizeof(uint16_t);
-    type = KWN_CFG_LINKID;           /* type */
+    type = KWN_CFG_LINKID; /* type */
     memcpy(buf->data+len, &type,sizeof(uint8_t));
     len += sizeof(uint8_t);
     memcpy(buf->data+len, &data.linkid,llen); /* value */
@@ -737,10 +727,10 @@ void kwn_get_config_data( kwn_pkt* buf)
 
     /* DDRS STATUS */
     printf("DDRS Status: %d\n",data.ddrs_status);
-    llen = sizeof(data.ddrs_status);     /* length */
+    llen = sizeof(data.ddrs_status); /* length */
     memcpy(buf->data+len, &llen,sizeof(uint16_t));
     len += sizeof(uint16_t);
-    type = KWN_CFG_DDRS_STATUS;           /* type */
+    type = KWN_CFG_DDRS_STATUS; /* type */
     memcpy(buf->data+len, &type,sizeof(uint8_t));
     len += sizeof(uint8_t);
     memcpy(buf->data+len, &data.ddrs_status,llen); /* value */
@@ -748,10 +738,10 @@ void kwn_get_config_data( kwn_pkt* buf)
 
     /* SPATIAL STREAM */
     printf("Spatial Stream: %d\n",data.stream);
-    llen = sizeof(data.stream);     /* length */
+    llen = sizeof(data.stream); /* length */
     memcpy(buf->data+len, &llen,sizeof(uint16_t));
     len += sizeof(uint16_t);
-    type = KWN_CFG_SPATIAL_STREAM;           /* type */
+    type = KWN_CFG_SPATIAL_STREAM; /* type */
     memcpy(buf->data+len, &type,sizeof(uint8_t));
     len += sizeof(uint8_t);
     memcpy(buf->data+len, &data.stream,llen); /* value */
@@ -759,10 +749,10 @@ void kwn_get_config_data( kwn_pkt* buf)
 
     /* MODULATION INDEX */
     printf("Modulation index: %d\n",data.modindex);
-    llen = sizeof(data.modindex);     /* length */
+    llen = sizeof(data.modindex); /* length */
     memcpy(buf->data+len, &llen,sizeof(uint16_t));
     len += sizeof(uint16_t);
-    type = KWN_CFG_MOD_INDEX;           /* type */
+    type = KWN_CFG_MOD_INDEX; /* type */
     memcpy(buf->data+len, &type,sizeof(uint8_t));
     len += sizeof(uint8_t);
     memcpy(buf->data+len, &data.modindex,llen); /* value */
@@ -770,10 +760,10 @@ void kwn_get_config_data( kwn_pkt* buf)
 
     /* MIN MODULATION INDEX */
     printf("Min Modulation index: %d\n",data.min_modindex);
-    llen = sizeof(data.min_modindex);     /* length */
+    llen = sizeof(data.min_modindex); /* length */
     memcpy(buf->data+len, &llen,sizeof(uint16_t));
     len += sizeof(uint16_t);
-    type = KWN_CFG_MIN_MOD_INDEX;           /* type */
+    type = KWN_CFG_MIN_MOD_INDEX; /* type */
     memcpy(buf->data+len, &type,sizeof(uint8_t));
     len += sizeof(uint8_t);
     memcpy(buf->data+len, &data.min_modindex,llen); /* value */
@@ -781,10 +771,10 @@ void kwn_get_config_data( kwn_pkt* buf)
 
     /* MAX MODULATION INDEX */
     printf("Max Modulation index: %d\n",data.max_modindex);
-    llen = sizeof(data.max_modindex);     /* length */
+    llen = sizeof(data.max_modindex); /* length */
     memcpy(buf->data+len, &llen,sizeof(uint16_t));
     len += sizeof(uint16_t);
-    type = KWN_CFG_MAX_MOD_INDEX;           /* type */
+    type = KWN_CFG_MAX_MOD_INDEX; /* type */
     memcpy(buf->data+len, &type,sizeof(uint8_t));
     len += sizeof(uint8_t);
     memcpy(buf->data+len, &data.max_modindex,llen); /* value */
@@ -792,10 +782,10 @@ void kwn_get_config_data( kwn_pkt* buf)
 
     /* ATPC STATUS */
     printf("ATPC Status: %d\n",data.atpc_status);
-    llen = sizeof(data.atpc_status);     /* length */
+    llen = sizeof(data.atpc_status); /* length */
     memcpy(buf->data+len, &llen,sizeof(uint16_t));
     len += sizeof(uint16_t);
-    type = KWN_CFG_ATPC_STATUS;           /* type */
+    type = KWN_CFG_ATPC_STATUS; /* type */
     memcpy(buf->data+len, &type,sizeof(uint8_t));
     len += sizeof(uint8_t);
     memcpy(buf->data+len, &data.atpc_status,llen); /* value */
@@ -803,10 +793,10 @@ void kwn_get_config_data( kwn_pkt* buf)
 
     /* TRANSMIT POWER */
     printf("Transmit Power: %d\n",data.txpower);
-    llen = sizeof(data.txpower);     /* length */
+    llen = sizeof(data.txpower); /* length */
     memcpy(buf->data+len, &llen,sizeof(uint16_t));
     len += sizeof(uint16_t);
-    type = KWN_CFG_TX_POWER;           /* type */
+    type = KWN_CFG_TX_POWER; /* type */
     memcpy(buf->data+len, &type,sizeof(uint8_t));
     len += sizeof(uint8_t);
     memcpy(buf->data+len, &data.txpower,llen); /* value */
@@ -814,11 +804,11 @@ void kwn_get_config_data( kwn_pkt* buf)
 
     /* DHCP_IP_ADDRESS */
     if( data.dyn_ip[0] != '\0' )
-        printf("Data IP: %d.%d.%d.%d \n",data.dyn_ip[0],data.dyn_ip[1],data.dyn_ip[2],data.dyn_ip[3]);
-    llen = sizeof(data.dyn_ip);     /* length */
+        printf("Dynamic IP: %d.%d.%d.%d \n",data.dyn_ip[0],data.dyn_ip[1],data.dyn_ip[2],data.dyn_ip[3]);
+    llen = sizeof(data.dyn_ip); /* length */
     memcpy(buf->data+len, &llen,sizeof(uint16_t));
     len += sizeof(uint16_t);
-    type = KWN_CFG_DYN_IP;           /* type */
+    type = KWN_CFG_DYN_IP; /* type */
     memcpy(buf->data+len, &type,sizeof(uint8_t));
     len += sizeof(uint8_t);
     memcpy(buf->data+len, &data.dyn_ip,llen); /* value */
@@ -826,11 +816,11 @@ void kwn_get_config_data( kwn_pkt* buf)
 
     /* DHCP_GATEWAY_IP_ADDRESS */
     if( data.dyn_gip[0] != '\0' )
-        printf("Gateway IP: %d.%d.%d.%d \n",data.dyn_gip[0],data.dyn_gip[1],data.dyn_gip[2],data.dyn_gip[3]);
-    llen = sizeof(data.dyn_gip);     /* length */
+        printf("Dynamic Gateway IP: %d.%d.%d.%d \n",data.dyn_gip[0],data.dyn_gip[1],data.dyn_gip[2],data.dyn_gip[3]);
+    llen = sizeof(data.dyn_gip); /* length */
     memcpy(buf->data+len, &llen,sizeof(uint16_t));
     len += sizeof(uint16_t);
-    type = KWN_CFG_DYN_GIP;           /* type */
+    type = KWN_CFG_DYN_GIP; /* type */
     memcpy(buf->data+len, &type,sizeof(uint8_t));
     len += sizeof(uint8_t);
     memcpy(buf->data+len, &data.dyn_gip,llen); /* value */
@@ -839,10 +829,10 @@ void kwn_get_config_data( kwn_pkt* buf)
     /* DHCP_NETMASK_IP_ADDRESS */
     if( data.dyn_netmask[0] != '\0' )
         printf("Dynamic Mask IP: %d.%d.%d.%d\n",data.dyn_netmask[0],data.dyn_netmask[1],data.dyn_netmask[2],data.dyn_netmask[3]);
-    llen = sizeof(data.dyn_netmask);     /* length */
+    llen = sizeof(data.dyn_netmask); /* length */
     memcpy(buf->data+len, &llen,sizeof(uint16_t));
     len += sizeof(uint16_t);
-    type = KWN_CFG_DYN_NETMASK;           /* type */
+    type = KWN_CFG_DYN_NETMASK; /* type */
     memcpy(buf->data+len, &type,sizeof(uint8_t));
     len += sizeof(uint8_t);
     memcpy(buf->data+len, &data.netmask,llen); /* value */
@@ -891,7 +881,7 @@ void kwn_set_config_data( kwn_pkt* buf )
                 uint8_t  bytes[4]={0};
 
                 /* check to handle dhcp case */
-                if ( ip_type == 2 )
+                if( ip_type == 2 )
                     break;
 
                 memcpy(&bytes,buf->data+len,llen);
@@ -962,7 +952,7 @@ void kwn_set_config_data( kwn_pkt* buf )
                 uint8_t  gbytes[4]={0};
 
                 /* check to handle dhcp case */
-                if ( ip_type == 2 )
+                if( ip_type == 2 )
                     break;
 
                 memcpy(&gbytes,buf->data+len,llen);
@@ -976,7 +966,7 @@ void kwn_set_config_data( kwn_pkt* buf )
                 uint8_t  maskip[4]={0};
 
                 /* check to handle dhcp case */
-                if ( ip_type == 2 )
+                if( ip_type == 2 )
                     break;
 
                 memcpy(&maskip,buf->data+len,llen);
@@ -996,10 +986,10 @@ void kwn_set_config_data( kwn_pkt* buf )
             }
             case KWN_CFG_LINKID:
             {
-                uint8_t linkid;
+                uint8_t linkid[16]={'\0'};
                 memcpy(&linkid, buf->data+len,llen);
-                printf("Linkid: %d \n",linkid);
-                sprintf(cmd, "uci set wireless.wifi1.linkid='%d'",linkid);
+                printf("Linkid: %s \n",linkid);
+                sprintf(cmd, "uci set wireless.wifi1.linkid='%s'",linkid);
                 system(cmd);
                 break;
             }
@@ -1081,14 +1071,13 @@ void kwn_set_config_data( kwn_pkt* buf )
     buf->hdr.type = KWN_TYPE_SET_RESPONSE;
     buf->hdr.sub_type = KWN_SUBTYPE_CONFIG_DATA;
     buf->hdr.ptmp = 0;
-    buf->hdr.more = 1;
 
     /* Response */
     res = KWN_SUCCESS;
-    llen = sizeof(res);     /* length */
+    llen = sizeof(res); /* length */
     memcpy(buf->data+len, &llen,sizeof(uint16_t));
     len += sizeof(uint16_t);
-    type = KWN_STATUS_SUCCESS;          /* type */
+    type = KWN_STATUS_SUCCESS; /* type */
     memcpy(buf->data+len, &type,sizeof(uint8_t));
     len += sizeof(uint8_t);
     memcpy(buf->data+len, &res,llen); /* value */
@@ -1178,14 +1167,13 @@ void kwn_set_link_test( kwn_pkt *buf )
     buf->hdr.type = KWN_TYPE_SET_RESPONSE;
     buf->hdr.sub_type = KWN_SUBTYPE_LINK_TEST;
     buf->hdr.ptmp = 0;
-    buf->hdr.more = 1;
 
     /* Response */
     res = KWN_SUCCESS;
-    llen = sizeof(res);     /* length */
+    llen = sizeof(res); /* length */
     memcpy(buf->data+len, &llen,sizeof(uint16_t));
     len += sizeof(uint16_t);
-    type = KWN_STATUS_SUCCESS;          /* type */
+    type = KWN_STATUS_SUCCESS; /* type */
     memcpy(buf->data+len, &type,sizeof(uint8_t));
     len += sizeof(uint8_t);
     memcpy(buf->data+len, &res,llen); /* value */
@@ -1313,25 +1301,24 @@ void kwn_get_wireless_stats( kwn_pkt *buf )
     buf->hdr.type = KWN_TYPE_GET_RESPONSE;
     buf->hdr.sub_type = KWN_SUBTYPE_WIRELESS_STAT;
     buf->hdr.ptmp = 0;
-    buf->hdr.more = 1;
 
     /* NO_OF_LINKS */
-    llen = sizeof(wireless_list.no_of_links);     /* length */
+    llen = sizeof(wireless_list.no_of_links); /* length */
     memcpy(buf->data+len, &llen,sizeof(uint16_t));
     len += sizeof(uint16_t);
-    type = KWN_WLAN_NO_LINKS;            /* type */
+    type = KWN_WLAN_NO_LINKS; /* type */
     memcpy(buf->data+len, &type,sizeof(uint8_t));
     len += sizeof(uint8_t);
     memcpy(buf->data+len, &wireless_list.no_of_links,llen); /* value */
     len += llen;
 
-    for( i=0; i<num ;i++)
+    for( i=0; i<num ;i++ )
     {
         /* SU_ID */
-        llen = sizeof(wireless_list.sta[i].link_id);     /* length */
+        llen = sizeof(wireless_list.sta[i].link_id); /* length */
         memcpy(buf->data+len, &llen,sizeof(uint16_t));
         len += sizeof(uint16_t);
-        type = KWN_WLAN_ID;             /* type */
+        type = KWN_WLAN_ID; /* type */
         memcpy(buf->data+len, &type,sizeof(uint8_t));
         len += sizeof(uint8_t);
         memcpy(buf->data+len, &wireless_list.sta[i].link_id,llen); /* value */
@@ -1345,10 +1332,10 @@ void kwn_get_wireless_stats( kwn_pkt *buf )
                 wireless_list.sta[i].mac[4],
                 wireless_list.sta[i].mac[5]);
         /* MAC_ADDRESS */
-        llen = KWN_MAC_ADDR_LEN;     /* length */
+        llen = KWN_MAC_ADDR_LEN; /* length */
         memcpy(buf->data+len, &llen,sizeof(uint16_t));
         len += sizeof(uint16_t);
-        type = KWN_WLAN_MAC;             /* type */
+        type = KWN_WLAN_MAC; /* type */
         memcpy(buf->data+len, &type,sizeof(uint8_t));
         len += sizeof(uint8_t);
         memcpy(buf->data+len, &wireless_list.sta[i].mac,llen); /* value */
@@ -1357,10 +1344,10 @@ void kwn_get_wireless_stats( kwn_pkt *buf )
         printf("Remote IP: %d.%d.%d.%d \n",wireless_list.sta[i].r_ip[0], wireless_list.sta[i].r_ip[1],
                 wireless_list.sta[i].r_ip[2], wireless_list.sta[i].r_ip[3]);
         /* IP_ADDRESS */
-        llen = strlen(wireless_list.sta[i].r_ip);     /* length */
+        llen = sizeof(wireless_list.sta[i].r_ip); /* length */
         memcpy(buf->data+len, &llen,sizeof(uint16_t));
         len += sizeof(uint16_t);
-        type = KWN_WLAN_R_IP;            /* type */
+        type = KWN_WLAN_R_IP; /* type */
         memcpy(buf->data+len, &type,sizeof(uint8_t));
         len += sizeof(uint8_t);
         memcpy(buf->data+len, &wireless_list.sta[i].r_ip,llen); /* value */
@@ -1369,124 +1356,124 @@ void kwn_get_wireless_stats( kwn_pkt *buf )
         printf("L_Lat_Long %s %s, R_Lat_Long %s %s \n",wireless_list.sta[i].l_latitude,wireless_list.sta[i].l_longitude,
                 wireless_list.sta[i].r_latitude,wireless_list.sta[i].r_longitude);
         /* REMOTE_LATITUDE */
-        llen = (uint16_t)strlen(wireless_list.sta[i].r_latitude);     /* length */
+        llen = (uint16_t)strlen(wireless_list.sta[i].r_latitude); /* length */
         memcpy(buf->data+len, &llen,sizeof(uint16_t));
         len += sizeof(uint16_t);
-        type = KWN_WLAN_R_LAT;           /* type */
+        type = KWN_WLAN_R_LAT; /* type */
         memcpy(buf->data+len, &type,sizeof(uint8_t));
         len += sizeof(uint8_t);
         memcpy(buf->data+len, &wireless_list.sta[i].r_latitude,llen); /* value */
         len += llen;
 
         /* REMOTE_LONGITUDE */
-        llen = (uint16_t)strlen(wireless_list.sta[i].r_longitude);     /* length */
+        llen = (uint16_t)strlen(wireless_list.sta[i].r_longitude); /* length */
         memcpy(buf->data+len, &llen,sizeof(uint16_t));
         len += sizeof(uint16_t);
-        type = KWN_WLAN_R_LONG;          /* type */
+        type = KWN_WLAN_R_LONG; /* type */
         memcpy(buf->data+len, &type,sizeof(uint8_t));
         len += sizeof(uint8_t);
         memcpy(buf->data+len, &wireless_list.sta[i].r_longitude,llen); /* value */
         len += llen;
 
         /* LOCAL_LATITUDE */
-        llen = (uint16_t)strlen(wireless_list.sta[i].l_latitude);     /* length */
+        llen = (uint16_t)strlen(wireless_list.sta[i].l_latitude); /* length */
         memcpy(buf->data+len, &llen,sizeof(uint16_t));
         len += sizeof(uint16_t);
-        type = KWN_WLAN_L_LAT;           /* type */
+        type = KWN_WLAN_L_LAT; /* type */
         memcpy(buf->data+len, &type,sizeof(uint8_t));
         len += sizeof(uint8_t);
         memcpy(buf->data+len, &wireless_list.sta[i].l_latitude,llen); /* value */
         len += llen;
 
         /* LOCAL_LONGITUDE */
-        llen = (uint16_t)strlen(wireless_list.sta[i].l_longitude);     /* length */
+        llen = (uint16_t)strlen(wireless_list.sta[i].l_longitude); /* length */
         memcpy(buf->data+len, &llen,sizeof(uint16_t));
         len += sizeof(uint16_t);
-        type = KWN_WLAN_L_LONG;          /* type */
+        type = KWN_WLAN_L_LONG; /* type */
         memcpy(buf->data+len, &type,sizeof(uint8_t));
         len += sizeof(uint8_t);
         memcpy(buf->data+len, &wireless_list.sta[i].l_longitude,llen); /* value */
         len += llen;
 
-        printf("Tx Tput %u Rx Tput %u \n",wireless_list.sta[i].tx_tput,wireless_list.sta[i].rx_tput);
         /* TX_TUPT */
-        llen = sizeof(wireless_list.sta[i].tx_tput);     /* length */
+        printf("Tx Tput %u Rx Tput %u \n",wireless_list.sta[i].tx_tput,wireless_list.sta[i].rx_tput);
+        llen = sizeof(wireless_list.sta[i].tx_tput); /* length */
         memcpy(buf->data+len, &llen,sizeof(uint16_t));
         len += sizeof(uint16_t);
-        type = KWN_WLAN_TX_TPUT;             /* type */
+        type = KWN_WLAN_TX_TPUT; /* type */
         memcpy(buf->data+len, &type,sizeof(uint8_t));
         len += sizeof(uint8_t);
         memcpy(buf->data+len, &wireless_list.sta[i].tx_tput,llen); /* value */
         len += llen;
 
         /* RX_TPUT */
-        llen = sizeof(wireless_list.sta[i].rx_tput);     /* length */
+        llen = sizeof(wireless_list.sta[i].rx_tput); /* length */
         memcpy(buf->data+len, &llen,sizeof(uint16_t));
         len += sizeof(uint16_t);
-        type = KWN_WLAN_RX_TPUT;             /* type */
+        type = KWN_WLAN_RX_TPUT; /* type */
         memcpy(buf->data+len, &type,sizeof(uint8_t));
         len += sizeof(uint8_t);
         memcpy(buf->data+len, &wireless_list.sta[i].rx_tput,llen); /* value */
         len += llen;
 
-        printf("Local SNR A1 %d SNR A2 %d \n",wireless_list.sta[i].local_snr_a1,wireless_list.sta[i].local_snr_a2);
         /* LOCAL_SNR_A1 */
-        llen = sizeof(wireless_list.sta[i].local_snr_a1);     /* length */
+        printf("Local SNR A1 %d SNR A2 %d \n",wireless_list.sta[i].local_snr_a1,wireless_list.sta[i].local_snr_a2);
+        llen = sizeof(wireless_list.sta[i].local_snr_a1); /* length */
         memcpy(buf->data+len, &llen,sizeof(uint16_t));
         len += sizeof(uint16_t);
-        type = KWN_WLAN_L_SNR_A1;            /* type */
+        type = KWN_WLAN_L_SNR_A1; /* type */
         memcpy(buf->data+len, &type,sizeof(uint8_t));
         len += sizeof(uint8_t);
         memcpy(buf->data+len, &wireless_list.sta[i].local_snr_a1,llen); /* value */
         len += llen;
 
         /* LOCAL_SNR_A2 */
-        llen = sizeof(wireless_list.sta[i].local_snr_a2);     /* length */
+        llen = sizeof(wireless_list.sta[i].local_snr_a2); /* length */
         memcpy(buf->data+len, &llen,sizeof(uint16_t));
         len += sizeof(uint16_t);
-        type = KWN_WLAN_L_SNR_A2;            /* type */
+        type = KWN_WLAN_L_SNR_A2; /* type */
         memcpy(buf->data+len, &type,sizeof(uint8_t));
         len += sizeof(uint8_t);
         memcpy(buf->data+len, &wireless_list.sta[i].local_snr_a2,llen); /* value */
         len += llen;
 
-        printf("Remote SNR A1 %d SNR A2 %d \n",wireless_list.sta[i].remote_snr_a1,wireless_list.sta[i].remote_snr_a2);
         /* REMOTE_SNR_A1 */
-        llen = sizeof(wireless_list.sta[i].remote_snr_a1);     /* length */
+        printf("Remote SNR A1 %d SNR A2 %d \n",wireless_list.sta[i].remote_snr_a1,wireless_list.sta[i].remote_snr_a2);
+        llen = sizeof(wireless_list.sta[i].remote_snr_a1); /* length */
         memcpy(buf->data+len, &llen,sizeof(uint16_t));
         len += sizeof(uint16_t);
-        type = KWN_WLAN_R_SNR_A1;            /* type */
+        type = KWN_WLAN_R_SNR_A1; /* type */
         memcpy(buf->data+len, &type,sizeof(uint8_t));
         len += sizeof(uint8_t);
         memcpy(buf->data+len, &wireless_list.sta[i].remote_snr_a1,llen); /* value */
         len += llen;
 
         /* Remote_SNR_A2 */
-        llen = sizeof(wireless_list.sta[i].remote_snr_a2);     /* length */
+        llen = sizeof(wireless_list.sta[i].remote_snr_a2); /* length */
         memcpy(buf->data+len, &llen,sizeof(uint16_t));
         len += sizeof(uint16_t);
-        type = KWN_WLAN_R_SNR_A2;            /* type */
+        type = KWN_WLAN_R_SNR_A2; /* type */
         memcpy(buf->data+len, &type,sizeof(uint8_t));
         len += sizeof(uint8_t);
         memcpy(buf->data+len, &wireless_list.sta[i].remote_snr_a2,llen); /* value */
         len += llen;
 
-        printf("Local Rate %u Remote Rate %u \n",wireless_list.sta[i].tx_ratekbps,wireless_list.sta[i].rx_ratekbps);
         /* LOCAL_RATE */
-        llen = sizeof(wireless_list.sta[i].tx_ratekbps);     /* length */
+        printf("Local Rate %u Remote Rate %u \n",wireless_list.sta[i].tx_ratekbps,wireless_list.sta[i].rx_ratekbps);
+        llen = sizeof(wireless_list.sta[i].tx_ratekbps); /* length */
         memcpy(buf->data+len, &llen,sizeof(uint16_t));
         len += sizeof(uint16_t);
-        type = KWN_WLAN_L_RATE;             /* type */
+        type = KWN_WLAN_L_RATE; /* type */
         memcpy(buf->data+len, &type,sizeof(uint8_t));
         len += sizeof(uint8_t);
         memcpy(buf->data+len, &wireless_list.sta[i].tx_ratekbps,llen); /* value */
         len += llen;
 
         /* REMOTE_RATE */
-        llen = sizeof(wireless_list.sta[i].rx_ratekbps);     /* length */
+        llen = sizeof(wireless_list.sta[i].rx_ratekbps); /* length */
         memcpy(buf->data+len, &llen,sizeof(uint16_t));
         len += sizeof(uint16_t);
-        type = KWN_WLAN_R_RATE;             /* type */
+        type = KWN_WLAN_R_RATE; /* type */
         memcpy(buf->data+len, &type,sizeof(uint8_t));
         len += sizeof(uint8_t);
         memcpy(buf->data+len, &wireless_list.sta[i].rx_ratekbps,llen); /* value */
@@ -1494,10 +1481,10 @@ void kwn_get_wireless_stats( kwn_pkt *buf )
 
         /* LOCAL_SIGNAL_A1 */
         printf("Local Signal A1 %d \n",wireless_list.sta[i].local_signal_a1);
-        llen = sizeof(wireless_list.sta[i].local_signal_a1);     /* length */
+        llen = sizeof(wireless_list.sta[i].local_signal_a1); /* length */
         memcpy(buf->data+len, &llen,sizeof(uint16_t));
         len += sizeof(uint16_t);
-        type = KWN_WLAN_L_SIGNAL_A1;             /* type */
+        type = KWN_WLAN_L_SIGNAL_A1; /* type */
         memcpy(buf->data+len, &type,sizeof(uint8_t));
         len += sizeof(uint8_t);
         memcpy(buf->data+len, &wireless_list.sta[i].local_signal_a1,llen); /* value */
@@ -1505,10 +1492,10 @@ void kwn_get_wireless_stats( kwn_pkt *buf )
 
         /* LOCAL_SIGNAL_A2 */
         printf("Local Signal A2 %d \n",wireless_list.sta[i].local_signal_a2);
-        llen = sizeof(wireless_list.sta[i].local_signal_a2);     /* length */
+        llen = sizeof(wireless_list.sta[i].local_signal_a2); /* length */
         memcpy(buf->data+len, &llen,sizeof(uint16_t));
         len += sizeof(uint16_t);
-        type = KWN_WLAN_L_SIGNAL_A2;             /* type */
+        type = KWN_WLAN_L_SIGNAL_A2; /* type */
         memcpy(buf->data+len, &type,sizeof(uint8_t));
         len += sizeof(uint8_t);
         memcpy(buf->data+len, &wireless_list.sta[i].local_signal_a2,llen); /* value */
@@ -1516,10 +1503,10 @@ void kwn_get_wireless_stats( kwn_pkt *buf )
 
         /* REMOTE_SIGNAL_A1 */
         printf("Remote Signal A1 %d \n",wireless_list.sta[i].remote_signal_a1);
-        llen = sizeof(wireless_list.sta[i].remote_signal_a1);     /* length */
+        llen = sizeof(wireless_list.sta[i].remote_signal_a1); /* length */
         memcpy(buf->data+len, &llen,sizeof(uint16_t));
         len += sizeof(uint16_t);
-        type = KWN_WLAN_R_SIGNAL_A1;             /* type */
+        type = KWN_WLAN_R_SIGNAL_A1; /* type */
         memcpy(buf->data+len, &type,sizeof(uint8_t));
         len += sizeof(uint8_t);
         memcpy(buf->data+len, &wireless_list.sta[i].remote_signal_a1,llen); /* value */
@@ -1527,10 +1514,10 @@ void kwn_get_wireless_stats( kwn_pkt *buf )
 
         /* REMOTE_SIGNAL_A2 */
         printf("Remote Signal A2 %d \n",wireless_list.sta[i].remote_signal_a2);
-        llen = sizeof(wireless_list.sta[i].remote_signal_a2);     /* length */
+        llen = sizeof(wireless_list.sta[i].remote_signal_a2); /* length */
         memcpy(buf->data+len, &llen,sizeof(uint16_t));
         len += sizeof(uint16_t);
-        type = KWN_WLAN_R_SIGNAL_A2;             /* type */
+        type = KWN_WLAN_R_SIGNAL_A2; /* type */
         memcpy(buf->data+len, &type,sizeof(uint8_t));
         len += sizeof(uint8_t);
         memcpy(buf->data+len, &wireless_list.sta[i].remote_signal_a2,llen); /* value */
@@ -1538,10 +1525,10 @@ void kwn_get_wireless_stats( kwn_pkt *buf )
 
         /* LOCAL LINK QUALITY INDEX */
         printf("Local Link Quality Index %d \n",wireless_list.sta[i].local_link_qindex);
-        llen = sizeof(wireless_list.sta[i].local_link_qindex);     /* length */
+        llen = sizeof(wireless_list.sta[i].local_link_qindex); /* length */
         memcpy(buf->data+len, &llen,sizeof(uint16_t));
         len += sizeof(uint16_t);
-        type = KWN_WLAN_L_LINK_QINDEX;             /* type */
+        type = KWN_WLAN_L_LINK_QINDEX; /* type */
         memcpy(buf->data+len, &type,sizeof(uint8_t));
         len += sizeof(uint8_t);
         memcpy(buf->data+len, &wireless_list.sta[i].local_link_qindex,llen); /* value */
@@ -1549,10 +1536,10 @@ void kwn_get_wireless_stats( kwn_pkt *buf )
 
         /* REMOTE LINK QUALITY INDEX */
         printf("Remote Link Quality Index %d \n",wireless_list.sta[i].remote_link_qindex);
-        llen = sizeof(wireless_list.sta[i].remote_link_qindex);     /* length */
+        llen = sizeof(wireless_list.sta[i].remote_link_qindex); /* length */
         memcpy(buf->data+len, &llen,sizeof(uint16_t));
         len += sizeof(uint16_t);
-        type = KWN_WLAN_R_LINK_QINDEX;             /* type */
+        type = KWN_WLAN_R_LINK_QINDEX; /* type */
         memcpy(buf->data+len, &type,sizeof(uint8_t));
         len += sizeof(uint8_t);
         memcpy(buf->data+len, &wireless_list.sta[i].remote_link_qindex,llen); /* value */
@@ -1582,63 +1569,62 @@ void kwn_get_ethernet_stats( kwn_pkt* buf)
     buf->hdr.type = KWN_TYPE_GET_RESPONSE;
     buf->hdr.sub_type = KWN_SUBTYPE_ETHERNET_STAT;
     buf->hdr.ptmp = 0;
-    buf->hdr.more = 0;
 
     /* TX_PACKETS */
-    llen = sizeof(data.tx_packets);     /* length */
+    llen = sizeof(data.tx_packets); /* length */
     memcpy(buf->data+len, &llen,sizeof(uint16_t));
     len += sizeof(uint16_t);
-    type = KWN_ETH_TX_PACKETS;           /* type */
+    type = KWN_ETH_TX_PACKETS; /* type */
     memcpy(buf->data+len, &type,sizeof(uint8_t));
     len += sizeof(uint8_t);
     memcpy(buf->data+len, &data.tx_packets,llen); /* value */
     len += llen;
 
     /* RX_PACKETS */
-    llen = sizeof(data.rx_packets);     /* length */
+    llen = sizeof(data.rx_packets); /* length */
     memcpy(buf->data+len, &llen,sizeof(uint16_t));
     len += sizeof(uint16_t);
-    type = KWN_ETH_RX_PACKETS;           /* type */
+    type = KWN_ETH_RX_PACKETS; /* type */
     memcpy(buf->data+len, &type,sizeof(uint8_t));
     len += sizeof(uint8_t);
     memcpy(buf->data+len, &data.rx_packets,llen); /* value */
     len += llen;
 
     /* TX_BYTES */
-    llen = sizeof(data.tx_bytes);     /* length */
+    llen = sizeof(data.tx_bytes); /* length */
     memcpy(buf->data+len, &llen,sizeof(uint16_t));
     len += sizeof(uint16_t);
-    type = KWN_ETH_TX_BYTES;             /* type */
+    type = KWN_ETH_TX_BYTES; /* type */
     memcpy(buf->data+len, &type,sizeof(uint8_t));
     len += sizeof(uint8_t);
     memcpy(buf->data+len, &data.tx_bytes,llen); /* value */
     len += llen;
 
     /* RX_BYTES */
-    llen = sizeof(data.rx_bytes);     /* length */
+    llen = sizeof(data.rx_bytes); /* length */
     memcpy(buf->data+len, &llen,sizeof(uint16_t));
     len += sizeof(uint16_t);
-    type = KWN_ETH_RX_BYTES;             /* type */
+    type = KWN_ETH_RX_BYTES; /* type */
     memcpy(buf->data+len, &type,sizeof(uint8_t));
     len += sizeof(uint8_t);
     memcpy(buf->data+len, &data.rx_bytes,llen); /* value */
     len += llen;
 
     /* TX_ERRORS */
-    llen = sizeof(data.tx_errors);     /* length */
+    llen = sizeof(data.tx_errors); /* length */
     memcpy(buf->data+len, &llen,sizeof(uint16_t));
     len += sizeof(uint16_t);
-    type = KWN_ETH_TX_ERRORS;            /* type */
+    type = KWN_ETH_TX_ERRORS; /* type */
     memcpy(buf->data+len, &type,sizeof(uint8_t));
     len += sizeof(uint8_t);
     memcpy(buf->data+len, &data.tx_errors,llen); /* value */
     len += llen;
 
     /* RX_ERRORS */
-    llen = sizeof(data.rx_errors);     /* length */
+    llen = sizeof(data.rx_errors); /* length */
     memcpy(buf->data+len, &llen,sizeof(uint16_t));
     len += sizeof(uint16_t);
-    type = KWN_ETH_RX_ERRORS;            /* type */
+    type = KWN_ETH_RX_ERRORS; /* type */
     memcpy(buf->data+len, &type,sizeof(uint8_t));
     len += sizeof(uint8_t);
     memcpy(buf->data+len, &data.rx_errors,llen); /* value */
@@ -1649,9 +1635,9 @@ void kwn_get_ethernet_stats( kwn_pkt* buf)
     printf("Data length: %d\n",buf->hdr.length);
 }
 
-void kwn_req_type ( int peer_socket, kwn_pkt *buf )
+void kwn_req_type( int peer_sock, kwn_pkt *buf )
 {
-    int sent;
+    int rv;
 
     /*printf("\n %s : %d \n",__func__,__LINE__);*/
     switch(buf->hdr.type)
@@ -1711,43 +1697,103 @@ void kwn_req_type ( int peer_socket, kwn_pkt *buf )
     }
 
     printf("Data length: %d\n",buf->hdr.length);
-    
-    sent = send(peer_socket, (void*)buf, sizeof(kwn_pkt), 0);
-    if( sent == -1 )
+    /**********************************************/
+    /* Response data is sent back to the client   */
+    /**********************************************/
+    rv = send(peer_sock, (void*)buf, sizeof(kwn_pkt), 0);
+    if( rv < 0 )
     {
-        fprintf(stderr, "Error on send --> %s", strerror(errno));
+        fprintf(stderr, "Error on send --> %s, errno : %d\n", strerror(errno), errno);
         return;
     }
-    printf("\n message sent : %d bytes \n",sent);
-
+    printf("\n message sent : %d bytes \n",rv);
     return;
 }
 
 
 int main()
 {
-    int server_socket,peer_sock;
-    int sock_len;
-    int len,opt=1;
+    int server_socket, peer_sock;
+    int len, opt=1, max_sd, i, close_conn, flag, max_sdl;
     struct sockaddr_in server_addr;
     struct sockaddr_in peer_addr;
-    kwn_pkt kwn_server_recv_buf;
+    int sock_len = sizeof(peer_addr), rv, flags;
+    char cmd[100],cmd_buf[50];
+    fd_set master_set,working_set;
 
+    kwn_pkt kwn_server_recv_buf;
     memset(&kwn_server_recv_buf,'\0', sizeof(kwn_pkt)); 
-    
-    /* Create server socket */
+
+    /*******************************************************************/
+    /* Create an AF_INET stream socket to receive incoming connections */
+    /*******************************************************************/
     server_socket = socket(AF_INET, SOCK_STREAM, 0);
-    if( server_socket == -1 )
+    if( server_socket < 0 )
     {
-        fprintf(stderr, "Error creating socket --> %s", strerror(errno));
+        fprintf(stderr, "Error creating socket --> %s, errno : %d", strerror(errno), errno);
+        exit(EXIT_FAILURE);
+    }
+
+    /*************************************************************/
+    /* Allow socket descriptor to be reuseable                   */
+    /*************************************************************/
+    rv = setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, (char *)&opt, sizeof(opt));
+    if( rv < 0 )
+    {
+        fprintf(stderr, "Error setsockopt --> %s, errno : %d", strerror(errno), errno);
         close(server_socket);
         exit(EXIT_FAILURE);
     }
 
-    /* set socket options to reuse port */
-    if( setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, (char *)&opt, sizeof(opt)) == -1 )
+    memset(cmd, '\0', sizeof(cmd));
+    memset(cmd_buf, '\0', sizeof(cmd_buf));
+    sprintf(cmd,"uci get system.@system[0].tcpcnt");
+    kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] ); 
+    flags = (uint8_t)atoi(cmd_buf);
+    printf("tcp_cnt value = %d\n",flags);
+    
+    rv = setsockopt( server_socket, SOL_TCP, TCP_KEEPCNT, (void *)&flags, sizeof(flags) );
+    if( rv < 0 )
     {
-        fprintf(stderr, "Error on setsockopt --> %s", strerror(errno));
+        fprintf(stderr, "Error setsockopt --> %s, errno : %d", strerror(errno), errno);
+        close(server_socket);
+        exit(EXIT_FAILURE);
+    }
+
+    memset(cmd, '\0', sizeof(cmd));
+    memset(cmd_buf, '\0', sizeof(cmd_buf));
+    sprintf(cmd,"uci get system.@system[0].tcpintvl");
+    kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] ); 
+    flags = (uint8_t)atoi(cmd_buf);
+    printf("tcp_intvl value = %d\n",flags);
+    
+    rv = setsockopt( server_socket, SOL_TCP, TCP_KEEPINTVL, (void *)&flags, sizeof(flags) );
+    if( rv < 0 )
+    {
+        fprintf(stderr, "Error setsockopt --> %s, errno : %d", strerror(errno), errno);
+        close(server_socket);
+        exit(EXIT_FAILURE);
+    }
+
+    /*************************************************************/
+    /* Set socket to be nonblocking. All of the sockets for      */
+    /* the incoming connections will also be nonblocking since   */
+    /* they will inherit that state from the listening socket.   */
+    /*************************************************************/
+    /* Get Socket Flag */
+    flag = fcntl(server_socket, F_GETFL, 0);
+    if( flag < 0 )
+    {
+        fprintf(stderr, "Error get fcntl --> %s, errno : %d", strerror(errno), errno);
+        close(server_socket);
+        exit(EXIT_FAILURE);
+    }
+
+    /* Set Socket Flag to Non-Blocking Mode */
+    rv = fcntl(server_socket, F_SETFL, flag | O_NONBLOCK);
+    if( rv < 0 )
+    {
+        fprintf(stderr, "Error set fcntl --> %s, errno : %d", strerror(errno), errno);
         close(server_socket);
         exit(EXIT_FAILURE);
     }
@@ -1757,72 +1803,217 @@ int main()
     /* Construct server_addr struct */
     server_addr.sin_family = AF_INET;
     server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    server_addr.sin_port = htons(PORT);   /* argv[1] - port number */
+    server_addr.sin_port = htons(KWN_PORT);   /* argv[1] - port number */
 
-    /* Bind */
-    if( bind(server_socket, (struct sockaddr *)&server_addr, sizeof(struct sockaddr)) == -1 )
+    /*************************************************************/
+    /* Bind the socket                                           */
+    /*************************************************************/
+    rv = bind(server_socket, (struct sockaddr *)&server_addr, sizeof(server_addr));
+    if( rv < 0 )
     {
-        fprintf(stderr, "Error on bind --> %s", strerror(errno));
-        close(server_socket);
-        exit(EXIT_FAILURE);
-    }
-    
-    /* Listening to incoming connections */
-    if( listen(server_socket, 5) == -1 )
-    {
-        fprintf(stderr, "Error on listen --> %s", strerror(errno));
+        fprintf(stderr, "Error binding --> %s, errno : %d", strerror(errno), errno);
         close(server_socket);
         exit(EXIT_FAILURE);
     }
 
-    sock_len = sizeof(peer_addr);
-    while(1)
+    /*************************************************************/
+    /* Set the listen back log                                   */
+    /*************************************************************/
+    rv = listen(server_socket, 10);
+    if( rv < 0 )
     {
-        peer_sock = accept( server_socket, (struct sockaddr *)&peer_addr, &sock_len );
-        if( peer_sock == -1 )
-        {
-            fprintf(stderr, "Error on accept --> %s", strerror(errno));
-            continue;
-        }
-        fprintf( stdout, "Accept peer --> %s\n", inet_ntoa(peer_addr.sin_addr) );
+        fprintf(stderr, "Error listening --> %s, errno : %d", strerror(errno), errno);
+        close(server_socket);
+        exit(EXIT_FAILURE);
+    }
 
-        len = recv( peer_sock, &kwn_server_recv_buf, sizeof(kwn_pkt), 0 );
-        if( len == -1 )
-        {
-            fprintf(stderr, "Error on recv --> %s", strerror(errno));
-            continue;
-        }
-        printf("Received buf length : %d bytes\n",len);
-        
-        printf("Received ID:%d, Intf type:%d, Type:%d, Subtype:%d\n",
-                kwn_server_recv_buf.hdr.id, kwn_server_recv_buf.hdr.interface_type,
-                kwn_server_recv_buf.hdr.type, kwn_server_recv_buf.hdr.sub_type);
+    /*************************************************************/
+    /* Initialize the master fd_set                              */
+    /*************************************************************/
+    FD_ZERO(&master_set);
+    max_sd = server_socket;
+    FD_SET(server_socket, &master_set);
 
-        switch(kwn_server_recv_buf.hdr.id)
+    /*************************************************************/
+    /* Loop waiting for incoming connects or for incoming data   */
+    /* on any of the connected sockets.                          */
+    /*************************************************************/
+    while(KWN_TRUE)
+    {
+        /**********************************************************/
+        /* Copy the master fd_set over to the working fd_set.     */
+        /**********************************************************/
+        memcpy(&working_set, &master_set, sizeof(master_set));
+
+        /****************************************************************/
+        /* Call select() and block indefinitely since timeout is NULL   */
+        /****************************************************************/
+        rv = select(max_sd + 1, &working_set, NULL, NULL, NULL);
+        if( rv < 0 )
         {
-            case SIFY_ID:
-            case KEYWEST_ID:
+            fprintf(stderr, "Error select call --> %s, errno : %d", strerror(errno), errno);
+            break;
+        }
+        //printf("file descriptors ready for reading : %d\n",rv);
+        /* update max_sdl*/
+        max_sdl = max_sd;
+
+        /**********************************************************/
+        /* One or more descriptors are readable.  Need to         */
+        /* determine which ones they are.                         */
+        /**********************************************************/
+        for( i=0; i <= max_sd  ; i++ )
+        {
+            /*******************************************************/
+            /* Check to see if this descriptor is ready            */
+            /*******************************************************/
+            if( FD_ISSET( i, &working_set ) )
+            {
+                /****************************************************/
+                /* Check to see if this is the listening socket     */
+                /****************************************************/
+                if( i == server_socket )
                 {
-                    switch(kwn_server_recv_buf.hdr.interface_type)
+                    peer_sock = accept( server_socket, (struct sockaddr *)&peer_addr, &sock_len );
+                    if( peer_sock < 0 )
                     {
-                        case KWN_MOBILE_APP:
-                        case KWN_NMS_APP:
-                            {
-                                kwn_req_type( peer_sock, &kwn_server_recv_buf);
-                                break;
-                            }
-                        default:
-                            printf("\n Doesn't match any of the interface types \n");
-                            break;
+                        /************************************************************************/
+                        /* If accept fails with EWOULDBLOCK, then we have accepted all of them. */
+                        /* Any other failure on accept will cause us to end the server          */
+                        /************************************************************************/
+                        if (errno != EWOULDBLOCK)
+                        {
+                            fprintf(stderr, "Error on accept --> %s, errno : %d", strerror(errno), errno);
+                            close_conn = KWN_TRUE;
+                        }
                     }
-                    break;
+
+                    flags = 1;
+                    rv = setsockopt( peer_sock, SOL_SOCKET, SO_KEEPALIVE, (void *)&flags, sizeof(flags) );
+                    if( rv < 0 )
+                    {
+                        fprintf(stderr, "Error setsockopt --> %s, errno : %d", strerror(errno), errno);
+                    }
+
+                    /**********************************************/
+                    /* Add the new incoming connection to the     */
+                    /* master read set                            */
+                    /**********************************************/
+                    printf(" New incoming connection - %d : %s\n", peer_sock, inet_ntoa(peer_addr.sin_addr));
+                    FD_SET(peer_sock, &master_set);
+                    max_sdl = peer_sock;
                 }
-            default:
-                break;
-        }
-        memset(&kwn_server_recv_buf,'\0', sizeof(kwn_pkt)); 
-        close(peer_sock);
+                /****************************************************/
+                /* This is not the listening socket, therefore an   */
+                /* existing connection must be readable             */
+                /****************************************************/
+                else
+                {
+                    /*printf("  Descriptor %d is readable\n", i);*/
+                    close_conn = KWN_FALSE;
+                    /*************************************************************/
+                    /* Receive data on this connection until the  recv fails.    */
+                    /* If any other failure occurs, we will close the connection */
+                    /*************************************************************/
+                    rv = recv( i, &kwn_server_recv_buf, sizeof(kwn_pkt), 0 );
+                    if( rv < 0 )
+                    {
+                        /*************************************************************/
+                        /* If no messages are available at the socket and O_NONBLOCK */ 
+                        /* is set on the socket's file descriptor, recv() shall fail */
+                        /* and set errno to [EAGAIN] or [EWOULDBLOCK]                */
+                        /*************************************************************/
+                        if( errno != EWOULDBLOCK )
+                        {
+                            fprintf(stderr, "Error on recv --> %s, errno : %d\n", strerror(errno), errno);
+                            close_conn = KWN_TRUE;
+                        }
+                    }
+
+                    /****************************************************************/
+                    /* Check to see if the connection has been closed by the client */
+                    /****************************************************************/
+                    if( rv == 0 )
+                    {
+                        /* printf("  Connection closed\n"); */
+                        close_conn = KWN_TRUE;
+                    }
+
+                    /**********************************************/
+                    /* Data was received                          */
+                    /**********************************************/
+                    len = rv;
+                    if( len > 0 )
+                    {
+                        printf("  %d bytes received\n", len);        
+                        printf("Received ID:%d, Intf type:%d, Type:%d, Subtype:%d\n",
+                                kwn_server_recv_buf.hdr.id, kwn_server_recv_buf.hdr.interface_type,
+                                kwn_server_recv_buf.hdr.type, kwn_server_recv_buf.hdr.sub_type);
+
+                        switch(kwn_server_recv_buf.hdr.id)
+                        {
+                            case SIFY_ID:
+                            case KEYWEST_ID:
+                                {
+                                    switch(kwn_server_recv_buf.hdr.interface_type)
+                                    {
+                                        case KWN_MOBILE_APP:
+                                        case KWN_NMS_APP:
+                                            {
+                                                kwn_req_type(i, &kwn_server_recv_buf);
+                                                printf(" close_conn value : %d \n",close_conn);
+                                                if( close_conn )
+                                                {
+                                                    printf("Doesn't match any of the subtypes or a send error\n");
+                                                }
+                                                break;
+                                            }
+                                        default:
+                                            {
+                                                printf("\n Doesn't match any of the interface types \n");
+                                                break;
+                                            }
+                                    }
+                                    break;
+                                }
+                            default:
+                                {
+                                    printf("Doesn't match any of the ID's\n");
+                                    break;
+                                }
+                        }
+                        memset(&kwn_server_recv_buf,'\0', sizeof(kwn_pkt));
+                    }
+
+                    /*********************************************************************************************/
+                    /* If the close_conn flag was turned on, clear the active connection which includes removing */ 
+                    /* the descriptor from the master set and determining the new maximum descriptor value based */
+                    /* on the bits that are still turned on in the master set.                                   */
+                    /*********************************************************************************************/
+                    if( close_conn )
+                    {
+                        close(i);
+                        FD_CLR(i, &master_set);
+                        if( i == max_sd )
+                        {
+                            max_sd -= 1;
+                        }
+                        max_sdl = max_sd;
+                        close_conn = KWN_FALSE;
+                    }
+                } /* End of existing connection is readable */
+            } /* End of if ( FD_ISSET( i, &working_set ) ) */
+        } /* End of loop through selectable descriptors */
+        if( max_sdl > max_sd )
+            max_sd = max_sdl;
+    } /* End of while loop */
+
+    /*************************************************************/
+    /* Clean up all of the sockets that are open                 */
+    /*************************************************************/
+    for( i=0; i <= max_sd; i++ )
+    {
+        close(i);
     }
-    close(server_socket);
     return 0;
 }
