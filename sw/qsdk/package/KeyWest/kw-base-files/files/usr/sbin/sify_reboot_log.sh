@@ -14,7 +14,7 @@ webreboot ()
 
 webfactreboot ()
 {
-        echo "$date: Reboot initiated through Web for Factory reset" >> /etc/reboot_logs
+        echo "$date: Reboot initiated during Factory reset through Web" >> /etc/reboot_logs
         #echo "web"  > /etc/reboot_type
         #echo > /etc/soft_reboot_check
         #mkdir -p /mnt/part2
@@ -25,23 +25,30 @@ webfactreboot ()
         #umount /mnt/part2
 }
 
-frmupreboot ()
+httpfrmupreboot ()
 {
-        echo "$date: Reboot initiated during Firmware upgrade" >> /etc/reboot_logs
+        echo "$date: Reboot initiated during Firmware upgrade through HTTP" >> /etc/reboot_logs
+        cp /etc/reboot_logs /etc/config/reboot_logs
         #echo "web"  > /etc/reboot_type
         #echo > /etc/soft_reboot_check
 }
 
+tftpfrmupreboot ()
+{
+        echo "$date: Reboot initiated during Firmware upgrade through TFTP" >> /etc/reboot_logs
+        cp /etc/reboot_logs /etc/config/reboot_logs
+}
+
 clireboot ()
 {
-        echo "$date: Reboot initiated through Cli" >> /etc/reboot_logs
+        echo "$date: Reboot initiated through CLI" >> /etc/reboot_logs
         #echo "cli"  > /etc/reboot_type
         #echo > /etc/soft_reboot_check
 }
 
 clifactreboot ()
 {
-        echo "$date: Reboot initiated through Cli for Factory reset" >> /etc/reboot_logs
+        echo "$date: Reboot initiated during Factory reset through CLI" >> /etc/reboot_logs
         #echo "cli"  > /etc/reboot_type
         #echo > /etc/soft_reboot_check
         #mkdir -p /mnt/part2
@@ -52,9 +59,21 @@ clifactreboot ()
         #umount /mnt/part2
 }
 
+snmpfactreboot ()
+{
+        echo "$date: Reboot initiated during Factory reset through SNMP" >> /etc/reboot_logs
+}
+
 dyinggasp ()
 {
         echo "$date: Reboot initiated due to Dying Gasp" >> /etc/reboot_logs
+}
+
+snmpreboot ()
+{
+        echo "$date: Reboot initiated through SNMP"  >> /etc/reboot_logs
+        #echo "snmp"  > /etc/reboot_type
+        #echo > /etc/soft_reboot_check
 }
 
 if [ "$1" -eq 1 ]; then
@@ -73,7 +92,7 @@ if [ "$1" -eq 4 ]; then
 fi
 
 if [ "$1" -eq 5 ]; then
-	frmupreboot 
+	httpfrmupreboot 
         exit
 fi
 
@@ -91,3 +110,19 @@ if [ "$1" -eq 8 ]; then
 	dyinggasp 
         exit
 fi
+
+if [ "$1" -eq 9 ]; then
+	snmpreboot 
+        exit
+fi
+
+if [ "$1" -eq 10 ]; then
+	snmpfactreboot 
+        exit
+fi
+
+if [ "$1" -eq 11 ]; then
+	tftpfrmupreboot 
+        exit
+fi
+

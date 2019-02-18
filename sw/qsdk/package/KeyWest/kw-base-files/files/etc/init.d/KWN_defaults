@@ -461,6 +461,10 @@ start_service() {
         done < $filename
         rm -rf /etc/retainip
     fi
+    if [ -f "/etc/config/reboot_logs" ]
+    then
+        mv /etc/config/reboot_logs /etc/reboot_logs
+    fi
 
     dmesg -n 1
 

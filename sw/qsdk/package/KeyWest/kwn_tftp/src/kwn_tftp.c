@@ -233,6 +233,7 @@ void kwn_image_upgrade( )
     }
 
     if( image_success ){
+        system("/usr/sbin/sify_reboot_log.sh 11");
         memset( cmd, '\0', sizeof( cmd ) );
         if( data.keep_set == 1 ){
             sprintf( cmd, "sysupgrade -c %s", KWN_NEW_IMAGE_FILE );
