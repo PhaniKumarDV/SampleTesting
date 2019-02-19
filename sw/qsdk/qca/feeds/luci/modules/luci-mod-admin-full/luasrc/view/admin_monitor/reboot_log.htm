@@ -4,6 +4,19 @@
  Licensed to the public under the Apache License 2.0.
 -%>
 <%+header%>
+<script type="text/javascript">
+function clear_log()
+{
+    var id = 1;
+    XHR.get('<%=luci.dispatcher.build_url("admin", "monitor", "logs")%>/clr_rebootlog' + '/' + id, null,
+	function(x, data) {
+		if (data) { 
+			document.getElementById("result").innerHTML=data;
+		}
+	}
+    );
+}
+</script>
 <div class="page-content">
 <h2><a id="content" name="content"><%:Logs%></a></h2>
     <ul class="cbi-tabmenu">
@@ -16,7 +29,7 @@
 <fieldset>
 <div class="cbi-page-actions left" style="padding-left: 19px;margin-bottom: 0px;">
    <input type="button" class="cbi-button cbi-button-apply" value="<%:Refresh%>" onclick="location.href='<%=luci.dispatcher.build_url("admin/monitor/logs/rebootlog")%>'" />
-   <input type="button" class="cbi-button cbi-button-apply" value="<%:Clear%>" onclick="location.href='<%=luci.dispatcher.build_url("admin/monitor/logs/clr_rebootlog")%>'" />
+   <input type="button" class="cbi-button cbi-button-apply" value="<%:Clear%>" onclick="clear_log()" />
 </div>
 <div id="content_syslog">
    <textarea readonly="readonly" wrap="off" style="width:100%; height:500px;" rows="<%=rebootlog:cmatch("\n")+2%>" id="result"><%=rebootlog:pcdata()%></textarea>
