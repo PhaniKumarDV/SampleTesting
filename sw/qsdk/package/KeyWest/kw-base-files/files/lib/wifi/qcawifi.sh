@@ -1403,8 +1403,7 @@ enable_qcawifi() {
 				iwpriv "$ifname" maccmd 2
 			;;
 			*)
-				# default deny policy if mac list exists
-				[ -n "$maclist" ] && iwpriv "$ifname" maccmd 2
+				iwpriv "$ifname" maccmd 0
 			;;
 		esac
 
@@ -1442,9 +1441,9 @@ enable_qcawifi() {
         if [ "$linktype" == "3" ]
         then
 		    config_get maxsta "$vif" maxsta
-		    [ -n "$maxsta" ] && iwpriv "$ifname" maxsta "$maxsta"
+		    [ -n "$linktype" ] && iwpriv "$ifname" maxsta "$maxsta"
         else
-            iwpriv "$ifname" maxsta 1
+            [ -n "$linktype" ] && iwpriv "$ifname" maxsta 1
         fi
 
 		config_get sko_max_xretries "$vif" sko_max_xretries

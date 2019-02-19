@@ -466,13 +466,7 @@ void cfg_set( char *type, char *value )
             sprintf(cmd,"uci set wireless.@wifi-iface[0].key='%s'",value);
             break;
         case UCI_ID_RADIUS_STATUS:
-            {
-                int val = atoi(value);
-                if( val == 0 )
-                    sprintf(cmd,"uci delete wrt-radauth.sys.enableRadAuth");
-                else
-                    sprintf(cmd,"uci set wrt-radauth.sys.enableRadAuth='%s'",value);
-            }
+            sprintf(cmd,"uci set wrt-radauth.sys.enableRadAuth='%s'",value);
             break;
         case UCI_ID_RADIUS_PRI_SERVER:
             sprintf(cmd,"uci set wrt-radauth.sys.primaryServer='%s'",value);
@@ -520,31 +514,13 @@ void cfg_set( char *type, char *value )
             sprintf(cmd,"uci set dhcp.lan.leasetime='%s'",value);
             break;
         case UCI_ID_RADIO1_MACFILTER:
-            {
-                if( !strcmp( value, "disable" ) ) {
-                    sprintf(cmd,"uci delete wireless.@wifi-iface[1].macfilter");
-                    system( cmd );
-                    sprintf(cmd,"uci delete wireless.@wifi-iface[1].maclist");
-                }
-                else {
-                    sprintf(cmd,"uci set wireless.@wifi-iface[1].macfilter='%s'",value);
-                }
-            }
+            sprintf(cmd,"uci set wireless.@wifi-iface[1].macfilter='%s'",value);
             break;
         case UCI_ID_RADIO1_MACLIST:
             sprintf(cmd,"uci set wireless.@wifi-iface[1].maclist='%s'",value);
             break;
         case UCI_ID_RADIO2_MACFILTER:
-            {
-                if( !strcmp( value, "disable" ) ) {
-                    sprintf(cmd,"uci delete wireless.@wifi-iface[0].macfilter");
-                    system( cmd );
-                    sprintf(cmd,"uci delete wireless.@wifi-iface[0].maclist");
-                }
-                else {
-                    sprintf(cmd,"uci set wireless.@wifi-iface[0].macfilter='%s'",value);
-                }
-            }
+            sprintf(cmd,"uci set wireless.@wifi-iface[0].macfilter='%s'",value);
             break;
         case UCI_ID_RADIO2_MACLIST:
             sprintf(cmd,"uci set wireless.@wifi-iface[0].maclist='%s'",value);

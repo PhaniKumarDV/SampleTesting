@@ -94,7 +94,7 @@ function updateparam(value)
                  <script type="text/javascript">
                  var stat = "<%=uciget('uci get wrt-radauth.sys.enableRadAuth')%>";
                  document.write("<option value='0' ");
-                 if( stat == "" )
+                 if( stat == "0" )
                      document.write(" selected");
                  document.write(">Disable</option>");
                  document.write("<option value='1' ");

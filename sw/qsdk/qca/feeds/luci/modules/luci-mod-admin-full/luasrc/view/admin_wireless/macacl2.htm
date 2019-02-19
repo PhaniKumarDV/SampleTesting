@@ -117,7 +117,7 @@ function add_mac()
                  <script type="text/javascript">
                  var stat = "<%=uciget('uci get wireless.@wifi-iface[0].macfilter')%>";
                  document.write("<option value='disable' ");
-                 if( stat == "" )
+                 if( stat == "disable" )
                      document.write(" selected");
                  document.write(">Disable</option>");
                  document.write("<option value='allow' ");
