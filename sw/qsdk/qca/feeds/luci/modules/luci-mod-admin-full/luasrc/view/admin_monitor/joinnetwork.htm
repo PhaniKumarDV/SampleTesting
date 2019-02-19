@@ -1,0 +1,184 @@
+<%#
+ Copyright 2008-2009 Steven Barth <steven@midlink.org>
+ Copyright 2008-2015 Jo-Philipp Wich <jow@openwrt.org>
+ Licensed to the public under the Apache License 2.0.
+-%>
+
+<%-
+        function uciget(cmd)
+                local res = luci.util.exec(cmd)
+                local str = string.gsub(res, "\n", "")
+                return str
+        end
+-%>
+<%+header%>
+<style>
+.dot {
+    height: 10px;
+    width: 20px;
+    background-color: #AAA;
+    border-radius: 50px;
+    display: inline-block;
+}
+</style>
+<div class="page-content">
+<script type="text/javascript" src="<%=resource%>/cbi.js"></script>
+<script type="text/javascript">
+var modelist = [ "ap=Outdoor Base", "sta=Outdoor Subscriber" ];
+var enc = "<%=uciget('uci get wireless.@wifi-iface[1].encryption')%>";
+var def = new Array(8);
+var index = 0;
+var myVar;
+function save_def_value()
+{
+    var f = document.formTable;
+    for (i=0; i<f.elements.length; i++)
+    {
+        def[i] = f.elements[i].value;
+    }
+}
+
+function save_value()
+{
+    var setdata = "";
+    var f = document.formTable;
+    for( i=0; i<f.elements.length; i++)
+    {
+        if( def[i] != f.elements[i].value ) {
+            def[i] = f.elements[i].value;
+            setdata += f.elements[i].name + "=" + f.elements[i].value + "~";
+        }
+    }
+    if( setdata != "" ) {
+        XHR.get('<%=luci.dispatcher.build_url("admin")%>/cfg_set' + '/' + setdata, null,
+	        function(x, data) {
+		        if (data) { 
+		        }
+	        }
+        );
+    }
+}
+
+function inc ()
+{
+    index++;
+    document.getElementById("custom-style").innerHTML = ".dots .dot:nth-child( -n + " + index + "){background-color: #a5bc23;}"
+    if( index == 20 ) {
+        clearInterval( myVar );
+        location.href='<%=luci.dispatcher.build_url("admin","monitor","stats","radio1stats")%>';
+    }
+}
+
+function connect()
+{
+    var val = 1;
+    XHR.get('<%=luci.dispatcher.build_url("admin","monitor","tools")%>/connect' + '/' + val, null,
+	    function(x, data) {
+		    if (data) { 
+		    }
+	    }
+    );
+}
+
+function join()
+{
+    document.getElementById("join").style.display="none";
+    document.getElementById("back").style.display="none";
+    document.getElementById("msg").innerHTML="Please wait while joining the network...";
+    document.getElementById("dotbar").style.display="block";
+    myVar = setInterval(inc,2500);
+    save_value();
+    setTimeout("connect()",2000);
+}
+
+function getoptions( list, value )
+{
+    for( i = 0; i < list.length; i++ )
+    {
+        var a = list[i].split("=");
+        document.write("<option value=");
+        document.write(a[0]);
+        if( value == a[0] )
+           document.write(" selected");
+        document.write(">");
+        document.write(a[1]);
+        document.write("</option>");
+    }
+}
+
+function back() {
+	location.href='<%=luci.dispatcher.build_url("admin/monitor/tools/survey")%>';
+}
+</script>
+<h2><a id="content" name="content"><%: Join Network%></a></h2>
+<div class="cbi-map">
+    <fieldset class="cbi-section">
+       <form name="formTable">
+          <div class="cbi-value">
+            <label class="cbi-value-title">Radio Mode</label>
+            <div class="cbi-value-field">
+              <select class="cbi-input-select" name="1">
+                 <script type="text/javascript">
+                 var mode = "<%=uciget('uci get wireless.@wifi-iface[1].mode')%>";
+                 getoptions( modelist, mode );
+                 </script>
+              </select>
+            </div>
+          </div>
+          <div class="cbi-value">
+            <label class="cbi-value-title">SSID</label>
+            <div class="cbi-value-field">
+              <input type="text" name="2" class="cbi-input-select" value="<%=uciget('uci get wireless.@wifi-iface[1].ssid')%>" > &nbsp; (1-32) characters
+            </div>
+          </div>
+          <div class="cbi-value" id="keyid">
+            <label class="cbi-value-title">Key</label>
+            <div class="cbi-value-field">
+              <input type="password" name="29" class="cbi-input-select" value="" > &nbsp; (8-63) characters
+            </div>
+          </div>
+        </form>
+    </fieldset>
+</div>
+
+    <div id="msg" style="text-align:left;"></div>
+    <div id="dotbar" style="text-align:left; display:none;">
+<style id='custom-style'>.dots .dot:nth-child(-n + 5){background-color: #AAA;}</style>
+<div class="dots">
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+</div>
+</div>
+
+
+<div class="cbi-page-actions left">
+<input type="button" class="cbi-button" id="back" value="<%:Back to Scan Results%>" onClick="back()" />
+<input type="button" class="cbi-button" id="join" value="<%:Join%>" onclick="join()" />
+</div>
+<script type="text/javascript">
+save_def_value();
+if( enc == "none" )
+    document.getElementById("keyid").style.display = "none";
+else
+    document.getElementById("keyid").style.display = "block";
+</script>
+</div>
+<%+footer%>

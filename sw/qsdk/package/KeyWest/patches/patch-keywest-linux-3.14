@@ -143,8 +143,8 @@ diff -urN linux-3.14-org/include/uapi/linux/if_bridge.h linux-3.14-mod/include/u
  #define BR_STATE_LISTENING 1
 diff -urN linux-3.14-org/include/uapi/linux/wireless.h linux-3.14-mod/include/uapi/linux/wireless.h
 --- linux-3.14-org/include/uapi/linux/wireless.h	2018-08-13 14:08:30.884588000 +0530
-+++ linux-3.14-mod/include/uapi/linux/wireless.h	2018-11-23 12:28:32.961323009 +0530
-@@ -706,6 +706,13 @@
++++ linux-3.14-mod/include/uapi/linux/wireless.h	2019-02-19 18:54:12.802731084 +0530
+@@ -706,6 +706,14 @@
  	__u8		flags;		/* Flags (fixed/auto) */
  };
  
@@ -153,6 +153,7 @@ diff -urN linux-3.14-org/include/uapi/linux/wireless.h linux-3.14-mod/include/ua
 +	__u8		essid[IW_ESSID_MAX_SIZE];
 +    __u8        chan;
 +    __u16       freq;
++    __u8        enc;
 +};
 +
  /*

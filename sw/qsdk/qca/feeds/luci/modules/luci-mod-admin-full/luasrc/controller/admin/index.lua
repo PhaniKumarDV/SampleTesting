@@ -40,6 +40,9 @@ function index()
     entry({"admin", "config", "config2"}, template("admin_status/basic_config2"))
     if (string.match(mode,"sta") and string.match(wds,"1") ) then
 	    entry({"admin", "config", "survey"}, call("action_survey"))
+	    entry({"admin", "config", "joinnetwork"}, call("action_join"),nil).leaf = true
+	    entry({"admin", "config", "connect"}, call("action_connect"), nil).leaf = true
+	    entry({"admin", "config", "surveyscan"}, call("action_surveyscan"), nil).leaf = true
 	    entry({"admin", "config", "surveyrefresh"}, call("action_surveyrefresh"), nil).leaf = true
 	    entry({"admin", "config", "surveyclear"}, call("action_surveyclear"), nil).leaf = true
     end
@@ -209,6 +212,34 @@ function action_survey()
 	luci.template.render("admin_status/survey", {surveyresult=surveyresult})
 end
 
+function action_join( ssid, enc )
+    luci.util.exec("uci set wireless.@wifi-iface[1].mode='sta'")
+    luci.util.exec("uci set wireless.@wifi-iface[1].wds='1'")
+    luci.util.exec("uci set wireless.wifi1.channel='auto'")
+    luci.util.exec("uci set wireless.@wifi-iface[1].ssid='"..ssid.."'")
+	if( string.match(enc,"1") ) then
+        luci.util.exec("uci set wireless.@wifi-iface[1].encryption='psk2+ccmp'")
+    else
+        luci.util.exec("uci set wireless.@wifi-iface[1].encryption='none'")
+    end
+	luci.template.render("admin_status/joinnetwork")
+end
+
+function action_connect()
+    luci.util.exec("uci commit")
+    luci.util.exec("reload_config")
+end
+
+function action_surveyscan()
+	local data = 1
+    luci.sys.exec("iwpriv ath1 kwn_flag 4")
+    luci.sys.exec("iwpriv ath1 s_scan_flush 1")
+    luci.sys.exec("iwpriv ath1 kwn_flag 0")
+    --TODO: Call kickmac
+	luci.http.prepare_content("application/json")
+	luci.http.write_json(data)
+end
+
 function action_surveyrefresh()
 	local data = luci.sys.exec("iwlist ath1 ap")
 	luci.http.prepare_content("application/json")
@@ -219,6 +250,7 @@ function action_surveyclear()
     local data = {}
     luci.sys.exec("iwpriv ath1 kwn_flag 4")
     luci.sys.exec("iwpriv ath1 s_scan_flush 1")
+    luci.sys.exec("iwpriv ath1 kwn_flag 0")
 	data = luci.sys.exec("iwlist ath1 ap")
 	luci.http.prepare_content("application/json")
 	luci.http.write_json(data)

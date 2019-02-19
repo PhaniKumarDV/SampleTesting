@@ -89,7 +89,7 @@ diff -urN wireless_tools.29_org/iwlib.c wireless_tools.29_mod/iwlib.c
  }
 diff -urN wireless_tools.29_org/iwlist.c wireless_tools.29_mod/iwlist.c
 --- wireless_tools.29_org/iwlist.c	2018-09-05 18:13:54.251115918 +0530
-+++ wireless_tools.29_mod/iwlist.c	2018-11-23 12:37:27.858897786 +0530
++++ wireless_tools.29_mod/iwlist.c	2019-02-19 18:56:57.235130101 +0530
 @@ -1576,7 +1576,8 @@
      }
    return(0);
@@ -121,7 +121,7 @@ diff -urN wireless_tools.29_org/iwlist.c wireless_tools.29_mod/iwlist.c
  
    /* Check if we have valid mac address type */
    if(iw_check_mac_addr_type(skfd, ifname) < 0)
-@@ -1639,18 +1642,23 @@
+@@ -1639,18 +1642,24 @@
      has_range = 1;
  
    /* Display it */
@@ -141,13 +141,14 @@ diff -urN wireless_tools.29_org/iwlist.c wireless_tools.29_mod/iwlist.c
 +	  printf("%s@", ssid[i].essid);
 +	  printf("%d@", ssid[i].chan);
 +	  printf("%d@", ssid[i].freq);
++	  printf("%d@", ssid[i].enc);
  	  iw_print_stats(temp, sizeof(buffer), &qual[i], &range, has_range);
 -	  printf("%s\n", temp);
 +	  printf("%s,", temp);
  	}
        else
  	/* Only print the address */
-@@ -1659,7 +1667,8 @@
+@@ -1659,7 +1668,8 @@
    printf("\n");
    return(0);
  }
@@ -157,7 +158,7 @@ diff -urN wireless_tools.29_org/iwlist.c wireless_tools.29_mod/iwlist.c
  /******************** WIRELESS EVENT CAPABILITY ********************/
  
  static const char *	event_capa_req[] =
-@@ -2061,7 +2070,11 @@
+@@ -2061,7 +2071,11 @@
    { "txpower",		print_txpower_info,	0, NULL },
  #ifndef WE_ESSENTIAL
    { "retry",		print_retry_info,	0, NULL },
@@ -171,8 +172,8 @@ diff -urN wireless_tools.29_org/iwlist.c wireless_tools.29_mod/iwlist.c
    { "event",		print_event_capa_info,	0, NULL },
 diff -urN wireless_tools.29_org/wireless.21.h wireless_tools.29_mod/wireless.21.h
 --- wireless_tools.29_org/wireless.21.h	2007-06-30 04:34:24.000000000 +0530
-+++ wireless_tools.29_mod/wireless.21.h	2018-11-23 12:30:57.973761652 +0530
-@@ -702,6 +702,13 @@
++++ wireless_tools.29_mod/wireless.21.h	2019-02-19 18:57:03.571144460 +0530
+@@ -702,6 +702,14 @@
  	__u8		flags;		/* Flags (fixed/auto) */
  };
  
@@ -181,6 +182,7 @@ diff -urN wireless_tools.29_org/wireless.21.h wireless_tools.29_mod/wireless.21.
 +        __u8        essid[IW_ESSID_MAX_SIZE];
 +        __u8        chan;
 +        __u16       freq;
++        __u8        enc;
 +};
 +
  /*

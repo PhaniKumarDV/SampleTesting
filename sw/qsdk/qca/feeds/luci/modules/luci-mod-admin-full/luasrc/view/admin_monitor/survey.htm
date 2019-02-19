@@ -4,8 +4,37 @@
  Licensed to the public under the Apache License 2.0.
 -%>
 <%+header%>
-
+<style>
+.cbi-join {
+    background: transparent;
+    border: 1px solid #a6bc20;
+    color: #a6bc20;
+    border-radius: 30px;
+    min-width: 80px;
+}
+</style>
 <script type="text/javascript">
+	function join_network(ssid,enc)
+	{
+		location.href='<%=luci.dispatcher.build_url("admin/monitor/tools")%>/joinnetwork' + '/' + ssid + '/' + enc;
+	}
+
+function get_links()
+{
+    var id = 6;
+    XHR.get('<%=luci.dispatcher.build_url("admin", "no_of_links")%>/' + id, null,
+	function(x, data) {
+		if (data) { 
+            var l = data.split("=");
+            var l1 = ( ( l[0] > 1 ) ? ( l[0] - 1 ) : 0 );
+            var l2 = ( ( l[1] > 1 ) ? ( l[1] - 1 ) : 0 );
+            if( l1 > 0 )
+               document.getElementById("s1").style.display = "none";
+		}
+	}
+    );
+}
+
 function get_values( data )
 {
     var surveytable = document.getElementById('survey-list');
@@ -17,7 +46,8 @@ function get_values( data )
         var ssid =  x[1];
         var chan = x[2];
         var freq = x[3];
-        var qual = x[4];
+        var enc = x[4];
+        var qual = x[5];
         var y = qual.split("Signal=");
         var z = y[1].split("Noise=");
         var signal = z[0];
@@ -30,6 +60,8 @@ function get_values( data )
         tr.insertCell(-1).innerHTML = freq;
         tr.insertCell(-1).innerHTML = signal;
         tr.insertCell(-1).innerHTML = noise;
+        tr.insertCell(-1).innerHTML = ( enc == 1 ? "Yes" : "No" );
+        tr.insertCell(-1).innerHTML = '<input type="button" class="cbi-join" value="Join" onClick="join_network(\''+ ssid + '\',' + enc +')" />';
     }
 }
 
@@ -54,6 +86,25 @@ function get_values( data )
             );
         }
     );
+function enablescan()
+{
+    document.getElementById("s1").style.display = "block";
+    document.getElementById("msg").innerHTML = "";
+}
+
+function survey_scan()
+{
+    var id = 6;
+    document.getElementById("s1").style.display = "none";
+    document.getElementById("msg").innerHTML = "Scan is in progress..";
+    setTimeout("enablescan()",20000);
+    XHR.get('<%=luci.dispatcher.build_url("admin", "monitor", "tools")%>/surveyscan/' + id, null,
+    function(x, data) {
+        if (data) { 
+        }
+    }
+    );
+}
 function clear_scan()
 {
     var id = 6;
@@ -79,8 +130,10 @@ function clear_scan()
         <li style="margin-right:4px" class="cbi-tab-disabled"><a href="ethtest"><%:Ethernet Test%></a></li>
     </ul>
 <div class="cbi-page-actions right" style="padding:11px 220px 2px 150px;">
-<input type="button" id="s1" class="cbi-button" value="<%:Clear%>" onclick="clear_scan()" />
+<input type="button" id="s1" class="cbi-button" style="display:none;" value="<%:Scan%>" onclick="survey_scan()" />
+<input type="button" id="s2" class="cbi-button" value="<%:Clear%>" onclick="clear_scan()" />
 </div>
+<div id="msg"></div>
 <div class="cbi-map">
 	<fieldset class="cbi-section">
 		<table class="cbi-section-table" style="width:750px; margin:10px;" id="survey-list">
@@ -91,6 +144,8 @@ function clear_scan()
 				<th class="cbi-section-table-cell"><%:Frequency (MHz)%></th>
 				<th class="cbi-section-table-cell"><%:RSSI (dBm)%></th>
 				<th class="cbi-section-table-cell"><%:Noise (dBm)%></th>
+				<th class="cbi-section-table-cell"><%:Security%></th>
+				<th class="cbi-section-table-cell"><%:Join%></th>
             </tr>
         </table>
     </fieldset>
@@ -100,6 +155,7 @@ var res = <%=luci.http.write_json(surveyresult)%>;
 if( res. length > 10 ) {             
         get_values( res );
 }
+get_links();
 </script>
 </div>
 <%+footer%>
