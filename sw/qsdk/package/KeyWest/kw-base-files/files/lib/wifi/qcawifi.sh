@@ -1933,8 +1933,16 @@ enable_qcawifi() {
 		# vhtmcs enables/disable rate indices 8, 9 for 2G
 		# only if vht_11ng is set or not
 		config_get ullmt "$vif" ullmt
+        if [ "$ullmt" -lt 64 ]
+        then
+        ullmt=64
+        fi
 		[ -n "$ullmt" ] && iwpriv "$ifname" ul_limit "$ullmt"
 		config_get dllmt "$vif" dllmt
+        if [ "$dllmt" -lt 64 ]
+        then
+        dllmt=64
+        fi
 		[ -n "$dllmt" ] && iwpriv "$ifname" dl_limit "$dllmt"
 		config_get shaping "$vif" shaping
 		[ -n "$dllmt" ] && iwpriv "$ifname" kwnshaping "$shaping"

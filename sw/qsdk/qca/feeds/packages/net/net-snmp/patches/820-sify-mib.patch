@@ -6086,7 +6086,7 @@ diff -urN net-snmp-5.4.4-org/include/net-snmp/net-snmp-config.h.in net-snmp-5.4.
  
 diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWEST-MIB.mib
 --- net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib	1970-01-01 05:30:00.000000000 +0530
-+++ net-snmp-5.4.4-mod/mibs/KEYWEST-MIB.mib	2019-02-17 21:47:43.062917992 +0530
++++ net-snmp-5.4.4-mod/mibs/KEYWEST-MIB.mib	2019-02-20 19:04:04.884611611 +0530
 @@ -0,0 +1,3092 @@
 +------------------------------------------------------------------------
 +------------------------------------------------------------------------
@@ -6380,7 +6380,7 @@ diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWES
 +        DESCRIPTION "This parameter represents the Uplink Limit.
 +                     It can be configured as
 +                     For 2.4 GHz - NA
-+                     For   5 GHz - ( 1024 - 887000 ) Kbps."
++                     For   5 GHz - ( 64 - 887000 ) Kbps."
 +::= { wirelessEntry 11 }
 +
 +wirelessDownlinkLimit OBJECT-TYPE
@@ -6390,7 +6390,7 @@ diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWES
 +        DESCRIPTION "This parameter represents the Downlink Limit.
 +                     It can be configured as
 +                     For 2.4 GHz - NA
-+                     For   5 GHz - ( 1024 - 887000 ) Kbps."
++                     For   5 GHz - ( 64 - 887000 ) Kbps."
 +::= { wirelessEntry 12 }
 +
 +wirelessHideESSID OBJECT-TYPE
