@@ -19,6 +19,7 @@ int ifd,isock_fd;
 int se_daemon = -1;
 #define IEEE80211_EV_DYING_GASP 45
 #define IEEE80211_EV_BASE_DYING_GASP 46
+#define IEEE80211_EV_SU_DYING_GASP 47
 #define IEEE80211_EV_DISASSOC_IND_AP 20
 #define IEEE80211_EV_DISASSOC_COMPLETE_AP 33
 #define PRINTF(fmt, ...)\
@@ -82,6 +83,10 @@ void sify_file_write(char *sify_buf,int status, int reason)
                 syslog(LOG_INFO, " Outdoor Base ( MAC : %s )Power Off \n",sify_buf);		       
                 sprintf( trap_cmd, "/usr/sbin/snmptrap.sh 4 %s  > /dev/null 2>&1", sify_buf);
                 system( trap_cmd );
+                break;
+            case IEEE80211_EV_SU_DYING_GASP:
+                sprintf(cmd,"echo %s: Reboot initiated due to Dying Gasp >> /etc/reboot_logs",t);
+                system(cmd);
                 break;
             case IEEE80211_EV_DYING_GASP:
                 fprintf(sify_fp, "%s: Disassociated ( MAC : %s, Reason: Power Off )\n",t,sify_buf);

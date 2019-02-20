@@ -1149,7 +1149,7 @@ diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_ath_config.c qca-wifi-
                 (scn->target_type == TARGET_TYPE_QCA9888) || (scn->target_type == TARGET_TYPE_IPQ4019))
 diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_vap.c qca-wifi-mod/offload/wlan/lmac_offload_if/ol_if_vap.c
 --- qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_vap.c	2018-06-08 11:00:45.000000000 +0530
-+++ qca-wifi-mod/offload/wlan/lmac_offload_if/ol_if_vap.c	2019-02-08 17:43:31.040766782 +0530
++++ qca-wifi-mod/offload/wlan/lmac_offload_if/ol_if_vap.c	2019-02-20 17:24:32.694512412 +0530
 @@ -32,6 +32,7 @@
  #if ATH_SUPPORT_GREEN_AP
  #include "ath_green_ap.h"
@@ -1278,12 +1278,13 @@ diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_vap.c qca-wifi-mod/off
      /* delete key before vdev delete */
      delete_default_vap_keys(vap);
  
-@@ -3717,6 +3788,89 @@
+@@ -3717,6 +3788,103 @@
      return 0;
  }
  
 +void dying_gasp_fn ( void * arg ) {
 +#define IEEE80211_EV_BASE_DYING_GASP 46
++#define IEEE80211_EV_SU_DYING_GASP 47
 +    struct net_device *dev = dev_get_by_name(&init_net,"ath1");
 +
 +    if ( dev != NULL ) {
@@ -1314,13 +1315,26 @@ diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_vap.c qca-wifi-mod/off
 +                memset(&wreq, 0, sizeof(wreq));
 +                wreq.addr.sa_family = ARPHRD_ETHER;
 +                memcpy(wreq.addr.sa_data, ni->ni_macaddr, 6);
-+                wreq.addr.sa_data[6] = IEEE80211_EV_BASE_DYING_GASP;
++                if ( ieee80211vap_get_opmode(vap) == IEEE80211_M_HOSTAP ) {
++                    wreq.addr.sa_data[6] = IEEE80211_EV_BASE_DYING_GASP;
++                }
++                else {
++                    wreq.addr.sa_data[6] = IEEE80211_EV_SU_DYING_GASP;
++                }
 +                wireless_send_event(dev, IWEVEXPIRED, &wreq, NULL);
 +            }
-+            printk("Outdoor Base [Time stamp : %9lu][Cus name:%s][Link id:%s][%d.%d.%d.%d] --> pkt count %d \n",
-+                    jiffies, ic->ic_customer_name,ic->ic_link_id,
-+                    (ip & 0xFF),(ip >> 8) & 0xFF,(ip >> 16 ) & 0xFF,(ip >> 24) & 0xFF,
-+                    ni->dg_count++);
++            if ( ieee80211vap_get_opmode(vap) == IEEE80211_M_HOSTAP ) {
++                printk("Outdoor Base [Time stamp : %9lu][Cus name:%s][Link id:%s][%d.%d.%d.%d] --> pkt count %d \n",
++                        jiffies, ic->ic_customer_name,ic->ic_link_id,
++                        (ip & 0xFF),(ip >> 8) & 0xFF,(ip >> 16 ) & 0xFF,(ip >> 24) & 0xFF,
++                        ni->dg_count++);
++            }
++            else {
++                printk("Outdoor Subscriber [Time stamp : %9lu][Cus name:%s][Link id:%s][%d.%d.%d.%d] --> pkt count %d \n",
++                        jiffies, ic->ic_customer_name,ic->ic_link_id,
++                        (ip & 0xFF),(ip >> 8) & 0xFF,(ip >> 16 ) & 0xFF,(ip >> 24) & 0xFF,
++                        ni->dg_count++);
++            }
 +        }
 +        ieee80211_send_dying_gasp( vap , 0, NULL );
 +        //printk("dg_ack_rcvd : %d \n",dg_ack_rcvd);	
@@ -1368,7 +1382,7 @@ diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_vap.c qca-wifi-mod/off
  /* Intialization functions */
  void
  ol_ath_vap_attach(struct ieee80211com *ic)
-@@ -3728,6 +3882,7 @@
+@@ -3728,6 +3896,7 @@
      ic->ic_vap_alloc_macaddr = ol_ath_vap_alloc_macaddr;
      ic->ic_vap_free_macaddr = ol_ath_vap_free_macaddr;
      ic->ic_vap_set_param = ol_ath_vap_set_param;
@@ -1376,7 +1390,7 @@ diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_vap.c qca-wifi-mod/off
      ic->ic_vap_sifs_trigger = ol_ath_vap_sifs_trigger;
      ic->ic_vap_set_ratemask = ol_ath_vap_set_ratemask;
      ic->ic_vap_dyn_bw_rts = ol_ath_vap_dyn_bw_rts;
-@@ -3754,6 +3909,7 @@
+@@ -3754,6 +3923,7 @@
          ath_green_ap_start(ic);
      }
  #endif  /* ATH_SUPPORT_GREEN_AP */
