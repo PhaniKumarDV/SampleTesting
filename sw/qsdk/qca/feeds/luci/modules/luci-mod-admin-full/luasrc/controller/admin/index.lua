@@ -232,10 +232,7 @@ end
 
 function action_surveyscan()
 	local data = 1
-    luci.sys.exec("iwpriv ath1 kwn_flag 4")
-    luci.sys.exec("iwpriv ath1 s_scan_flush 1")
-    luci.sys.exec("iwpriv ath1 kwn_flag 0")
-    --TODO: Call kickmac
+    luci.sys.exec("sh /usr/sbin/sukickmac.sh")
 	luci.http.prepare_content("application/json")
 	luci.http.write_json(data)
 end

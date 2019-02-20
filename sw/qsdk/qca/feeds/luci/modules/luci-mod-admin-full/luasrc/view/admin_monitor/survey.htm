@@ -12,6 +12,15 @@
     border-radius: 30px;
     min-width: 80px;
 }
+#outer
+{
+        width:100%;
+            text-align: center;
+}
+.inner
+{
+        display: inline-block;
+}
 </style>
 <script type="text/javascript">
 	function join_network(ssid,enc)
@@ -29,7 +38,7 @@ function get_links()
             var l1 = ( ( l[0] > 1 ) ? ( l[0] - 1 ) : 0 );
             var l2 = ( ( l[1] > 1 ) ? ( l[1] - 1 ) : 0 );
             if( l1 > 0 )
-               document.getElementById("s1").style.display = "none";
+               document.getElementById("s1").style.display = "block";
 		}
 	}
     );
@@ -129,10 +138,10 @@ function clear_scan()
         <li style="margin-right:4px" class="cbi-tab-disabled"><a href="linkcalc"><%:Link Calculator%></a></li>
         <li style="margin-right:4px" class="cbi-tab-disabled"><a href="ethtest"><%:Ethernet Test%></a></li>
     </ul>
-<div class="cbi-page-actions right" style="padding:11px 220px 2px 150px;">
-<input type="button" id="s1" class="cbi-button" style="display:none;" value="<%:Scan%>" onclick="survey_scan()" />
-<input type="button" id="s2" class="cbi-button" value="<%:Clear%>" onclick="clear_scan()" />
-</div>
+    <div class="cbi-page-actions right" id="outer" style="padding-right:200px;">
+        <div class="inner"><input type="button" id="s1" class="cbi-button" onClick="survey_scan()" value="Scan"></div>
+        <div class="inner"><input type="button" id="s2" class="cbi-button" onClick="clear_scan()" value="clear"></div>
+    </div>
 <div id="msg"></div>
 <div class="cbi-map">
 	<fieldset class="cbi-section">
