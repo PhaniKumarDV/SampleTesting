@@ -8,7 +8,7 @@
 <div class="main-page">
 <div class="sidebar"><%+sidebar%></div>
 <div class="page-content">
-<h2><a id="content" name="content"><%:Configuration%> / <%:Apply%></a></h2>
+<h2><a id="content" name="content"><%:Configuration%> <%:Apply%></a></h2>
 
 <% if changes then %>
 	<%+cbi/apply_xhr%>
@@ -16,7 +16,7 @@
 
 	<%- cbi_apply_xhr('uci-apply', configs) -%>
 
-	<p><strong><%:The following changes have been committed%>:</strong></p>
+	<p><strong><%:The following changes have been applied%>:</strong></p>
 	<%- uci_changelog(changes) -%>
 <% else %>
 	<p><strong><%:There are no pending changes to apply!%></strong></p>

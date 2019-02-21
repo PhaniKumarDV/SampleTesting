@@ -30,6 +30,10 @@ function action_apply()
 	local changes = uci:changes()
 	local reload = {}
 
+    local loginuser = luci.dispatcher.context.authuser
+    if (string.match(loginuser,"user")) then
+        return 1
+    end
 	-- Collect files to be applied and commit changes
 	for r, tbl in pairs(changes) do
 		table.insert(reload, r)
@@ -51,6 +55,10 @@ function action_revert()
 	local uci = luci.model.uci.cursor()
 	local changes = uci:changes()
 
+    local loginuser = luci.dispatcher.context.authuser
+    if (string.match(loginuser,"user")) then
+        return 1
+    end
 	-- Collect files to be reverted
 	for r, tbl in pairs(changes) do
 		uci:load(r)

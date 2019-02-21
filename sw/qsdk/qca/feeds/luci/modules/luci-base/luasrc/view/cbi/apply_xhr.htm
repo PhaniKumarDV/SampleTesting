@@ -15,6 +15,7 @@
 								if( e )
 								{
 									e.innerHTML = '<%:Configuration applied.%>';
+                                    location.href='<%=luci.dispatcher.build_url("admin")%>';
 									window.setTimeout(function() {
 										e.parentNode.style.display = 'none';
 										<% if redirect then %>location.href='<%=redirect%>';<% end %>
