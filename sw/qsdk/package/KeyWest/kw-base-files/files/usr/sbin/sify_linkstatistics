@@ -12,12 +12,12 @@ LOG_FILE_ETH="/tmp/sify_eth_stat"
 log ()
 {
 
-ifconfig ath0 | grep "RX packets" >> $LOG_FILE
-ifconfig ath0 | grep "TX packets" >> $LOG_FILE
-ifconfig ath0 | grep "collisions" >> $LOG_FILE
-ifconfig ath0 | grep "RX bytes" >> $LOG_FILE
-iwconfig ath0 | grep Quality | awk '{print $1,$2}' >> $LOG_FILE
-iwconfig ath0 | grep excessive >> $LOG_FILE
+ifconfig ath1 | grep "RX packets" >> $LOG_FILE
+ifconfig ath1 | grep "TX packets" >> $LOG_FILE
+ifconfig ath1 | grep "collisions" >> $LOG_FILE
+ifconfig ath1 | grep "RX bytes" >> $LOG_FILE
+iwconfig ath1 | grep Quality | awk '{print $1,$2}' >> $LOG_FILE
+iwconfig ath1 | grep excessive >> $LOG_FILE
 
 sed -i -e 's/^[ \t]*//' -e 's/[ \t]*$//' $LOG_FILE
 echo "--------------------------" >> $LOG_FILE 
@@ -67,7 +67,7 @@ do
     name=$line
     if [ $count -eq 0 ];then
         
-        echo $name | awk '{print $1, "            ",  "SNR",    $2} ' >>  $LOG_FILE
+        echo $name | awk '{print $1, "                 ",  "SNR",    $2} ' >>  $LOG_FILE
         count=$(($count + 1))
         else
         #rssi=$(echo $name | awk '{print $2}')
@@ -87,7 +87,7 @@ done < /tmp/.snr
 local_rssi ()
 {
 
-iwconfig ath0 | grep "Signal level" > /tmp/.localrssi
+iwconfig ath1 | grep "Signal level" > /tmp/.localrssi
 echo " RSSI AND SNR OF THE DEVICE " >> $LOG_FILE
 l_rssi=$(cat /tmp/.localrssi | awk '{print $4} ' | cut  -d'=' -f2)
 l_signal_level=$(cat /tmp/.localrssi | awk '{print $7} ' | cut  -d'=' -f2)

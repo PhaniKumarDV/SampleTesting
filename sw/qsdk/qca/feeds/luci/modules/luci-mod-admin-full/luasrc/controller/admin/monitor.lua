@@ -259,7 +259,7 @@ end
 
 function disconnect( mac )
 	luci.sys.exec("iwpriv ath1 kickmac "..mac)
-	luci.http.redirect(luci.dispatcher.build_url("admin/monitor/stats"))
+	luci.http.redirect(luci.dispatcher.build_url("admin/monitor/stats/radio1stats"))
 end
 
 function starttool( mac )
