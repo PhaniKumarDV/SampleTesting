@@ -238,7 +238,7 @@
         <%- 
                 if nnode.title == "Apply" then                                                                   
          %>
-                <li title="Apply"><a href="<%=pcdata(href)%>" id="header_apply"> <i class="fa fa-floppy-o fa-2x" style="<% if ucichanges > 0 then %> color:red <% end %>" aria-hidden="true"></i></a></li>  
+                <li title="Apply"><a href="<%=controller%>/<%=category%>/uci/changes" id="header_apply"> <i class="fa fa-floppy-o fa-2x" style="<% if ucichanges > 0 then %> color:red <% end %>" aria-hidden="true"></i></a></li>  
         <%-
                  end
                 if nnode.title == "Reboot" then                                                                   
