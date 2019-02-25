@@ -4098,7 +4098,7 @@ diff -urN qca-wifi-org/umac/base/ieee80211_config.c qca-wifi-mod/umac/base/ieee8
      break;
 diff -urN qca-wifi-org/umac/base/ieee80211_node.c qca-wifi-mod/umac/base/ieee80211_node.c
 --- qca-wifi-org/umac/base/ieee80211_node.c	2018-06-08 11:00:49.000000000 +0530
-+++ qca-wifi-mod/umac/base/ieee80211_node.c	2019-02-04 10:45:39.811636914 +0530
++++ qca-wifi-mod/umac/base/ieee80211_node.c	2019-02-25 17:48:11.492487710 +0530
 @@ -142,6 +142,106 @@
      struct ieee80211_node *nodes[IEEE80211_512_AID];
  };
@@ -4220,7 +4220,7 @@ diff -urN qca-wifi-org/umac/base/ieee80211_node.c qca-wifi-mod/umac/base/ieee802
 +{
 +    uint8_t power = 26;
 +
-+    switch( vap->iv_des_mode )
++    switch( wlan_get_current_phymode(vap) )
 +    {
 +        case IEEE80211_MODE_11A:
 +        case IEEE80211_MODE_TURBO_A:
@@ -4269,7 +4269,7 @@ diff -urN qca-wifi-org/umac/base/ieee80211_node.c qca-wifi-mod/umac/base/ieee802
 +{
 +    uint8_t min_snr = 128;
 +
-+    switch( vap->iv_des_mode )
++    switch( wlan_get_current_phymode(vap) )
 +    {
 +        case IEEE80211_MODE_11A:
 +        case IEEE80211_MODE_TURBO_A:
@@ -4318,7 +4318,7 @@ diff -urN qca-wifi-org/umac/base/ieee80211_node.c qca-wifi-mod/umac/base/ieee802
 +{
 +    uint8_t max_snr = 0;
 +
-+    switch( vap->iv_des_mode )
++    switch( wlan_get_current_phymode(vap) )
 +    {
 +        case IEEE80211_MODE_11A:
 +        case IEEE80211_MODE_TURBO_A:
@@ -4365,7 +4365,7 @@ diff -urN qca-wifi-org/umac/base/ieee80211_node.c qca-wifi-mod/umac/base/ieee802
 +
 +void kwn_get_maxrate( struct ieee80211vap *vap, uint8_t *max_srate, uint8_t *max_rate )
 +{
-+    switch( vap->iv_des_mode )
++    switch( wlan_get_current_phymode(vap) )
 +    {
 +        case IEEE80211_MODE_11A:
 +        case IEEE80211_MODE_TURBO_A:
@@ -4469,7 +4469,7 @@ diff -urN qca-wifi-org/umac/base/ieee80211_node.c qca-wifi-mod/umac/base/ieee802
 +{
 +    int8_t next_mcs = -1;
 +
-+    switch( vap->iv_des_mode )
++    switch( wlan_get_current_phymode(vap) )
 +    {
 +        case IEEE80211_MODE_11A:
 +        case IEEE80211_MODE_TURBO_A:
@@ -4702,12 +4702,12 @@ diff -urN qca-wifi-org/umac/base/ieee80211_node.c qca-wifi-mod/umac/base/ieee802
 +    vap = ni->ni_vap;
 +    if( ni->kwn_profile_cfg.txparam.rtx_inc_thrld >= ni->kwn_profile_cfg.txparam.rtx_dec_thrld )
 +    {
-+        printk(": DDRS: RTX Incr Threshold should be less than RTX Decr Threshold");
++        printk(": DDRS: RTX Incr Threshold should be less than RTX Decr Threshold\n");
 +        return rtx_val;
 +    }
 +    if( ni->kwn_send_retry == 1 ) {
 +        if( vap->kwn_debug == KWN_DEBUG_DDRS ) {
-+            printk(": DDRS: New RTX is increased");
++            printk(": DDRS: New RTX is increased\n");
 +        }
 +        ni->kwn_send_retry = 0;
 +        rtx_val = KWN_RTX_DECREMENT;
@@ -4734,7 +4734,7 @@ diff -urN qca-wifi-org/umac/base/ieee80211_node.c qca-wifi-mod/umac/base/ieee802
 +    OS_GET_TIMER_ARG( ni, struct ieee80211_node * );
 +    if( ni == NULL )
 +    {
-+        printk(": DDRS: ni pointer is NULL");
++        printk(": DDRS: ni pointer is NULL\n");
 +        return;
 +    }
 +    vap = ni->ni_vap;
@@ -7340,7 +7340,7 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt_ap.c qca-wifi-mod/umac/mlme/ieee
              if (iswpaoui(frm)) {
 diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee80211_mgmt.c
 --- qca-wifi-org/umac/mlme/ieee80211_mgmt.c	2018-06-08 11:00:48.000000000 +0530
-+++ qca-wifi-mod/umac/mlme/ieee80211_mgmt.c	2019-02-18 14:34:32.186970179 +0530
++++ qca-wifi-mod/umac/mlme/ieee80211_mgmt.c	2019-02-25 17:23:21.470636012 +0530
 @@ -22,10 +22,21 @@
  #include "ieee80211_wifipos_pvt.h"
  #endif
@@ -7600,7 +7600,7 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee802
 +    }
 +    if ( ieee80211vap_get_opmode( vap ) == IEEE80211_M_HOSTAP ) {
 +        if( chan != -1 ) {
-+            channel = ieee80211_find_dot11_channel( ic, chan, 0, vap->iv_des_mode | ic->ic_chanbwflag );
++            channel = ieee80211_find_dot11_channel( ic, chan, 0, wlan_get_current_phymode(vap) | ic->ic_chanbwflag );
 +            printk("############### set channel %d %d ############# \n",channel->ic_ieee,channel->ic_freq);
 +            ieee80211_set_channel( ic, channel );
 +        }
@@ -7609,7 +7609,7 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee802
 +            ic->ic_set_node_tpc( ic, ni, pwr );
 +        }
 +        if( rate != -1 ) {
-+            switch( vap->iv_des_mode )
++            switch( wlan_get_current_phymode(vap) )
 +            {
 +                case IEEE80211_MODE_11A:
 +                case IEEE80211_MODE_TURBO_A:
@@ -7645,7 +7645,7 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee802
 +    }
 +    else {
 +        if( chan != -1 ) {
-+            channel = ieee80211_find_dot11_channel( ic, chan, 0, vap->iv_des_mode | ic->ic_chanbwflag );
++            channel = ieee80211_find_dot11_channel( ic, chan, 0, wlan_get_current_phymode(vap) | ic->ic_chanbwflag );
 +            printk("############### set channel %d %d ############# \n",channel->ic_ieee,channel->ic_freq);
 +            ieee80211_set_channel( ic, channel );
 +        }
@@ -7654,7 +7654,7 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee802
 +            ic->ic_set_txPowerLimit( ic, 2 * pwr, 2 * pwr, is2GHz );
 +        }
 +        if( rate != -1 ) {
-+            switch( vap->iv_des_mode )
++            switch( wlan_get_current_phymode(vap) )
 +            {
 +                case IEEE80211_MODE_11A:
 +                case IEEE80211_MODE_TURBO_A:

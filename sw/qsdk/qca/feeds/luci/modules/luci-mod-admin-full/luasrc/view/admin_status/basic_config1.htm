@@ -188,15 +188,21 @@ function getoptions( list, value )
           <div class="cbi-value">
             <label class="cbi-value-title">Operational Mode</label>
             <div class="cbi-value-field">
-              <select class="cbi-input-select" name="4">
+              <!--<select class="cbi-input-select" name="4">-->
                 <script type="text/javascript">
                   var hw = "<%=uciget('uci get wireless.wifi1.hwmode')%>";
-                  getoptions( hwlist, hw );
+                  //getoptions( hwlist, hw );
+                  if( hw == "11ac" )
+                      document.write("11AC");
+                  else if( hw == "11na" )
+                      document.write("11NA");
+                  else
+                      document.write("11A");
                 </script>
-              </select>
+              <!--</select>-->
             </div>
           </div>
-          <div class="cbi-value">
+          <div class="cbi-value" id="bw">
             <label class="cbi-value-title">Bandwidth</label>
             <div class="cbi-value-field">
               <select class="cbi-input-select" name="5">
@@ -228,8 +234,10 @@ function getoptions( list, value )
 <script type="text/javascript">
 save_def_value();
 var radmode = "<%=uciget('uci get wireless.@wifi-iface[1].mode')%>";
-if( radmode == "sta" )
+if( radmode == "sta" ) {
+   document.getElementById('bw').style.display="none";
    document.getElementById('chan').style.display="none";
+}
 </script>
 </div>
 <%+footer%>

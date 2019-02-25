@@ -161,6 +161,7 @@ function updatelinkid( val )
        document.getElementById("suservice").style.display = "none";
        document.getElementById("chan").style.display="block";
        document.getElementById("icb").style.display = "block";
+       document.getElementById("bw").style.display = "block";
     }
     else { 
        document.getElementById("wifitimer").style.display = "block";
@@ -168,6 +169,7 @@ function updatelinkid( val )
        document.getElementById("suservice").style.display = "block";
        document.getElementById("chan").style.display="none";
        document.getElementById("icb").style.display = "none";
+       document.getElementById("bw").style.display = "none";
     }
 }
 function updatehidessid()
@@ -247,15 +249,21 @@ function updatehidessid()
           <div class="cbi-value">
             <label class="cbi-value-title">Operational Mode</label>
             <div class="cbi-value-field">
-              <select class="cbi-input-select" name="4" onchange="updateparam(this.value)">
+              <!--<select class="cbi-input-select" name="4" onchange="updateparam(this.value)">-->
                 <script type="text/javascript">
                   var hw = "<%=uciget('uci get wireless.wifi1.hwmode')%>";
-                  getoptions( hwlist, hw );
+                  //getoptions( hwlist, hw );
+                  if( hw == "11ac" )
+                      document.write("11AC");
+                  else if( hw == "11na" )
+                      document.write("11NA");
+                  else
+                      document.write("11A");
                 </script>
-              </select>
+              <!--</select>-->
             </div>
           </div>
-          <div class="cbi-value">
+          <div class="cbi-value" id="bw">
             <label class="cbi-value-title">Bandwidth</label>
             <div class="cbi-value-field" id="bwid">
             </div>

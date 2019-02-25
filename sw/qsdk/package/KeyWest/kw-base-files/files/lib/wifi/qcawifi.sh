@@ -1085,6 +1085,20 @@ enable_qcawifi() {
 		config_get hwmode "$device" hwmode auto
 		config_get htmode "$device" htmode auto
 
+        case "$ifname" in
+            ath0)
+                 ;;
+            ath1)
+                 if [ "$mode" == "sta" ]; then
+                    hwmode=ac
+                    htmode=HT80
+                 fi
+                 ;;
+            *)
+                echo "############### Invalid interface" > /dev/console
+                ;;
+         esac
+
 		pureg=0
 		case "$hwmode:$htmode" in
 		# The parsing stops at the first match so we need to make sure
