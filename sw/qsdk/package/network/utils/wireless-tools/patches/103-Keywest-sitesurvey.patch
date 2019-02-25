@@ -89,7 +89,7 @@ diff -urN wireless_tools.29_org/iwlib.c wireless_tools.29_mod/iwlib.c
  }
 diff -urN wireless_tools.29_org/iwlist.c wireless_tools.29_mod/iwlist.c
 --- wireless_tools.29_org/iwlist.c	2018-09-05 18:13:54.251115918 +0530
-+++ wireless_tools.29_mod/iwlist.c	2019-02-19 18:56:57.235130101 +0530
++++ wireless_tools.29_mod/iwlist.c	2019-02-25 18:54:35.135962593 +0530
 @@ -1576,7 +1576,8 @@
      }
    return(0);
@@ -137,11 +137,11 @@ diff -urN wireless_tools.29_org/iwlist.c wireless_tools.29_mod/iwlist.c
  	{
  	  /* Print stats for this address */
 -	  printf("    %s : ", iw_saether_ntop(&hwa[i], temp));
-+	  printf("%s@", iw_saether_ntop(&hwa[i], temp));
-+	  printf("%s@", ssid[i].essid);
-+	  printf("%d@", ssid[i].chan);
-+	  printf("%d@", ssid[i].freq);
-+	  printf("%d@", ssid[i].enc);
++	  printf("%skwnmok", iw_saether_ntop(&hwa[i], temp));
++	  printf("%skwnmok", ssid[i].essid);
++	  printf("%dkwnmok", ssid[i].chan);
++	  printf("%dkwnmok", ssid[i].freq);
++	  printf("%dkwnmok", ssid[i].enc);
  	  iw_print_stats(temp, sizeof(buffer), &qual[i], &range, has_range);
 -	  printf("%s\n", temp);
 +	  printf("%s,", temp);
