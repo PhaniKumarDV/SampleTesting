@@ -16,6 +16,7 @@
 </style>
 <script type="text/javascript">
 var index = 0;
+var myVar;
 function inc ()
 {
     index++;
@@ -26,21 +27,40 @@ function inc ()
     }
 }
 
+function performapply() 
+{
+    var id = 1;
+    document.getElementById("msg").innerHTML="Please wait while applying configuration...";
+    document.getElementById("dotbar").style.display="block";
+    myVar = setInterval(inc,1000);
+    XHR.get('<%=luci.dispatcher.build_url("admin","apply")%>/reload' + '/' + id, null,
+	    function(x, data) {
+		    if (data) { 
+		    }
+	    }
+    );
+}
 </script>
 <div class="page-content system">
-<h2><a id="content" name="content"><%:Apply%></a></h2>
-<p><%:Apply the configuration to device%></p>
-<%-
-if not apply then 
--%>
-<p><a class="btn" href="<%=controller%>/admin/apply?apply=1"><%:Apply%></a>
-</p>
-<%- else -%>
-<p><%:Please wait while applying configuration...%></p>
-<script type="text/javascript">
-var myVar = setInterval(inc,1000);
-</script>
+<h2><a id="content" name="content"><%:Configuration Changes%></a></h2>
+<% if changes then %>
+    <%+admin_uci/changelog%>
+        <%- uci_changelog(changes) -%>
+        <% else %>
+            <p><strong><%:There are no pending changes!%></strong></p>
+            <% end %>
+<form method="get" action="<%=controller%>/admin/uci/revert">
+    <span class="cbi-page-actions left" style="margin-left:-128px;">
+<input type="button" class="cbi-button" value="<%:Apply%>" onclick="performapply()" />
+    <input type="hidden" name="redir" value="<%=pcdata(luci.http.formvalue("redir"))%>" />
+    <input class="cbi-button" type="submit" value="<%:Revert%>" />
+    </span>
+</form>
 
+<div id="msg"></div>
+<script type="text/javascript">
+</script>
+<div id="dotbar" style="display:none">
 <style id='custom-style'>.dots .dot:nth-child(-n + 5){background-color: #AAA;}</style>
 <div class="dots">
   <span class="dot"></span>
@@ -64,6 +84,5 @@ var myVar = setInterval(inc,1000);
   <span class="dot"></span>
   <span class="dot"></span>
 </div>
-
-<%- end -%>
+</div>
 <%+footer%>

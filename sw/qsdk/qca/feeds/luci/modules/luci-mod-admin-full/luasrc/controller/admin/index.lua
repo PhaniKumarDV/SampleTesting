@@ -32,6 +32,7 @@ function index()
     entry({"admin", "no_of_links"}, call("action_links"), nil).leaf = true
     entry({"admin", "stats"}, call("action_stats"), nil).leaf = true
 	entry({"admin", "apply"}, call("action_apply"), _("Apply"), 88)
+	entry({"admin", "apply", "reload"}, call("action_reload"), nil).leaf = true
 	entry({"admin", "reboot"}, call("action_reboot"), _("Reboot"), 89)
 	entry({"admin", "logout"}, call("action_logout"), _("Logout"), 90)
 	entry({"admin", "config"}, template("admin_status/system"), _("Quick Start"), 20)
@@ -156,15 +157,23 @@ function action_cfg_set( setdata )
 end
 
 function action_apply()
-	local apply = luci.http.formvalue("apply")
+    local uci = luci.model.uci.cursor()
+    local changes = uci:changes()
     local loginuser = luci.dispatcher.context.authuser
-	luci.template.render("admin_system/apply", {apply=apply})
     if (string.match(loginuser,"user")) then
     else
-	    if apply then
-		    luci.util.exec("uci commit")
-		    luci.util.exec("reload_config")
-	    end
+	luci.template.render("admin_system/apply", {
+        changes = next(changes) and changes
+    })
+    end
+end
+
+function action_reload()
+    local loginuser = luci.dispatcher.context.authuser
+    if (string.match(loginuser,"user")) then
+    else
+		luci.util.exec("uci commit")
+		luci.util.exec("reload_config")
     end
 end
 
