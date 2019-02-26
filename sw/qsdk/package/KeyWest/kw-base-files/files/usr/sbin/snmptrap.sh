@@ -48,3 +48,9 @@ if [ "$1" -eq 5 ]; then
     exit
 fi
 
+if [ "$1" -eq 6 ]; then
+    trapmsg="Configuration applied successfully"
+    trapoid="1.3.6.1.4.1.52619.1.3.4.6"
+	trap_send
+    exit
+fi
