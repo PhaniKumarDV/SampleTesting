@@ -560,6 +560,13 @@ void kwn_get_config_from_device( kwn_cfg_data *dev_cfg )
     memcpy(dev_cfg->dyn_netmask, d_netmask_byte, len);
     printf("dev_cfg->dyn_netmask: %d.%d.%d.%d\n",dev_cfg->dyn_netmask[0],dev_cfg->dyn_netmask[1],dev_cfg->dyn_netmask[2],dev_cfg->dyn_netmask[3]);
 
+    memset(cmd, '\0', sizeof(cmd));
+    memset(cmd_buf, '\0', sizeof(cmd_buf));
+    sprintf( cmd,"uci get wireless.wifi1.distance");
+    kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] ); 
+    dev_cfg->distance = atoi(cmd_buf);
+    printf("dev_cfg->Distance : %d\n",dev_cfg->distance);
+
     /*printf("Executed uci commands to get the config\n");*/   
     return;
 }
@@ -835,7 +842,18 @@ void kwn_get_config_data( kwn_pkt* buf)
     type = KWN_CFG_DYN_NETMASK; /* type */
     memcpy(buf->data+len, &type,sizeof(uint8_t));
     len += sizeof(uint8_t);
-    memcpy(buf->data+len, &data.netmask,llen); /* value */
+    memcpy(buf->data+len, &data.dyn_netmask,llen); /* value */
+    len += llen;
+
+    /* DISTANCE */
+    printf("Distance : %d\n",data.distance);
+    llen = sizeof(data.txpower); /* length */
+    memcpy(buf->data+len, &llen,sizeof(uint16_t));
+    len += sizeof(uint16_t);
+    type = KWN_CFG_DISTANCE; /* type */
+    memcpy(buf->data+len, &type,sizeof(uint8_t));
+    len += sizeof(uint8_t);
+    memcpy(buf->data+len, &data.distance,llen); /* value */
     len += llen;   
 
     buf->hdr.length = len;
@@ -1056,7 +1074,15 @@ void kwn_set_config_data( kwn_pkt* buf )
                 system(cmd);
                 break;
             }
-
+            case KWN_CFG_DISTANCE:
+            {
+                uint8_t dist;
+                memcpy(&dist,buf->data+len,llen);
+                printf("Distance : %d\n",dist);
+                sprintf(cmd, "uci set wireless.wifi1.distance='%d'", dist);
+                system(cmd);
+                break;
+            }
             default:
             break;
         }

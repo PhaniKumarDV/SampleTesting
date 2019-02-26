@@ -60,7 +60,8 @@ enum kwn_cfg_data_params
     KWN_CFG_TX_POWER,
     KWN_CFG_DYN_IP,
     KWN_CFG_DYN_GIP,
-    KWN_CFG_DYN_NETMASK
+    KWN_CFG_DYN_NETMASK,
+    KWN_CFG_DISTANCE
 };
 
 enum kwn_wireless_stat
@@ -173,7 +174,7 @@ typedef struct
 }__attribute__((packed)) kwn_pkt_hdr;
 
 /* configuration update structure */
-/* Size of kwn_cfg_update = 4+1+33+1+1+1+1+6+2+4+4+33+16+1+1+1+1+1+1+1+4+4+4 = 126 bytes */
+/* Size of kwn_cfg_update = 4+1+33+1+1+1+1+6+2+4+4+33+16+1+1+1+1+1+1+1+4+4+4+1 = 127 bytes */
 typedef struct
 {
     uint8_t  ip[4];          /*                ipaddress -  4 bytes */
@@ -199,6 +200,7 @@ typedef struct
     uint8_t  dyn_ip[4];      /*          DHCP IP Address -  4 bytes */
     uint8_t  dyn_gip[4];     /*  DHCP Gateway IP Address -  4 bytes */
     uint8_t  dyn_netmask[4]; /*  DHCP netmask IP Address -  4 bytes */
+    uint8_t  distance;       /*                 Distance -  1 byte  */
 }__attribute__((packed)) kwn_cfg_data;
 
 /* Link Statistics Structure */
