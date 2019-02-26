@@ -32,6 +32,7 @@ function performapply()
     var id = 1;
     document.getElementById("msg").innerHTML="Please wait while applying configuration...";
     document.getElementById("dotbar").style.display="block";
+    document.getElementById("buttons").style.display="none";
     myVar = setInterval(inc,1000);
     XHR.get('<%=luci.dispatcher.build_url("admin","apply")%>/reload' + '/' + id, null,
 	    function(x, data) {
@@ -49,6 +50,7 @@ function performapply()
         <% else %>
             <p><strong><%:There are no pending changes!%></strong></p>
             <% end %>
+            <div id="buttons">
 <form method="get" action="<%=controller%>/admin/uci/revert">
     <span class="cbi-page-actions left" style="margin-left:-128px;">
 <input type="button" class="cbi-button" value="<%:Apply%>" onclick="performapply()" />
@@ -56,6 +58,7 @@ function performapply()
     <input class="cbi-button" type="submit" value="<%:Revert%>" />
     </span>
 </form>
+</div>
 
 <div id="msg"></div>
 <script type="text/javascript">
