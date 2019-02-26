@@ -1,7 +1,7 @@
 diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.c
 --- net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c	1970-01-01 05:30:00.000000000 +0530
-+++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.c	2019-02-18 14:22:54.697491060 +0530
-@@ -0,0 +1,5519 @@
++++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.c	2019-02-26 12:38:44.706264632 +0530
+@@ -0,0 +1,5523 @@
 +/****************************************************************************
 +*                                                                           *
 +*  File Name:           kwnmib.c                                           *
@@ -320,8 +320,8 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +  { 191  , ASN_OCTET_STR  , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MGMT_ASSOCRESLAST } },
 +  { 192  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_MPDU_ERRORS } },
 +  { 193  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_PHY_ERRORS } },
-+  { 194  , ASN_OCTET_STR  , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_TX_WIFI_THRPUT } },
-+  { 195  , ASN_OCTET_STR  , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_RX_WIFI_THRPUT } },
++  { 194  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_TX_WIFI_THRPUT } },
++  { 195  , ASN_INTEGER    , RONLY , var_WirelessStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_WIRELESSSTATS, KWN_WIRELESSSTATSENTRY, KWN_WIRELESSSTATS_RX_WIFI_THRPUT } },
 +  /* Ethernet Stats MIBS */
 +  { 196  , ASN_INTEGER    , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_INDEX } },
 +  { 197  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_STATUS } },
@@ -351,8 +351,8 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +  { 221  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_RX_CRC_ERRORS } },
 +  { 222  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_RX_OVERSIZE_ERRORS } },
 +  { 223  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_RX_OVERRUN_ERRORS } },
-+  { 224  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_TX_THRPUT } },
-+  { 225  , ASN_OCTET_STR  , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_RX_THRPUT } },
++  { 224  , ASN_INTEGER    , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_TX_THRPUT } },
++  { 225  , ASN_INTEGER    , RONLY , var_EthernetStatsTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ETHERNETSTATS, KWN_ETHERNETSTATSENTRY, KWN_ETHSTATS_RX_THRPUT } },
 +  /* Assoc MIBS */
 +  { 226  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_RADIO_INDEX } },
 +  { 227  , ASN_INTEGER    , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_SEC_INDEX } },
@@ -3322,9 +3322,10 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +                else {
 +                    sprintf( cmd, "iwpriv ath1 g_kwn_witxthr | sed 's/ath1      g_kwn_witxthr://'" );
 +                }
-+                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len, NULL );
-+                kwn_rm_str_space(var_len);
-+                return ( u_char * ) res_str;
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
++                res_val = (res_val/1000);
++                *var_len = sizeof ( long );
++                return ( u_char * ) &res_val;
 +            }
 +        case KWN_WIRELESSSTATS_RX_WIFI_THRPUT:
 +            {
@@ -3334,9 +3335,10 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +                else {
 +                    sprintf( cmd, "iwpriv ath1 g_kwn_wirxthr | sed 's/ath1      g_kwn_wirxthr://'" );
 +                }
-+                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len, NULL );
-+                kwn_rm_str_space(var_len);
-+                return ( u_char * ) res_str;
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
++                res_val = (res_val/1000);
++                *var_len = sizeof ( long );
++                return ( u_char * ) &res_val;
 +            }
 +        default:
 +            ERROR_MSG ( "" );
@@ -3566,16 +3568,18 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +        case KWN_ETHSTATS_TX_THRPUT:
 +            {
 +                sprintf( cmd, "iwpriv ath1 g_kwn_ethtxthr | sed 's/ath1      g_kwn_ethtxthr://'" );
-+                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len, NULL );
-+                kwn_rm_str_space(var_len);
-+                return (u_char *) res_str;
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
++                res_val = (res_val/1000);
++                *var_len = sizeof ( long );
++                return ( u_char * ) &res_val;
 +            }
 +        case KWN_ETHSTATS_RX_THRPUT:
 +            {
 +                sprintf( cmd, "iwpriv ath1 g_kwn_ethrxthr | sed 's/ath1      g_kwn_ethrxthr://'" );
-+                kwn_get_value( KWN_TYPE_DISPLAY_STRING, &cmd[0], var_len, NULL );
-+                kwn_rm_str_space(var_len);
-+                return (u_char *) res_str;
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
++                res_val = (res_val/1000);
++                *var_len = sizeof ( long );
++                return ( u_char * ) &res_val;
 +            }
 +        default:
 +            ERROR_MSG ( "" );
@@ -6086,7 +6090,7 @@ diff -urN net-snmp-5.4.4-org/include/net-snmp/net-snmp-config.h.in net-snmp-5.4.
  
 diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWEST-MIB.mib
 --- net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib	1970-01-01 05:30:00.000000000 +0530
-+++ net-snmp-5.4.4-mod/mibs/KEYWEST-MIB.mib	2019-02-20 19:04:04.884611611 +0530
++++ net-snmp-5.4.4-mod/mibs/KEYWEST-MIB.mib	2019-02-26 12:37:21.334197057 +0530
 @@ -0,0 +1,3092 @@
 +------------------------------------------------------------------------
 +------------------------------------------------------------------------
@@ -8196,9 +8200,9 @@ diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWES
 +                wirelessStatsPhyErrors
 +                    Integer32,
 +                wirelessStatsTxThroughput
-+                    DisplayString,
++                    Integer32,
 +                wirelessStatsRxThroughput
-+                    DisplayString
++                    Integer32
 +        }
 +
 +wirelessStatsRadioIndex OBJECT-TYPE
@@ -8448,19 +8452,19 @@ diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWES
 +::= { wirelessStatsEntry 29 }
 +
 +wirelessStatsTxThroughput OBJECT-TYPE
-+        SYNTAX      DisplayString
++        SYNTAX      Integer32
 +        MAX-ACCESS  read-only
 +        STATUS      current
-+        DESCRIPTION "This parameter represents the Tx Throughput
-+                     in bits per second under Wireless Statistics."
++        DESCRIPTION "This parameter represents the Tx Throughput in
++                     kilo bits per second under Wireless Statistics."
 +::= { wirelessStatsEntry 30 }
 +
 +wirelessStatsRxThroughput OBJECT-TYPE
-+        SYNTAX      DisplayString
++        SYNTAX      Integer32
 +        MAX-ACCESS  read-only
 +        STATUS      current
-+        DESCRIPTION "This parameter represents the Rx Throughput
-+                     in bits per second under Wireless Statistics."
++        DESCRIPTION "This parameter represents the Rx Throughput in
++                     kilo bits per second under Wireless Statistics."
 +::= { wirelessStatsEntry 31 }
 +
 +------------------------------------------------------------------------
@@ -8543,9 +8547,9 @@ diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWES
 +                ethernetRxFrameOverrunErrors
 +                    DisplayString,
 +                ethernetTxThroughput
-+                    DisplayString,
++                    Integer32,
 +                ethernetRxThroughput
-+                    DisplayString
++                    Integer32
 +        }
 +
 +ethernetStatsIndex OBJECT-TYPE
@@ -8773,18 +8777,18 @@ diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWES
 +::= { ethernetStatsEntry 28 }
 +
 +ethernetTxThroughput OBJECT-TYPE
-+        SYNTAX      DisplayString
++        SYNTAX      Integer32
 +        MAX-ACCESS  read-only
 +        STATUS      current
-+        DESCRIPTION "This parameter represents the Tx Throughput in 
++        DESCRIPTION "This parameter represents the Tx Throughput in kilo 
 +                     bits per second under ethernet statistics table."
 +::= { ethernetStatsEntry 29 }
 +
 +ethernetRxThroughput OBJECT-TYPE
-+        SYNTAX      DisplayString
++        SYNTAX      Integer32
 +        MAX-ACCESS  read-only
 +        STATUS      current
-+        DESCRIPTION "This parameter represents the Rx Throughput in 
++        DESCRIPTION "This parameter represents the Rx Throughput in kilo
 +                     bits per second under ethernet statistics table."
 +::= { ethernetStatsEntry 30 }
 +
