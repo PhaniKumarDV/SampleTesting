@@ -15,6 +15,7 @@ function action_status()
 		luci.http.write("/etc/config/")
 		luci.http.write(data)
 	else
+        luci.sys.exec("/usr/sbin/snmptrap.sh 6 > /dev/null 2>&1")
 		luci.http.write("finish")
 	end
 end
