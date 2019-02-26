@@ -7340,7 +7340,7 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt_ap.c qca-wifi-mod/umac/mlme/ieee
              if (iswpaoui(frm)) {
 diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee80211_mgmt.c
 --- qca-wifi-org/umac/mlme/ieee80211_mgmt.c	2018-06-08 11:00:48.000000000 +0530
-+++ qca-wifi-mod/umac/mlme/ieee80211_mgmt.c	2019-02-25 17:23:21.470636012 +0530
++++ qca-wifi-mod/umac/mlme/ieee80211_mgmt.c	2019-02-26 10:45:40.973373955 +0530
 @@ -22,10 +22,21 @@
  #include "ieee80211_wifipos_pvt.h"
  #endif
@@ -7556,10 +7556,10 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee802
 +            printk(": Link: Established, Started DDRS ATPC Timer\n");
 +
 +			memcpy( &ni->kwn_profile_cfg.txparam, &vap->kwn_txparam, sizeof( struct kwn_link_txparam ) );
-+            OS_SET_TIMER( &ni->kwn_snr_timer, KWN_SNR_TIMER_INT );
-+            OS_SET_TIMER( &ni->kwn_stats_timer, KWN_STATS_TIMER_INT );
-+            OS_SET_TIMER( &ni->kwn_ddrs_timer, KWN_DDRS_TIMER_INT );
-+            OS_SET_TIMER( &ni->kwn_atpc_timer, KWN_ATPC_TIMER_INT );
++            OS_SET_TIMER( &ni->kwn_snr_timer, 0 );
++            OS_SET_TIMER( &ni->kwn_stats_timer, 0 );
++            OS_SET_TIMER( &ni->kwn_ddrs_timer, 0 );
++            OS_SET_TIMER( &ni->kwn_atpc_timer, 0 );
 +        }
 +    }
 +}
@@ -8073,10 +8073,10 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee802
 +            printk(": Link: Established, Started DDRS ATPC Timer\n");
 +
 +			memcpy( &ni->kwn_profile_cfg.txparam, &vap->kwn_txparam, sizeof( struct kwn_link_txparam ) );
-+            OS_SET_TIMER( &ni->kwn_snr_timer, KWN_SNR_TIMER_INT );
-+            OS_SET_TIMER( &ni->kwn_stats_timer, KWN_STATS_TIMER_INT );
-+            OS_SET_TIMER( &ni->kwn_ddrs_timer, KWN_DDRS_TIMER_INT );
-+            OS_SET_TIMER( &ni->kwn_atpc_timer, KWN_ATPC_TIMER_INT );
++            OS_SET_TIMER( &ni->kwn_snr_timer, 0 );
++            OS_SET_TIMER( &ni->kwn_stats_timer, 0 );
++            OS_SET_TIMER( &ni->kwn_ddrs_timer, 0 );
++            OS_SET_TIMER( &ni->kwn_atpc_timer, 0 );
 +        }
 +		break;
 +	    case IEEE80211_ACTION_TX_PARAMS: 
