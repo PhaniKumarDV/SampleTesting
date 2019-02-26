@@ -160,7 +160,7 @@ function updatelinkid( val )
        document.getElementById("linktimer").style.display = "none";
        document.getElementById("suservice").style.display = "none";
        document.getElementById("chan").style.display="block";
-       document.getElementById("icb").style.display = "block";
+       document.getElementById("icb").style.display = "none";
        document.getElementById("bw").style.display = "block";
     }
     else { 
@@ -362,7 +362,7 @@ function updatehidessid()
                </select>
            </div>
          </div>
-          <div class="cbi-value" id="icb">
+          <div class="cbi-value" id="icb" style="display:none;">
             <label class="cbi-value-title">Intra Cell Blocking</label>
             <div class="cbi-value-field">
                <select name="151" class="cbi-input-select">
