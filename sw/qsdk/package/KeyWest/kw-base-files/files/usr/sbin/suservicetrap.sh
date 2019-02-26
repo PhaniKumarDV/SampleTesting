@@ -9,7 +9,7 @@ service_timer=300;
 
 send_trap(){
    date=`date | sed 's/UTC //g'`
-   /usr/sbin/snmptrap.sh 5 %s  > /dev/null 2>&1
+   /usr/sbin/snmptrap.sh 5  > /dev/null 2>&1
 }
 
 

@@ -44,7 +44,31 @@ kwn_routing() {
             iptables -F
         fi
     fi
-    /etc/init.d/KWtelnetssh reload
+    
+    
+    
+    #obtain rule number if already rule exists
+    tnetsessions=$(uci get telnetssh.telnet.sessions)
+    sshsessions=$(uci get telnetssh.ssh.sessions)
+    sshrule=$(iptables --list --line-numbers | grep ssh | awk '{ for(i=1; i <= 1;i++) {print $i } }')
+    telnetrule=$(iptables --list --line-numbers | grep telnet | awk '{ for(i=1; i <= 1; i++) {print $i } }')
+    
+    if [ "$sshrule" == "" ]
+    then
+        iptables -A INPUT -p tcp --syn --dport 22 -m connlimit --connlimit-above $sshsessions -j DROP
+    else
+        iptables -R INPUT $sshrule -p tcp --syn --dport 22 -m connlimit --connlimit-above $sshsessions -j DROP
+    fi
+    
+    if [ "$telnetrule" == "" ]
+    then
+        iptables -A INPUT -p tcp --syn --dport 23 -m connlimit --connlimit-above $tnetsessions -j DROP
+    else
+        iptables -R INPUT $telnetrule -p tcp --syn --dport 23 -m connlimit --connlimit-above $tnetsessions -j DROP
+    fi
+
+    
+    #/etc/init.d/KWtelnetssh reload
 }
 
 init_switch() {
