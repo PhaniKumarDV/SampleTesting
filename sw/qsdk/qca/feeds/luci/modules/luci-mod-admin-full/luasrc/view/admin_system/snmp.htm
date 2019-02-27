@@ -61,7 +61,7 @@ function updatesnmp()
 <h2><a id="content" name="content"><%: Services%></a></h2>
 <div class="cbi-map">
     <ul class="cbi-tabmenu">
-        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=luci.dispatcher.build_url("admin/system/services")%>"><%:HTTP/HTTPS%></a></li>
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=luci.dispatcher.build_url("admin/system/services")%>"><%:HTTP%></a></li>
         <li style="margin-right:4px" class="cbi-tab-disabled"><a href="telnet"><%:Telnet/SSH%></a></li>
         <li style="margin-right:4px" class="cbi-tab"><a href="#"><%:SNMP%></a></li>
     </ul>
@@ -73,7 +73,7 @@ function updatesnmp()
             <div class="cbi-value-field">
                  <script type="text/javascript">
                  var ver = "<%=uciget('uci get snmpd.public_access.version')%>";
-                 document.write("<input type='checkbox' ");
+                 document.write("<input type='checkbox' disabled");
                  if( ver != "none" )
                      document.write(" checked");
                  document.write(" id='snmp2' class='cibi-input-select' onchange='updatesnmp()' >");
