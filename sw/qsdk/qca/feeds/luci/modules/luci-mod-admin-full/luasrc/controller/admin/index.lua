@@ -30,6 +30,7 @@ function index()
     entry({"admin", "clr_eventlog"}, call("action_clr_eventlog"), nil).leaf = true
     entry({"admin", "get_descr"}, call("action_get_descr"), nil).leaf = true
     entry({"admin", "no_of_links"}, call("action_links"), nil).leaf = true
+    entry({"admin", "sumode"}, call("action_sumode"), nil).leaf = true
     entry({"admin", "stats"}, call("action_stats"), nil).leaf = true
 	entry({"admin", "apply"}, call("action_apply"), _("Apply"), 88)
 	entry({"admin", "apply", "reload"}, call("action_reload"), nil).leaf = true
@@ -61,6 +62,17 @@ function action_links()
     res = luci.sys.exec("wlanconfig ath0 list sta | wc -l")
     link2 = string.gsub(res, "\n", "")
     data = link1.."="..link2
+	luci.http.prepare_content("application/json")
+	luci.http.write_json(data)
+end
+
+function action_sumode()
+	local data = {}
+    local mode1 = {}
+
+    local res = luci.sys.exec("iwpriv ath1 get_mode | sed 's/ath1      get_mode://'")
+    mode1 = string.gsub(res, "\n", "")
+    data = mode1
 	luci.http.prepare_content("application/json")
 	luci.http.write_json(data)
 end

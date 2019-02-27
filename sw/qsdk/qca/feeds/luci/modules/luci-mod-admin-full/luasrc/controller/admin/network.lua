@@ -18,15 +18,15 @@ function index()
 	page.leaf = true
     local mode = luci.sys.exec("uci get wireless.@wifi-iface[1].mode")
     local wds = luci.sys.exec("uci get wireless.@wifi-iface[1].wds")
+    if (string.match(mode,"ap") and string.match(wds,"1") ) then
+            entry({"admin", "network", "radius1"}, template("admin_wireless/radius1"), _("RADIUS"), 2)
+    end
+    page = entry({"admin", "network", "vlan"}, template("admin_network/vlan"), _("VLAN"), 3)
+    page.leaf = true
+    page = entry({"admin", "network", "ethernet"}, template("admin_network/ethernet"), _("Ethernet"), 4)
+    page.leaf = true
     local linktype = luci.sys.exec("uci get wireless.wifi1.linktype")
     if (string.match(linktype,"1") or string.match(linktype,"3") ) then
-        if (string.match(mode,"ap") and string.match(wds,"1") ) then
-            entry({"admin", "network", "radius1"}, template("admin_wireless/radius1"), _("RADIUS"), 2)
-        end
-        page = entry({"admin", "network", "vlan"}, template("admin_network/vlan"), _("VLAN"), 3)
-        page.leaf = true
-        page = entry({"admin", "network", "ethernet"}, template("admin_network/ethernet"), _("Ethernet"), 4)
-        page.leaf = true
         if (string.match(mode,"ap") and string.match(wds,"1") ) then
             entry({"admin", "network", "dhcp"}, template("admin_network/dhcp"), _("DHCP Server"), 5)
             entry({"admin", "network", "dhcp", "dhcplease"}, template("admin_network/dhcplease"))

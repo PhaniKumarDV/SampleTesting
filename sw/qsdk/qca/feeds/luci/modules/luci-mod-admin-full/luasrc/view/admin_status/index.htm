@@ -190,6 +190,7 @@ var dllmt = "<%=uciget('uci get wireless.@wifi-iface[1].dllmt')%>";
 var gps_n = "<%=uciget('uci get system.gps.latitude')%>";
 var gps_e = "<%=uciget('uci get system.gps.longitude')%>";
 var modname = "<%=uciget('uci get variant.variant.model')%>"
+var links1, links2;
 if( modname == "1" ) 
    modelname = "API-18-5G-AC2x2-W2";
 else if( modname == "3" )
@@ -374,6 +375,38 @@ function clear_log()
 	}
     );
 }
+function get_mode()
+{
+    if( links1 < 1 )
+        return;
+    var id = 6;
+    XHR.get('<%=luci.dispatcher.build_url("admin", "sumode")%>/' + id, null,
+	function(x, data) {
+		if (data) { 
+            var mode = data;
+            if(mode.indexOf("11AC") >= 0)
+			   document.getElementById("opmode1").innerHTML = "11ac";
+            else if(mode.indexOf("11NA") >= 0)
+			   document.getElementById("opmode1").innerHTML = "11na";
+            else if(mode.indexOf("11A") >= 0)
+			   document.getElementById("opmode1").innerHTML = "11a";
+            else
+			   document.getElementById("opmode1").innerHTML = "Unknown";
+            if(mode.indexOf("20") >= 0)
+               document.getElementById("bw1").innerHTML = "HT20";
+            else if(mode.indexOf("40PLUS") >= 0)
+               document.getElementById("bw1").innerHTML = "HT40+";
+            else if(mode.indexOf("40MINUS") >= 0)
+               document.getElementById("bw1").innerHTML = "HT40-";
+            else if(mode.indexOf("80") >= 0)
+               document.getElementById("bw1").innerHTML = "HT80";
+            else
+               document.getElementById("bw1").innerHTML = "Unknown";
+		}
+	}
+    );
+
+}
 function get_links()
 {
     var id = 6;
@@ -381,14 +414,15 @@ function get_links()
 	function(x, data) {
 		if (data) { 
             var l = data.split("=");
-            var l1 = ( ( l[0] > 1 ) ? ( l[0] - 1 ) : 0 );
-            var l2 = ( ( l[1] > 1 ) ? ( l[1] - 1 ) : 0 );
-			document.getElementById("links1").innerHTML = l1;
-			document.getElementById("links2").innerHTML = l2;
-            link_stats( l1 );
+            links1 = ( ( l[0] > 1 ) ? ( l[0] - 1 ) : 0 );
+            links2 = ( ( l[1] > 1 ) ? ( l[1] - 1 ) : 0 );
+			document.getElementById("links1").innerHTML = links1;
+			document.getElementById("links2").innerHTML = links2;
+            link_stats( links1 );
 		}
 	}
     );
+
     XHR.get('<%=luci.dispatcher.build_url("admin", "stats")%>/' + id, null,
 	function(x, data) {
 		if (data) { 
@@ -564,9 +598,14 @@ function get_log()
                             document.getElementById("mac1").innerHTML = "<%=uciget('uci get wireless.wifi1.macaddr')%>"; 
                             document.getElementById("mode1").innerHTML = "<b>"+net.mode+"<b>"; 
                             var radio_status = "<%=uciget('uci get wireless.@wifi-iface[1].disabled')%>";
+                            var radio_mode = "<%=uciget('uci get wireless.@wifi-iface[1].mode')%>";
                             document.getElementById("status1").innerHTML = ( radio_status == 1 ? "Disabled" : "Enabled" );
-                            document.getElementById("opmode1").innerHTML = "<%=uciget('uci get wireless.wifi1.hwmode')%>";
-                            document.getElementById("bw1").innerHTML = "<%=uciget('uci get wireless.wifi1.htmode')%>";
+                            if( radio_mode == "ap" ) {
+                               document.getElementById("opmode1").innerHTML = "<%=uciget('uci get wireless.wifi1.hwmode')%>";
+                               document.getElementById("bw1").innerHTML = "<%=uciget('uci get wireless.wifi1.htmode')%>";
+                            }
+                            else
+                               get_mode();
                             document.getElementById("ssid1").innerHTML = net.ssid;
                             var acs1 = "<%=uciget('uci get wireless.wifi1.channel')%>";
                             document.getElementById("acs1").innerHTML = ( acs1 == "auto" ? "Enabled" : "Disabled" );
@@ -738,7 +777,7 @@ function get_log()
 </fieldset>
 </td>
 <td rowspan="2" style="border-top:0px;">
-<fieldset class="cbi-section" style="width:470px;height:727px;padding:20px 20px;">
+<fieldset class="cbi-section" style="width:470px;height:703px;padding:20px 20px;">
 	<legend><%:Wireless%></legend>
 	<table width="100%" cellspacing="10">
        <tr><td></td><td style="color:#a5bc23"><b>5 GHz<b></td><td style="color:#a5bc23"><b>2.4 GHz<b></td></tr>
@@ -788,7 +827,7 @@ function get_log()
             document.write(" Down ");
         </script>
         </td></tr>
-		<tr><td width="47%"><%:Cable Length%></td><td><script type="text/javascript">document.write(cablen[2])</script>&nbsp;m</td></tr>
+		<!--<tr><td width="47%"><%:Cable Length%></td><td><script type="text/javascript">document.write(cablen[2])</script>&nbsp;m</td></tr>-->
 		<tr><td width="47%"><%:IP Address%></td><td><script type="text/javascript">document.write(ip)</script></td></tr>
 		<tr><td width="47%"><%:Subnet Mask%></td><td><script type="text/javascript">document.write(mask)</script></td></tr>
 		<tr><td width="47%"><%:Gateway IP%></td><td><script type="text/javascript">document.write(gw)</script></td></tr>

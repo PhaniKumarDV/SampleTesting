@@ -277,11 +277,12 @@ function hideparam()
                  <script type="text/javascript">
                  var radiomode = "<%=uciget('uci get wireless.@wifi-iface[1].mode')%>";
                  var mode = "<%=uciget('uci get vlan.vlan.mode')%>";
+                 var linktype = "<%=uciget('uci get wireless.wifi1.linktype')%>";
                  document.write("<option value='0' ");
                  if( mode == "0" )
                      document.write(" selected");
                  document.write(">Transparent</option>");
-                 if( radiomode == "sta" )
+                 if( radiomode == "sta" && linktype != 2 )
                  {
                     document.write("<option value='1' ");
                     if( mode == "1" )

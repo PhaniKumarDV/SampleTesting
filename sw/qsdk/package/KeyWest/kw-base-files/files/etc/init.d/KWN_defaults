@@ -337,7 +337,7 @@ start_service() {
     fi
     if [ "$eth_mtu" == "" ]
     then
-        uci set network.lan.mtu='1500'
+        uci set network.lan.mtu='9000'
     fi
 #VLAN
     if [ "$tagmgmt" == "" ]

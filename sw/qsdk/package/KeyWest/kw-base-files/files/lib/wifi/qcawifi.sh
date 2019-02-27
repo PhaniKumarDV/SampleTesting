@@ -1452,6 +1452,7 @@ enable_qcawifi() {
 		[ -n "$chanbw" ] && iwpriv "$ifname" chanbw "$chanbw"
 
 		config_get linktype "$device" linktype
+        [ -n "$linktype" ] && iwpriv "$ifname" kwnlinktype "$linktype"
         if [ "$linktype" == "3" ]
         then
 		    config_get maxsta "$vif" maxsta
