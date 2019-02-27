@@ -102,11 +102,11 @@ function updateparam()
         document.getElementById("mcs_idx").style.display = "none";
         document.getElementById("min_mcs_idx").style.display = "block";
         document.getElementById("max_mcs_idx").style.display = "block";
-        document.getElementById("inc_timer").style.display = "block";
-        document.getElementById("dec_timer").style.display = "block";
-        document.getElementById("inc_thrld").style.display = "block";
-        document.getElementById("rtx_inc").style.display = "block";
-        document.getElementById("rtx_dec").style.display = "block";
+        document.getElementById("inc_timer").style.display = "none";
+        document.getElementById("dec_timer").style.display = "none";
+        document.getElementById("inc_thrld").style.display = "none";
+        document.getElementById("rtx_inc").style.display = "none";
+        document.getElementById("rtx_dec").style.display = "none";
     }
     else {
         document.getElementById("mcs_idx").style.display = "block";
@@ -247,31 +247,31 @@ function getoptions( list, value )
             <div class="cbi-value-field" id="maxrateid">
            </div>
          </div>
-          <div class="cbi-value" id="inc_timer">
+          <div class="cbi-value" id="inc_timer" style="display:none">
             <label class="cbi-value-title">DDRS Rate Incr. Timer</label>
             <div class="cbi-value-field">
               <input type="text" name="110" class="cbi-input-select" value="<%=uciget('uci get wireless.wifi1.ddrsinctimer')%>" >&nbsp; (1-10) sec
            </div>
          </div>
-          <div class="cbi-value" id="dec_timer">
+          <div class="cbi-value" id="dec_timer" style="display:none">
             <label class="cbi-value-title">DDRS Rate Decr. Timer</label>
             <div class="cbi-value-field">
               <input type="text" name="111" class="cbi-input-select" value="<%=uciget('uci get wireless.wifi1.ddrsdectimer')%>" >&nbsp; (1-10) sec
            </div>
          </div>
-          <div class="cbi-value" id="inc_thrld">
+          <div class="cbi-value" id="inc_thrld" style="display:none">
             <label class="cbi-value-title">DDRS Rate Incr. Threshold</label>
             <div class="cbi-value-field">
               <input type="text" name="122" class="cbi-input-select" value="<%=uciget('uci get wireless.wifi1.ddrsincthrld')%>" >&nbsp; (1-10) dB
            </div>
          </div>
-          <div class="cbi-value" id="rtx_inc">
+          <div class="cbi-value" id="rtx_inc" style="display:none">
             <label class="cbi-value-title">DDRS Rate Incr. RTX Threshold</label>
             <div class="cbi-value-field">
               <input type="text" name="126" class="cbi-input-select" value="<%=uciget('uci get wireless.wifi1.ddrsrtxinc')%>" >&nbsp; (0-100) %
            </div>
          </div>
-          <div class="cbi-value" id="rtx_dec">
+          <div class="cbi-value" id="rtx_dec" style="display:none">
             <label class="cbi-value-title">DDRS Rate Decr. RTX Threshold</label>
             <div class="cbi-value-field">
               <input type="text" name="127" class="cbi-input-select" value="<%=uciget('uci get wireless.wifi1.ddrsrtxdec')%>" >&nbsp; (0-100) %

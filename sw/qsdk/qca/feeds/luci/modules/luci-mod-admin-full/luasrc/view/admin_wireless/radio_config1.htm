@@ -166,7 +166,7 @@ function updatelinkid( val )
     else { 
        document.getElementById("wifitimer").style.display = "block";
        document.getElementById("linktimer").style.display = "block";
-       document.getElementById("suservice").style.display = "block";
+       document.getElementById("suservice").style.display = "none";
        document.getElementById("chan").style.display="none";
        document.getElementById("icb").style.display = "none";
        document.getElementById("bw").style.display = "none";
@@ -342,7 +342,7 @@ function updatehidessid()
               <input type="text" name="134" class="cbi-input-select" value="<%=uciget('uci get wireless.wifi1.linktimer')%>" > &nbsp; Minutes
             </div>
           </div>
-          <div class="cbi-value" id="suservice">
+          <div class="cbi-value" id="suservice" style="display:none">
             <label class="cbi-value-title">SU Service</label>
             <div class="cbi-value-field">
                <select name="148" class="cbi-input-select">
@@ -382,7 +382,7 @@ function updatehidessid()
                </select>
            </div>
          </div>
-          <div class="cbi-value" id="macinmac">
+          <div class="cbi-value" id="macinmac" style="display:none">
             <label class="cbi-value-title">MAC in MAC</label>
             <div class="cbi-value-field">
                <select name="152" class="cbi-input-select">

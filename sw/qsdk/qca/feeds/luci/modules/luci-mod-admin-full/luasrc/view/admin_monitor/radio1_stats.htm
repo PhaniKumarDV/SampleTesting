@@ -106,6 +106,12 @@
 			netdevs[net:id()] = dev:name()
 		end
 	end
+
+        function uciget(cmd)
+                local res = luci.util.exec(cmd)
+                local str = string.gsub(res, "\n", "")
+                return str
+        end
 -%>
 
 <%+header%>
@@ -121,6 +127,8 @@
 <script type="text/javascript">//<![CDATA[
 	var wifidevs = <%=luci.http.write_json(netdevs)%>;
 	var arptable = <%=luci.http.write_json(arpcache)%>;
+    var gps = "<%=uciget('uci get system.gps.status')%>";
+    var dst = "<%=uciget('uci get wireless.wifi1.distance')%>"
 
 	var is_reconnecting = false;
 
@@ -335,8 +343,13 @@
 							tr.insertCell(-1).innerHTML = "<a href='http://"+ assoclist[j].ip_addr +"' target='_blank'>"+assoclist[j].ip_addr+"</a>";
 							tr.insertCell(-1).innerHTML = assoclist[j].r_link_id;
 
-                            var d = distanceInKmBetweenEarthCoordinates(assoclist[j].local_lat,assoclist[j].local_long,assoclist[j].remote_lat,assoclist[j].remote_long);
-                            d = d.toFixed(2);
+                            if( gps == 1 ) {
+                               var d = distanceInKmBetweenEarthCoordinates(assoclist[j].local_lat,assoclist[j].local_long,assoclist[j].remote_lat,assoclist[j].remote_long);
+                               d = d.toFixed(2);
+                            }
+                            else {
+                                d = dst;
+                            }
 							tr.insertCell(-1).innerHTML = nowrap(String.format('%d', d));
 
 							tr.insertCell(-1).innerHTML = assoclist[j].local_snr_a1 > 128 ? assoclist[j].l_noise_floor : (assoclist[j].local_snr_a1 + assoclist[j].l_noise_floor);
