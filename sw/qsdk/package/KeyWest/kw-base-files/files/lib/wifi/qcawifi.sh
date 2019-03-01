@@ -2440,7 +2440,7 @@ detect_qcawifi() {
 		dying_gasp=2
 		ul_limit="409600"
 		dl_limit="409600"
-        ssid_d="Sify"
+        ssid_d="SifySMAC3"
         encrypt="none"
         channel="auto"
 		case "${hwcaps}" in
@@ -2449,7 +2449,7 @@ detect_qcawifi() {
 				country_code="643"
 				wds_mode="0"
 				mode_11=ng
-                ssid_d="Sify_24_AP"
+                ssid_d="SMAC3_Wi-Fi"
                 encrypt="psk2+ccmp";;
 			*11abgn)
 				ht_mode="HT20"
