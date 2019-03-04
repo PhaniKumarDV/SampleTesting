@@ -377,8 +377,14 @@ function clear_log()
 }
 function get_mode()
 {
-    if( links1 < 1 )
+    var radio_mode = "<%=uciget('uci get wireless.@wifi-iface[1].mode')%>";
+    if( radio_mode == "ap" )
         return;
+    if( links1 < 1 || links1 == undefined ) {
+		document.getElementById("opmode1").innerHTML = "-";
+        document.getElementById("bw1").innerHTML = "-";
+        return;
+    }
     var id = 6;
     XHR.get('<%=luci.dispatcher.build_url("admin", "sumode")%>/' + id, null,
 	function(x, data) {
@@ -391,7 +397,7 @@ function get_mode()
             else if(mode.indexOf("11A") >= 0)
 			   document.getElementById("opmode1").innerHTML = "11a";
             else
-			   document.getElementById("opmode1").innerHTML = "Unknown";
+			   document.getElementById("opmode1").innerHTML = "-";
             if(mode.indexOf("20") >= 0)
                document.getElementById("bw1").innerHTML = "HT20";
             else if(mode.indexOf("40PLUS") >= 0)
@@ -401,7 +407,7 @@ function get_mode()
             else if(mode.indexOf("80") >= 0)
                document.getElementById("bw1").innerHTML = "HT80";
             else
-               document.getElementById("bw1").innerHTML = "Unknown";
+               document.getElementById("bw1").innerHTML = "-";
 		}
 	}
     );
@@ -419,6 +425,7 @@ function get_links()
 			document.getElementById("links1").innerHTML = links1;
 			document.getElementById("links2").innerHTML = links2;
             link_stats( links1 );
+            get_mode();
 		}
 	}
     );
@@ -604,8 +611,6 @@ function get_log()
                                document.getElementById("opmode1").innerHTML = "<%=uciget('uci get wireless.wifi1.hwmode')%>";
                                document.getElementById("bw1").innerHTML = "<%=uciget('uci get wireless.wifi1.htmode')%>";
                             }
-                            else
-                               get_mode();
                             document.getElementById("ssid1").innerHTML = net.ssid;
                             var acs1 = "<%=uciget('uci get wireless.wifi1.channel')%>";
                             document.getElementById("acs1").innerHTML = ( acs1 == "auto" ? "Enabled" : "Disabled" );
@@ -799,7 +804,6 @@ function get_log()
        <tr><td>Distance</td><td id="dis1">-</td><td id="dis2">-</td></tr>
        <tr><td>Base Station ID</td><td id="bstid1">-</td><td id="bstid2">-</td></tr>
        <tr><td>Remote Partners</td><td id="links1">-</td><td id="links2">-</td></tr>
-       <tr><td>&nbsp;</td><td></td><td></td></tr>
        <tr><td>&nbsp;</td><td></td><td></td></tr>
     </table>
     <table width="100%" cellspacing="10">

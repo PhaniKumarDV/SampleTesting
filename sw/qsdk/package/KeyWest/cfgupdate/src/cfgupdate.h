@@ -188,7 +188,8 @@ enum uci_cfg_id {
     /* Wireless Linktype ('1'-PTP,'2'-BACKHAUL,'3'-PTMP) */
     UCI_ID_WIRELESS_LINKTYPE = 150,
     UCI_ID_WIRELESS_ICB = 151,
-    UCI_ID_WIRELESS_MACINMAC = 152
+    UCI_ID_WIRELESS_MACINMAC = 152,
+    UCI_ID_RADIO1_MAXSTA = 153
 };
 
 typedef struct

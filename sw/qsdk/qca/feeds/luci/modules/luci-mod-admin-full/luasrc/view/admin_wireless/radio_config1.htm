@@ -155,6 +155,13 @@ function getoptions( list, value )
 }
 function updatelinkid( val )
 {
+    var linktype = "<%=uciget('uci get wireless.wifi1.linktype')%>";
+    if( radiomode == "sta" || linktype == 1 || linktype == 2 ) {
+        document.getElementById("maxsu").style.display = "none";
+    }
+    else {
+        document.getElementById("maxsu").style.display = "block";
+    }
     if( val == "ap" ) {
        document.getElementById("wifitimer").style.display = "none";
        document.getElementById("linktimer").style.display = "none";
@@ -402,6 +409,12 @@ function updatehidessid()
                </select>
            </div>
          </div>
+          <div class="cbi-value" id="maxsu">
+            <label class="cbi-value-title">Maximum SUs</label>
+            <div class="cbi-value-field">
+              <input type="text" name="153" class="cbi-input-select" value="<%=uciget('uci get wireless.@wifi-iface[1].maxsta')%>" > &nbsp; (1-32)
+            </div>
+          </div>
     </form>
     </fieldset>
 </div>
