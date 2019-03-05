@@ -1,6 +1,6 @@
 diff -urN uci-2015-08-27.1-org/file.c uci-2015-08-27.1-mod/file.c
 --- uci-2015-08-27.1-org/file.c	2018-05-24 05:10:08.000000000 +0530
-+++ uci-2015-08-27.1-mod/file.c	2019-02-21 13:45:54.154438918 +0530
++++ uci-2015-08-27.1-mod/file.c	2019-03-05 14:58:23.520251547 +0530
 @@ -28,6 +28,7 @@
  #include <glob.h>
  #include <string.h>
@@ -403,7 +403,7 @@ diff -urN uci-2015-08-27.1-org/file.c uci-2015-08-27.1-mod/file.c
  
  static void uci_file_commit(struct uci_context *ctx, struct uci_package **package, bool overwrite)
  {
-@@ -752,6 +1140,131 @@
+@@ -752,6 +1140,134 @@
  	/* flush unsaved changes and reload from delta file */
  	UCI_TRAP_SAVE(ctx, done);
  	if (p->has_delta) {
@@ -455,18 +455,21 @@ diff -urN uci-2015-08-27.1-org/file.c uci-2015-08-27.1-mod/file.c
 +			ptr.option = h->e.name;
 +			ptr.flags = 0;
 +			uci_get_help_txt (&ptr, &help,&secret,&action);
-+            if( h->value ) {
-+                if( kwn_uci_password( &ptr) ) {
-+                    sprintf(cmd1,"echo %s: %s.%s.%s='******' >> /etc/kwncfg.txt",t,ptr.package,ptr.section,ptr.option);
++
++            if( ptr.package && ptr.section && ptr.option ) {
++                if( h->value ) {
++                    if( kwn_uci_password( &ptr) ) {
++                        sprintf(cmd1,"echo %s: %s.%s.%s='******' >> /etc/kwncfg.txt",t,ptr.package,ptr.section,ptr.option);
++                    }
++                    else {
++                        sprintf(cmd1,"echo %s: %s.%s.%s='%s' >> /etc/kwncfg.txt",t,ptr.package,ptr.section,ptr.option,(((strlen(h->value) != 0) && (strcmp(h->value," ") != 0))?h->value:"nil"));
++                    }
++                    system(cmd1);
 +                }
 +                else {
-+                    sprintf(cmd1,"echo %s: %s.%s.%s='%s' >> /etc/kwncfg.txt",t,ptr.package,ptr.section,ptr.option,(((strlen(h->value) != 0) && (strcmp(h->value," ") != 0))?h->value:"nil"));
++                    sprintf(cmd1,"echo %s: %s.%s.%s=nil >> /etc/kwncfg.txt",t,ptr.package,ptr.section,ptr.option);
++                    system(cmd1);
 +                }
-+                system(cmd1);
-+            }
-+            else {
-+               sprintf(cmd1,"echo %s: %s.%s.%s=nil >> /etc/kwncfg.txt",t,ptr.package,ptr.section,ptr.option);
-+               system(cmd1);
 +            }
 +			if (help)
 +			{
