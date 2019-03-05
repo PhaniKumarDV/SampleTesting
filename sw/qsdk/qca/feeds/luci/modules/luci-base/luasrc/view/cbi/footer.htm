@@ -1,5 +1,10 @@
 <% 
-   local loginuser = luci.dispatcher.context.authuser 
+local loginuser = luci.dispatcher.context.authuser
+        function uciget(cmd)
+                local res = luci.util.exec(cmd)
+                local str = string.gsub(res, "\n", "")
+                return str
+        end
 %>
 <%- if pageaction then -%>
 	<div class="cbi-page-actions">
@@ -25,7 +30,8 @@
 		<script type="text/javascript">
         cbi_d_update();
         var loginuser = <%=luci.http.write_json(loginuser)%>;
-        if( loginuser == "user" ) {
+        var mode = "<%=uciget('uci get wireless.@wifi-iface[1].mode')%>";
+        if( loginuser == "user" || loginuser == "superuser" ) {
            $('input').prop('disabled',true);
            $('select').prop('disabled',true);
 
@@ -39,8 +45,28 @@
            $('#tftpserverip').prop("disabled", false);
            $('#filetype').prop("disabled", false);
            $('#tftpfilename').prop("disabled", false);
-           document.getElementById("header_apply").href="";
-           document.getElementById("header_reboot").href="";
+           if( loginuser == "user" || 
+               ( loginuser == "superuser" && mode == "ap" ) ) {
+              document.getElementById("header_apply").href="";
+              document.getElementById("header_reboot").href="";
+           }
+           if( loginuser == "superuser" && mode == "sta" ) {
+              $('#super_eth_mode').prop("disabled", false);
+              $('#super_ullmt').prop("disabled", false);
+              $('#super_dllmt').prop("disabled", false);
+              $('#super_shaping').prop("disabled", false);
+              $('#super_fil_1').prop("disabled", false);
+              $('#super_fil_2').prop("disabled", false);
+              $('#super_fil_3').prop("disabled", false);
+              $('#super_fil_4').prop("disabled", false);
+              $('#super_fil_5').prop("disabled", false);
+              $('#vlanmode').prop("disabled", false);
+              $('#super_mgmt_vlan').prop("disabled", false);
+              $('#super_access_vlan').prop("disabled", false);
+              $('#super_save').prop("disabled", false);
+              $('#super_apply').prop("disabled", false);
+              $('#super_revert').prop("disabled", false);
+           }
         }
         </script>
 	</div>

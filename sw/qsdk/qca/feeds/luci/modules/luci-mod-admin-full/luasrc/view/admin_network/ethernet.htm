@@ -58,7 +58,7 @@ function save_value()
           <div class="cbi-value">
             <label class="cbi-value-title">Ethernet Speed</label>
             <div class="cbi-value-field">
-              <select class="cbi-input-select" name="43">
+              <select class="cbi-input-select" name="43" id="super_eth_mode">
                  <script type="text/javascript">
                  var speed = "<%=uciget('uci get ethernet.ethernet.mode')%>";
                  document.write("<option value='0' ");
@@ -118,7 +118,7 @@ function save_value()
 </div>
 <div class="cbi-page-actions left">
 <div id="spin"></div>
-<input type="button" class="cbi-button" value="<%:Save%>" onclick="save_value()" />
+<input type="button" class="cbi-button" id="super_save" value="<%:Save%>" onclick="save_value()" />
 </div>
 <script type="text/javascript">
 save_def_value();

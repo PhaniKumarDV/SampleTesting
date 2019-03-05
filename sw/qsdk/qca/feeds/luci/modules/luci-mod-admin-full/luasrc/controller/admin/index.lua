@@ -158,8 +158,9 @@ end
 
 function action_cfg_set( setdata )
 	local data = "1"
+    local mode = luci.sys.exec("uci get wireless.@wifi-iface[1].mode")
     local loginuser = luci.dispatcher.context.authuser
-    if (string.match(loginuser,"user")) then
+    if ( loginuser == "user" or ( loginuser == "superuser" and mode == "ap" ) ) then
     else
        luci.util.exec("echo "..setdata.." > /tmp/setcfgfile.txt")
        luci.util.exec("cfgupdate")
@@ -169,10 +170,11 @@ function action_cfg_set( setdata )
 end
 
 function action_apply()
+    local mode = luci.sys.exec("uci get wireless.@wifi-iface[1].mode")
     local uci = luci.model.uci.cursor()
     local changes = uci:changes()
     local loginuser = luci.dispatcher.context.authuser
-    if (string.match(loginuser,"user")) then
+    if ( loginuser == "user" or ( loginuser == "superuser" and mode == "ap" ) ) then
     else
 	luci.template.render("admin_system/apply", {
         changes = next(changes) and changes
@@ -181,8 +183,9 @@ function action_apply()
 end
 
 function action_reload()
+    local mode = luci.sys.exec("uci get wireless.@wifi-iface[1].mode")
     local loginuser = luci.dispatcher.context.authuser
-    if (string.match(loginuser,"user")) then
+    if ( loginuser == "user" or ( loginuser == "superuser" and mode == "ap" ) ) then
     else
 		luci.util.exec("uci commit")
 		luci.util.exec("reload_config")
@@ -234,16 +237,19 @@ function action_survey()
 end
 
 function action_join( ssid, enc )
-    luci.util.exec("uci set wireless.@wifi-iface[1].mode='sta'")
-    luci.util.exec("uci set wireless.@wifi-iface[1].wds='1'")
-    luci.util.exec("uci set wireless.wifi1.channel='auto'")
-    luci.util.exec("uci set wireless.@wifi-iface[1].ssid='"..ssid.."'")
-	if( string.match(enc,"1") ) then
-        luci.util.exec("uci set wireless.@wifi-iface[1].encryption='psk2+ccmp'")
-    else
-        luci.util.exec("uci set wireless.@wifi-iface[1].encryption='none'")
+    local loginuser = luci.dispatcher.context.authuser
+    if ( loginuser == "admin" ) then
+        luci.util.exec("uci set wireless.@wifi-iface[1].mode='sta'")
+        luci.util.exec("uci set wireless.@wifi-iface[1].wds='1'")
+        luci.util.exec("uci set wireless.wifi1.channel='auto'")
+        luci.util.exec("uci set wireless.@wifi-iface[1].ssid='"..ssid.."'")
+	    if( string.match(enc,"1") ) then
+            luci.util.exec("uci set wireless.@wifi-iface[1].encryption='psk2+ccmp'")
+        else
+            luci.util.exec("uci set wireless.@wifi-iface[1].encryption='none'")
+        end
+	    luci.template.render("admin_status/joinnetwork")
     end
-	luci.template.render("admin_status/joinnetwork")
 end
 
 function action_connect()

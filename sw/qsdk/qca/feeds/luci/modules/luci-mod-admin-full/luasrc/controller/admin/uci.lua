@@ -55,18 +55,19 @@ function action_revert()
 	local uci = luci.model.uci.cursor()
 	local changes = uci:changes()
 
+    local mode = luci.sys.exec("uci get wireless.@wifi-iface[1].mode")
     local loginuser = luci.dispatcher.context.authuser
-    if (string.match(loginuser,"user")) then
-        return 1
-    end
-	-- Collect files to be reverted
-	for r, tbl in pairs(changes) do
-		uci:load(r)
-		uci:revert(r)
-		uci:unload(r)
-	end
+    if ( loginuser == "user" or ( loginuser == "superuser" and mode == "ap" ) ) then
+    else
+	    -- Collect files to be reverted
+	    for r, tbl in pairs(changes) do
+		    uci:load(r)
+		    uci:revert(r)
+		    uci:unload(r)
+	    end
 
-	luci.template.render("admin_uci/revert", {
-		changes = next(changes) and changes
-	})
+	    luci.template.render("admin_uci/revert", {
+		    changes = next(changes) and changes
+	    })
+    end
 end

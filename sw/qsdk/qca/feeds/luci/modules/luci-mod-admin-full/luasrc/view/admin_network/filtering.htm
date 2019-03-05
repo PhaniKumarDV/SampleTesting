@@ -59,7 +59,7 @@ function save_value()
           <div class="cbi-value">
             <label class="cbi-value-title">Filtering Status</label>
             <div class="cbi-value-field">
-              <select class="cbi-input-select" name="128">
+              <select class="cbi-input-select" name="128" id="super_fil_1">
                  <script type="text/javascript">
                  var stat = "<%=uciget('uci get filter.filter.status')%>";
                  document.write("<option value='0' ");
@@ -77,7 +77,7 @@ function save_value()
           <div class="cbi-value" id="l2multi">
             <label class="cbi-value-title">L2 Multicast</label>
             <div class="cbi-value-field">
-              <select class="cbi-input-select" name="129">
+              <select class="cbi-input-select" name="129" id="super_fil_2">
                  <script type="text/javascript">
                  var l2mcast = "<%=uciget('uci get filter.filter.l2mcast')%>";
                  document.write("<option value='0' ");
@@ -95,7 +95,7 @@ function save_value()
           <div class="cbi-value" id="l3multi">
             <label class="cbi-value-title">L3 Multicast</label>
             <div class="cbi-value-field">
-              <select class="cbi-input-select" name="130">
+              <select class="cbi-input-select" name="130" id="super_fil_3">
                  <script type="text/javascript">
                  var l3mcast = "<%=uciget('uci get filter.filter.l3mcast')%>";
                  document.write("<option value='0' ");
@@ -113,7 +113,7 @@ function save_value()
           <div class="cbi-value" id="l2broad">
             <label class="cbi-value-title">L2 Broadcast</label>
             <div class="cbi-value-field">
-              <select class="cbi-input-select" name="131">
+              <select class="cbi-input-select" name="131" id="super_fil_4">
                  <script type="text/javascript">
                  var l2bcast = "<%=uciget('uci get filter.filter.l2bcast')%>";
                  document.write("<option value='0' ");
@@ -131,7 +131,7 @@ function save_value()
           <div class="cbi-value" id="l3broad">
             <label class="cbi-value-title">L3 Broadcast</label>
             <div class="cbi-value-field">
-              <select class="cbi-input-select" name="132">
+              <select class="cbi-input-select" name="132" id="super_fil_5">
                  <script type="text/javascript">
                  var l3bcast = "<%=uciget('uci get filter.filter.l3bcast')%>";
                  document.write("<option value='0' ");
@@ -151,7 +151,7 @@ function save_value()
 </div>
 <div class="cbi-page-actions left">
 <div id="spin"></div>
-<input type="button" class="cbi-button" value="<%:Save%>" onclick="save_value()" />
+<input type="button" class="cbi-button" id="super_save" value="<%:Save%>" onclick="save_value()" />
 </div>
 <script type="text/javascript">
 if( stat == 0 )

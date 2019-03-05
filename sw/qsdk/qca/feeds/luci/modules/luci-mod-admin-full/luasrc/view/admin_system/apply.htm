@@ -53,9 +53,9 @@ function performapply()
             <div id="buttons">
 <form method="get" action="<%=controller%>/admin/uci/revert">
     <span class="cbi-page-actions left" style="margin-left:-128px;">
-<input type="button" class="cbi-button" value="<%:Apply%>" onclick="performapply()" />
+<input type="button" class="cbi-button" id="super_apply" value="<%:Apply%>" onclick="performapply()" />
     <input type="hidden" name="redir" value="<%=pcdata(luci.http.formvalue("redir"))%>" />
-    <input class="cbi-button" type="submit" value="<%:Revert%>" />
+    <input class="cbi-button" id="super_revert" type="submit" value="<%:Revert%>" />
     </span>
 </form>
 </div>

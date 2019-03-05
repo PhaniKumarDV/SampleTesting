@@ -649,16 +649,19 @@ function action_survey()
 end
 
 function action_join( ssid, enc )
-    luci.util.exec("uci set wireless.@wifi-iface[1].mode='sta'")
-    luci.util.exec("uci set wireless.@wifi-iface[1].wds='1'")
-    luci.util.exec("uci set wireless.wifi1.channel='auto'")
-    luci.util.exec("uci set wireless.@wifi-iface[1].ssid='"..ssid.."'")
-	if( string.match(enc,"1") ) then
-        luci.util.exec("uci set wireless.@wifi-iface[1].encryption='psk2+ccmp'")
-    else
-        luci.util.exec("uci set wireless.@wifi-iface[1].encryption='none'")
+    local loginuser = luci.dispatcher.context.authuser
+    if ( loginuser == "admin" ) then
+        luci.util.exec("uci set wireless.@wifi-iface[1].mode='sta'")
+        luci.util.exec("uci set wireless.@wifi-iface[1].wds='1'")
+        luci.util.exec("uci set wireless.wifi1.channel='auto'")
+        luci.util.exec("uci set wireless.@wifi-iface[1].ssid='"..ssid.."'")
+	    if( string.match(enc,"1") ) then
+            luci.util.exec("uci set wireless.@wifi-iface[1].encryption='psk2+ccmp'")
+        else
+            luci.util.exec("uci set wireless.@wifi-iface[1].encryption='none'")
+        end
+	    luci.template.render("admin_monitor/joinnetwork")
     end
-	luci.template.render("admin_monitor/joinnetwork")
 end
 
 function action_connect()

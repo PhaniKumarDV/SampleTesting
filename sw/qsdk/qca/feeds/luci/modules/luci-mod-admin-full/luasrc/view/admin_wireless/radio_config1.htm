@@ -295,7 +295,7 @@ function updatehidessid()
           <div class="cbi-value">
             <label class="cbi-value-title">Traffic Shaping</label>
             <div class="cbi-value-field">
-               <select name="123" class="cbi-input-select">
+               <select name="123" class="cbi-input-select" id="super_shaping">
                <script type="text/javascript">
                   var shaping = "<%=uciget('uci get wireless.@wifi-iface[1].shaping')%>";
                   document.write("<option value='1' ");
@@ -315,13 +315,13 @@ function updatehidessid()
           <div class="cbi-value">
             <label class="cbi-value-title">Uplink Limit</label>
             <div class="cbi-value-field">
-              <input type="text" name="10" class="cbi-input-select" value="<%=uciget('uci get wireless.@wifi-iface[1].ullmt')%>" > &nbsp; (64-867000) Kbps
+              <input type="text" name="10" class="cbi-input-select" id="super_ullmt" value="<%=uciget('uci get wireless.@wifi-iface[1].ullmt')%>" > &nbsp; (64-867000) Kbps
             </div>
           </div>
           <div class="cbi-value">
             <label class="cbi-value-title">Downlink Limit</label>
             <div class="cbi-value-field">
-              <input type="text" name="11" class="cbi-input-select" value="<%=uciget('uci get wireless.@wifi-iface[1].dllmt')%>" > &nbsp; (64-867000) Kbps
+              <input type="text" name="11" class="cbi-input-select" id="super_dllmt" value="<%=uciget('uci get wireless.@wifi-iface[1].dllmt')%>" > &nbsp; (64-867000) Kbps
             </div>
           </div>
           <div class="cbi-value">
@@ -420,7 +420,7 @@ function updatehidessid()
 </div>
 <div class="cbi-page-actions left">
 <div id="spin"></div>
-<input type="button" class="cbi-button" value="<%:Save%>" onclick="save_value()" />
+<input type="button" class="cbi-button" id="super_save" value="<%:Save%>" onclick="save_value()" />
 </div>
 <script type="text/javascript">
 var hw = "<%=uciget('uci get wireless.wifi1.hwmode')%>";
