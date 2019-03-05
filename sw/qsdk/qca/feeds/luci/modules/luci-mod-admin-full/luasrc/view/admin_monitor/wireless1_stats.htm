@@ -313,7 +313,7 @@ function clearwifi1stat()
         <tr><td>
 		<table class="cbi-section-table" style="margin:10px; width:400px;">
 			<tr>
-				<td>MPDU Errors</td>
+				<td>CRC Errors</td>
 				<td id="24">
                    <script type="text/javascript">
                       var val = "<%=execute("athstats -i wifi1 | grep mpdu_errs | sed 's/mpdu_errs://'")%>";
@@ -323,7 +323,7 @@ function clearwifi1stat()
                 </td>
 			</tr>
 			<tr>
-				<td>Phy Errors</td>
+				<td>Frame Errors</td>
 				<td id="25">
                    <script type="text/javascript">
                       var val = "<%=execute("athstats -i wifi1 | grep phy_errors | sed 's/phy_errors://'")%>";

@@ -361,7 +361,7 @@ start_service() {
     fi
     if [ "$hidden_radio0" == "" ]
     then
-        uci set wireless.@wifi-iface[0].hidden='0'
+        uci set wireless.@wifi-iface[0].hidden='1'
     fi
     if [ "$macfilter0" == "" ]
     then
