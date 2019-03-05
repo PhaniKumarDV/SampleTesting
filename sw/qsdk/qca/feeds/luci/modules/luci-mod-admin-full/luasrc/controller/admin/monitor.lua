@@ -387,7 +387,7 @@ function action_wifievents()
 	if string.len(string.sub(luci.util.exec("cat /tmp/wifi_packet_logs"),1,-2) ) > 20 then
 		data = luci.util.exec("cat /tmp/wifi_packet_logs")
 	else
-		data = "Wireless Log file is empty."
+		data = "Wireless Events Log file is empty."
 	end
     local wifi_events = data
 	luci.template.render("admin_monitor/wireless_events", {wifi_events=wifi_events})
@@ -407,7 +407,7 @@ function action_wifi_events( logtype )
 		if string.len(string.sub(luci.util.exec("cat /etc/log/wifi_packet_logs"),1,-2) ) > 20 then
 			data = luci.util.exec("cat /etc/log/wifi_packet_logs")
 		else
-			data = "Wireless Events Last Boot Log file is empty."
+			data = "Wireless Events Last Reboot Log file is empty."
 		end
 	end
 	luci.http.prepare_content("application/json")
@@ -419,6 +419,11 @@ function action_wifi_clrevents( logtype )
 	if( string.match(logtype,"1") ) then
         luci.sys.exec("rm -rf /tmp/wifi_packet_logs")
 	    data = "Wireless Events Log is cleared"
+    elseif( string.match(logtype,"2") ) then
+        luci.sys.exec("rm -rf /etc/log/wifi_packet_logs")
+	    data = "Wireless Events Last Reboot Log is cleared"
+    else
+        data = "Invalid Logtype"
     end
 	luci.http.prepare_content("application/json")
 	luci.http.write_json(data)
@@ -449,7 +454,7 @@ function action_eth_events( logtype )
 		if string.len(string.sub(luci.util.exec("cat /etc/log/eth_events.txt"),1,-2) ) > 20 then
 			data = luci.util.exec("cat /etc/log/eth_events.txt")
 		else
-			data = "Ethernet Events Last Boot Log file is empty."
+			data = "Ethernet Events Last Reboot Log file is empty."
 		end
 	end
 	luci.http.prepare_content("application/json")
@@ -461,6 +466,11 @@ function action_eth_clrevents( logtype )
 	if( string.match(logtype,"1") ) then
         luci.sys.exec("rm -rf /tmp/eth_events.txt")
 	    data = "Ethernet Events Log is cleared"
+    elseif( string.match(logtype,"2") ) then
+        luci.sys.exec("rm -rf /etc/log/eth_events.txt")
+	    data = "Ethernet Events Last Boot Log is cleared"
+    else
+        data = "Invalid Logtype"
     end
 	luci.http.prepare_content("application/json")
 	luci.http.write_json(data)
