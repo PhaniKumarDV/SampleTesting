@@ -484,8 +484,12 @@ _disable_qcawifi() {
 
     case "$1" in
         wifi0)
+            iwpriv ath0 kwnsoftreset 0
+            iwpriv ath0 kwndiscall 1
             ;;
         wifi1)
+            iwpriv ath1 kwnsoftreset 0
+            iwpriv ath1 kwndiscall 1
             kill -9  `ps | grep wifi_timeout.sh | awk '{print $1}'` 
             kill -9  `ps | grep link_timeout.sh | awk '{print $1}'` 
             kill -9  `ps | grep suservicetrap.sh | awk '{print $1}'` 
@@ -1453,7 +1457,7 @@ enable_qcawifi() {
 
 		config_get linktype "$device" linktype
         [ -n "$linktype" ] && iwpriv "$ifname" kwnlinktype "$linktype"
-        if [ "$linktype" == "3" ]
+        if [[ $linktype == "3" ]] || [[ $linktype == "4" ]]
         then
 		    config_get maxsta "$vif" maxsta
 		    [ -n "$linktype" ] && iwpriv "$ifname" maxsta "$maxsta"
