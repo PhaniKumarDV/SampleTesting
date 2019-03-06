@@ -19,6 +19,7 @@ cp -rf ../src/NHSS.QSDK.5.0.3/apss_proc/out/proprietary/Wifi/qsdk-whcpy/* qsdk
 
 # Copying qca wifi init script
 cp qsdk/package/KeyWest/kw-base-files/files/lib/wifi/qcawifi.sh qsdk/qca/feeds/qca/net/qca-wifi/files/
+cp qsdk/package/KeyWest/dl/qca-wifi-fw-IPQ4019_hw_1-WLAN.BL.3.5.3-00050-S-1.tar.bz2 qsdk/dl/
 # Applying patch for qca wifi driver and kernel
 cd qsdk/qca/src/qca-wifi/
 patch -p1 < ../../../package/KeyWest/patches/patch_qca_wifi
