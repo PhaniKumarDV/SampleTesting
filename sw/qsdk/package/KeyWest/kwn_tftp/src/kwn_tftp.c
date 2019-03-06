@@ -7,6 +7,197 @@
 kwn_tftp_config data;
 kwn_http_config ht_data;
 
+enum uci_cmd_type {
+    KWN_CMD_TYPE_SCALAR = 1,
+    KWN_CMD_TYPE_TABLE = 2
+};
+
+struct kwn_cfg_uci_cmds {
+    char cmd[50];
+    int type;
+};
+
+#define KWN_CMD_LEN 146
+struct kwn_cfg_uci_cmds uci_cmd_list[] = {
+/* Wireless 5GHz*/
+    /* Properties */
+    /*   0. */ { "wireless.wifi1.linktype", KWN_CMD_TYPE_SCALAR },
+    /*   1. */ { "wireless.@wifi-iface[1].mode", KWN_CMD_TYPE_SCALAR },
+    /*   2. */ { "wireless.@wifi-iface[1].ssid", KWN_CMD_TYPE_SCALAR },
+    /*   3. */ { "wireless.wifi1.country", KWN_CMD_TYPE_SCALAR },
+    /*   4. */ { "wireless.wifi1.hwmode", KWN_CMD_TYPE_SCALAR },
+    /*   5. */ { "wireless.wifi1.htmode", KWN_CMD_TYPE_SCALAR },
+    /*   6. */ { "wireless.wifi1.channel", KWN_CMD_TYPE_SCALAR },
+    /*   7. */ { "wireless.wifi1.distance", KWN_CMD_TYPE_SCALAR },
+    /*   8. */ { "wireless.@wifi-iface[1].shaping", KWN_CMD_TYPE_SCALAR },
+    /*   9. */ { "wireless.@wifi-iface[1].ullmt", KWN_CMD_TYPE_SCALAR },
+    /*  10. */ { "wireless.@wifi-iface[1].dllmt", KWN_CMD_TYPE_SCALAR },
+    /*  11. */ { "wireless.@wifi-iface[1].hidden", KWN_CMD_TYPE_SCALAR },
+    /*  12. */ { "wireless.wifi1.wifitimer", KWN_CMD_TYPE_SCALAR },
+    /*  13. */ { "wireless.wifi1.linktimer", KWN_CMD_TYPE_SCALAR },
+    /*  14. */ { "wireless.wifi1.suservice", KWN_CMD_TYPE_SCALAR },
+    /*  15. */ { "wireless.wifi1.icb", KWN_CMD_TYPE_SCALAR },
+    /*  16. */ { "wireless.wifi1.macinmac", KWN_CMD_TYPE_SCALAR },
+    /*  17. */ { "wireless.@wifi-iface[1].maxsta", KWN_CMD_TYPE_SCALAR },
+    /* MIMO */
+    /*  18. */ { "wireless.@wifi-iface[1].shortgi", KWN_CMD_TYPE_SCALAR },
+    /*  19. */ { "wireless.wifi1.txchainmask", KWN_CMD_TYPE_SCALAR },
+    /*  20. */ { "wireless.wifi1.rxchainmask", KWN_CMD_TYPE_SCALAR },
+    /*  21. */ { "wireless.@wifi-iface[1].amsdu", KWN_CMD_TYPE_SCALAR },
+    /*  22. */ { "wireless.@wifi-iface[1].ampdu", KWN_CMD_TYPE_SCALAR },
+    /* DDRS/ATPC */
+    /*  23. */ { "wireless.wifi1.ddrsstatus", KWN_CMD_TYPE_SCALAR },
+    /*  24. */ { "wireless.wifi1.spatialstream", KWN_CMD_TYPE_SCALAR },
+    /*  25. */ { "wireless.wifi1.ddrsrate", KWN_CMD_TYPE_SCALAR },
+    /*  26. */ { "wireless.wifi1.ddrsminrate", KWN_CMD_TYPE_SCALAR },
+    /*  27. */ { "wireless.wifi1.ddrsmaxrate", KWN_CMD_TYPE_SCALAR },
+    /*  28. */ { "wireless.wifi1.ddrsinctimer", KWN_CMD_TYPE_SCALAR },
+    /*  29. */ { "wireless.wifi1.ddrsdectimer", KWN_CMD_TYPE_SCALAR },
+    /*  30. */ { "wireless.wifi1.ddrsincthrld", KWN_CMD_TYPE_SCALAR },
+    /*  31. */ { "wireless.wifi1.ddrsrtxinc", KWN_CMD_TYPE_SCALAR },
+    /*  32. */ { "wireless.wifi1.ddrsrtxdec", KWN_CMD_TYPE_SCALAR },
+    /*  33. */ { "wireless.wifi1.atpcstatus", KWN_CMD_TYPE_SCALAR },
+    /*  34. */ { "wireless.wifi1.antennagain", KWN_CMD_TYPE_SCALAR },
+    /*  35. */ { "wireless.wifi1.maxeirp", KWN_CMD_TYPE_SCALAR },
+    /*  36. */ { "wireless.wifi1.atpcpower", KWN_CMD_TYPE_SCALAR },
+    /* Security */
+    /*  37. */ { "wireless.@wifi-iface[1].encryption", KWN_CMD_TYPE_SCALAR },
+    /*  38. */ { "wireless.@wifi-iface[1].key", KWN_CMD_TYPE_SCALAR },
+    /* MAC ACL */
+    /*  39. */ { "wireless.@wifi-iface[1].macfilter", KWN_CMD_TYPE_SCALAR },
+    /*  40. */ { "wireless.@wifi-iface[1].maclist", KWN_CMD_TYPE_SCALAR },
+    /* DCS */
+    /*  41. */ { "wireless.wifi1.dcsstatus", KWN_CMD_TYPE_SCALAR },
+    /*  42. */ { "wireless.wifi1.dcsthrld", KWN_CMD_TYPE_SCALAR },
+/* Wireless 2.4GHz*/
+    /* Properties */
+    /*  43. */ { "wireless.@wifi-iface[0].disabled", KWN_CMD_TYPE_SCALAR },
+    /*  44. */ { "wireless.@wifi-iface[0].mode", KWN_CMD_TYPE_SCALAR },
+    /*  45. */ { "wireless.@wifi-iface[0].ssid", KWN_CMD_TYPE_SCALAR },
+    /*  46. */ { "wireless.wifi0.country", KWN_CMD_TYPE_SCALAR },
+    /*  47. */ { "wireless.wifi0.hwmode", KWN_CMD_TYPE_SCALAR },
+    /*  48. */ { "wireless.wifi0.htmode", KWN_CMD_TYPE_SCALAR },
+    /*  49. */ { "wireless.wifi0.channel", KWN_CMD_TYPE_SCALAR },
+    /*  50. */ { "wireless.wifi0.TXPowLim2G", KWN_CMD_TYPE_SCALAR },
+    /*  51. */ { "wireless.@wifi-iface[0].dis_legacy", KWN_CMD_TYPE_SCALAR },
+    /*  52. */ { "wireless.@wifi-iface[0].hidden", KWN_CMD_TYPE_SCALAR },
+    /* Security */
+    /*  53. */ { "wireless.@wifi-iface[0].encryption", KWN_CMD_TYPE_SCALAR },
+    /*  54. */ { "wireless.@wifi-iface[0].key", KWN_CMD_TYPE_SCALAR },
+    /* MAC ACL */
+    /*  55. */ { "wireless.@wifi-iface[0].macfilter", KWN_CMD_TYPE_SCALAR },
+    /*  56. */ { "wireless.@wifi-iface[0].maclist", KWN_CMD_TYPE_SCALAR },
+/* Network */
+    /* IP Configuration */
+    /*  57. */ { "network.param.networkmode", KWN_CMD_TYPE_SCALAR },
+    /*  58. */ { "network.param.natstatus", KWN_CMD_TYPE_SCALAR },
+    /*  59. */ { "network.lan.proto", KWN_CMD_TYPE_SCALAR },
+    /*  60. */ { "network.lan.ipaddr", KWN_CMD_TYPE_SCALAR },
+    /*  61. */ { "network.lan.netmask", KWN_CMD_TYPE_SCALAR },
+    /*  62. */ { "network.lan.gateway", KWN_CMD_TYPE_SCALAR },
+    /*  63. */ { "network.lan.dns", KWN_CMD_TYPE_SCALAR },
+    /*  64. */ { "network.kweth.ipaddr", KWN_CMD_TYPE_SCALAR },
+    /*  65. */ { "network.kweth.netmask", KWN_CMD_TYPE_SCALAR },
+    /*  66. */ { "network.kweth.gateway", KWN_CMD_TYPE_SCALAR },
+    /* RADIUS */
+    /*  67. */ { "wrt-radauth.sys.enableRadAuth", KWN_CMD_TYPE_SCALAR },
+    /*  68. */ { "wrt-radauth.sys.primaryServer", KWN_CMD_TYPE_SCALAR },
+    /*  69. */ { "wrt-radauth.sys.primaryPort", KWN_CMD_TYPE_SCALAR },
+    /*  70. */ { "wrt-radauth.sys.primarySecret", KWN_CMD_TYPE_SCALAR },
+    /*  71. */ { "wrt-radauth.sys.secondaryServer", KWN_CMD_TYPE_SCALAR },
+    /*  72. */ { "wrt-radauth.sys.secondaryPort", KWN_CMD_TYPE_SCALAR },
+    /*  73. */ { "wrt-radauth.sys.secondarySecret", KWN_CMD_TYPE_SCALAR },
+    /*  74. */ { "wrt-radauth.sys.reauthTime", KWN_CMD_TYPE_SCALAR },
+    /*  75. */ { "wrt-radauth.sys.retryTime", KWN_CMD_TYPE_SCALAR },
+    /*  76. */ { "wrt-radauth.sys.requestRetries", KWN_CMD_TYPE_SCALAR },
+    /*  77. */ { "wrt-radauth.sys.requestTimeout", KWN_CMD_TYPE_SCALAR },
+    /* VLAN */
+    /*  78. */ { "vlan.vlan.status", KWN_CMD_TYPE_SCALAR },
+    /*  79. */ { "vlan.vlan.mode", KWN_CMD_TYPE_SCALAR },
+    /*  80. */ { "vlan.vlan.mgmtvlan", KWN_CMD_TYPE_SCALAR },
+    /*  81. */ { "vlan.vlan.accessvlan", KWN_CMD_TYPE_SCALAR },
+    /*  82. */ { "vlan.vlan.trunkoption", KWN_CMD_TYPE_SCALAR },
+    /*  83. */ { "vlan.vlan.trunkvlan", KWN_CMD_TYPE_SCALAR },
+    /*  84. */ { "vlan.vlan.svlan", KWN_CMD_TYPE_SCALAR },
+    /*  85. */ { "vlan.vlan.svlanethertype", KWN_CMD_TYPE_SCALAR },
+    /*  86. */ { "vlan.vlan.bda", KWN_CMD_TYPE_SCALAR },
+    /*  87. */ { "vlan.vlan.bsa", KWN_CMD_TYPE_SCALAR },
+    /*  88. */ { "vlan.vlan.bvid", KWN_CMD_TYPE_SCALAR },
+    /*  89. */ { "vlan.vlan.bisid", KWN_CMD_TYPE_SCALAR },
+    /*  90. */ { "vlan.vlan.tagmgmt", KWN_CMD_TYPE_SCALAR },
+    /* Ethernet */
+    /*  91. */ { "ethernet.ethernet.mode", KWN_CMD_TYPE_SCALAR },
+    /*  92. */ { "ethernet.ethernet.ethtimer", KWN_CMD_TYPE_SCALAR },
+    /*  93. */ { "network.lan.mtu", KWN_CMD_TYPE_SCALAR },
+    /* DHCP Server */
+    /*  94. */ { "dhcp.lan.ignore", KWN_CMD_TYPE_SCALAR },
+    /*  95. */ { "dhcp.lan.start", KWN_CMD_TYPE_SCALAR },
+    /*  96. */ { "dhcp.lan.limit", KWN_CMD_TYPE_SCALAR },
+    /*  97. */ { "dhcp.lan.leasetime", KWN_CMD_TYPE_SCALAR },
+    /* DHCP Fixed leases */
+    /*  98. */ { "dhcp.@host", KWN_CMD_TYPE_TABLE },
+    /* Filtering */
+    /*  99. */ { "filter.filter.status", KWN_CMD_TYPE_SCALAR },
+    /* 100. */ { "filter.filter.l2mcast", KWN_CMD_TYPE_SCALAR },
+    /* 101. */ { "filter.filter.l3mcast", KWN_CMD_TYPE_SCALAR },
+    /* 102. */ { "filter.filter.l2bcast", KWN_CMD_TYPE_SCALAR },
+    /* 103. */ { "filter.filter.l3bcast", KWN_CMD_TYPE_SCALAR },
+/* Management */
+    /* NTP */
+    /* 104. */ { "system.ntp.enabled", KWN_CMD_TYPE_SCALAR },
+    /* 105. */ { "system.ntp.server", KWN_CMD_TYPE_SCALAR },
+    /* 106. */ { "system.@system[0].timezone", KWN_CMD_TYPE_SCALAR },
+    /* GPS */
+    /* 107. */ { "system.gps.status", KWN_CMD_TYPE_SCALAR },
+    /* 108. */ { "system.gps.interval", KWN_CMD_TYPE_SCALAR },
+    /* Dying Gasp */
+    /* 109. */ { "wireless.@wifi-iface[1].dyinggasp", KWN_CMD_TYPE_SCALAR },
+    /* 110. */ { "wireless.@wifi-iface[1].dgackdisable", KWN_CMD_TYPE_SCALAR },
+    /* LEDS */
+    /* 111. */ { "system.led.status", KWN_CMD_TYPE_SCALAR },
+    /* Logging */
+    /* 112. */ { "system.@system[0].log_ip", KWN_CMD_TYPE_SCALAR },
+    /* 113. */ { "system.@system[0].log_port", KWN_CMD_TYPE_SCALAR },
+    /* 114. */ { "system.@system[0].templogstatus", KWN_CMD_TYPE_SCALAR },
+    /* 115. */ { "system.@system[0].temploginterval", KWN_CMD_TYPE_SCALAR },
+    /* Location */
+    /* 116. */ { "system.@system[0].hostname", KWN_CMD_TYPE_SCALAR },
+    /* 117. */ { "wireless.wifi1.customername", KWN_CMD_TYPE_SCALAR },
+    /* 118. */ { "system.@system[0].location", KWN_CMD_TYPE_SCALAR },
+    /* 119. */ { "system.@system[0].email", KWN_CMD_TYPE_SCALAR },
+    /* 120. */ { "system.@system[0].contact", KWN_CMD_TYPE_SCALAR },
+    /* 121. */ { "system.@system[0].bstid", KWN_CMD_TYPE_SCALAR },
+    /* 122. */ { "wireless.wifi1.linkid", KWN_CMD_TYPE_SCALAR },
+    /* HTTP/HTTPs */
+    /* 123. */ { "uhttpd.main.adminpwd", KWN_CMD_TYPE_SCALAR },
+    /* 124. */ { "uhttpd.main.userpwd", KWN_CMD_TYPE_SCALAR },
+    /* 125. */ { "uhttpd.main.superpwd", KWN_CMD_TYPE_SCALAR },
+    /* 126. */ { "uhttpd.main.listen_http", KWN_CMD_TYPE_SCALAR },
+    /* 127. */ { "uhttpd.main.listen_https", KWN_CMD_TYPE_SCALAR },
+    /* Telnet/SSH */
+    /* 128. */ { "telnetssh.telnet.status", KWN_CMD_TYPE_SCALAR },
+    /* 129. */ { "telnetssh.telnet.sessions", KWN_CMD_TYPE_SCALAR },
+    /* 130. */ { "telnetssh.telnet.port", KWN_CMD_TYPE_SCALAR },
+    /* 131. */ { "telnetssh.ssh.status", KWN_CMD_TYPE_SCALAR },
+    /* 132. */ { "telnetssh.ssh.sessions", KWN_CMD_TYPE_SCALAR },
+    /* 133. */ { "telnetssh.ssh.port", KWN_CMD_TYPE_SCALAR },
+    /* SNMP */
+    /* 134. */ { "snmpd.public_access.version", KWN_CMD_TYPE_SCALAR },
+    /* 135. */ { "snmpd.public.community", KWN_CMD_TYPE_SCALAR },
+    /* 136. */ { "snmpd.private.community", KWN_CMD_TYPE_SCALAR },
+    /* 137. */ { "snmpd.trapaddress.host", KWN_CMD_TYPE_SCALAR },
+    /* 138. */ { "snmpd.trapaddress.paswd", KWN_CMD_TYPE_SCALAR },
+    /* TFTP */
+    /* 139. */ { "tftp.tftp.optype", KWN_CMD_TYPE_SCALAR },
+    /* 140. */ { "tftp.tftp.serverip", KWN_CMD_TYPE_SCALAR },
+    /* 141. */ { "tftp.tftp.filename", KWN_CMD_TYPE_SCALAR },
+    /* 142. */ { "tftp.tftp.filetype", KWN_CMD_TYPE_SCALAR },
+    /* 143. */ { "tftp.tftp.keepset", KWN_CMD_TYPE_SCALAR },
+    /* 144. */ { "tftp.http.filetype", KWN_CMD_TYPE_SCALAR },
+    /* 145. */ { "tftp.http.optype", KWN_CMD_TYPE_SCALAR },
+    /* Update maximum number + 1 in KWN_CMD_LEN */
+};
+
 void kwn_sys_cmd_imp( const char* cmd, unsigned char* cmd_buf )
 {
     FILE *fp = NULL;
@@ -22,6 +213,11 @@ void kwn_sys_cmd_imp( const char* cmd, unsigned char* cmd_buf )
         /*printf("%s",a);*/
     }
     pclose(fp);
+
+    if( a[0] == '\0' ) {
+        memcpy( cmd_buf, "-NA-", sizeof( cmd_buf ) );
+        return;
+    }
 
     token = strtok(a,"\n");
     len = strlen(token);
@@ -168,6 +364,7 @@ void kwn_config_upgrade( )
             sprintf( cmdimp, "uci set %s", buff_up );
             system( cmdimp );
         }
+        system("uci set uhttpd.main.pwdmodified='1'");
         fclose( fin );
         system("uci commit");
         system("reload_config");
@@ -190,7 +387,6 @@ void kwn_config_upgrade( )
     system( cmd );
     printf("Upload from remote to embedded device is failed\n");
 
-    system("uci commit");
     return;
 }
 
@@ -248,7 +444,6 @@ void kwn_image_upgrade( )
         sprintf( cmd," uci set tftp.tftp.opstatus='%d'", KWN_UPLOAD_SUCCESS );
         system( cmd );
 
-        system("uci commit");
         printf("\nUpload from remote to embedded device");
 
         return;
@@ -259,12 +454,60 @@ void kwn_image_upgrade( )
     memset( cmd, '\0', sizeof( cmd ) );
     sprintf( cmd," uci set tftp.tftp.opstatus='%d'", KWN_UPLOAD_FAILURE );
     system( cmd );
-    system("uci commit");
     printf("\nNot a valid image");
 
     return;
 }
 
+void kwn_config_retrieve( )
+{
+    FILE *fp = NULL;
+    char cmd[100];
+    char cmd_buf[100];
+    int i = 0;
+
+    memset(cmd, '\0', sizeof(cmd));
+    sprintf(cmd,"uci set tftp.tftp.opstatus='%d'",KWN_DOWNLOAD_IN_PROGRESS);
+    system(cmd);
+
+    memset(cmd, '\0', sizeof(cmd));
+
+    fp = fopen(KWN_CFG_FILE,"w+");
+
+    for( i = 0; i < KWN_CMD_LEN; i++ )
+    {
+        if( uci_cmd_list[i].type == KWN_CMD_TYPE_SCALAR ) {
+            memset( cmd, '\0', sizeof( cmd ) );
+            memset( cmd_buf, '\0', sizeof( cmd_buf ) );
+            sprintf( cmd, "uci get %s",uci_cmd_list[i].cmd);
+            printf("cmd : %s \n",cmd);
+            kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] );
+            if( memcmp( cmd_buf, "-NA-", 4 ) )
+                fprintf( fp, "%s='%s'\r\n", uci_cmd_list[i].cmd, cmd_buf );
+        }
+        else if( uci_cmd_list[i].type == KWN_CMD_TYPE_TABLE ) {
+            /* TODO: Table Handling */
+        }
+        else {
+            continue;
+        }
+    }
+    fclose(fp);
+
+    memset(cmd, '\0', sizeof(cmd));
+    sprintf(cmd, "tftp -p -l /tmp/kwncfg.txt -r %s %d.%d.%d.%d",data.filename,data.serverip[0],data.serverip[1],data.serverip[2],data.serverip[3]);
+    system( cmd );
+
+    memset(cmd, '\0', sizeof(cmd));
+    sprintf(cmd,"uci set tftp.tftp.opstatus='%d'",KWN_DOWNLOAD_SUCCESS);
+    system(cmd);
+
+    printf("\nRetrieve from embedded device\n");
+
+    return;
+}
+
+#if 0
 void kwn_config_retrieve( )
 {
     FILE *fp1 = NULL;
@@ -311,6 +554,7 @@ void kwn_config_retrieve( )
 
     return;
 }
+#endif
 
 void kwn_http_config_upgrade()
 {
@@ -335,6 +579,7 @@ void kwn_http_config_upgrade()
             sprintf( cmdimp, "uci set %s", buff_up );
             system( cmdimp );
         }
+        system("uci set uhttpd.main.pwdmodified='1'");
         fclose( fin );
         system("uci commit");
         system("reload_config");
@@ -345,7 +590,6 @@ void kwn_http_config_upgrade()
         sprintf( cmd," uci set tftp.tftp.opstatus='%d'", KWN_UPLOAD_SUCCESS );
         system( cmd );
 
-        system("uci commit");
         printf("\nUpload from remote to embedded device");
         memset( cmd, '\0', sizeof( cmd ) );
         sprintf( cmd,"rm %s", KWN_HTTP_NEW_CONFIG_FILE );
@@ -356,12 +600,53 @@ void kwn_http_config_upgrade()
     memset( cmd, '\0', sizeof( cmd ) );
     sprintf( cmd," uci set tftp.tftp.opstatus='%d'", KWN_UPLOAD_FAILURE );
     system( cmd );
-    system("uci commit");
     printf("\nFile not found");
 
     return;
 }
 
+void kwn_http_config_retrieve()
+{
+    FILE *fp = NULL;
+    char cmd[ 100 ];
+    char cmd_buf[ 100 ];
+    int i = 0;
+
+    memset(cmd, '\0', sizeof(cmd));
+    sprintf(cmd,"uci set tftp.tftp.opstatus='%d'",KWN_DOWNLOAD_IN_PROGRESS);
+    system(cmd);
+
+    fp = fopen( KWN_HTTP_CFG_FILE, "w+" );
+
+    for( i = 0; i < KWN_CMD_LEN; i++ )
+    {
+        if( uci_cmd_list[i].type == KWN_CMD_TYPE_SCALAR ) {
+            memset( cmd, '\0', sizeof( cmd ) );
+            memset( cmd_buf, '\0', sizeof( cmd_buf ) );
+            sprintf( cmd, "uci get %s",uci_cmd_list[i].cmd);
+            printf("cmd : %s \n",cmd);
+            kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] );
+            if( memcmp( cmd_buf, "-NA-", 4 ) )
+                fprintf( fp, "%s='%s'\r\n", uci_cmd_list[i].cmd, cmd_buf );
+        }
+        else if( uci_cmd_list[i].type == KWN_CMD_TYPE_TABLE ) {
+            /* TODO: Table Handling */
+        }
+        else {
+            continue;
+        }
+    }
+    fclose( fp );
+
+    memset( cmd, '\0', sizeof( cmd ) );
+    sprintf( cmd, "uci set tftp.tftp.opstatus='%d'", KWN_DOWNLOAD_SUCCESS );
+    system( cmd );
+
+    printf("\nRetrieve from embedded device\n");
+    return;
+}
+
+#if 0
 void kwn_http_config_retrieve()
 {
     printf("\n %s : %d\n",__func__,__LINE__);
@@ -407,6 +692,7 @@ void kwn_http_config_retrieve()
     printf("\nRetrieve from embedded device\n");
     return;
 }
+#endif
 
 int main()
 {
@@ -523,5 +809,6 @@ int main()
     sprintf( cmd," uci set tftp.http.optype='0'");
     system( cmd );
 
+    system("uci commit");
     return 0;
 }
