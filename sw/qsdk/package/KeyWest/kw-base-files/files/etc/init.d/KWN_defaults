@@ -470,7 +470,5 @@ start_service() {
         mv /etc/config/reboot_logs /etc/reboot_logs
     fi
 
-    dmesg -n 1
-
     procd_close_instance
 }

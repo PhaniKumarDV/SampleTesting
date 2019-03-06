@@ -151,7 +151,8 @@ start_instance()
         ( echo "$adminpwd"; sleep 1; echo "$adminpwd" ) | passwd 'admin' >/dev/null 2>&1
         ( echo "$userpwd"; sleep 1; echo "$userpwd" ) | passwd 'user' >/dev/null 2>&1
         ( echo "$superpwd"; sleep 1; echo "$superpwd" ) | passwd 'superuser' >/dev/null 2>&1
-        uci set uhttpd.main.pwdmodified='0' 
+        uci set uhttpd.main.pwdmodified='0'
+        uci commit
     fi
 	procd_close_instance
 }
