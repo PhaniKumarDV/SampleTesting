@@ -54,3 +54,10 @@ if [ "$1" -eq 6 ]; then
 	trap_send
     exit
 fi
+
+if [ "$1" -eq 7 ]; then
+    trapmsg="Device initialized successfully"
+    trapoid="1.3.6.1.4.1.52619.1.3.4.7"
+	trap_send
+    exit
+fi
