@@ -631,8 +631,10 @@ function get_log()
                                 document.getElementById("linktype1").innerHTML = "PTP";
                             else if( ltype == 2 )
                                 document.getElementById("linktype1").innerHTML = "Backhaul";
+                            else if( ltype == 3 )
+                                document.getElementById("linktype1").innerHTML = "PTMP-SMAC3";
                             else
-                                document.getElementById("linktype1").innerHTML = "PTMP";
+                                document.getElementById("linktype1").innerHTML = "PTMP-SMAC2";
                         }
                         else {
                             document.getElementById("mac2").innerHTML = "<%=uciget('uci get wireless.wifi0.macaddr')%>"; 
