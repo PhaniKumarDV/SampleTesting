@@ -6092,8 +6092,8 @@ diff -urN net-snmp-5.4.4-org/include/net-snmp/net-snmp-config.h.in net-snmp-5.4.
  
 diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWEST-MIB.mib
 --- net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib	1970-01-01 05:30:00.000000000 +0530
-+++ net-snmp-5.4.4-mod/mibs/KEYWEST-MIB.mib	2019-03-06 16:57:48.258696860 +0530
-@@ -0,0 +1,3105 @@
++++ net-snmp-5.4.4-mod/mibs/KEYWEST-MIB.mib	2019-03-08 11:38:44.435571522 +0530
+@@ -0,0 +1,3106 @@
 +------------------------------------------------------------------------
 +------------------------------------------------------------------------
 +--
@@ -6626,7 +6626,8 @@ diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWES
 +                     It can be configured as
 +                     '1' - PTP
 +                     '2' - Backhaul
-+                     '3' - PTMP."
++                     '3' - PTMP-SMAC3
++                     '4' - PTMP-SMAC2."
 +::= { wirelessEntry 35 }
 +
 +wirelessIntracellBlocking OBJECT-TYPE
