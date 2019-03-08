@@ -4183,7 +4183,7 @@ diff -urN qca-wifi-org/umac/base/ieee80211_channel.c qca-wifi-mod/umac/base/ieee
          ieee80211_set_channel(ic, channel);
 diff -urN qca-wifi-org/umac/base/ieee80211_config.c qca-wifi-mod/umac/base/ieee80211_config.c
 --- qca-wifi-org/umac/base/ieee80211_config.c	2018-06-08 11:00:49.000000000 +0530
-+++ qca-wifi-mod/umac/base/ieee80211_config.c	2018-11-01 15:05:22.844829566 +0530
++++ qca-wifi-mod/umac/base/ieee80211_config.c	2019-03-08 19:32:04.575106524 +0530
 @@ -478,12 +478,13 @@
               vap->iv_fixed_rate.series = IEEE80211_FIXED_RATE_NONE;
          } else {
@@ -4228,7 +4228,34 @@ diff -urN qca-wifi-org/umac/base/ieee80211_config.c qca-wifi-mod/umac/base/ieee8
      case IEEE80211_FIXED_NSS:
           if (val > ieee80211_getstreams(ic, ic->ic_tx_chainmask))
           return -EINVAL;
-@@ -2667,7 +2673,6 @@
+@@ -1242,6 +1248,8 @@
+     break;
+ 
+     case IEEE80211_ENABLE_RTSCTS:
++    /* KWN */
++#if 0
+          if (((val & (~0xff)) != 0) ||
+              (((val & 0x0f) == 0) && (((val & 0xf0) >> 4) != 0)) ||
+              (((val & 0x0f) != 0) && (((val & 0xf0) >> 4) == 0)) ) {
+@@ -1254,8 +1262,15 @@
+                      __func__, val);
+              return -EINVAL;
+          }
+-
+-         vap->iv_rtscts_enabled = val;
++#endif
++         if (val == 1 || val == 0) {
++             vap->iv_rtscts_enabled = val;
++         }
++         else {
++             QDF_PRINT_INFO(ic->ic_print_idx, QDF_MODULE_ID_ANY, QDF_TRACE_LEVEL_INFO, "%s: Not yet supported value for RTS-CTS: %x\n",
++                     __func__, val);
++             return -EINVAL;
++         }
+     break;
+ 
+     case IEEE80211_RC_NUM_RETRIES:
+@@ -2667,7 +2682,6 @@
               val = vap->iv_vht_fixed_mcs;
           }
      break;
@@ -6540,7 +6567,7 @@ diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.h qca-wifi-mod/umac/base/ieee802
  #endif //IEEE80211_UCFG_H_
 diff -urN qca-wifi-org/umac/base/ieee80211_vap.c qca-wifi-mod/umac/base/ieee80211_vap.c
 --- qca-wifi-org/umac/base/ieee80211_vap.c	2018-06-08 11:00:49.000000000 +0530
-+++ qca-wifi-mod/umac/base/ieee80211_vap.c	2019-03-06 15:52:00.856663431 +0530
++++ qca-wifi-mod/umac/base/ieee80211_vap.c	2019-03-08 19:32:12.551087571 +0530
 @@ -37,6 +37,503 @@
  void acfg_clean(struct ieee80211com *ic);
  #endif
@@ -6960,10 +6987,10 @@ diff -urN qca-wifi-org/umac/base/ieee80211_vap.c qca-wifi-mod/umac/base/ieee8021
 +	vap->kwn_tput_test_rxseq = 0;
 +	vap->kwn_tput_test_rx_failed_cnt = 0;
 +	printk(": Failover:: TPUT: pkt_per_ms: %d\n",vap->kwn_tput_test_pkt_per_ms);
-+	if( vap->kwn_tput_test_direction == 3 || vap->kwn_tput_test_direction == 2 )
-+		ieee80211_send_tput_test(vap);
-+	if( vap->kwn_tput_test_direction == 3 || vap->kwn_tput_test_direction == 1 )
-+		tasklet_schedule(&vap->kwn_tput_tq);
++    if( vap->kwn_tput_test_direction == 3 || vap->kwn_tput_test_direction == 2 )
++        ieee80211_tput_test_stats( vap );
++    if( vap->kwn_tput_test_direction == 3 || vap->kwn_tput_test_direction == 1 )
++        tasklet_schedule(&vap->kwn_tput_tq);
 +	return;
 +}
 +
