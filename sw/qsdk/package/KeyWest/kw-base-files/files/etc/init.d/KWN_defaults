@@ -72,6 +72,7 @@ start_service() {
     macfilter1=$(uci get wireless.@wifi-iface[1].macfilter)
     icb1=$(uci get wireless.wifi1.icb)
     macinmac1=$(uci get wireless.wifi1.macinmac)
+    rcretries1=$(uci get wireless.wifi1.rcretries)
 #RADIO 2.4
     tx_power_radio2=$(uci get wireless.wifi0.TXPowLim2G)
     hidden_radio0=$(uci get wireless.@wifi-iface[0].hidden)
@@ -334,6 +335,10 @@ start_service() {
     then
         uci set wireless.wifi1.macinmac='1'
     fi
+    if [ "$rcretries1" == "" ]
+    then
+        uci set wireless.wifi1.rcretries='8'
+    fi
 #Ethernet
     if [ "$eth_timer" == "" ]
     then
@@ -356,6 +361,8 @@ start_service() {
     uci set wireless.@wifi-iface[1].vhtmubfee='0'
     uci set wireless.@wifi-iface[1].vhtsubfer='0'
     uci set wireless.@wifi-iface[1].vhtsubfee='0'
+    uci set wireless.@wifi-iface[1].tx_stbc='0'
+    uci set wireless.@wifi-iface[1].ldpc='0'
 #2.4 Radio Default values
     uci set wireless.wifi0.txchainmask='3'
     uci set wireless.wifi0.rxchainmask='3'

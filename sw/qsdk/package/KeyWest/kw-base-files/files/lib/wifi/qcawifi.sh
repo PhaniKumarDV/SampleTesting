@@ -1931,6 +1931,8 @@ enable_qcawifi() {
         [ -n "$maxeirp" ] && iwpriv "$ifname" kwnmaxeirp "$maxeirp"
         [ -n "$atpcpower" ] && iwpriv "$ifname" kwnatpcpow "$atpcpower"
 
+		config_get rcretries "$device" rcretries
+        [ -n "$rcretries" ] && iwpriv "$ifname" rc_retries "$rcretries"
 
 		config_get kwnnoiseoff "$device" kwnnoiseoff
         [ -n "$kwnnoiseoff" ] && iwpriv "$ifname" kwnnoiseoff "$kwnnoiseoff"

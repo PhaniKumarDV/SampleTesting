@@ -870,6 +870,9 @@ void cfg_set( char *type, char *value )
         case UCI_ID_RADIO1_MAXSTA:
             sprintf(cmd,"uci set wireless.@wifi-iface[1].maxsta='%s'",value);
             break;
+        case UCI_ID_RADIO1_RCRETRIES:
+            sprintf(cmd,"uci set wireless.wifi1.rcretries='%s'",value);
+            break;
         default:
             break;
     }
