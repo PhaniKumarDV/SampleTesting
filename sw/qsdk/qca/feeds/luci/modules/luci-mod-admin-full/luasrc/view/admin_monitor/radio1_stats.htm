@@ -350,7 +350,7 @@
                             else {
                                 d = dst;
                             }
-							tr.insertCell(-1).innerHTML = nowrap(String.format('%d', d));
+							tr.insertCell(-1).innerHTML = nowrap(String.format('%f', d));
 
 							tr.insertCell(-1).innerHTML = assoclist[j].local_snr_a1 > 128 ? assoclist[j].l_noise_floor : (assoclist[j].local_snr_a1 + assoclist[j].l_noise_floor);
 							tr.insertCell(-1).innerHTML = assoclist[j].local_snr_a2 > 128 ? assoclist[j].l_noise_floor : (assoclist[j].local_snr_a2 + assoclist[j].l_noise_floor);
