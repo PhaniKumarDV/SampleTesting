@@ -86,14 +86,14 @@ function clearethstat()
 				<td>Total Packets</td>
 				<td id="txpkt">
                    <script type="text/javascript">
-                      var txpkt = "<%=execute("iwpriv ath1 g_kwn_ethtxpkt | sed 's/ath1      g_kwn_ethtxpkt://'")%>";
+                      var txpkt = "<%=execute("cat /proc/net/dev | grep eth0 | awk '{print $11}'")%>";
                       txpkt.replace(" ","");
                       document.write(txpkt);
                     </script>
                 </td>
 				<td id="rxpkt">
                     <script type="text/javascript">
-                       var rxpkt = "<%=execute("iwpriv ath1 g_kwn_ethrxpkt | sed 's/ath1      g_kwn_ethrxpkt://'")%>";
+                       var rxpkt = "<%=execute("cat /proc/net/dev | grep eth0 | awk '{print $3}'")%>";
                        rxpkt.replace(" ","");
                        document.write(rxpkt);
                     </script>
@@ -103,14 +103,14 @@ function clearethstat()
 				<td>Total Bytes</td>
 				<td id="txbyte">
                     <script type="text/javascript">
-                       var txbyte = "<%=execute("iwpriv ath1 g_kwn_ethtxbyt | sed 's/ath1      g_kwn_ethtxbyt://'")%>";
+                       var txbyte = "<%=execute("cat /proc/net/dev | grep eth0 | awk '{print $10}'")%>";
                        txbyte.replace(" ","");
                        document.write(txbyte);
                     </script>
                 </td>
 				<td id="rxbyte">
                     <script type="text/javascript">
-                       var rxbyte = "<%=execute("iwpriv ath1 g_kwn_ethrxbyt   | sed 's/ath1      g_kwn_ethrxbyt://'")%>";
+                       var rxbyte = "<%=execute("cat /proc/net/dev | grep eth0 | awk '{print $2}'")%>";
                        rxbyte.replace(" ","");
                        document.write(rxbyte);
                     </script>
@@ -120,14 +120,14 @@ function clearethstat()
 				<td>Dropped</td>
 				<td id="txfailpkt">
                    <script type="text/javascript">
-                      var txfailpkt = "<%=execute("iwpriv ath1 g_kwnethtxfail | sed 's/ath1      g_kwnethtxfail://'")%>";
+                      var txfailpkt = "<%=execute("cat /proc/net/dev | grep eth0 | awk '{print $5}'")%>";
                       txfailpkt.replace(" ","");
                       document.write(txfailpkt);
                     </script>
                 </td>
 				<td id="rxfailpkt">
                     <script type="text/javascript">
-                       var rxfailpkt = "<%=execute("iwpriv ath1 g_kwnethrxfail | sed 's/ath1      g_kwnethrxfail://'")%>";
+                       var rxfailpkt = "<%=execute("cat /proc/net/dev | grep eth0 | awk '{print $13}'")%>";
                        rxfailpkt.replace(" ","");
                        document.write(rxfailpkt);
                     </script>
@@ -242,7 +242,7 @@ function clearethstat()
 				<td>Tx Errors</td>
 				<td id="txerr">
                     <script type="text/javascript">
-                       var txerr = "<%=execute("iwpriv ath1 g_kwn_ethtxerr | sed 's/ath1      g_kwn_ethtxerr://'")%>";
+                       var txerr = "<%=execute("cat /proc/net/dev | grep eth0 | awk '{print $12}'")%>";
                        txerr.replace(" ","");
                        document.write(txerr);
                     </script>
@@ -252,7 +252,7 @@ function clearethstat()
 				<td>Rx Errors</td>
 				<td id="rxerr">
                     <script type="text/javascript">
-                       var rxerr = "<%=execute("iwpriv ath1 g_kwn_ethrxerr | sed 's/ath1      g_kwn_ethrxerr://'")%>";
+                       var rxerr = "<%=execute("cat /proc/net/dev | grep eth0 | awk '{print $4}'")%>";
                        rxerr.replace(" ","");
                        document.write(rxerr);
                     </script>
