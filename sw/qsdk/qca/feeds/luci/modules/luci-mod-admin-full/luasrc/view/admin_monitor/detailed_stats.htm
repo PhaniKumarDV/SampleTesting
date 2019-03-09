@@ -249,8 +249,8 @@ function getBaseLog(x, y) {
         <table>
             <tr>
                 <td width="35%">Packet Size&nbsp;<input type="text" name="78" class="cbi-input-select" style="width:100px;" value="<%=uciget('uci get tool.tool.size')%>">&nbsp;Bytes</td>
-                <td width="35%">Duration&nbsp;<input type="text" name="79" class="cbi-input-select" id="duration" style="width:100px;" value="<%=uciget('uci get tool.tool.dur')%>">&nbsp;Sec</td>
-                <td width="35%" class="cbi-value-field">Direction&nbsp;
+                <td width="35%">Duration&nbsp;<input type="text" name="79" class="cbi-input-select" id="duration" style="width:100px;" value="<%=uciget('uci get tool.tool.dur')%>">&nbsp;(1-2500) Sec</td>
+                <td width="32%" class="cbi-value-field">Direction&nbsp;
                     <select class="cbi-input-select" name="80" style="width:110px;">
                     <script type="text/javascript">
                         var dir = "<%=uciget('uci get tool.tool.dir')%>";
