@@ -181,17 +181,17 @@ function action_wireless()
 end
 
 function action_ethernet()
-    local res = luci.util.exec("iwpriv ath1 g_kwn_ethtxpkt | sed 's/ath1      g_kwn_ethtxpkt://'")
+    local res = luci.util.exec("cat /proc/net/dev | grep eth0 | awk '{print $11}'")
     local txpkt = string.gsub(res, "\n", "")
-    res = luci.util.exec("iwpriv ath1 g_kwn_ethtxbyt | sed 's/ath1      g_kwn_ethtxbyt://'")
+    res = luci.util.exec("cat /proc/net/dev | grep eth0 | awk '{print $10}'")
     local txbyte = string.gsub(res, "\n", "")
-    res = luci.util.exec("iwpriv ath1 g_kwn_ethtxerr | sed 's/ath1      g_kwn_ethtxerr://'")
+    res = luci.util.exec("cat /proc/net/dev | grep eth0 | awk '{print $12}'")
     local txerr = string.gsub(res, "\n", "")
-    res = luci.util.exec("iwpriv ath1 g_kwn_ethrxpkt | sed 's/ath1      g_kwn_ethrxpkt://'")
+    res = luci.util.exec("cat /proc/net/dev | grep eth0 | awk '{print $3}'")
     local rxpkt = string.gsub(res, "\n", "")
-    res = luci.util.exec("iwpriv ath1 g_kwn_ethrxbyt | sed 's/ath1      g_kwn_ethrxbyt://'")
+    res = luci.util.exec("cat /proc/net/dev | grep eth0 | awk '{print $2}'")
     local rxbyte = string.gsub(res, "\n", "")
-    res = luci.util.exec("iwpriv ath1 g_kwn_ethrxerr | sed 's/ath1      g_kwn_ethrxerr://'")
+    res = luci.util.exec("cat /proc/net/dev | grep eth0 | awk '{print $4}'")
     local rxerr = string.gsub(res, "\n", "")
     res = luci.util.exec("iwpriv ath1 g_kwtxl2mdrpcnt | sed 's/ath1      g_kwtxl2mdrpcnt://'")
     local txl2mpkt = string.gsub(res, "\n", "")
@@ -209,10 +209,10 @@ function action_ethernet()
     local txl3bpkt = string.gsub(res, "\n", "")
     res = luci.util.exec("iwpriv ath1 g_kwrxl3bdrpcnt | sed 's/ath1      g_kwrxl3bdrpcnt://'")
     local rxl3bpkt = string.gsub(res, "\n", "")
-    res = luci.util.exec("iwpriv ath1 g_kwnethtxfail | sed 's/ath1      g_kwnethtxfail://'")
-    local txfail = string.gsub(res, "\n", "")
-    res = luci.util.exec("iwpriv ath1 g_kwnethrxfail | sed 's/ath1      g_kwnethrxfail://'")
-    local rxfail = string.gsub(res, "\n", "")
+    res = luci.util.exec("cat /proc/net/dev | grep eth0 | awk '{print $5}'")
+    local txdrop = string.gsub(res, "\n", "")
+    res = luci.util.exec("cat /proc/net/dev | grep eth0 | awk '{print $13}'")
+    local rxdrop = string.gsub(res, "\n", "")
     res = luci.util.exec("iwpriv ath1 g_kwnethtxmcpkt | sed 's/ath1      g_kwnethtxmcpkt://'")
     local txmcpkt = string.gsub(res, "\n", "")
     res = luci.util.exec("iwpriv ath1 g_kwnethrxmcpkt | sed 's/ath1      g_kwnethrxmcpkt://'")
@@ -232,7 +232,7 @@ function action_ethernet()
     --                  8               9             10             11             12             13
     data = data..","..txl3mpkt..","..rxl3mpkt..","..txl2bpkt..","..rxl2bpkt..","..txl3bpkt..","..rxl3bpkt
     --                 14            15           16            17            18            19            20              21              22
-    data = data..","..txfail..","..rxfail..","..txmcpkt..","..rxmcpkt..","..txucpkt..","..rxucpkt..","..rxcrcerr..","..rxovrsize..","..rxovrrun
+    data = data..","..txdrop..","..rxdrop..","..txmcpkt..","..rxmcpkt..","..txucpkt..","..rxucpkt..","..rxcrcerr..","..rxovrsize..","..rxovrrun
     return data
 end
 
