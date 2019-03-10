@@ -1196,11 +1196,11 @@ enable_qcawifi() {
 		[ -n "$countryie" ] && iwpriv "$ifname" countryie "$countryie"
 
         config_get name "$device" customername
-		iwpriv "$phy" str_type 1
+		[ -n "$name" ] && iwpriv "$phy" str_type 1
 		[ -n "$name" ] && iwconfig $ifname nickname $name
 
         config_get linkid "$device" linkid
-		iwpriv "$phy" str_type 5
+		[ -n "$linkid" ] && iwpriv "$phy" str_type 5
 		[ -n "$linkid" ] && iwconfig $ifname nickname $linkid
 
 		case "$enc" in
@@ -2169,6 +2169,8 @@ enable_qcawifi() {
                        else
                            echo "SU Service is enabled"
                        fi
+                   else
+		               iwpriv "$phy" sta_kickout 0
                    fi
                    ;;
                *)
