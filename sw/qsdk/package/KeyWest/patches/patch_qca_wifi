@@ -604,7 +604,7 @@ diff -urN qca-wifi-org/offload/wlan/include/ol_if_athvar.h qca-wifi-mod/offload/
  
 diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_ath.c qca-wifi-mod/offload/wlan/lmac_offload_if/ol_if_ath.c
 --- qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_ath.c	2018-06-08 11:00:45.000000000 +0530
-+++ qca-wifi-mod/offload/wlan/lmac_offload_if/ol_if_ath.c	2019-03-05 14:31:44.812462232 +0530
++++ qca-wifi-mod/offload/wlan/lmac_offload_if/ol_if_ath.c	2019-03-11 16:19:54.929570674 +0530
 @@ -196,6 +196,8 @@
  int ol_ath_peer_mumimo_tx_count_event_handler (ol_scn_t scn, u_int8_t *data, u_int16_t datalen);
  int ol_ath_peer_gid_userpos_list_event_handler (ol_scn_t scn, u_int8_t *data, u_int16_t datalen);
@@ -642,7 +642,7 @@ diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_ath.c qca-wifi-mod/off
              } else {
                  return 15 + ((freq - 2512) / 20);
              }
-@@ -6743,6 +6746,381 @@
+@@ -6743,6 +6746,385 @@
      OS_SET_TIMER(&ic->ic_inact_timer, IEEE80211_SESSION_WAIT*1000);
  }
  
@@ -780,13 +780,13 @@ diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_ath.c qca-wifi-mod/off
 +        return;
 +    }
 +    if( ic->enable_acs || ic->enable_sa_scan ) {
-+        printk(": DCS: ACS or Spectral scan is enabled ");
++        printk(": DCS: ACS or Spectral scan is enabled \n");
 +        OS_SET_TIMER( &ic->kwn_dcs.dcs_timer, ic->kwn_dcs.dcs_time * 1000 );
 +        return;
 +    }
 +    if( ic->kwn_scan.acs_result.cnt == 0 ) {
-+        kwn_update_channel_list( ic );
 +        printk(": DCS: Last scanned results are not available, Update channel list\n");
++        kwn_update_channel_list( ic );
 +    }
 +    //printk(": DCS: Station count : %d \n",sta_count);
 +    vap->kwn_local_rtx = 0;
@@ -912,10 +912,14 @@ diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_ath.c qca-wifi-mod/off
 +  
 +    if( !ic->enable_acs && !ic->enable_sa_scan ) {
 +        printk(": SPECTRAL: ACS or Spectral scan is not enabled ");
++        ic->enable_sa_scan = 0;
++        ic->enable_acs = 0;
 +        return;
 +    }
 +    if( ic->kwn_scan.next_chan == KWN_CHAN_MAX ) {
 +        printk(": SPECTRAL: Channel list exceeds sa max list 250\n");
++        ic->enable_sa_scan = 0;
++        ic->enable_acs = 0;
 +        return;
 +    }
 +    curr_freq = ic->kwn_scan.curr_freq;
@@ -1024,7 +1028,7 @@ diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_ath.c qca-wifi-mod/off
  static int
  ol_ath_set_mgmt_retry_limit(struct ieee80211com *ic , u_int8_t limit)
  {
-@@ -7156,6 +7534,8 @@
+@@ -7156,6 +7538,8 @@
      ic->ic_atf_logging = 0;
  
      ic->ic_bestUL_hyst = BEST_UL_HYST_DEF;
@@ -1033,7 +1037,7 @@ diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_ath.c qca-wifi-mod/off
  
      return EOK;
  }
-@@ -8133,6 +8513,10 @@
+@@ -8133,6 +8517,10 @@
                                                  ol_ath_esp_estimate_event_handler, WMI_RX_UMAC_CTX);
  #endif
  
@@ -1044,7 +1048,7 @@ diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_ath.c qca-wifi-mod/off
  #if OL_ATH_SUPPORT_LED
          if (scn->target_version == AR9888_REV2_VERSION || scn->target_version == AR9887_REV1_VERSION) {
              scn->scn_led_gpio = PEREGRINE_LED_GPIO ;
-@@ -8475,6 +8859,12 @@
+@@ -8475,6 +8863,12 @@
      u_int32_t num_mem_chunks;
      ic = &scn->sc_ic;
  
@@ -1168,7 +1172,7 @@ diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_ath_config.c qca-wifi-
                 (scn->target_type == TARGET_TYPE_QCA9888) || (scn->target_type == TARGET_TYPE_IPQ4019))
 diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_vap.c qca-wifi-mod/offload/wlan/lmac_offload_if/ol_if_vap.c
 --- qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_vap.c	2018-06-08 11:00:45.000000000 +0530
-+++ qca-wifi-mod/offload/wlan/lmac_offload_if/ol_if_vap.c	2019-02-20 17:24:32.694512412 +0530
++++ qca-wifi-mod/offload/wlan/lmac_offload_if/ol_if_vap.c	2019-03-11 16:20:01.653550250 +0530
 @@ -32,6 +32,7 @@
  #if ATH_SUPPORT_GREEN_AP
  #include "ath_green_ap.h"
@@ -1247,7 +1251,7 @@ diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_vap.c qca-wifi-mod/off
                  }
                  else {
                      /* Note: Event though val is 32 bits, only the lower 8 bits matter */
-@@ -3254,7 +3297,27 @@
+@@ -3254,7 +3297,29 @@
      vap->iv_256qam = 1;
  
      vap->iv_no_cac = 0;
@@ -1268,6 +1272,8 @@ diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_vap.c qca-wifi-mod/off
 +    vap->kwn_txparam.max_eirp = 0;
 +
 +    /* Initialize SCAN Parameters */
++    ic->enable_sa_scan = 0;
++    ic->enable_acs = 0;
 +    ic->kwn_scan.sa_scan_time = 1000;
 +    ic->kwn_scan.acs_scan_time = 1000;
 +    ic->kwn_dcs.dcs_time = 30;
@@ -1276,7 +1282,7 @@ diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_vap.c qca-wifi-mod/off
      /* Intialize VAP interface functions */
      vap->iv_up = ol_ath_vap_up;
      vap->iv_join = ol_ath_vap_join;
-@@ -3534,12 +3597,20 @@
+@@ -3534,12 +3599,20 @@
  {
      struct ol_ath_vap_net80211 *avn = OL_ATH_VAP_NET80211(vap);
      struct ol_ath_softc_net80211 *scn = avn->av_sc;
@@ -1297,7 +1303,7 @@ diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_vap.c qca-wifi-mod/off
      /* delete key before vdev delete */
      delete_default_vap_keys(vap);
  
-@@ -3717,6 +3788,103 @@
+@@ -3717,6 +3790,103 @@
      return 0;
  }
  
@@ -1401,7 +1407,7 @@ diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_vap.c qca-wifi-mod/off
  /* Intialization functions */
  void
  ol_ath_vap_attach(struct ieee80211com *ic)
-@@ -3728,6 +3896,7 @@
+@@ -3728,6 +3898,7 @@
      ic->ic_vap_alloc_macaddr = ol_ath_vap_alloc_macaddr;
      ic->ic_vap_free_macaddr = ol_ath_vap_free_macaddr;
      ic->ic_vap_set_param = ol_ath_vap_set_param;
@@ -1409,7 +1415,7 @@ diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_vap.c qca-wifi-mod/off
      ic->ic_vap_sifs_trigger = ol_ath_vap_sifs_trigger;
      ic->ic_vap_set_ratemask = ol_ath_vap_set_ratemask;
      ic->ic_vap_dyn_bw_rts = ol_ath_vap_dyn_bw_rts;
-@@ -3754,6 +3923,7 @@
+@@ -3754,6 +3925,7 @@
          ath_green_ap_start(ic);
      }
  #endif  /* ATH_SUPPORT_GREEN_AP */
@@ -5277,7 +5283,7 @@ diff -urN qca-wifi-org/umac/base/ieee80211_node.c qca-wifi-mod/umac/base/ieee802
      OS_BEACON_WRITE_LOCK(&nt->nt_nodelock, &lock_state, flags);
 diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.c qca-wifi-mod/umac/base/ieee80211_ucfg.c
 --- qca-wifi-org/umac/base/ieee80211_ucfg.c	2018-06-08 11:00:49.000000000 +0530
-+++ qca-wifi-mod/umac/base/ieee80211_ucfg.c	2019-03-09 18:04:23.249606658 +0530
++++ qca-wifi-mod/umac/base/ieee80211_ucfg.c	2019-03-11 16:20:20.569492774 +0530
 @@ -50,6 +50,61 @@
  #define HIGHEST_BASIC_RATE 24000
  #define THREE_HUNDRED_FIFTY_MBPS 350000
@@ -5793,7 +5799,7 @@ diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.c qca-wifi-mod/umac/base/ieee802
 +        }
 +        else {
 +            if( !ic->enable_sa_scan ) {
-+                printk(": SASCAN: SA is already stopped");
++                printk(": SASCAN: SA is already stopped\n");
 +                break;
 +            }
 +            printk(": SASCAN: SA is stopped manually\n");
