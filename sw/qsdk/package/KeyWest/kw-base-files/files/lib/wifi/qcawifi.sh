@@ -2169,8 +2169,6 @@ enable_qcawifi() {
                        else
                            echo "SU Service is enabled"
                        fi
-                   else
-		               iwpriv "$phy" sta_kickout 0
                    fi
                    ;;
                *)
