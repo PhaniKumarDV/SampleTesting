@@ -17,11 +17,15 @@ int myindex;
 char prev_mac[25]={0};
 int ifd,isock_fd;
 int se_daemon = -1;
-#define IEEE80211_EV_DYING_GASP 45
-#define IEEE80211_EV_BASE_DYING_GASP 46
-#define IEEE80211_EV_SU_DYING_GASP 47
 #define IEEE80211_EV_DISASSOC_IND_AP 20
 #define IEEE80211_EV_DISASSOC_COMPLETE_AP 33
+#define IEEE80211_EV_DYING_GASP      45
+#define IEEE80211_EV_BASE_DYING_GASP 46
+#define IEEE80211_EV_SU_DYING_GASP   47
+#define IEEE80211_EV_DCS_TRIGGERED   48
+#define IEEE80211_EV_BEST_CHANNEL    49
+#define IEEE80211_EV_SA_START        50
+#define IEEE80211_EV_SA_STOP         51
 #define PRINTF(fmt, ...)\
 do\
 {\
@@ -30,8 +34,8 @@ do\
 	if(se_daemon < 0)printf("\r\n");\
 }while(0)
 /* Sify Specific */
-void sify_file_write(char *,int,int);
-void sify_file_write(char *sify_buf,int status, int reason)
+void sify_file_write(char *,int,int,uint8_t);
+void sify_file_write(char *sify_buf,int status, int reason, uint8_t value)
 {
 	time_t rawtime;
 	struct tm *timeinfo;
@@ -105,6 +109,22 @@ void sify_file_write(char *sify_buf,int status, int reason)
                 syslog(LOG_INFO, " Disassociated ( MAC: %s, Reason: Local Terminated )\n",sify_buf);		       
                 sprintf( trap_cmd, "/usr/sbin/snmptrap.sh 2 %s  > /dev/null 2>&1", sify_buf);
                 system( trap_cmd );
+                break;
+            case IEEE80211_EV_DCS_TRIGGERED:
+                fprintf(sify_fp, "%s: DCS triggered\n",t,sify_buf);
+                syslog(LOG_INFO, " DCS triggered\n",sify_buf);		       
+                break;
+            case IEEE80211_EV_BEST_CHANNEL:
+                fprintf(sify_fp, "%s: DCS selected best channel\n",t,sify_buf);
+                syslog(LOG_INFO, " DCS selected best channel\n",sify_buf);		       
+                break;
+            case IEEE80211_EV_SA_START:
+                fprintf(sify_fp, "%s: Spectrum Analyzer started\n",t,sify_buf);
+                syslog(LOG_INFO, " Spectrum Analyzer started\n",sify_buf);		       
+                break;
+            case IEEE80211_EV_SA_STOP:
+                fprintf(sify_fp, "%s: Spectrum Analyzer stopped\n",t,sify_buf);
+                syslog(LOG_INFO, " Spectrum Analyzer stopped\n",sify_buf);		       
                 break;
             default:
                 fprintf(sify_fp, "%s: Disassociated ( MAC: %s )\n",t,sify_buf);
@@ -343,7 +363,7 @@ static void handle_ifla_wireless ( char *data, int len)
 					memset(tm_mac,'\0',3);
 				}
 				//syslog(LOG_INFO,"Wireless SU Expired:%s",mac);		       
-				sify_file_write(mac,0,iwe->u.addr.sa_data[6]);
+				sify_file_write(mac,0,iwe->u.addr.sa_data[6],iwe->u.addr.sa_data[7]);
 				break;
 			case IWEVREGISTERED:
 				PRINTF("[%s:%d] IWEVREGISTERED\r\n",__func__,__LINE__);
@@ -357,7 +377,7 @@ static void handle_ifla_wireless ( char *data, int len)
 					memset(tm_mac,'\0',3);
 				}
 				//syslog(LOG_INFO,"New Wireless SU Registered:%s",mac);
-				sify_file_write(mac,1,0);
+				sify_file_write(mac,1,0,0);
 				break;
 			case IWEVASSOCREQIE:
 				break;
@@ -393,7 +413,7 @@ static void handle_ifla_wireless ( char *data, int len)
 					//if((registered  == 1) || (registered == -1))
 					{
 						//syslog(LOG_ALERT,"Wireless Device Unegistered Successfully:%s",prev_mac);
-						sify_file_write(prev_mac,0,0);
+						sify_file_write(prev_mac,0,0,0);
 						registered = 0;
 					}
 				}
@@ -403,7 +423,7 @@ static void handle_ifla_wireless ( char *data, int len)
 					{
 						strcpy(prev_mac,mac);
 						//syslog(LOG_ALERT,"Wireless Device Registered Successfully:%s",mac);
-						sify_file_write(mac,1,0);
+						sify_file_write(mac,1,0,0);
 						registered = 1;
                         //system("/usr/sbin/link.sh");
 					}

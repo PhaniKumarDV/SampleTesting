@@ -2169,6 +2169,11 @@ enable_qcawifi() {
                        else
                            echo "SU Service is enabled"
                        fi
+                   else
+                       if [ $linktype == "3" ]
+                       then
+                           iwpriv wifi1 sta_kickout 0
+                       fi
                    fi
                    ;;
                *)
