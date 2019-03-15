@@ -65,7 +65,7 @@ function inc ()
     document.getElementById("custom-style").innerHTML = ".dots .dot:nth-child( -n + " + index + "){background-color: #a5bc23;}"
     if( index == 20 ) {
         clearInterval( myVar );
-        location.href='<%=luci.dispatcher.build_url("admin","monitor","stats","radio1stats")%>';
+        location.href='<%=luci.dispatcher.build_url("admin","config","radio1stats")%>';
     }
 }
 

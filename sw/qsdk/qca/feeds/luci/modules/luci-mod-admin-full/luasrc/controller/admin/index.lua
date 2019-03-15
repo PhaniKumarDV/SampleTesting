@@ -48,6 +48,11 @@ function index()
 	    entry({"admin", "config", "surveyrefresh"}, call("action_surveyrefresh"), nil).leaf = true
 	    entry({"admin", "config", "surveyclear"}, call("action_surveyclear"), nil).leaf = true
     end
+	entry({"admin", "config", "radio1stats"}, template("admin_status/radio1_stats"))
+	entry({"admin", "config", "details"}, call("details"), nil).leaf = true
+	entry({"admin", "config", "disconnect"}, call("disconnect"), nil).leaf = true
+	entry({"admin", "config", "starttool"}, call("starttool"), nil).leaf = true
+	entry({"admin", "config", "stoptool"}, call("stoptool"), nil).leaf = true
     page = entry({"admin", "cfg_set"}, call("action_cfg_set"), nil)
 	page.leaf = true
 end
@@ -276,6 +281,36 @@ function action_surveyclear()
     luci.sys.exec("iwpriv ath1 s_scan_flush 1")
     luci.sys.exec("iwpriv ath1 kwn_flag 0")
 	data = luci.sys.exec("iwlist ath1 ap")
+	luci.http.prepare_content("application/json")
+	luci.http.write_json(data)
+end
+
+function details( index )
+	local entryind = index
+	luci.template.render("admin_status/detailed_stats", {entryind=entryind})
+end
+
+function disconnect( mac )
+	luci.sys.exec("iwpriv ath1 kickmac "..mac)
+	luci.http.redirect(luci.dispatcher.build_url("admin/config/radio1stats"))
+end
+
+function starttool( mac )
+	local data = {}
+	luci.sys.exec("uci set tool.tool.mac="..mac)
+	luci.sys.exec("/etc/init.d/KWtool start")
+	luci.sys.exec("iwpriv ath1 kwn_tput_test 1")
+	luci.sys.exec("uci commit")
+	data = "Link test is in progress..."
+	luci.http.prepare_content("application/json")
+	luci.http.write_json(data)
+end
+
+function stoptool( mac )
+	local data = {}
+	luci.sys.exec("iwpriv ath1 kwn_tput_test 0")
+	luci.sys.exec("uci commit")
+	data = "Link test is stopped..."
 	luci.http.prepare_content("application/json")
 	luci.http.write_json(data)
 end
