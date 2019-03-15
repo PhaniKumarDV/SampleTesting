@@ -1455,16 +1455,6 @@ enable_qcawifi() {
 		config_get chanbw "$vif" chanbw
 		[ -n "$chanbw" ] && iwpriv "$ifname" chanbw "$chanbw"
 
-		config_get linktype "$device" linktype
-        [ -n "$linktype" ] && iwpriv "$ifname" kwnlinktype "$linktype"
-        if [[ $linktype == "3" ]] || [[ $linktype == "4" ]]
-        then
-		    config_get maxsta "$vif" maxsta
-		    [ -n "$linktype" ] && iwpriv "$ifname" maxsta "$maxsta"
-        else
-            [ -n "$linktype" ] && iwpriv "$ifname" maxsta 1
-        fi
-
 		config_get sko_max_xretries "$vif" sko_max_xretries
 		[ -n "$sko_max_xretries" ] && iwpriv "$ifname" sko "$sko_max_xretries"
 
@@ -2143,12 +2133,22 @@ enable_qcawifi() {
 		config_get wifi_timer "$device" wifitimer
 		config_get link_timer "$device" linktimer
 		config_get suservice "$device" suservice
+		config_get maxsta "$vif" maxsta
+        config_get linktype "$device" linktype
 
            case "$phy" in
                wifi0)
+		           [ -n "$maxsta" ] && iwpriv "$ifname" maxsta "$maxsta"
                    ;;
                wifi1)
-                   sh /usr/sbin/ethmtu.sh
+                   sh /usr/sbin/ethmtu.sh		
+                   [ -n "$linktype" ] && iwpriv "$ifname" kwnlinktype "$linktype"
+                   if [[ $linktype == "3" ]] || [[ $linktype == "4" ]]
+                   then
+		               [ -n "$linktype" ] && iwpriv "$ifname" maxsta "$maxsta"
+                   else
+                       [ -n "$linktype" ] && iwpriv "$ifname" maxsta 1
+                   fi
                    if [ "$radiomode" == "sta" ]
                    then
                        if [ "$wifi_timer" -ge 1 ]

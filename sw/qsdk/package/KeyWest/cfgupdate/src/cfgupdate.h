@@ -55,7 +55,7 @@ enum uci_cfg_id {
     UCI_ID_RADIUS_RETRY_COUNT_PERIOD = 42,
     /* Ethernet */
     UCI_ID_ETHERNET_SPEED = 43,
-    /* DHCP */
+    /* DHCP 5GHz */
     UCI_ID_DHCP_SERVER = 44,
     UCI_ID_DHCP_START = 45,
     UCI_ID_DHCP_LIMIT = 46,
@@ -190,7 +190,17 @@ enum uci_cfg_id {
     UCI_ID_WIRELESS_ICB = 151,
     UCI_ID_WIRELESS_MACINMAC = 152,
     UCI_ID_RADIO1_MAXSTA = 153,
-    UCI_ID_RADIO1_RCRETRIES = 154
+    UCI_ID_RADIO1_RCRETRIES = 154,
+    /* DHCP 2.4 GHz */
+    UCI_ID_DHCP24_SERVER = 155,
+    UCI_ID_DHCP24_START = 156,
+    UCI_ID_DHCP24_LIMIT = 157,
+    UCI_ID_DHCP24_LEASE_TIME = 158,
+    /* 2.4GHz Max Sta */
+    UCI_ID_RADIO2_MAXSTA = 159,
+    /* 2.4GHz IP Configuration */
+    UCI_ID_IP_24 = 160,
+    UCI_ID_MASK_24 = 161
 };
 
 typedef struct

@@ -15,6 +15,9 @@
 <div class="page-content">
 <script type="text/javascript" src="<%=resource%>/cbi.js"></script>
 <script type="text/javascript">
+var radmode = "<%=uciget('uci get wireless.@wifi-iface[1].mode')%>";
+var wds = "<%=uciget('uci get wireless.@wifi-iface[1].wds')%>";
+var linktype = "<%=uciget('uci get wireless.wifi1.linktype')%>"; 
 var def = new Array(8);
 function save_def_value()
 {
@@ -46,7 +49,7 @@ function save_value()
     XHR.get('<%=luci.dispatcher.build_url("admin")%>/cfg_set' + '/' + setdata, null,
 	    function(x, data) {
 		    if (data) { 
-                location.href='<%=luci.dispatcher.build_url("admin/network/dhcp")%>';
+                location.href='<%=luci.dispatcher.build_url("admin/network/dhcp/dhcp24")%>';
 		    }
 	    }
     );
@@ -54,19 +57,41 @@ function save_value()
 </script>
 <h2><a id="content" name="content"><%: DHCP Server%></a></h2>
 <ul class="cbi-tabmenu">
-    <li style="margin-right:4px" class="cbi-tab"><a href="#"><%:5 GHz Radio%></a></li>
-    <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=REQUEST_URI%>/dhcp24"><%:2.4GHz Radio%></a></li>
-    <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=REQUEST_URI%>/dhcplease"><%:Leases%></a></li>
+    <script type="text/javascript">
+    if( linktype == "1" || linktype == "3" ) {
+       if( radmode == "ap" && wds == "1" ) {
+          document.write("<li style='margin-right:4px' class='cbi-tab-disabled'><a href='<%=luci.dispatcher.build_url('admin/network/dhcp')%>'><%:5GHz Radio%></a></li>");
+       }
+    }
+    </script>
+    <li style="margin-right:4px" class="cbi-tab"><a href="#"><%:2.4GHz Radio%></a></li>
+    <li style="margin-right:4px" class="cbi-tab-disabled"><a href="dhcplease"><%:Leases%></a></li>
 </ul>
 <div class="cbi-map">
-    <fieldset class="cbi-section">
-       <form name="formTable">
+    <form name="formTable">
+       <fieldset class="cbi-section">
+          <legend style="width:96%; padding:10px 0px 10px 0px; border-bottom:1px solid #e5e5e5;">IP Configuration</legend><br><br><br>
+          <div class="cbi-value">
+            <label class="cbi-value-title">IP Address</label>
+            <div class="cbi-value-field">
+              <input type="text" name="160" class="cbi-input-select" value="<%=uciget('uci get network.kwlan.ipaddr')%>" >
+            </div>
+          </div>
+          <div class="cbi-value">
+            <label class="cbi-value-title">Subnet Mask</label>
+            <div class="cbi-value-field">
+              <input type="text" name="161" class="cbi-input-select" value="<%=uciget('uci get network.kwlan.netmask')%>" >
+            </div>
+          </div>
+       </fieldset>   
+       <fieldset class="cbi-section">
+          <legend style="width:96%; padding:10px 0px 10px 0px; border-bottom:1px solid #e5e5e5;">Pool Configuration</legend><br><br><br>
           <div class="cbi-value">
             <label class="cbi-value-title">DHCP Server</label>
             <div class="cbi-value-field">
-              <select class="cbi-input-select" name="44">
+              <select class="cbi-input-select" name="155">
                  <script type="text/javascript">
-                 var start = "<%=uciget('uci get dhcp.lan.ignore')%>";
+                 var start = "<%=uciget('uci get dhcp.kwlan.ignore')%>";
                  document.write("<option value='1' ");
                  if( start == "1" )
                      document.write(" selected");
@@ -82,23 +107,23 @@ function save_value()
           <div class="cbi-value" id="startid">
             <label class="cbi-value-title">Start IP Address</label>
             <div class="cbi-value-field">
-              <input type="text" name="45" class="cbi-input-select" value="<%=uciget('uci get dhcp.lan.start')%>" >
+              <input type="text" name="156" class="cbi-input-select" value="<%=uciget('uci get dhcp.kwlan.start')%>" >
             </div>
           </div>
           <div class="cbi-value" id="limitid">
             <label class="cbi-value-title">End IP Address</label>
             <div class="cbi-value-field">
-              <input type="text" name="46" class="cbi-input-select" value="<%=uciget('uci get dhcp.lan.limit')%>" >
+              <input type="text" name="157" class="cbi-input-select" value="<%=uciget('uci get dhcp.kwlan.limit')%>" >
             </div>
           </div>
           <div class="cbi-value" id="timeid">
             <label class="cbi-value-title">Lease Time</label>
             <div class="cbi-value-field">
-              <input type="text" name="47" class="cbi-input-select" value="<%=uciget('uci get dhcp.lan.leasetime')%>" >&nbsp; ( 120 - 86400 ) Secs
+              <input type="text" name="158" class="cbi-input-select" value="<%=uciget('uci get dhcp.kwlan.leasetime')%>" >&nbsp; ( 120 - 86400 ) Secs
             </div>
           </div>
+       </fieldset>   
     </form>
-    </fieldset>
 </div>
 <div class="cbi-page-actions left">
 <div id="spin"></div>

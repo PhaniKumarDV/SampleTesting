@@ -873,6 +873,27 @@ void cfg_set( char *type, char *value )
         case UCI_ID_RADIO1_RCRETRIES:
             sprintf(cmd,"uci set wireless.wifi1.rcretries='%s'",value);
             break;
+        case UCI_ID_DHCP24_SERVER:
+            sprintf(cmd,"uci set dhcp.kwlan.ignore='%s'",value);
+            break;
+        case UCI_ID_DHCP24_START:
+            sprintf(cmd,"uci set dhcp.kwlan.start='%s'",value);
+            break;
+        case UCI_ID_DHCP24_LIMIT:
+            sprintf(cmd,"uci set dhcp.kwlan.limit='%s'",value);
+            break;
+        case UCI_ID_DHCP24_LEASE_TIME:
+            sprintf(cmd,"uci set dhcp.kwlan.leasetime='%s'",value);
+            break;
+        case UCI_ID_RADIO2_MAXSTA:
+            sprintf(cmd,"uci set wireless.@wifi-iface[0].maxsta='%s'",value);
+            break;
+        case UCI_ID_IP_24:
+            sprintf(cmd,"uci set network.kwlan.ipaddr='%s'",value);
+            break;
+        case UCI_ID_MASK_24:
+            sprintf(cmd,"uci set network.kwlan.netmask='%s'",value);
+            break;
         default:
             break;
     }

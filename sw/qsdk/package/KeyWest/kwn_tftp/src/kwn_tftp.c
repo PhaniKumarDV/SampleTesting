@@ -17,7 +17,7 @@ struct kwn_cfg_uci_cmds {
     int type;
 };
 
-#define KWN_CMD_LEN 147
+#define KWN_CMD_LEN 154
 struct kwn_cfg_uci_cmds uci_cmd_list[] = {
 /* Wireless 5GHz*/
     /* Properties */
@@ -130,7 +130,7 @@ struct kwn_cfg_uci_cmds uci_cmd_list[] = {
     /*  92. */ { "ethernet.ethernet.mode", KWN_CMD_TYPE_SCALAR },
     /*  93. */ { "ethernet.ethernet.ethtimer", KWN_CMD_TYPE_SCALAR },
     /*  94. */ { "network.lan.mtu", KWN_CMD_TYPE_SCALAR },
-    /* DHCP Server */
+    /* DHCP Server 5GHz Radio */
     /*  95. */ { "dhcp.lan.ignore", KWN_CMD_TYPE_SCALAR },
     /*  96. */ { "dhcp.lan.start", KWN_CMD_TYPE_SCALAR },
     /*  97. */ { "dhcp.lan.limit", KWN_CMD_TYPE_SCALAR },
@@ -143,7 +143,7 @@ struct kwn_cfg_uci_cmds uci_cmd_list[] = {
     /* 102. */ { "filter.filter.l3mcast", KWN_CMD_TYPE_SCALAR },
     /* 103. */ { "filter.filter.l2bcast", KWN_CMD_TYPE_SCALAR },
     /* 104. */ { "filter.filter.l3bcast", KWN_CMD_TYPE_SCALAR },
-/* Management */
+    /* Management */
     /* NTP */
     /* 105. */ { "system.ntp.enabled", KWN_CMD_TYPE_SCALAR },
     /* 106. */ { "system.ntp.server", KWN_CMD_TYPE_SCALAR },
@@ -196,6 +196,16 @@ struct kwn_cfg_uci_cmds uci_cmd_list[] = {
     /* 144. */ { "tftp.tftp.keepset", KWN_CMD_TYPE_SCALAR },
     /* 145. */ { "tftp.http.filetype", KWN_CMD_TYPE_SCALAR },
     /* 146. */ { "tftp.http.optype", KWN_CMD_TYPE_SCALAR },
+    /* DHCP Server 2.4GHz radio */
+    /* 147. */ { "dhcp.kwlan.ignore", KWN_CMD_TYPE_SCALAR },
+    /* 148. */ { "dhcp.kwlan.start", KWN_CMD_TYPE_SCALAR },
+    /* 149. */ { "dhcp.kwlan.limit", KWN_CMD_TYPE_SCALAR },
+    /* 150. */ { "dhcp.kwlan.leasetime", KWN_CMD_TYPE_SCALAR },
+    /* Wireless 2.4GHz Max Sta */
+    /* 151. */ { "wireless.@wifi-iface[0].maxsta", KWN_CMD_TYPE_SCALAR },
+    /* Wireless 2.4GHz IP config */
+    /* 152. */ { "network.kwlan.ipaddr", KWN_CMD_TYPE_SCALAR },
+    /* 153. */ { "network.kwlan.netmask", KWN_CMD_TYPE_SCALAR },
     /* Update maximum number + 1 in KWN_CMD_LEN */
 };
 

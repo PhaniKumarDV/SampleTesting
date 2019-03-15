@@ -25,11 +25,12 @@ function index()
     page.leaf = true
     page = entry({"admin", "network", "ethernet"}, template("admin_network/ethernet"), _("Ethernet"), 4)
     page.leaf = true
+    entry({"admin", "network", "dhcp"}, call("action_dhcp"), _("DHCP Server"), 5)
+    entry({"admin", "network", "dhcp", "dhcp24"}, template("admin_network/dhcp24"))
+    entry({"admin", "network", "dhcp", "dhcplease"}, template("admin_network/dhcplease"))
     local linktype = luci.sys.exec("uci get wireless.wifi1.linktype")
     if (string.match(linktype,"1") or string.match(linktype,"3") ) then
         if (string.match(mode,"ap") and string.match(wds,"1") ) then
-            entry({"admin", "network", "dhcp"}, template("admin_network/dhcp"), _("DHCP Server"), 5)
-            entry({"admin", "network", "dhcp", "dhcplease"}, template("admin_network/dhcplease"))
             page = entry({"admin", "network", "staticlease"}, cbi("admin_network/fixedlease"), _("DHCP Fixed Leases"), 6)
             page.leaf = true
         end
@@ -481,4 +482,19 @@ end
 
 function diag_traceroute6(addr)
 	diag_command("traceroute6 -q 1 -w 2 -n %q 2>&1", addr)
+end
+
+function action_dhcp()
+    local mode = luci.sys.exec("uci get wireless.@wifi-iface[1].mode")
+    local wds = luci.sys.exec("uci get wireless.@wifi-iface[1].wds")
+    local linktype = luci.sys.exec("uci get wireless.wifi1.linktype")
+    if (string.match(mode,"ap") and string.match(wds,"1") ) then
+        if (string.match(linktype,"1") or string.match(linktype,"3") ) then
+		    luci.template.render("admin_network/dhcp")
+        else
+	        luci.http.redirect(luci.dispatcher.build_url("admin/network/dhcp/dhcp24"))
+        end
+    else
+	        luci.http.redirect(luci.dispatcher.build_url("admin/network/dhcp/dhcp24"))
+    end
 end

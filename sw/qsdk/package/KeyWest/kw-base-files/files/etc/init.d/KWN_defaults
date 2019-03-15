@@ -67,6 +67,7 @@ start_service() {
     link_timer1=$(uci get wireless.wifi1.linktimer)
     rate0=$(uci get wireless.wifi0.rate)
     mfgmaxsta=$(fw_printenv -n maxsu)
+    maxsta0=$(uci get wireless.@wifi-iface[0].maxsta)
     maxsta1=$(uci get wireless.@wifi-iface[1].maxsta)
     linktype=$(uci get wireless.wifi1.linktype)
     macfilter1=$(uci get wireless.@wifi-iface[1].macfilter)
@@ -309,6 +310,10 @@ start_service() {
     if [ "$link_timer1" == "" ]
     then
         uci set wireless.wifi1.linktimer='0'
+    fi
+    if [ "$maxsta0" == "" ]
+    then
+        uci set wireless.@wifi-iface[0].maxsta='2'
     fi
     if [ "$maxsta1" == "" ]
     then
