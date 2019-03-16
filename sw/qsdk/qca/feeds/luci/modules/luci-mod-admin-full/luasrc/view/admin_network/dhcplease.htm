@@ -218,7 +218,7 @@ var linktype = "<%=uciget('uci get wireless.wifi1.linktype')%>";
    <h2><a id="content" name="content"><%:DHCP Server%></a></h2>
    <ul class="cbi-tabmenu">
        <script type="text/javascript">
-       if( linktype == "1" || linktype == "3" ) {
+       if( linktype != "2" ) {
            if( radmode == "ap" && wds == "1" ) {
               document.write("<li style='margin-right:4px' class='cbi-tab-disabled'><a href='<%=luci.dispatcher.build_url('admin/network/dhcp')%>'><%:5GHz Radio%></a></li>");
            }

@@ -119,17 +119,17 @@ function index()
 end
 
 function action_wireless()
-    local res = luci.util.exec("athstats -i wifi1 | grep tx: | sed 's/tx://'")
-    local dttxpkt = string.gsub(res, "\n", "") 
-    res = luci.util.exec("athstats -i wifi1 | grep rx: | sed 's/rx://'")
-    local dtrxpkt = string.gsub(res, "\n", "") 
-    res = luci.util.exec("80211stats -i ath1 | grep 'Multicast packets sent:' | sed 's/ Multicast packets sent:            //'")
+    local res = luci.util.exec("80211stats -i ath1 | grep 'Broadcast data packets sent:' | sed 's/ Broadcast data packets sent:        //'")
+    local dbtxpkt = string.gsub(res, "\n", "") 
+    res = luci.util.exec("80211stats -i ath1 | grep 'Broadcast data packets received:' | sed 's/ Broadcast data packets received:    //'")
+    local dbrxpkt = string.gsub(res, "\n", "") 
+    res = luci.util.exec("80211stats -i ath1 | grep 'Multicast packets sent:' | sed 's/ Multicast packets sent:             //'")
     local dmtxpkt = string.gsub(res, "\n", "") 
     res = luci.util.exec("80211stats -i ath1 | grep 'Multicast packets received:' | sed 's/ Multicast packets received:         //'")
     local dmrxpkt = string.gsub(res, "\n", "") 
     res = luci.util.exec("80211stats -i ath1 | grep 'Unicast packets sent:' | sed 's/ Unicast packets sent:               //'")
     local dutxpkt = string.gsub(res, "\n", "") 
-    res = luci.util.exec("80211stats -i ath1 | grep 'Unicast packets received:' | sed 's/ Unicast packets received:          //'")
+    res = luci.util.exec("80211stats -i ath1 | grep 'Unicast packets received:' | sed 's/ Unicast packets received:           //'")
     local durxpkt = string.gsub(res, "\n", "") 
     res = luci.util.exec("athstats -i wifi1 | grep ast_tx_packets: | sed 's/ast_tx_packets://'")
     local mtxpkt = string.gsub(res, "\n", "") 
@@ -170,13 +170,18 @@ function action_wireless()
     res = luci.util.exec("athstats -i wifi1 | grep mpdu_errs | sed 's/mpdu_errs://'")
     local mpduerr = string.gsub(res, "\n", "") 
     res = luci.util.exec("athstats -i wifi1 | grep phy_errors | sed 's/phy_errors://'")
-    local phyerr = string.gsub(res, "\n", "") 
+    local phyerr = string.gsub(res, "\n", "")
+    -- total data packets
+    local dttxpkt = tonumber(dbtxpkt)+tonumber(dmtxpkt)+tonumber(dutxpkt)
+    local dtrxpkt = tonumber(dbrxpkt)+tonumber(dmrxpkt)+tonumber(durxpkt)
     --              1             2            3              4             5            6             7            8            9           10
-    local data = dttxpkt..","..dtrxpkt..","..dmtxpkt..","..dmrxpkt..","..dutxpkt..","..durxpkt..","..mtxpkt..","..mrxpkt..","..mbeatx..","..mbearx
+    local data = dbtxpkt..","..dbrxpkt..","..dmtxpkt..","..dmrxpkt..","..dutxpkt..","..durxpkt..","..mtxpkt..","..mrxpkt..","..mbeatx..","..mbearx
     --                    11                12               13             14                15                  16                  17                 18
     data = data..","..mauthreqrec..","..mauthreqsent..","..mauthcnf..","..mauthrej..","..mdeauthreqsent..","..mdeauthreqrec..","..mauthreslast..","..massocreqrec
     --                    19                 20              21                  22                    23                     24                25            26
     data = data..","..massocreqsent..","..massocrej..","..massoccnf..","..mdisassocreqrec..","..mdisassocreqsent..","..mdisassocreslast..","..mpduerr..","..phyerr
+    --                  27            28
+    data = data..","..dttxpkt..","..dtrxpkt
     return data
 end
 
