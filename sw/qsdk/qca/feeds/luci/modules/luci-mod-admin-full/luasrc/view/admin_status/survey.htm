@@ -3,6 +3,10 @@
  Copyright 2008 Jo-Philipp Wich <jow@openwrt.org>
  Licensed to the public under the Apache License 2.0.
 -%>
+<%-
+
+    local loginuser = luci.dispatcher.context.authuser
+-%>
 <%+header%>
 <style>
 .cbi-join {
@@ -23,6 +27,7 @@
 }
 </style>
 <script type="text/javascript">
+var loginuser = <%=luci.http.write_json(loginuser)%>;
 	function join_network(ssid,enc)
 	{
 		location.href='<%=luci.dispatcher.build_url("admin/config")%>/joinnetwork' + '/' + ssid + '/' + enc;
@@ -134,9 +139,17 @@ function clear_scan()
 <h2><a id="content" name="content"><%:Quick Start%></a></h2>
     <ul class="cbi-tabmenu">
         <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=luci.dispatcher.build_url("admin/config")%>"><%:System%></a></li>
-        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="location"><%:Location%></a></li>
+        <script type="text/javascript">
+        if( loginuser != "installer" ) {
+           document.write("<li style='margin-right:4px' class='cbi-tab-disabled'><a href='location'><%:Location%></a></li>");
+        }
+        </script>
         <li style="margin-right:4px" class="cbi-tab-disabled"><a href="config1"><%:5GHz Radio%></a></li>
-        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="config2"><%:2.4GHz Radio%></a></li>
+        <script type="text/javascript">
+        if( loginuser != "installer" ) {
+           document.write("<li style='margin-right:4px' class='cbi-tab-disabled'><a href='config2'><%:2.4GHz Radio%></a></li>");
+        }
+        </script>
         <li style="margin-right:4px" class="cbi-tab"><a href="#"><%:Site Survey%></a></li>
         <li style="margin-right:4px" class="cbi-tab-disabled"><a href="radio1stats"><%:Link Statistics%></a></li>
     </ul>

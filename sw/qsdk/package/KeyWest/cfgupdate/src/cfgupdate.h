@@ -200,7 +200,9 @@ enum uci_cfg_id {
     UCI_ID_RADIO2_MAXSTA = 159,
     /* 2.4GHz IP Configuration */
     UCI_ID_IP_24 = 160,
-    UCI_ID_MASK_24 = 161
+    UCI_ID_MASK_24 = 161,
+    /* UHTTPD installer Password*/
+    UCI_ID_HTTP_INST_PWD = 162
 };
 
 typedef struct

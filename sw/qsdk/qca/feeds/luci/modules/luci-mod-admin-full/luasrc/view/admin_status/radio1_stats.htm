@@ -6,6 +6,7 @@
 
 <%-
 
+    local loginuser = luci.dispatcher.context.authuser
 	local ip = require "luci.ip"
 	local fs = require "nixio.fs"
 	local utl = require "luci.util"
@@ -125,6 +126,7 @@
 
 <script type="text/javascript" src="<%=resource%>/cbi.js"></script>
 <script type="text/javascript">//<![CDATA[
+    var loginuser = <%=luci.http.write_json(loginuser)%>;
 	var wifidevs = <%=luci.http.write_json(netdevs)%>;
 	var arptable = <%=luci.http.write_json(arpcache)%>;
     var gps = "<%=uciget('uci get system.gps.status')%>";
@@ -391,10 +393,16 @@
     <h2><a id="content" name="content"><%:Quick Start%></a></h2>
     <ul class="cbi-tabmenu">
         <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=luci.dispatcher.build_url("admin/config")%>"><%:System%></a></li>
-        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="location"><%:Location%></a></li>
-        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="config1"><%:5GHz Radio%></a></li>
-        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="config2"><%:2.4GHz Radio%></a></li>
         <script type="text/javascript">
+        if( loginuser != "installer" ) {
+           document.write("<li style='margin-right:4px' class='cbi-tab-disabled'><a href='location'><%:Location%></a></li>");
+        }
+        </script>
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="config1"><%:5GHz Radio%></a></li>
+        <script type="text/javascript">
+        if( loginuser != "installer" ) {
+           document.write("<li style='margin-right:4px' class='cbi-tab-disabled'><a href='config2'><%:2.4GHz Radio%></a></li>");
+        }
         if( radmode == "sta" ) {
            document.write("<li style='margin-right:4px' class='cbi-tab-disabled'><a href='survey'><%:Site Survey%></a></li>");
         }

@@ -156,8 +156,9 @@
 				local href  = controller .. "/" .. category .. "/" .. r ..
 					(nnode.query and http.build_querystring(k.query) or "")
                 local grandchildren = disp.node_childs(nnode)
+                local loginuser = luci.dispatcher.context.authuser
                 
-                if #grandchildren > 0 then
+                if #grandchildren > 0 and loginuser ~= "installer" then
 	%>
         <li class="dropdown collapsed <%=pcdata(striptags(translate(nnode.title)))%>" data-toggle="collapse"  data-target="#<%=pcdata(striptags(translate(nnode.title)))%>" aria-expanded="false" >
             <a class="menu" href="#"><%=pcdata(striptags(translate(nnode.title)))%></a>

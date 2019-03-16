@@ -288,10 +288,16 @@ function hideparam()
 <div class="cbi-map">
     <ul class="cbi-tabmenu">
         <li style="margin-right:4px" class="cbi-tab"><a href="#"><%:System%></a></li>
-        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=REQUEST_URI%>/location"><%:Location%></a></li>
-        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=REQUEST_URI%>/config1"><%:5GHz Radio%></a></li>
-        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=REQUEST_URI%>/config2"><%:2.4GHz Radio%></a></li>
         <script type="text/javascript">
+        if( loginuser != "installer" ) {
+           document.write("<li style='margin-right:4px' class='cbi-tab-disabled'><a href='<%=REQUEST_URI%>/location'><%:Location%></a></li>");
+        }
+        </script>
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=REQUEST_URI%>/config1"><%:5GHz Radio%></a></li>
+        <script type="text/javascript">
+        if( loginuser != "installer" ) {
+           document.write("<li style='margin-right:4px' class='cbi-tab-disabled'><a href='<%=REQUEST_URI%>/config2'><%:2.4GHz Radio%></a></li>");
+        }
         if( radmode == "sta" ) {
            document.write("<li style='margin-right:4px' class='cbi-tab-disabled'><a href='<%=REQUEST_URI%>/survey'><%:Site Survey%></a></li>");
         }

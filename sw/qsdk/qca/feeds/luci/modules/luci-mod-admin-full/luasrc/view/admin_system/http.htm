@@ -128,6 +128,12 @@ function updatehttpsport()
             </div>
           </div>
           <div class="cbi-value">
+            <label class="cbi-value-title">Installer Password</label>
+            <div class="cbi-value-field">
+              <input type="password" name="162" class="cbi-input-select" value="********" >
+            </div>
+          </div>
+          <div class="cbi-value">
             <label class="cbi-value-title">Enable HTTP</label>
             <div style="display:none"><input type="text" id="http1" name="91" value="<%=uciget('uci get uhttpd.main.listen_http')%>"></div>
             <div class="cbi-value-field">

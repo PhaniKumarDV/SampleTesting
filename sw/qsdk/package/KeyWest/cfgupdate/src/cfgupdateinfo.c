@@ -894,6 +894,10 @@ void cfg_set( char *type, char *value )
         case UCI_ID_MASK_24:
             sprintf(cmd,"uci set network.kwlan.netmask='%s'",value);
             break;
+        case UCI_ID_HTTP_INST_PWD:
+            system("uci set uhttpd.main.pwdmodified='1'");
+            sprintf(cmd,"uci set uhttpd.main.instpwd='%s'",value);
+            break;
         default:
             break;
     }

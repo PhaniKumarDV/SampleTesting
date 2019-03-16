@@ -2,6 +2,7 @@ root:$1$zCxn3UGu$3bPTL1bAfXZAcZcFInZ1S/:0:0:root:/root:/bin/ash
 admin:$1$SQqSeK/V$QY0knX5BXk9ZFudLDzi7p1:1:0:admin:/home/admin:/usr/sbin/cli.sh
 superuser:$1$SQqSeK/V$QY0knX5BXk9ZFudLDzi7p1:1:0:admin:/home/superuser:/bin/false
 user:$1$SQqSeK/V$QY0knX5BXk9ZFudLDzi7p1:100:0:user:/tmp:/bin/false
+installer:$1$SQqSeK/V$QY0knX5BXk9ZFudLDzi7p1:1:0:admin:/home/installer:/bin/false
 daemon:*:1:1:daemon:/var:/bin/false
 ftp:*:55:55:ftp:/home/ftp:/bin/false
 network:*:101:101:network:/var:/bin/false

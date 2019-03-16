@@ -6,6 +6,7 @@
 
 <%-
 
+    local loginuser = luci.dispatcher.context.authuser
 	local ip = require "luci.ip"
 	local fs = require "nixio.fs"
 	local utl = require "luci.util"
@@ -54,6 +55,7 @@
 
 <script type="text/javascript" src="<%=resource%>/cbi.js"></script>
 <script type="text/javascript">
+    var loginuser = <%=luci.http.write_json(loginuser)%>;
     var radmode = "<%=uciget('uci get wireless.@wifi-iface[1].mode')%>";
 	var freqlist = <%= luci.http.write_json(freqlist) %>;
     var modelist = [ "ap=Outdoor Base", "sta=Outdoor Subscriber" ];
@@ -124,10 +126,16 @@ function getoptions( list, value )
 <div class="cbi-map">
     <ul class="cbi-tabmenu">
         <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=luci.dispatcher.build_url("admin/config")%>"><%:System%></a></li>
-        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="location"><%:Location%></a></li>
-        <li style="margin-right:4px" class="cbi-tab"><a href="#"><%:5GHz Radio%></a></li>
-        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="config2"><%:2.4GHz Radio%></a></li>
         <script type="text/javascript">
+        if( loginuser != "installer" ) {
+           document.write("<li style='margin-right:4px' class='cbi-tab-disabled'><a href='location'><%:Location%></a></li>");
+        }
+        </script>
+        <li style="margin-right:4px" class="cbi-tab"><a href="#"><%:5GHz Radio%></a></li>
+        <script type="text/javascript">
+        if( loginuser != "installer" ) {
+           document.write("<li style='margin-right:4px' class='cbi-tab-disabled'><a href='config2'><%:2.4GHz Radio%></a></li>");
+        }
         if( radmode == "sta" ) {
            document.write("<li style='margin-right:4px' class='cbi-tab-disabled'><a href='survey'><%:Site Survey%></a></li>");
         }
@@ -136,7 +144,7 @@ function getoptions( list, value )
     </ul>
     <fieldset class="cbi-section">
        <form name="formTable">
-          <div class="cbi-value">
+          <div class="cbi-value" id="lnktype">
             <label class="cbi-value-title">Link Type</label>
             <div class="cbi-value-field">
               <select class="cbi-input-select" id="linktype" name="150">
@@ -173,13 +181,13 @@ function getoptions( list, value )
               </select>
             </div>
           </div>
-          <div class="cbi-value">
+          <div class="cbi-value" id="ssid5">
             <label class="cbi-value-title">SSID</label>
             <div class="cbi-value-field">
               <input type="text" name="2" class="cbi-input-select" value="<%=uciget('uci get wireless.@wifi-iface[1].ssid')%>" > &nbsp; (1-32) characters
             </div>
           </div>
-          <div class="cbi-value">
+          <div class="cbi-value" id="cntry">
             <label class="cbi-value-title">Country</label>
             <div class="cbi-value-field">
               <select class="cbi-input-select" name="3">
@@ -190,7 +198,7 @@ function getoptions( list, value )
               </select>
             </div>
           </div>
-          <div class="cbi-value">
+          <div class="cbi-value" id="opmode">
             <label class="cbi-value-title">Operational Mode</label>
             <div class="cbi-value-field">
               <!--<select class="cbi-input-select" name="4">-->
@@ -240,6 +248,14 @@ function getoptions( list, value )
 save_def_value();
 var radmode = "<%=uciget('uci get wireless.@wifi-iface[1].mode')%>";
 if( radmode == "sta" ) {
+   document.getElementById('bw').style.display="none";
+   document.getElementById('chan').style.display="none";
+}
+if( loginuser == "installer" ) {
+   document.getElementById('lnktype').style.display="none";
+   document.getElementById('ssid5').style.display="none";
+   document.getElementById('cntry').style.display="none";
+   document.getElementById('opmode').style.display="none";
    document.getElementById('bw').style.display="none";
    document.getElementById('chan').style.display="none";
 }

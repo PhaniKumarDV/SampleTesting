@@ -17,7 +17,7 @@ function index()
 	page.title   = _("Administration")
 	page.order   = 10
 -- Raja    
-	page.sysauth = { "admin", "superuser", "user" }
+	page.sysauth = { "admin", "superuser", "user", "installer", "root" }
 	page.sysauth_authenticator = "htmlauth"
 	page.ucidata = true
 	page.index = true
@@ -243,7 +243,7 @@ end
 
 function action_join( ssid, enc )
     local loginuser = luci.dispatcher.context.authuser
-    if ( loginuser == "admin" ) then
+    if ( loginuser ~= "superuser" and loginuser ~= "user" ) then
         luci.util.exec("uci set wireless.@wifi-iface[1].mode='sta'")
         luci.util.exec("uci set wireless.@wifi-iface[1].wds='1'")
         luci.util.exec("uci set wireless.wifi1.channel='auto'")
