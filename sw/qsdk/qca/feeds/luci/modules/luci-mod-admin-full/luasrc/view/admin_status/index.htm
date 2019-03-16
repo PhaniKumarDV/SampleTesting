@@ -5,6 +5,7 @@
 -%>
 
 <%
+    local loginuser = luci.dispatcher.context.authuser
 	local fs = require "nixio.fs"
 	local uci = require "luci.model.uci".cursor()
 	local ntm = require "luci.model.network"
@@ -171,6 +172,7 @@
 </style>
 <script type="text/javascript" src="<%=resource%>/cbi.js"></script>
 <script type="text/javascript">//<![CDATA[
+var loginuser = <%=luci.http.write_json(loginuser)%>;
 var eth1_status = "<%=eth1_status %>";
 var eth1_speed = "<%=eth1_speed %>";
 var eth1_duplex = "<%=eth1_duplex %>";
@@ -422,8 +424,14 @@ function get_links()
             var l = data.split("=");
             links1 = ( ( l[0] > 1 ) ? ( l[0] - 1 ) : 0 );
             links2 = ( ( l[1] > 1 ) ? ( l[1] - 1 ) : 0 );
-			document.getElementById("links1").innerHTML = links1;
-			document.getElementById("links2").innerHTML = links2;
+            if( loginuser == "installer" )
+			   document.getElementById("links1").innerHTML = "<a href='<%=luci.dispatcher.build_url("admin","config","radio1stats")%>'>"+links1+"</a>";
+            else
+			   document.getElementById("links1").innerHTML = "<a href='<%=luci.dispatcher.build_url("admin","monitor","stats")%>'>"+links1+"</a>";
+            if( loginuser == "installer" )
+			   document.getElementById("links2").innerHTML = links2;
+            else
+			   document.getElementById("links2").innerHTML = "<a href='<%=luci.dispatcher.build_url("admin","monitor","stats","radio2stats")%>'>"+links2+"</a>";
             link_stats( links1 );
             get_mode();
 		}

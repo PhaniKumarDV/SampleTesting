@@ -1,23 +1,23 @@
 module("luci.controller.admin.monitor", package.seeall)
 
 function index()
-    entry({"admin", "monitor"}, alias("admin", "monitor", "arptbl"), _("Monitor"), 60).index = true
+    entry({"admin", "monitor"}, alias("admin", "monitor", "stats"), _("Monitor"), 60).index = true
     local mode = luci.sys.exec("uci get wireless.@wifi-iface[1].mode")
     local wds = luci.sys.exec("uci get wireless.@wifi-iface[1].wds")
     local page
-    
-    entry({"admin", "monitor", "stats"}, call("action_wifilog"), _("Statistics"), 1)
+
+    entry({"admin", "monitor", "stats"}, template("admin_monitor/radio1_stats"), _("Statistics"), 1)
+    entry({"admin", "monitor", "stats", "radio2stats"}, template("admin_monitor/radio2_stats"))
+    entry({"admin", "monitor", "stats", "details"}, call("details"), nil).leaf = true
+    entry({"admin", "monitor", "stats", "disconnect"}, call("disconnect"), nil).leaf = true
+    entry({"admin", "monitor", "stats", "starttool"}, call("starttool"), nil).leaf = true
+    entry({"admin", "monitor", "stats", "stoptool"}, call("stoptool"), nil).leaf = true
+    entry({"admin", "monitor", "stats", "wireless_log"}, call("action_wifilog"))
     entry({"admin", "monitor", "stats", "wireless_logtype"}, call("action_wifi_logtype"), nil).leaf = true
-	entry({"admin", "monitor", "stats", "wireless_clrlog"}, call("action_wifi_clrlog"), nil).leaf = true
+    entry({"admin", "monitor", "stats", "wireless_clrlog"}, call("action_wifi_clrlog"), nil).leaf = true
     entry({"admin", "monitor", "stats", "eth_log"}, call("action_ethlog"))
     entry({"admin", "monitor", "stats", "eth_logtype"}, call("action_eth_logtype"), nil).leaf = true
-	entry({"admin", "monitor", "stats", "eth_clrlog"}, call("action_eth_clrlog"), nil).leaf = true
-	entry({"admin", "monitor", "stats", "radio1stats"}, template("admin_monitor/radio1_stats"))
-	entry({"admin", "monitor", "stats", "radio2stats"}, template("admin_monitor/radio2_stats"))
-	entry({"admin", "monitor", "stats", "details"}, call("details"), nil).leaf = true
-	entry({"admin", "monitor", "stats", "disconnect"}, call("disconnect"), nil).leaf = true
-	entry({"admin", "monitor", "stats", "starttool"}, call("starttool"), nil).leaf = true
-	entry({"admin", "monitor", "stats", "stoptool"}, call("stoptool"), nil).leaf = true
+    entry({"admin", "monitor", "stats", "eth_clrlog"}, call("action_eth_clrlog"), nil).leaf = true
 
     entry({"admin", "monitor", "lantable"}, call("action_learntbl"), _("LAN Table"), 2)
     entry({"admin", "monitor", "lantable", "ref_learntbl"}, call("refresh_learntbl"), nil).leaf = true
@@ -25,37 +25,37 @@ function index()
     entry({"admin", "monitor", "lantable", "arptbl"}, call("action_arptbl"))
     entry({"admin", "monitor", "lantable", "ref_arptbl"}, call("refresh_arptbl"), nil).leaf = true
     entry({"admin", "monitor", "lantable", "clr_arptbl"}, call("clear_arptbl"), nil).leaf = true
-	
+
     entry({"admin", "monitor", "logs"}, call("action_wifievents"), _("Logs"), 3) 
     entry({"admin", "monitor", "logs", "wireless_eventtype"}, call("action_wifi_events"), nil).leaf = true
-	entry({"admin", "monitor", "logs", "wireless_clrevent"}, call("action_wifi_clrevents"), nil).leaf = true
+    entry({"admin", "monitor", "logs", "wireless_clrevent"}, call("action_wifi_clrevents"), nil).leaf = true
     entry({"admin", "monitor", "logs", "eth_event"}, call("action_ethevents"))
     entry({"admin", "monitor", "logs", "eth_eventtype"}, call("action_eth_events"), nil).leaf = true
-	entry({"admin", "monitor", "logs", "eth_clrevent"}, call("action_eth_clrevents"), nil).leaf = true
-	entry({"admin", "monitor", "logs", "syslog"}, call("action_syslog"))
+    entry({"admin", "monitor", "logs", "eth_clrevent"}, call("action_eth_clrevents"), nil).leaf = true
+    entry({"admin", "monitor", "logs", "syslog"}, call("action_syslog"))
     entry({"admin", "monitor", "logs", "log_type"}, call("action_logtype"), nil).leaf = true
-	entry({"admin", "monitor", "logs", "clr_log"}, call("action_clr_log"), nil).leaf = true
+    entry({"admin", "monitor", "logs", "clr_log"}, call("action_clr_log"), nil).leaf = true
     entry({"admin", "monitor", "logs", "conflog"}, call("action_conflog"))
-	entry({"admin", "monitor", "logs", "clr_conflog"}, call("action_clr_conflog"), nil).leaf = true
+    entry({"admin", "monitor", "logs", "clr_conflog"}, call("action_clr_conflog"), nil).leaf = true
     entry({"admin", "monitor", "logs", "rebootlog"}, call("action_rebootlog"))
-	entry({"admin", "monitor", "logs", "clr_rebootlog"}, call("action_clr_rebootlog"), nil).leaf = true
+    entry({"admin", "monitor", "logs", "clr_rebootlog"}, call("action_clr_rebootlog"), nil).leaf = true
 
-	entry({"admin", "monitor", "traffic"}, alias("admin", "monitor", "traffic", "connections"), _("Live Traffic"), 4)
-	entry({"admin", "monitor", "traffic", "connections"}, template("admin_monitor/connections"), _("Connections"), 1).leaf = true
-	entry({"admin", "monitor", "traffic", "connections_status"}, call("action_connections")).leaf = true
-	entry({"admin", "monitor", "traffic", "bandwidth"}, template("admin_monitor/bandwidth"), _("Traffic"), 2).leaf = true
-	entry({"admin", "monitor", "traffic", "bandwidth_status"}, call("action_bandwidth")).leaf = true
-	entry({"admin", "monitor", "nameinfo"}, call("action_nameinfo")).leaf = true
-	
-	entry({"admin", "monitor", "tools"}, template("admin_network/diagnostics"), _("Tools"), 5)
+    entry({"admin", "monitor", "traffic"}, alias("admin", "monitor", "traffic", "connections"), _("Live Traffic"), 4)
+    entry({"admin", "monitor", "traffic", "connections"}, template("admin_monitor/connections"), _("Connections"), 1).leaf = true
+    entry({"admin", "monitor", "traffic", "connections_status"}, call("action_connections")).leaf = true
+    entry({"admin", "monitor", "traffic", "bandwidth"}, template("admin_monitor/bandwidth"), _("Traffic"), 2).leaf = true
+    entry({"admin", "monitor", "traffic", "bandwidth_status"}, call("action_bandwidth")).leaf = true
+    entry({"admin", "monitor", "nameinfo"}, call("action_nameinfo")).leaf = true
+
+    entry({"admin", "monitor", "tools"}, template("admin_network/diagnostics"), _("Tools"), 5)
     if (string.match(mode,"ap") and string.match(wds,"1") ) then
-	    entry({"admin", "monitor", "tools", "sascan"}, call("action_sascan"))
-	    entry({"admin", "monitor", "tools", "scantime"}, call("action_scantime"), nil).leaf = true
-	    entry({"admin", "monitor", "tools", "startfreq"}, call("action_startfreq"), nil).leaf = true
-	    entry({"admin", "monitor", "tools", "endfreq"}, call("action_endfreq"), nil).leaf = true
-	    entry({"admin", "monitor", "tools", "stopscan"}, call("action_stopscan"), nil).leaf = true
-	    entry({"admin", "monitor", "tools", "saresult"}, call("action_saresult"), nil).leaf = true
-	    entry({"admin", "monitor", "tools", "scanstate"}, call("action_scanstate"), nil).leaf = true
+        entry({"admin", "monitor", "tools", "sascan"}, call("action_sascan"))
+        entry({"admin", "monitor", "tools", "scantime"}, call("action_scantime"), nil).leaf = true
+        entry({"admin", "monitor", "tools", "startfreq"}, call("action_startfreq"), nil).leaf = true
+        entry({"admin", "monitor", "tools", "endfreq"}, call("action_endfreq"), nil).leaf = true
+        entry({"admin", "monitor", "tools", "stopscan"}, call("action_stopscan"), nil).leaf = true
+        entry({"admin", "monitor", "tools", "saresult"}, call("action_saresult"), nil).leaf = true
+        entry({"admin", "monitor", "tools", "scanstate"}, call("action_scanstate"), nil).leaf = true
     end
     if (string.match(mode,"sta") and string.match(wds,"1") ) then
 	    entry({"admin", "monitor", "tools", "survey"}, call("action_survey"))
@@ -236,78 +236,6 @@ function action_ethernet()
     return data
 end
 
-function action_wifilog()
-    local data = {}
-    data = luci.util.exec("/usr/sbin/sify_linkstatistics 1")
-	local wireless_log = data
-	luci.template.render("admin_monitor/wireless_log", {wireless_log=wireless_log})
-end
-
-function action_wifi_logtype( logtype )
-	local data = {}
-	data = "Invalid Logtype"
-	if( string.match(logtype,"1") ) then
-		data = luci.util.exec("/usr/sbin/sify_linkstatistics 1")
-	end
-	if( string.match(logtype,"2") ) then
-		data = luci.util.exec("/usr/sbin/sify_linkstatistics 4")
-    end
-	if( string.match(logtype,"3") ) then
-		data = luci.util.exec("/usr/sbin/sify_linkstatistics 5")
-	end
-	if( string.match(logtype,"4") ) then
-        data = action_wireless()
-	end
-	luci.http.prepare_content("application/json")
-	luci.http.write_json(data)
-end
-
-function action_wifi_clrlog( logtype )
-	local data = {}
-	data = "Wireless Log file is empty."
-	if( string.match(logtype,"4") ) then
-	    luci.sys.exec("athstatsclr -i wifi1")
-	    luci.sys.exec("80211stats -i ath1 -e 1")
-        data = action_wireless()
-    end
-	luci.http.prepare_content("application/json")
-	luci.http.write_json(data)
-end
-
-function action_ethlog()
-    local data = {}
-    data = luci.util.exec("/usr/sbin/sify_linkstatistics 3")
-	local eth_log = data
-	luci.template.render("admin_monitor/eth_log", {eth_log=eth_log})
-end
-
-function action_eth_logtype( logtype )
-	local data = {}
-	data = "Invalid Logtype"
-	if( string.match(logtype,"1") ) then
-		data = luci.util.exec("/usr/sbin/sify_linkstatistics 3")
-	end
-	if( string.match(logtype,"2") ) then
-		data = luci.util.exec("/usr/sbin/sify_linkstatistics 6")
-	end
-	if( string.match(logtype,"3") ) then
-        data = action_ethernet()
-	end
-	luci.http.prepare_content("application/json")
-	luci.http.write_json(data)
-end
-
-function action_eth_clrlog( logtype )
-	local data = {}
-	data = "Ethernet Log file is empty."
-	luci.sys.exec("iwpriv ath1 kwnclrethstats 1")
-	if( string.match(logtype,"3") ) then
-        data = action_ethernet()
-	end
-	luci.http.prepare_content("application/json")
-	luci.http.write_json(data)
-end
-
 function details( index )
 	local entryind = index
 	luci.template.render("admin_monitor/detailed_stats", {entryind=entryind})
@@ -315,7 +243,7 @@ end
 
 function disconnect( mac )
 	luci.sys.exec("iwpriv ath1 kickmac "..mac)
-	luci.http.redirect(luci.dispatcher.build_url("admin/monitor/stats/radio1stats"))
+	luci.http.redirect(luci.dispatcher.build_url("admin/monitor/stats"))
 end
 
 function starttool( mac )
@@ -336,6 +264,78 @@ function stoptool( mac )
 	data = "Link test is stopped..."
 	luci.http.prepare_content("application/json")
 	luci.http.write_json(data)
+end
+
+function action_wifilog()
+    local data = {}
+    data = action_wireless()
+    local wireless_log = data
+    luci.template.render("admin_monitor/wireless_log", {wireless_log=wireless_log})
+end
+
+function action_wifi_logtype( logtype )
+    local data = {}
+    data = "Invalid Logtype"
+    if( string.match(logtype,"1") ) then
+        data = action_wireless()
+    end
+    if( string.match(logtype,"2") ) then
+        data = luci.util.exec("/usr/sbin/sify_linkstatistics 1")
+    end
+    if( string.match(logtype,"3") ) then
+        data = luci.util.exec("/usr/sbin/sify_linkstatistics 4")
+    end
+    if( string.match(logtype,"4") ) then
+        data = luci.util.exec("/usr/sbin/sify_linkstatistics 5")
+    end
+    luci.http.prepare_content("application/json")
+    luci.http.write_json(data)
+end
+
+function action_wifi_clrlog( logtype )
+    local data = {}
+    data = "Wireless Log file is empty."
+    if( string.match(logtype,"1") ) then
+        luci.sys.exec("athstatsclr -i wifi1")
+        luci.sys.exec("80211stats -i ath1 -e 1")
+        data = action_wireless()
+    end
+    luci.http.prepare_content("application/json")
+    luci.http.write_json(data)
+end
+
+function action_ethlog()
+    local data = {}
+    data = action_ethernet()
+    local eth_log = data
+    luci.template.render("admin_monitor/eth_log", {eth_log=eth_log})
+end
+
+function action_eth_logtype( logtype )
+    local data = {}
+    data = "Invalid Logtype"
+    if( string.match(logtype,"1") ) then
+        data = action_ethernet()
+    end
+    if( string.match(logtype,"2") ) then
+        data = luci.util.exec("/usr/sbin/sify_linkstatistics 3")
+    end
+    if( string.match(logtype,"3") ) then
+        data = luci.util.exec("/usr/sbin/sify_linkstatistics 6")
+    end
+    luci.http.prepare_content("application/json")
+    luci.http.write_json(data)
+end
+
+function action_eth_clrlog( logtype )
+    local data = {}
+    data = "Ethernet Log file is empty."
+    luci.sys.exec("iwpriv ath1 kwnclrethstats 1")
+    if( string.match(logtype,"1") ) then
+        data = action_ethernet()
+    end
+    luci.http.prepare_content("application/json")
+    luci.http.write_json(data)
 end
 
 function action_learntbl()

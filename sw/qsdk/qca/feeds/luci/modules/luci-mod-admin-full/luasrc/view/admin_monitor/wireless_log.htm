@@ -17,7 +17,7 @@ function get_results()
 {
     var id = document.getElementById("logtype").value;
     var x = document.getElementById("btn3");
-    if( id == 4 )
+    if( id == 1 )
         x.style.visibility = "visible";
     else
         x.style.visibility = "hidden";
@@ -25,7 +25,7 @@ function get_results()
     XHR.get('<%=luci.dispatcher.build_url("admin", "monitor", "stats")%>/wireless_logtype' + '/' + id, null,
     function(x, data) {
         if (data) { 
-             if( id == 4 ) {
+             if( id == 1 ) {
                   document.getElementById("wifistats").style.display="block";
                   document.getElementById("content_syslog").style.display="none";
                   var a = data.split(",");
@@ -49,7 +49,7 @@ function clear_log()
     XHR.get('<%=luci.dispatcher.build_url("admin", "monitor", "stats")%>/wireless_clrlog' + '/' + id, null,
     function(x, data) {
         if (data) {
-             if( id == 4 ) {
+             if( id == 1 ) {
                   document.getElementById("wifistats").style.display="block";
                   document.getElementById("content_syslog").style.display="none";
                   var a = data.split(",");
@@ -70,30 +70,30 @@ function clear_log()
 <div class="page-content">
 <h2><a id="content" name="content"><%:Statistics%></a></h2>
     <ul class="cbi-tabmenu">
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=luci.dispatcher.build_url("admin/monitor/stats")%>"><%:5GHz Radio%></a></li>
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="radio2stats"><%:2.4GHz Radio%></a></li>
         <li style="margin-right:4px" class="cbi-tab"><a href="#"><%:Wireless%></a></li>
-        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=REQUEST_URI%>/eth_log"><%:Ethernet%></a></li>
-        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=REQUEST_URI%>/radio1stats"><%:5GHz Radio%></a></li>
-        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=REQUEST_URI%>/radio2stats"><%:2.4GHz Radio%></a></li>
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="eth_log"><%:Ethernet%></a></li>
     </ul>
 <div class="cbi-page-actions left" style="padding-left: 19px;margin-bottom: 0px;">
     Show log type
     <script type="text/javascript">
         document.write("<select id='logtype' style='width: 360px'>");
-            document.write("<option value='1'>Display Wireless Statistics</option>");
+            document.write("<option value='1'>Display Wireless Advanced Statistics</option>");
+            document.write("<option value='2'>Display Wireless Statistics</option>");
             var radiomode = "<%=execute('uci get wireless.@wifi-iface[1].mode')%>";
             if( radiomode == "ap" )
-                document.write("<option value='2'>MAC ID, RSSI And SNR For Remote Devices Associated</option>");
+                document.write("<option value='3'>MAC ID, RSSI And SNR For Remote Devices Associated</option>");
             else
-                document.write("<option value='2'>MAC ID, RSSI And SNR For Remote Devices Associated</option>");
+                document.write("<option value='3'>MAC ID, RSSI And SNR For Remote Devices Associated</option>");
                 //document.write("<option value='3'>SNR, RSSI For The Device</option>");
-            document.write("<option value='4'>Display Wireless Advanced Statistics</option>");
         document.write("</select>");
     </script>
     <input type="button" id="btn1" class="cbi-button cbi-button-apply" value="<%:Submit%>" onclick="get_results()" />
     <input type="button" id="btn2" class="cbi-button cbi-button-apply" value="<%:Refresh%>" onclick="get_results()" />
     <input type="button" id="btn3" class="cbi-button" value="<%:Clear%>" onclick="clear_log()" />
 </div>
-<div id="content_syslog">
+<div id="content_syslog" style="display:none">
 <textarea readonly="readonly" wrap="off" style="width:100%; height:500px;" rows="<%=wireless_log:cmatch("\n")+2%>" id="result"><%=wireless_log:pcdata()%></textarea>
 </div>
    <div id="wifistats" style="display:none">
@@ -381,7 +381,7 @@ function clear_log()
 <script type="text/javascript">
 var id = document.getElementById("logtype").value;
 var x = document.getElementById("btn3");
-if( id == 4 ) {
+if( id == 1 ) {
     x.style.visibility = "visible";
     document.getElementById("content_syslog").style.display="none";
     document.getElementById("wifistats").style.display="block";
