@@ -48,6 +48,13 @@ function start_scan()
     var time = document.getElementById("time").value;
     var start = document.getElementById("start").value;
     var end = document.getElementById("end").value;
+    var diff = parseInt(end) - parseInt(start);
+    if( diff > 800 ) {
+        diff = 800;
+    }
+    diff = diff / 5;
+    var dur = ( diff * time ) / 1000;
+    document.getElementById("dur").innerHTML = dur;
     document.getElementById("start_button").style.display = "none";
     document.getElementById("stop_button").style.display = "block";
     document.getElementById("msg").innerHTML="Spectral scan is in progress...";
@@ -82,7 +89,8 @@ function start_scan()
 function get_values( data )
 {
     var chan_plot = new Array();
-    var util_plot = new Array();
+    var pow0_plot = new Array();
+    var pow1_plot = new Array();
     var values = data.split(",");
     for( i = 0; i < values.length - 1; i++ )
     {
@@ -90,36 +98,47 @@ function get_values( data )
         var chan = parseInt(x[0]);
         var freq =  x[1];
         var util = parseInt(x[2]);
-        var noise = x[3].split("-");
-        noise = ( noise == 0 ? 0 : parseInt( noise[1] ) );
+        var pow0 = x[3];
+        var pow1 = x[4];
         chan_plot.push(chan);
-        util_plot.push(util);
+        pow0_plot.push(pow0);
+        pow1_plot.push(pow1);
         var scantable = document.getElementById('scan-list');
         var tr = scantable.insertRow(-1);
         tr.className = 'cbi-section-table-row cbi-rowstyle-2';
         tr.insertCell(-1).innerHTML = chan;
         tr.insertCell(-1).innerHTML = freq;
-        tr.insertCell(-1).innerHTML = util;
-        tr.insertCell(-1).innerHTML = noise == 0 ? 0 : noise_off - noise;
+        tr.insertCell(-1).innerHTML = pow0;
+        tr.insertCell(-1).innerHTML = pow1;
+    }
+    if( values.length > 1 ) {
+        document.getElementById("h1").style.display = "block";
+        document.getElementById("h2").style.display = "block";
     }
 
-      new Chartist.Line('.ct-chart', {
+      new Chartist.Line('.ct-chart0', {
       labels: chan_plot,
         series: [
-            util_plot
+            pow0_plot
               ]
       }, 
       {
       fullWidth: true,
+      height: '250px',
       axisX: {
           labelInterpolationFnc: function(value) {
-              return value % 5 == 0 ? value : null;
+              if( values.length < 20 ) {
+                  return value;
+              }
+              else {
+                  return value % 5 == 0 ? value : null;
+              }
           }
       },
       plugins: [
           Chartist.plugins.ctAxisTitle({
                axisX: {
-                  axisTitle: 'Channel Number',
+                  axisTitle: 'Channel',
                   axisClass: 'ct-axis-title',
                   offset: {
                       x: 0,
@@ -128,7 +147,7 @@ function get_values( data )
                   textAnchor: 'middle'
                },
                axisY: {
-                  axisTitle: 'Utilization',
+                  axisTitle: 'Signal (dBm)',
                   axisClass: 'ct-axis-title',
                   offset: {
                       x: 0,
@@ -143,6 +162,56 @@ function get_values( data )
           right: 40
       }
     });
+
+
+      new Chartist.Line('.ct-chart1', {
+      labels: chan_plot,
+        series: [
+            pow1_plot
+              ]
+      }, 
+      {
+      fullWidth: true,
+      height: '250px',
+      axisX: {
+          labelInterpolationFnc: function(value) {
+              if( values.length < 20 ) {
+                  return value;
+              }
+              else {
+                  return value % 5 == 0 ? value : null;
+              }
+          }
+      },
+      plugins: [
+          Chartist.plugins.ctAxisTitle({
+               axisX: {
+                  axisTitle: 'Channel',
+                  axisClass: 'ct-axis-title',
+                  offset: {
+                      x: 0,
+                      y: 30
+                  },
+                  textAnchor: 'middle'
+               },
+               axisY: {
+                  axisTitle: 'Signal (dBm)',
+                  axisClass: 'ct-axis-title',
+                  offset: {
+                      x: 0,
+                      y: 0
+                  },
+                  textAnchor: 'middle',
+                  flipTitle: false
+               }
+        })
+      ],
+      chartPadding: {
+          right: 40
+      }
+    });
+
+
 }
 	XHR.poll(5, '<%=REQUEST_URI%>', { status: 1 },
 		function(x, info)
@@ -194,28 +263,34 @@ function get_values( data )
        <form name="formTable">
         <table>
           <tr>
-                <td>Scan Time&nbsp;<input type="text" class="cbi-input-select" id="time" style="width:100px;" value="">&nbsp; (1000-60000) ms</td>
+                <td>Scan Time&nbsp;<input type="text" class="cbi-input-select" id="time" style="width:100px;" value="">&nbsp; (500-60000) ms</td>
                 <td>Start Frequency&nbsp;<input type="text" class="cbi-input-select" id="start" style="width:100px;" value="">&nbsp; (0-10000) MHz</td>
                 <td>End Frequency&nbsp;<input type="text" class="cbi-input-select" id="end" style="width:100px;" value="">&nbsp; (0-10000) MHz</td>
           </tr>
         </table>
         </form>
     </fieldset>
-    <div class="cbi-page-actions right" id="start_button">
+    <div class="cbi-page-actions right" style="padding-right:480px;" id="start_button">
        <input type="button" class="cbi-button" value="Start" onclick="start_scan()" />
     </div>
-    <div class="cbi-page-actions right" id="stop_button" style="display:none">
+    <div class="cbi-page-actions right" id="stop_button" style="display:none;">
        <input type="button" class="cbi-button" value="Stop" onclick="stop_scan()" />
+       <span style="padding-left:270px;">Approximate Time : <span id="dur"></span> Seconds</span>
     </div>
+
 	<fieldset class="cbi-section">
-    <div id="msg"></div>
-    <div class="ct-chart" style="width:100%;"></div>
+    <div id="msg" style="padding-left:360px;"></div>
+    <h2 id="h1" style="display:none;"><a id="content" name="content"><%: A1 (Vertical)%></a></h2>
+    <div class="ct-chart0" style="width:100%;"></div>
+    <div style="height:40px;"></div>
+    <h2 id="h2" style="display:none;"><a id="content" name="content"><%: A2 (Horizontal)%></a></h2>
+    <div class="ct-chart1" style="width:100%;"></div>
 		<table class="cbi-section-table" style="width:600px; margin:30px;" id="scan-list">
 			<tr class="cbi-section-table-titles">
 				<th class="cbi-section-table-cell"><%:Channel%></th>
 				<th class="cbi-section-table-cell"><%:Frequency (MHz)%></th>
-				<th class="cbi-section-table-cell"><%:Utilization (%)%></th>
-				<th class="cbi-section-table-cell"><%:Noise (dBm)%></th>
+				<th class="cbi-section-table-cell"><%:Signal Chain0 (dBm)%></th>
+				<th class="cbi-section-table-cell"><%:Signal Chain1 (dBm)%></th>
             </tr>
         </table>
     </fieldset>

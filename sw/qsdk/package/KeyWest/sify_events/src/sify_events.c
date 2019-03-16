@@ -19,13 +19,16 @@ int ifd,isock_fd;
 int se_daemon = -1;
 #define IEEE80211_EV_DISASSOC_IND_AP 20
 #define IEEE80211_EV_DISASSOC_COMPLETE_AP 33
-#define IEEE80211_EV_DYING_GASP      45
-#define IEEE80211_EV_BASE_DYING_GASP 46
-#define IEEE80211_EV_SU_DYING_GASP   47
-#define IEEE80211_EV_DCS_TRIGGERED   48
-#define IEEE80211_EV_BEST_CHANNEL    49
-#define IEEE80211_EV_SA_START        50
-#define IEEE80211_EV_SA_STOP         51
+#define IEEE80211_EV_DYING_GASP       45
+#define IEEE80211_EV_BASE_DYING_GASP  46
+#define IEEE80211_EV_SU_DYING_GASP    47
+#define IEEE80211_EV_DCS_TRIGGERED    48
+#define IEEE80211_EV_DCS_BEST_CHANNEL 49
+#define IEEE80211_EV_SA_START         50
+#define IEEE80211_EV_SA_STOP          51
+#define IEEE80211_EV_ACS_START        52
+#define IEEE80211_EV_ACS_BEST_CHANNEL 53 
+#define IEEE80211_EV_SCAN_IN_PROGRESS 54
 #define PRINTF(fmt, ...)\
 do\
 {\
@@ -113,18 +116,36 @@ void sify_file_write(char *sify_buf,int status, int reason, uint8_t value)
             case IEEE80211_EV_DCS_TRIGGERED:
                 fprintf(sify_fp, "%s: DCS triggered\n",t,sify_buf);
                 syslog(LOG_INFO, " DCS triggered\n",sify_buf);		       
+                system("spectraltool -i wifi1 startscan");
                 break;
-            case IEEE80211_EV_BEST_CHANNEL:
+            case IEEE80211_EV_DCS_BEST_CHANNEL:
                 fprintf(sify_fp, "%s: DCS selected best channel\n",t,sify_buf);
                 syslog(LOG_INFO, " DCS selected best channel\n",sify_buf);		       
+                system("spectraltool -i wifi1 stopscan");
                 break;
             case IEEE80211_EV_SA_START:
                 fprintf(sify_fp, "%s: Spectrum Analyzer started\n",t,sify_buf);
                 syslog(LOG_INFO, " Spectrum Analyzer started\n",sify_buf);		       
+                system("spectraltool -i wifi1 startscan");
                 break;
             case IEEE80211_EV_SA_STOP:
                 fprintf(sify_fp, "%s: Spectrum Analyzer stopped\n",t,sify_buf);
                 syslog(LOG_INFO, " Spectrum Analyzer stopped\n",sify_buf);		       
+                system("spectraltool -i wifi1 stopscan");
+                break;
+            case IEEE80211_EV_ACS_START:
+                fprintf(sify_fp, "%s: ACS started\n",t,sify_buf);
+                syslog(LOG_INFO, " ACS started\n",sify_buf);		       
+                system("spectraltool -i wifi1 startscan");
+                break;
+            case IEEE80211_EV_ACS_BEST_CHANNEL:
+                fprintf(sify_fp, "%s: ACS selected best channel\n",t,sify_buf);
+                syslog(LOG_INFO, " ACS selected best channel\n",sify_buf);		       
+                system("spectraltool -i wifi1 stopscan");
+                break;
+            case IEEE80211_EV_SCAN_IN_PROGRESS:
+                fprintf(sify_fp, "%s: Scanning is already in progress\n",t,sify_buf);
+                syslog(LOG_INFO, " Scanning is already in progress\n",sify_buf);		       
                 break;
             default:
                 fprintf(sify_fp, "%s: Disassociated ( MAC: %s )\n",t,sify_buf);
