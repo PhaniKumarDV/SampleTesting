@@ -911,12 +911,14 @@ struct ieee80211_node_stats {
     u_int64_t   rx_tput_mbps;
     u_int32_t  	phy_err; 
     u_int32_t  	mpdu_err; 
-    u_int32_t  	retries; 
+    u_int64_t  	retries; 
     int16_t  	noise_floor; 
     u_int8_t    rtx;
     u_int8_t    tx_pwr;
     u_int8_t    tx_chainmask;
     u_int64_t   tx_tput_mbps;
+    u_int32_t   tx_data;
+    u_int32_t   rx_data;
 } __packed;
 
 /* VHT - Node Stats*/
@@ -935,6 +937,8 @@ struct ieee80211_link_param {
     u_int8_t    kwn_assem_frag;
     u_int16_t   kwn_max_pkt_size;
     u_int16_t   kwn_frag_pkt_size;
+    u_int8_t	kwn_macinmac;
+    u_int8_t    kwn_linktype;
 } __packed;
 
 /* VHT - exchange param */
@@ -1689,6 +1693,7 @@ enum {
     IEEE80211_ELEMID_FILS_INDICATION  = 240,
     IEEE80211_ELEMID_DILS             = 241,
     IEEE80211_ELEMID_FRAGMENT         = 242,
+    IEEE80211_ELEMID_LINKTYPE         = 243,
     IEEE80211_ELEMID_EXTENSION        = 255
 };
 
@@ -2890,6 +2895,8 @@ struct kwn_sa_scan_entries {
     u_int16_t frequency;
     u_int8_t  utility;
     int16_t   noise;
+    int16_t   pow_chain0;
+    int16_t   pow_chain1;
 };
 
 struct kwn_sa_scan_result {
@@ -2980,8 +2987,8 @@ struct ieee80211req_sta_info {
         u_int32_t isi_remote_phy_err;       /* Remote Phy Err */
         u_int32_t isi_local_mpdu_err;       /* Local MPDU Err */
         u_int32_t isi_remote_mpdu_err;      /* Remote MPDU Err */
-        u_int32_t isi_local_retries;        /* Local Retries */
-        u_int32_t isi_remote_retries;       /* Remote Retries */
+        u_int64_t isi_local_retries;        /* Local Retries */
+        u_int64_t isi_remote_retries;       /* Remote Retries */
         u_int8_t  isi_l_customer_name[33];
         u_int8_t  isi_r_customer_name[33];
         u_int8_t  isi_l_link_id[16];
@@ -2997,6 +3004,10 @@ struct ieee80211req_sta_info {
         u_int8_t  isi_r_rtx;
         u_int8_t  isi_l_tx_power;
         u_int8_t  isi_r_tx_power;
+        u_int32_t isi_l_tx_data;
+        u_int32_t isi_l_rx_data;
+        u_int32_t isi_r_tx_data;
+        u_int32_t isi_r_rx_data;
 
 };
 

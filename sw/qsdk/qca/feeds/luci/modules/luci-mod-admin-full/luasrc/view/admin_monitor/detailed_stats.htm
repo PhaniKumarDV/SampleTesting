@@ -230,6 +230,10 @@ function getBaseLog(x, y) {
 							document.getElementById("rem_rtx").innerHTML = assoclist[j].r_rtx + "%";
 							document.getElementById("loc_pwr").innerHTML = assoclist[j].l_tx_power;
 							document.getElementById("rem_pwr").innerHTML = assoclist[j].r_tx_power;
+							document.getElementById("loc_tx_pkt").innerHTML = assoclist[j].l_tx_data;
+							document.getElementById("rem_tx_pkt").innerHTML = assoclist[j].r_tx_data;
+							document.getElementById("loc_rx_pkt").innerHTML = assoclist[j].l_rx_data;
+							document.getElementById("rem_rx_pkt").innerHTML = assoclist[j].r_rx_data;
 						}
 					}
 				}
@@ -352,6 +356,16 @@ function getBaseLog(x, y) {
 				<td>Bandwidth Limit (Mbps)</td>
 				<td id="loc_limit"></td>
 				<td id="rem_limit"></td>
+			</tr>
+			<tr>
+				<td>Total Tx Packets </td>
+				<td id="loc_tx_pkt"></td>
+				<td id="rem_tx_pkt"></td>
+			</tr>
+			<tr>
+				<td>Total Rx Packets </td>
+				<td id="loc_rx_pkt"></td>
+				<td id="rem_rx_pkt"></td>
 			</tr>
 			<tr>
 				<td>Tx Power (dBm)</td>

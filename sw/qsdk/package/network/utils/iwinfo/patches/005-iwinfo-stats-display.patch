@@ -1,7 +1,7 @@
 diff -urN libiwinfo-2015-06-01_org/include/iwinfo.h libiwinfo-2015-06-01_mod/include/iwinfo.h
 --- libiwinfo-2015-06-01_org/include/iwinfo.h	2018-07-09 13:57:34.289239779 +0530
-+++ libiwinfo-2015-06-01_mod/include/iwinfo.h	2019-02-04 16:18:46.165460574 +0530
-@@ -98,10 +98,38 @@
++++ libiwinfo-2015-06-01_mod/include/iwinfo.h	2019-03-16 19:05:38.632410918 +0530
+@@ -98,10 +98,42 @@
  	uint32_t tx_packets;
  	struct iwinfo_rate_entry rx_rate;
  	struct iwinfo_rate_entry tx_rate;
@@ -24,8 +24,8 @@ diff -urN libiwinfo-2015-06-01_org/include/iwinfo.h libiwinfo-2015-06-01_mod/inc
 +	uint32_t remote_phy_err;
 +	uint32_t local_mpdu_err;
 +	uint32_t remote_mpdu_err;
-+	uint32_t local_retries;
-+	uint32_t remote_retries;
++	uint64_t local_retries;
++	uint64_t remote_retries;
 +    uint8_t l_customer_name[33];
 +    uint8_t r_customer_name[33];
 +    uint8_t l_link_id[16];
@@ -41,12 +41,16 @@ diff -urN libiwinfo-2015-06-01_org/include/iwinfo.h libiwinfo-2015-06-01_mod/inc
 +    uint8_t r_rtx;
 +    uint8_t l_tx_power;
 +    uint8_t r_tx_power;
++    uint32_t l_tx_data;
++    uint32_t l_rx_data;
++    uint32_t r_tx_data;
++    uint32_t r_rx_data;
  };
  
  struct iwinfo_txpwrlist_entry {
 diff -urN libiwinfo-2015-06-01_org/iwinfo_lua.c libiwinfo-2015-06-01_mod/iwinfo_lua.c
 --- libiwinfo-2015-06-01_org/iwinfo_lua.c	2018-07-09 13:58:03.333239283 +0530
-+++ libiwinfo-2015-06-01_mod/iwinfo_lua.c	2019-02-04 16:19:43.533333874 +0530
++++ libiwinfo-2015-06-01_mod/iwinfo_lua.c	2019-03-16 19:06:22.344280833 +0530
 @@ -272,6 +272,9 @@
  
  			lua_newtable(L);
@@ -57,7 +61,7 @@ diff -urN libiwinfo-2015-06-01_org/iwinfo_lua.c libiwinfo-2015-06-01_mod/iwinfo_
  			lua_pushnumber(L, e->signal);
  			lua_setfield(L, -2, "signal");
  
-@@ -305,6 +308,87 @@
+@@ -305,6 +308,99 @@
  			lua_pushstring(L, e->remote_long);
  			lua_setfield(L, -2, "remote_long");
  
@@ -142,13 +146,25 @@ diff -urN libiwinfo-2015-06-01_org/iwinfo_lua.c libiwinfo-2015-06-01_mod/iwinfo_
 +			lua_pushnumber(L, e->r_tx_power);
 +			lua_setfield(L, -2, "r_tx_power");
 +
++			lua_pushnumber(L, e->l_tx_data);
++			lua_setfield(L, -2, "l_tx_data");
++
++			lua_pushnumber(L, e->l_rx_data);
++			lua_setfield(L, -2, "l_rx_data");
++
++			lua_pushnumber(L, e->r_tx_data);
++			lua_setfield(L, -2, "r_tx_data");
++
++			lua_pushnumber(L, e->r_rx_data);
++			lua_setfield(L, -2, "r_rx_data");
++
  			if (e->rx_rate.mcs >= 0)
  			{
  				lua_pushnumber(L, e->rx_rate.mcs);
 diff -urN libiwinfo-2015-06-01_org/iwinfo_qcawifi.c libiwinfo-2015-06-01_mod/iwinfo_qcawifi.c
 --- libiwinfo-2015-06-01_org/iwinfo_qcawifi.c	2018-07-09 13:58:28.057238861 +0530
-+++ libiwinfo-2015-06-01_mod/iwinfo_qcawifi.c	2019-02-04 16:19:22.073390317 +0530
-@@ -799,6 +799,35 @@
++++ libiwinfo-2015-06-01_mod/iwinfo_qcawifi.c	2019-03-16 19:06:04.572333732 +0530
+@@ -799,6 +799,39 @@
  			memcpy(entry.local_long, si->isi_l_longitude+5, sizeof(entry.local_long));
  			memcpy(entry.remote_lat, si->isi_r_latitude+5, sizeof(entry.local_long));
  			memcpy(entry.remote_long, si->isi_r_longitude+5, sizeof(entry.remote_long));
@@ -180,6 +196,10 @@ diff -urN libiwinfo-2015-06-01_org/iwinfo_qcawifi.c libiwinfo-2015-06-01_mod/iwi
 +			entry.r_rtx = si->isi_r_rtx;
 +			entry.l_tx_power = si->isi_l_tx_power;
 +			entry.r_tx_power = si->isi_r_tx_power;
++			entry.l_tx_data = si->isi_l_tx_data;
++			entry.l_rx_data = si->isi_l_rx_data;
++			entry.r_tx_data = si->isi_r_tx_data;
++			entry.r_rx_data = si->isi_r_rx_data;
 +
  			memcpy(&buf[bl], &entry, sizeof(struct iwinfo_assoclist_entry));
  
