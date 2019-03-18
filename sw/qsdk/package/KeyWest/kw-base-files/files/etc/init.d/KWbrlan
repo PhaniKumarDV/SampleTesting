@@ -17,7 +17,7 @@ start_service() {
         uci set dhcp.kwlan=dhcp
         uci set dhcp.kwlan.start='192.168.5.100'
         uci set dhcp.kwlan.leasetime='43200'
-        uci set dhcp.kwlan.limit='192.168.5.150'
+        uci set dhcp.kwlan.limit='192.168.5.101'
         uci set dhcp.kwlan.interface='kwlan'
         uci set dhcp.kwlan.ignore='0'
 
