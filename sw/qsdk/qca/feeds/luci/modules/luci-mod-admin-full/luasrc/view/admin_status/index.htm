@@ -774,7 +774,7 @@ function get_log()
 <table>
 <tr>
 <td style="border-top:0px;">
-<fieldset class="cbi-section" style="width:440px;min-height:230px;padding:20px 20px;">
+<fieldset class="cbi-section" style="width:445px;min-height:230px;padding:20px 20px;">
 	<legend><%:System%></legend>
 	<table width="100%" cellspacing="10">
 		<tr><td width="47%"><%:Host Name%></td><td><%=luci.sys.hostname() or "?"%></td></tr>
@@ -792,7 +792,7 @@ function get_log()
 </fieldset>
 </td>
 <td rowspan="2" style="border-top:0px;">
-<fieldset class="cbi-section" style="width:470px;height:703px;padding:20px 20px;">
+<fieldset class="cbi-section" style="width:470px;height:728px;padding:20px 20px;">
 	<legend><%:Wireless%></legend>
 	<table width="100%" cellspacing="10">
        <tr><td></td><td style="color:#a5bc23"><b>5 GHz<b></td><td style="color:#a5bc23"><b>2.4 GHz<b></td></tr>
@@ -828,7 +828,7 @@ function get_log()
 </tr>
 <tr>
 <td style="border-top:0px;">
-<fieldset class="cbi-section" style="width:440px;min-height:230px;padding:20px 20px;">
+<fieldset class="cbi-section" style="width:445px;min-height:230px;padding:20px 20px;">
 	<legend><%:Network%></legend>
 	<table width="100%" cellspacing="10">
 		<tr><td width="47%"><%:Ethernet MAC%></td><td><%=eth_mac%></td></tr>
@@ -842,7 +842,7 @@ function get_log()
             document.write(" Down ");
         </script>
         </td></tr>
-		<!--<tr><td width="47%"><%:Cable Length%></td><td><script type="text/javascript">document.write(cablen[2])</script>&nbsp;m</td></tr>-->
+		<tr><td width="47%"><%:Cable Length%></td><td><script type="text/javascript">document.write(cablen[2])</script>&nbsp;m</td></tr>
 		<tr><td width="47%"><%:IP Address%></td><td><script type="text/javascript">document.write(ip)</script></td></tr>
 		<tr><td width="47%"><%:Subnet Mask%></td><td><script type="text/javascript">document.write(mask)</script></td></tr>
 		<tr><td width="47%"><%:Gateway IP%></td><td><script type="text/javascript">document.write(gw)</script></td></tr>
