@@ -4,6 +4,8 @@
 #define KWN_HTTP_CFG_FILE "/tmp/kwnhttpcfg.txt"
 #define KWN_HTTP_NEW_CONFIG_FILE "/tmp/kwnhttpnewcfg.txt"
 #define KWN_NEW_IMAGE_FILE "/tmp/firmware.img"
+#define KWN_TFTP_BUF_LEN 650
+#define KWN_TFTP_CMD_LEN 100
 
 enum kwn_tftp_filetype
 {

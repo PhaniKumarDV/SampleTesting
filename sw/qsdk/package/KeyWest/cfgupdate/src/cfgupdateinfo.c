@@ -65,7 +65,7 @@ int main()
 void kwn_sys_cmd_imp( const char* cmd, uint8_t* cmd_buf )
 {
     FILE *fp = NULL;
-    uint8_t  a[33]={0};
+    uint8_t  a[KWN_CFG_BUF_LEN]={0};
     uint8_t  *token;
     uint16_t len;
 
@@ -86,8 +86,8 @@ void kwn_sys_cmd_imp( const char* cmd, uint8_t* cmd_buf )
 
 void kwn_bw_change()
 {
-    char cmd[50];
-    uint8_t cmd_buf[50];
+    char cmd[KWN_CMD_IMP_LEN];
+    uint8_t cmd_buf[KWN_CMD_OUT_LEN];
     long ullmt, dllmt;
 
     /* Get Bandwidth */
@@ -126,8 +126,8 @@ void kwn_reset_channel()
 #define INDIA    5018
 #define INDIA_5  5019
     
-    char cmd[100];
-    uint8_t cmd_buf[50];
+    char cmd[KWN_CMD_IMP_LEN];
+    uint8_t cmd_buf[KWN_CMD_OUT_LEN];
     int def_chan = 165;
     int coun;
 
@@ -175,8 +175,8 @@ void kwn_reset_channel()
 
 void kwn_reset_datarate( int stream )
 {
-    char cmd[100];
-    uint8_t cmd_buf[50];
+    char cmd[KWN_CMD_IMP_LEN];
+    uint8_t cmd_buf[KWN_CMD_OUT_LEN];
     uint8_t min_srate = 0, max_srate = 9, min_drate = 10, max_drate = 19;
     uint8_t srate = 3, drate = 13;
 
@@ -237,8 +237,8 @@ void kwn_reset_tx_params()
 
 void kwn_reset_nwkmode_params()
 {
-    char cmd[100];
-    uint8_t cmd_buf[10];
+    char cmd[KWN_CMD_IMP_LEN];
+    uint8_t cmd_buf[KWN_CMD_OUT_LEN];
     uint8_t rad_mode[10];
     uint8_t eth_ip[20],eth_msk[20],eth_gip[20],eth_addtype[10];
 
@@ -323,8 +323,8 @@ void kwn_reset_nwkmode_params()
 
 void kwn_radiomode_change()
 {
-    char cmd[100];
-    uint8_t cmd_buf[10];
+    char cmd[KWN_CMD_IMP_LEN];
+    uint8_t cmd_buf[KWN_CMD_OUT_LEN];
     uint8_t rad_mode[10];
     
     /* Get Radio Mode */
@@ -353,8 +353,8 @@ void kwn_radiomode_change()
 
 void cfg_set( char *type, char *value )
 {
-    char cmd[500];
-    char cmd1[500];
+    char cmd[KWN_CFG_BUF_LEN];
+    char cmd1[KWN_CFG_BUF_LEN];
     int type2 = atoi( type );
 
     memset(cmd, '\0', sizeof(cmd) );
@@ -909,14 +909,14 @@ void cfg_set( char *type, char *value )
 
 void set_cfgtxtfile()
 {
-    char str[255];
+    char str[KWN_CFG_BUF_LEN];
     char *ptr;
     char *end_str;
     FILE* fp;
 
     fp = fopen( SET_CFG_FILE, "r" );
 
-    while( fgets( str, 255, (FILE*) fp ) ) {
+    while( fgets( str, KWN_CFG_BUF_LEN, (FILE*) fp ) ) {
     }
     fclose( fp );
 

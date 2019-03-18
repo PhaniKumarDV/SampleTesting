@@ -1,8 +1,10 @@
 
-
 #define KWN_MAC_ADDR_LEN 6
 #define KWN_GPS_LEN 32
 #define KWN_MAX_LINKS 1
+#define KWN_CFG_BUF_LEN 650
+#define KWN_CMD_IMP_LEN 100
+#define KWN_CMD_OUT_LEN 50
 
 enum uci_cfg_id {
     /* RADIO 1 */

@@ -214,7 +214,7 @@ struct kwn_cfg_uci_cmds uci_cmd_list[] = {
 void kwn_sys_cmd_imp( const char* cmd, unsigned char* cmd_buf )
 {
     FILE *fp = NULL;
-    char  a[100]={0};
+    char  a[KWN_TFTP_BUF_LEN]={0};
     char  *token;
     short int len;
 
@@ -266,7 +266,7 @@ void kwn_conv_str_to_ip( char* conv_ip, unsigned char* byte )
 
 void kwn_get_tftp_config( kwn_tftp_config *dev_cfg )
 {
-    unsigned char  cmd[100];
+    unsigned char  cmd[KWN_TFTP_CMD_LEN];
     unsigned char  cmd_buf[50];
     unsigned short len = 0;
     unsigned char  ip_byte[4];
@@ -323,7 +323,7 @@ void kwn_get_tftp_config( kwn_tftp_config *dev_cfg )
 
 void kwn_get_http_config( kwn_http_config *dev_cfg )
 {
-    unsigned char  cmd[100];
+    unsigned char  cmd[KWN_TFTP_CMD_LEN];
     unsigned char  cmd_buf[50];
     unsigned short len = 0;
 
@@ -347,9 +347,9 @@ void kwn_get_http_config( kwn_http_config *dev_cfg )
 void kwn_config_upgrade( )
 {
     FILE *fin = NULL;
-    char buff_up[200];
-    char cmdimp[300];
-    char cmd[100];
+    char buff_up[KWN_TFTP_BUF_LEN];
+    char cmdimp[KWN_TFTP_BUF_LEN];
+    char cmd[KWN_TFTP_CMD_LEN];
 
     memset(buff_up, '\0', sizeof(buff_up));
     memset(cmdimp, '\0', sizeof(cmdimp));
@@ -406,8 +406,8 @@ void kwn_config_upgrade( )
 void kwn_image_upgrade( )
 {
     printf("\n %s : %d\n",__func__,__LINE__);
-    char cmd[100];
-    char cmd_buf[100];
+    char cmd[KWN_TFTP_CMD_LEN];
+    char cmd_buf[KWN_TFTP_CMD_LEN];
     char cmp[6]={'\0'};
     char *tok;
     int image_success = 1;
@@ -475,8 +475,8 @@ void kwn_image_upgrade( )
 void kwn_config_retrieve( )
 {
     FILE *fp = NULL;
-    char cmd[100];
-    char cmd_buf[100];
+    char cmd[KWN_TFTP_CMD_LEN];
+    char cmd_buf[KWN_TFTP_BUF_LEN];
     int i = 0;
 
     memset(cmd, '\0', sizeof(cmd));
@@ -526,7 +526,7 @@ void kwn_config_retrieve( )
     FILE *fp1 = NULL;
     FILE *fp = NULL;
     char *tok;
-    char cmd[100];
+    char cmd[KWN_TFTP_CMD_LEN];
     char buff_down[200];
 
     memset(cmd, '\0', sizeof(cmd));
@@ -573,9 +573,9 @@ void kwn_http_config_upgrade()
 {
     printf("\n %s : %d\n",__func__,__LINE__);
     FILE *fin = NULL;
-    char buff_up[200];
-    char cmdimp[300];
-    char cmd[100];
+    char buff_up[KWN_TFTP_BUF_LEN];
+    char cmdimp[KWN_TFTP_BUF_LEN];
+    char cmd[KWN_TFTP_CMD_LEN];
 
     if( access( KWN_HTTP_NEW_CONFIG_FILE, 0 ) == 0 ) {
     
@@ -621,8 +621,8 @@ void kwn_http_config_upgrade()
 void kwn_http_config_retrieve()
 {
     FILE *fp = NULL;
-    char cmd[ 100 ];
-    char cmd_buf[ 100 ];
+    char cmd[KWN_TFTP_CMD_LEN];
+    char cmd_buf[KWN_TFTP_BUF_LEN];
     int i = 0;
 
     memset(cmd, '\0', sizeof(cmd));
@@ -667,7 +667,7 @@ void kwn_http_config_retrieve()
     FILE *fp1 = NULL;
     FILE *fp = NULL;
     char *tok;
-    char cmd[100];
+    char cmd[KWN_TFTP_CMD_LEN];
     char buff_down[200];
 
     memset(cmd, '\0', sizeof(cmd));
@@ -709,7 +709,7 @@ void kwn_http_config_retrieve()
 
 int main()
 {
-    char cmd[100];
+    char cmd[KWN_TFTP_CMD_LEN];
 
     memset(&data,'\0', sizeof(kwn_tftp_config));
     kwn_get_tftp_config(&data);
