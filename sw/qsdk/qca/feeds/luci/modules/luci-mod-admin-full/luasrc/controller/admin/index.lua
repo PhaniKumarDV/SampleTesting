@@ -254,6 +254,8 @@ function action_join( ssid, enc )
             luci.util.exec("uci set wireless.@wifi-iface[1].encryption='none'")
         end
 	    luci.template.render("admin_status/joinnetwork")
+    else
+	    luci.http.redirect(luci.dispatcher.build_url("admin/config/survey"))
     end
 end
 
