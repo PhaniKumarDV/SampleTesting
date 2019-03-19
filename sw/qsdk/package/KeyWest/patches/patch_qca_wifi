@@ -685,7 +685,7 @@ diff -urN qca-wifi-org/offload/wlan/include/ol_if_athvar.h qca-wifi-mod/offload/
  
 diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_ath.c qca-wifi-mod/offload/wlan/lmac_offload_if/ol_if_ath.c
 --- qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_ath.c	2018-06-08 11:00:45.000000000 +0530
-+++ qca-wifi-mod/offload/wlan/lmac_offload_if/ol_if_ath.c	2019-03-16 15:20:49.488707348 +0530
++++ qca-wifi-mod/offload/wlan/lmac_offload_if/ol_if_ath.c	2019-03-19 15:46:11.335989921 +0530
 @@ -196,6 +196,8 @@
  int ol_ath_peer_mumimo_tx_count_event_handler (ol_scn_t scn, u_int8_t *data, u_int16_t datalen);
  int ol_ath_peer_gid_userpos_list_event_handler (ol_scn_t scn, u_int8_t *data, u_int16_t datalen);
@@ -723,7 +723,7 @@ diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_ath.c qca-wifi-mod/off
              } else {
                  return 15 + ((freq - 2512) / 20);
              }
-@@ -6743,6 +6746,490 @@
+@@ -6743,6 +6746,491 @@
      OS_SET_TIMER(&ic->ic_inact_timer, IEEE80211_SESSION_WAIT*1000);
  }
  
@@ -1208,13 +1208,14 @@ diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_ath.c qca-wifi-mod/off
 +    struct ol_ath_softc_net80211 *scn;
 +
 +    scn = OL_ATH_SOFTC_NET80211(ic);
++    scn->scn_qboost_enable = value;
 +	qboost_config( vap, ni, value );
 +}
 +
  static int
  ol_ath_set_mgmt_retry_limit(struct ieee80211com *ic , u_int8_t limit)
  {
-@@ -7156,6 +7643,8 @@
+@@ -7156,6 +7644,8 @@
      ic->ic_atf_logging = 0;
  
      ic->ic_bestUL_hyst = BEST_UL_HYST_DEF;
@@ -1223,7 +1224,7 @@ diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_ath.c qca-wifi-mod/off
  
      return EOK;
  }
-@@ -8133,6 +8622,10 @@
+@@ -8133,6 +8623,10 @@
                                                  ol_ath_esp_estimate_event_handler, WMI_RX_UMAC_CTX);
  #endif
  
@@ -1234,7 +1235,7 @@ diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_ath.c qca-wifi-mod/off
  #if OL_ATH_SUPPORT_LED
          if (scn->target_version == AR9888_REV2_VERSION || scn->target_version == AR9887_REV1_VERSION) {
              scn->scn_led_gpio = PEREGRINE_LED_GPIO ;
-@@ -8475,6 +8968,12 @@
+@@ -8475,6 +8969,12 @@
      u_int32_t num_mem_chunks;
      ic = &scn->sc_ic;
  
@@ -7974,7 +7975,7 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt_bss.c qca-wifi-mod/umac/mlme/iee
      }
 diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee80211_mgmt.c
 --- qca-wifi-org/umac/mlme/ieee80211_mgmt.c	2018-06-08 11:00:48.000000000 +0530
-+++ qca-wifi-mod/umac/mlme/ieee80211_mgmt.c	2019-03-18 20:30:38.148910811 +0530
++++ qca-wifi-mod/umac/mlme/ieee80211_mgmt.c	2019-03-19 15:47:04.999930494 +0530
 @@ -22,10 +22,21 @@
  #include "ieee80211_wifipos_pvt.h"
  #endif
@@ -8648,7 +8649,7 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee802
 +                vap->kwn_final_ul_limit = ni->kwn_ul_limit;
 +                vap->kwn_final_dl_limit = ni->kwn_dl_limit;
 +				ieee80211_send_link_params( vap, ni );
-+                if( ic->kwn_linktype == KWN_LINKTYPE_PTMP_TDMA ) {
++                if( ic->kwn_linktype != KWN_LINKTYPE_PTMP ) {
 +                    ic->ic_kwn_set_qboost( vap, ic, ni, 1 );
 +                }
 +                else {
@@ -8664,7 +8665,7 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee802
 +                vap->kwn_assem_frag = frame_lmt->at_uldl_limit.kwn_assem_frag;
 +                vap->kwn_max_pkt_size = frame_lmt->at_uldl_limit.kwn_max_pkt_size;
 +                vap->kwn_frag_pkt_size = frame_lmt->at_uldl_limit.kwn_frag_pkt_size;
-+                if( frame_lmt->at_uldl_limit.kwn_linktype == KWN_LINKTYPE_PTMP_TDMA ) {
++                if( frame_lmt->at_uldl_limit.kwn_linktype != KWN_LINKTYPE_PTMP ) {
 +                    ic->ic_kwn_set_qboost( vap, ic, ni, 1 );
 +                }
 +                else {
