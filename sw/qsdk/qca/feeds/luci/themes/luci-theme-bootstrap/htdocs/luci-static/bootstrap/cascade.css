@@ -1919,7 +1919,7 @@ td.cbi-value-field var {
 .uci-change-list var del {
 	/*display: inline;*/
 	border: none;
-	white-space: pre;
+	/*white-space: pre;*/
 	font-style: normal;
 	padding: 0px;
 }
