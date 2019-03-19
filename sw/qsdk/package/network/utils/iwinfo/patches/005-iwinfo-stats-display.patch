@@ -1,6 +1,6 @@
 diff -urN libiwinfo-2015-06-01_org/include/iwinfo.h libiwinfo-2015-06-01_mod/include/iwinfo.h
 --- libiwinfo-2015-06-01_org/include/iwinfo.h	2018-07-09 13:57:34.289239779 +0530
-+++ libiwinfo-2015-06-01_mod/include/iwinfo.h	2019-03-16 19:05:38.632410918 +0530
++++ libiwinfo-2015-06-01_mod/include/iwinfo.h	2019-03-19 21:04:45.235836725 +0530
 @@ -98,10 +98,42 @@
  	uint32_t tx_packets;
  	struct iwinfo_rate_entry rx_rate;
@@ -24,8 +24,8 @@ diff -urN libiwinfo-2015-06-01_org/include/iwinfo.h libiwinfo-2015-06-01_mod/inc
 +	uint32_t remote_phy_err;
 +	uint32_t local_mpdu_err;
 +	uint32_t remote_mpdu_err;
-+	uint64_t local_retries;
-+	uint64_t remote_retries;
++	uint32_t local_retries;
++	uint32_t remote_retries;
 +    uint8_t l_customer_name[33];
 +    uint8_t r_customer_name[33];
 +    uint8_t l_link_id[16];

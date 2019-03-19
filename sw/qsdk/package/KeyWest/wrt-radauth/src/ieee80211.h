@@ -939,6 +939,7 @@ struct ieee80211_link_param {
     u_int16_t   kwn_frag_pkt_size;
     u_int8_t	kwn_macinmac;
     u_int8_t    kwn_linktype;
+    u_int8_t    kwn_shaping;
 } __packed;
 
 /* VHT - exchange param */
@@ -2987,8 +2988,8 @@ struct ieee80211req_sta_info {
         u_int32_t isi_remote_phy_err;       /* Remote Phy Err */
         u_int32_t isi_local_mpdu_err;       /* Local MPDU Err */
         u_int32_t isi_remote_mpdu_err;      /* Remote MPDU Err */
-        u_int64_t isi_local_retries;        /* Local Retries */
-        u_int64_t isi_remote_retries;       /* Remote Retries */
+        u_int32_t isi_local_retries;        /* Local Retries */
+        u_int32_t isi_remote_retries;       /* Remote Retries */
         u_int8_t  isi_l_customer_name[33];
         u_int8_t  isi_r_customer_name[33];
         u_int8_t  isi_l_link_id[16];
