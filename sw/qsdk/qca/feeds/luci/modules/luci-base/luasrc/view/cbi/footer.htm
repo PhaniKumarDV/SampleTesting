@@ -41,10 +41,6 @@ local loginuser = luci.dispatcher.context.authuser
            $('.cbi-button-reset').prop("disabled", false);
            $('#logtype').prop("disabled", false);
            $('.nwktool').prop("disabled", false);
-           $('#ret').prop("disabled", false);
-           $('#tftpserverip').prop("disabled", false);
-           $('#filetype').prop("disabled", false);
-           $('#tftpfilename').prop("disabled", false);
            if( loginuser == "user" || 
                ( loginuser == "superuser" && mode == "ap" ) ) {
               document.getElementById("header_apply").href="";
