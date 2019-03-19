@@ -14,28 +14,33 @@ function index()
 	page.order  = 40
 	page.index  = true
 
-	page = entry({"admin", "network", "ip"}, template("admin_network/ipconfig"), _("IP Configuration"), 1)
-	page.leaf = true
     local mode = luci.sys.exec("uci get wireless.@wifi-iface[1].mode")
     local wds = luci.sys.exec("uci get wireless.@wifi-iface[1].wds")
-    if (string.match(mode,"ap") and string.match(wds,"1") ) then
-            entry({"admin", "network", "radius1"}, template("admin_wireless/radius1"), _("RADIUS"), 2)
-    end
-    page = entry({"admin", "network", "vlan"}, template("admin_network/vlan"), _("VLAN"), 3)
-    page.leaf = true
-    page = entry({"admin", "network", "ethernet"}, template("admin_network/ethernet"), _("Ethernet"), 4)
-    page.leaf = true
-    entry({"admin", "network", "dhcp"}, call("action_dhcp"), _("DHCP Server"), 5)
-    entry({"admin", "network", "dhcp", "dhcp24"}, template("admin_network/dhcp24"))
-    entry({"admin", "network", "dhcp", "dhcplease"}, template("admin_network/dhcplease"))
+    local nwkmode = luci.sys.exec("uci get network.param.networkmode")
     local linktype = luci.sys.exec("uci get wireless.wifi1.linktype")
     linktype = tonumber(linktype);
+	page = entry({"admin", "network", "ip"}, template("admin_network/ipconfig"), _("IP Configuration"), 1)
+	page.leaf = true
+    if ( string.match(mode,"sta") and string.match(wds,"1") and string.match(nwkmode,"2") and linktype ~= 2 ) then
+    page = entry({"admin", "network", "staticroute"}, cbi("admin_network/staticroute"), _("Static Routes"), 2)
+    page.leaf = true
+    end
+    if (string.match(mode,"ap") and string.match(wds,"1") ) then
+            entry({"admin", "network", "radius1"}, template("admin_wireless/radius1"), _("RADIUS"), 3)
+    end
+    page = entry({"admin", "network", "vlan"}, template("admin_network/vlan"), _("VLAN"), 4)
+    page.leaf = true
+    page = entry({"admin", "network", "ethernet"}, template("admin_network/ethernet"), _("Ethernet"), 5)
+    page.leaf = true
+    entry({"admin", "network", "dhcp"}, call("action_dhcp"), _("DHCP Server"), 6)
+    entry({"admin", "network", "dhcp", "dhcp24"}, template("admin_network/dhcp24"))
+    entry({"admin", "network", "dhcp", "dhcplease"}, template("admin_network/dhcplease"))
     if (linktype ~= 2 ) then
         if (string.match(mode,"ap") and string.match(wds,"1") ) then
-            page = entry({"admin", "network", "staticlease"}, cbi("admin_network/fixedlease"), _("DHCP Fixed Leases"), 6)
+            page = entry({"admin", "network", "staticlease"}, cbi("admin_network/fixedlease"), _("DHCP Fixed Leases"), 7)
             page.leaf = true
         end
-        page = entry({"admin", "network", "filtering"}, template("admin_network/filtering"), _("Filtering"), 7)
+        page = entry({"admin", "network", "filtering"}, template("admin_network/filtering"), _("Filtering"), 8)
         page.leaf = true
     end
 --	if page.inreq then
