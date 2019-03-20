@@ -53,6 +53,8 @@ function get_values( data )
 {
     var surveytable = document.getElementById('survey-list');
     var values = data.split(",");
+    var objects = new Array();
+    var j = 0;
     for( i=0; i<( values.length - 1); i++)
     {
         var x = values[i].split("kwnmok");
@@ -66,16 +68,36 @@ function get_values( data )
         var z = y[1].split("Noise=");
         var signal = z[0];
         var noise = z[1];
+        {
+            objects[j] = new Object();
+            objects[j].ssid = ssid;
+            objects[j].mac = mac;
+            objects[j].chan = chan;
+            objects[j].freq = freq;
+            objects[j].signal = signal;
+            objects[j].noise = noise;
+            objects[j].enc = enc;
+        }
+        j++;
+    }
+    objects.sort(function(a, b){return b.signal - a.signal});
+    var length = values.length - 1;
+    if( length > 3 ) {
+        length = 3;
+    }
+    for( j=0; j<length; j++ )
+    {
+            //alert(objects[j].ssid+","+objects[j].mac+","+objects[j].chan+","+objects[j].freq+","+objects[j].signal+","+objects[j].noise+","+objects[j].enc);
         var tr = surveytable.insertRow(-1);
         tr.className = 'cbi-section-table-row cbi-rowstyle-2';
-        tr.insertCell(-1).innerHTML = ssid;
-        tr.insertCell(-1).innerHTML = mac;
-        tr.insertCell(-1).innerHTML = chan;
-        tr.insertCell(-1).innerHTML = freq;
-        tr.insertCell(-1).innerHTML = signal;
-        tr.insertCell(-1).innerHTML = noise;
-        tr.insertCell(-1).innerHTML = ( enc == 1 ? "Yes" : "No" );
-        tr.insertCell(-1).innerHTML = '<input type="button" class="cbi-join" value="Join" onClick="join_network(\''+ ssid + '\',' + enc +')" />';
+        tr.insertCell(-1).innerHTML = objects[j].ssid;
+        tr.insertCell(-1).innerHTML = objects[j].mac;
+        tr.insertCell(-1).innerHTML = objects[j].chan;
+        tr.insertCell(-1).innerHTML = objects[j].freq;
+        tr.insertCell(-1).innerHTML = objects[j].signal;
+        tr.insertCell(-1).innerHTML = objects[j].noise;
+        tr.insertCell(-1).innerHTML = ( objects[j].enc == 1 ? "Yes" : "No" );
+        tr.insertCell(-1).innerHTML = '<input type="button" class="cbi-join" value="Join" onClick="join_network(\''+ objects[j].ssid + '\',' + objects[j].enc +')" />';
     }
 }
 
