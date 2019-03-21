@@ -8041,8 +8041,8 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt_ap.c qca-wifi-mod/umac/mlme/ieee
              if (iswpaoui(frm)) {
 diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt_bss.c qca-wifi-mod/umac/mlme/ieee80211_mgmt_bss.c
 --- qca-wifi-org/umac/mlme/ieee80211_mgmt_bss.c	2018-06-08 11:00:48.000000000 +0530
-+++ qca-wifi-mod/umac/mlme/ieee80211_mgmt_bss.c	2019-03-05 14:47:16.929339264 +0530
-@@ -604,6 +604,22 @@
++++ qca-wifi-mod/umac/mlme/ieee80211_mgmt_bss.c	2019-03-21 19:07:01.864792068 +0530
+@@ -604,10 +604,30 @@
              }
              break;
  #endif
@@ -8065,6 +8065,14 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt_bss.c qca-wifi-mod/umac/mlme/iee
          }
          frm += frm[1] + 2;
      }
+ 
++    if( ni != NULL && ni->kwn_linktype == 0 ) {
++        //printk("Probe recv Failed: Local Link Type %d Remote Link Type %d \n",ic->kwn_linktype,ni->kwn_linktype);
++        return -EINVAL;
++    }
+     if (frm > efrm) {
+         ret = -EINVAL;
+         goto exit;
 diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee80211_mgmt.c
 --- qca-wifi-org/umac/mlme/ieee80211_mgmt.c	2018-06-08 11:00:48.000000000 +0530
 +++ qca-wifi-mod/umac/mlme/ieee80211_mgmt.c	2019-03-20 20:27:27.453377561 +0530

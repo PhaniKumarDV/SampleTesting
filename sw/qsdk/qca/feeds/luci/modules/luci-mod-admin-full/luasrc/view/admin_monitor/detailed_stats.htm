@@ -118,12 +118,7 @@ function save_value( dur )
 			}
     		);
 	}
-	function starttool() {
-        var dur = document.getElementById("duration").value;
-        dur = dur * 1000;
-        save_value( dur );
-		document.getElementById("s1").innerHTML="<input type='button' class='cbi-button' value='<%:Stop Test%>' onclick='stoptool()' />";
-    		timer = setTimeout("enable()",dur);
+    function starttest() {
     		XHR.get('<%=luci.dispatcher.build_url("admin", "monitor","stats")%>/starttool' + '/' + mac, null,
 			function(x, data) {
 				if (data) { 
@@ -131,6 +126,14 @@ function save_value( dur )
 				}
 			}
     		);
+    }
+	function starttool() {
+        var dur = document.getElementById("duration").value;
+        dur = dur * 1000;
+        save_value( dur );
+		document.getElementById("s1").innerHTML="<input type='button' class='cbi-button' value='<%:Stop Test%>' onclick='stoptool()' />";
+    		timer = setTimeout("enable()",dur);
+        setTimeout("starttest()",2000);
 	}
 	function disconnect() {
 		location.href='<%=luci.dispatcher.build_url("admin/monitor/stats")%>/disconnect' + '/' + mac;
