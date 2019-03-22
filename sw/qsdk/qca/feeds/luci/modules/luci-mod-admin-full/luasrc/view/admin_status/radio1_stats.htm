@@ -393,11 +393,7 @@
     <h2><a id="content" name="content"><%:Quick Start%></a></h2>
     <ul class="cbi-tabmenu">
         <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=luci.dispatcher.build_url("admin/config")%>"><%:System%></a></li>
-        <script type="text/javascript">
-        if( loginuser != "installer" ) {
-           document.write("<li style='margin-right:4px' class='cbi-tab-disabled'><a href='location'><%:Location%></a></li>");
-        }
-        </script>
+        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="location"><%:Location%></a></li>
         <li style="margin-right:4px" class="cbi-tab-disabled"><a href="config1"><%:5GHz Radio%></a></li>
         <script type="text/javascript">
         if( loginuser != "installer" ) {

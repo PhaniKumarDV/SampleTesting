@@ -82,7 +82,7 @@ local has_traceroute6 = fs.access("/usr/bin/traceroute6")
 			<div style="width:30%; float:left">
 				<input style="margin: 5px 0" type="text" name="ping" class="nwktool"/><br />
 				<% if has_ping6 then %>
-				<select name="ping_proto" style="width:auto">
+				<select name="ping_proto" style="width:auto" disabled>
 					<option value="" selected="selected"><%:IPv4%></option>
 					<option value="6"><%:IPv6%></option>
 				</select>
