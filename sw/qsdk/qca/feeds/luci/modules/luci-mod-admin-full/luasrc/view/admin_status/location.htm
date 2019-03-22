@@ -5,6 +5,7 @@
 -%>
 
 <%-
+    local loginuser = luci.dispatcher.context.authuser
         function uciget(cmd)
                 local res = luci.util.exec(cmd)
                 local str = string.gsub(res, "\n", "")
@@ -16,6 +17,7 @@
 <div class="page-content">
 <script type="text/javascript" src="<%=resource%>/cbi.js"></script>
 <script type="text/javascript">
+var loginuser = <%=luci.http.write_json(loginuser)%>;
 var radmode = "<%=uciget('uci get wireless.@wifi-iface[1].mode')%>";
 var def = new Array(8);
 function save_def_value()
@@ -86,8 +88,10 @@ function validateval()
         <li style="margin-right:4px" class="cbi-tab-disabled"><a href="<%=luci.dispatcher.build_url("admin/config")%>"><%:System%></a></li>
         <li style="margin-right:4px" class="cbi-tab"><a href="#"><%:Location%></a></li>
         <li style="margin-right:4px" class="cbi-tab-disabled"><a href="config1"><%:5GHz Radio%></a></li>
-        <li style="margin-right:4px" class="cbi-tab-disabled"><a href="config2"><%:2.4GHz Radio%></a></li>
         <script type="text/javascript">
+        if( loginuser != "installer" ) {
+           document.write("<li style='margin-right:4px' class='cbi-tab-disabled'><a href='config2'><%:2.4GHz Radio%></a></li>");
+        }
         if( radmode == "sta" ) {
            document.write("<li style='margin-right:4px' class='cbi-tab-disabled'><a href='survey'><%:Site Survey%></a></li>");
         }
