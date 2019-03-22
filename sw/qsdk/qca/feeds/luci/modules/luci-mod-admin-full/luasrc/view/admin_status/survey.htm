@@ -133,7 +133,7 @@ function survey_scan()
     var id = 6;
     document.getElementById("s1").style.display = "none";
     document.getElementById("msg").innerHTML = "Scan is in progress..";
-    setTimeout("enablescan()",20000);
+    setTimeout("enablescan()",30000);
     XHR.get('<%=luci.dispatcher.build_url("admin", "config")%>/surveyscan/' + id, null,
     function(x, data) {
         if (data) { 

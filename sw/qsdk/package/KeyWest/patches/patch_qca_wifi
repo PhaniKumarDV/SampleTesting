@@ -7926,7 +7926,7 @@ diff -urN qca-wifi-org/umac/include/ieee80211_var.h qca-wifi-mod/umac/include/ie
  #endif
 diff -urN qca-wifi-org/umac/mlme/ieee80211_beacon.c qca-wifi-mod/umac/mlme/ieee80211_beacon.c
 --- qca-wifi-org/umac/mlme/ieee80211_beacon.c	2018-06-08 11:00:48.000000000 +0530
-+++ qca-wifi-mod/umac/mlme/ieee80211_beacon.c	2019-02-27 17:53:03.034722991 +0530
++++ qca-wifi-mod/umac/mlme/ieee80211_beacon.c	2019-03-22 16:20:25.668416445 +0530
 @@ -594,6 +594,25 @@
          bo->bo_ibssdfs_trailerlen = 0;
      }
@@ -7961,6 +7961,28 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_beacon.c qca-wifi-mod/umac/mlme/ieee8
                                  (struct ieee80211_frame*)wh,
                                  frame_len,
                                  IEEE80211_FC0_SUBTYPE_BEACON,
+@@ -857,6 +877,7 @@
+     struct ieee80211_tim_ie *tie = NULL;
+ 	systime_t curr_time = OS_GET_TIMESTAMP();
+     static systime_t prev_store_beacon_time;
++    int is2GHz = IEEE80211_IS_CHAN_2GHZ( ic->ic_curchan );
+ #if UMAC_SUPPORT_WNM
+     u_int32_t fms_counter_mask = 0;
+     u_int8_t *fmsie = NULL;
+@@ -943,9 +964,12 @@
+         htole16(ni->ni_txseqs[IEEE80211_NON_QOS_SEQ] << IEEE80211_SEQ_SEQ_SHIFT);
+     ni->ni_txseqs[IEEE80211_NON_QOS_SEQ]++;
+ 
++    if( vap->iv_opmode == IEEE80211_M_HOSTAP && !is2GHz ) {
++        vap->iv_update_vendor_ie = 1;
++    }
+     /* If vendor ie enable configuration changed, then reinit the beacon */
+     if (vap->iv_update_vendor_ie ) {
+-        qdf_print("%s reinit beacon as vndor ie confguration chnaged \n",__func__);
++        //qdf_print("%s reinit beacon as vndor ie confguration chnaged \n",__func__);
+         frm = (u_int8_t *) wbuf_header(wbuf) + sizeof(struct ieee80211_frame);
+ 	frm = ieee80211_beacon_init(ni, bo, frm);
+ 	update_beacon_copy = true;
 diff -urN qca-wifi-org/umac/mlme/ieee80211_bssload.c qca-wifi-mod/umac/mlme/ieee80211_bssload.c
 --- qca-wifi-org/umac/mlme/ieee80211_bssload.c	2018-06-08 11:00:48.000000000 +0530
 +++ qca-wifi-mod/umac/mlme/ieee80211_bssload.c	2018-11-14 14:19:50.902505495 +0530
@@ -8041,8 +8063,16 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt_ap.c qca-wifi-mod/umac/mlme/ieee
              if (iswpaoui(frm)) {
 diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt_bss.c qca-wifi-mod/umac/mlme/ieee80211_mgmt_bss.c
 --- qca-wifi-org/umac/mlme/ieee80211_mgmt_bss.c	2018-06-08 11:00:48.000000000 +0530
-+++ qca-wifi-mod/umac/mlme/ieee80211_mgmt_bss.c	2019-03-21 19:07:01.864792068 +0530
-@@ -604,10 +604,30 @@
++++ qca-wifi-mod/umac/mlme/ieee80211_mgmt_bss.c	2019-03-22 16:20:45.512345935 +0530
+@@ -444,6 +444,7 @@
+ #endif
+     u_int8_t *mbo = NULL;
+     bool suppress_resp = false;
++    int is2GHz = IEEE80211_IS_CHAN_2GHZ( ic->ic_curchan );
+ 
+     OS_MEMZERO(&extractx, sizeof(extractx));
+ #if ATH_SUPPORT_AP_WDS_COMBO
+@@ -604,10 +605,30 @@
              }
              break;
  #endif
@@ -8066,7 +8096,7 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt_bss.c qca-wifi-mod/umac/mlme/iee
          frm += frm[1] + 2;
      }
  
-+    if( ni != NULL && ni->kwn_linktype == 0 ) {
++    if( ni != NULL && ni->kwn_linktype == 0 && !is2GHz ) {
 +        //printk("Probe recv Failed: Local Link Type %d Remote Link Type %d \n",ic->kwn_linktype,ni->kwn_linktype);
 +        return -EINVAL;
 +    }

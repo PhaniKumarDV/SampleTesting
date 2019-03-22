@@ -1796,6 +1796,35 @@ enable_qcawifi() {
                 if [ $fast_lane -ne 0 ]; then
                         iwpriv "$ifname" athnewind 1
                 fi
+###################################################################
+
+        config_get linktype "$device" linktype
+        config_get maxsta "$vif" maxsta
+
+           case "$phy" in
+               wifi0)
+		           [ -n "$maxsta" ] && iwpriv "$ifname" maxsta "$maxsta"
+                   ;;
+               wifi1)
+                   [ -n "$linktype" ] && iwpriv "$ifname" kwnlinktype "$linktype"
+                   if [[ $linktype == "3" ]] || [[ $linktype == "4" ]]
+                   then
+		               [ -n "$linktype" ] && iwpriv "$ifname" maxsta "$maxsta"
+                   else
+                       [ -n "$linktype" ] && iwpriv "$ifname" maxsta 1
+                   fi
+                   if [ "$radiomode" == "ap" ]
+                   then
+                       if [ $linktype == "3" ]
+                       then
+                           iwpriv wifi1 sta_kickout 0
+                       fi
+                   fi
+                   ;;
+               *)
+                   echo "############### Invalid interface" > /dev/console
+                   ;;
+            esac
 
 ########################## KWN Changes #############################
 		config_get rate "$device" rate
@@ -2133,22 +2162,12 @@ enable_qcawifi() {
 		config_get wifi_timer "$device" wifitimer
 		config_get link_timer "$device" linktimer
 		config_get suservice "$device" suservice
-		config_get maxsta "$vif" maxsta
-        config_get linktype "$device" linktype
 
            case "$phy" in
                wifi0)
-		           [ -n "$maxsta" ] && iwpriv "$ifname" maxsta "$maxsta"
                    ;;
                wifi1)
                    sh /usr/sbin/ethmtu.sh		
-                   [ -n "$linktype" ] && iwpriv "$ifname" kwnlinktype "$linktype"
-                   if [[ $linktype == "3" ]] || [[ $linktype == "4" ]]
-                   then
-		               [ -n "$linktype" ] && iwpriv "$ifname" maxsta "$maxsta"
-                   else
-                       [ -n "$linktype" ] && iwpriv "$ifname" maxsta 1
-                   fi
                    if [ "$radiomode" == "sta" ]
                    then
                        if [ "$wifi_timer" -ge 1 ]
@@ -2168,11 +2187,6 @@ enable_qcawifi() {
                            sh /usr/sbin/suservicetrap.sh
                        else
                            echo "SU Service is enabled"
-                       fi
-                   else
-                       if [ $linktype == "3" ]
-                       then
-                           iwpriv wifi1 sta_kickout 0
                        fi
                    fi
                    ;;

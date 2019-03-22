@@ -76,7 +76,7 @@ void sify_file_write(char *sify_buf,int status, int reason, uint8_t value)
 		syslog(LOG_INFO, " Associated ( MAC: %s )\n",sify_buf);		       
         sprintf( trap_cmd, "/usr/sbin/snmptrap.sh 1 %s  > /dev/null 2>&1", sify_buf);
         system( trap_cmd );
-        system("/usr/sbin/link.sh > /dev/null 2>&1");
+        //system("/usr/sbin/link.sh > /dev/null 2>&1");
                 //int rc=system("/usr/sbin/sify_senddata.sh '1'"); 
 	}
 	else
@@ -447,7 +447,7 @@ static void handle_ifla_wireless ( char *data, int len)
 						//syslog(LOG_ALERT,"Wireless Device Registered Successfully:%s",mac);
 						sify_file_write(mac,1,0,0);
 						registered = 1;
-                        //system("/usr/sbin/link.sh");
+                        system("/usr/sbin/link.sh > /dev/null 2>&1");
 					}
 				}
 				break;
