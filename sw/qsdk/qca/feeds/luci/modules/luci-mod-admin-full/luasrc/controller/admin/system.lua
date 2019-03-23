@@ -18,6 +18,7 @@ function index()
 	--entry({"admin", "system", "admin"}, cbi("admin_system/admin"), _("Administration"), 3)
 	entry({"admin", "system", "system", "logging"}, template("admin_system/logging"))
 	entry({"admin", "system", "system", "location"}, template("admin_system/location"))
+    entry({"admin", "system", "system", "location", "satcount"}, call("action_satcount"), nil).leaf = true
 
 	--if fs.access("/bin/opkg") then
 	--	entry({"admin", "system", "packages"}, call("action_packages"), _("Software"), 10)
@@ -71,6 +72,12 @@ function action_clock_status()
 
 	luci.http.prepare_content("application/json")
 	luci.http.write_json({ timestring = os.date("%c") })
+end
+
+function action_satcount()
+    local data = luci.util.exec("uci get system.gps.satelites")
+    luci.http.prepare_content("application/json")
+	luci.http.write_json(data)
 end
 
 function action_packages()

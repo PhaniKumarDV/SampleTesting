@@ -38,6 +38,7 @@ function index()
 	entry({"admin", "logout"}, call("action_logout"), _("Logout"), 90)
 	entry({"admin", "config"}, template("admin_status/system"), _("Quick Start"), 20)
 	entry({"admin", "config", "location"}, template("admin_status/location"))
+	entry({"admin", "config", "location", "satcount"}, call("action_satcount"), nil).leaf = true
     entry({"admin", "config", "config1"}, template("admin_status/basic_config1"))
     entry({"admin", "config", "config2"}, template("admin_status/basic_config2"))
     if (string.match(mode,"sta") and string.match(wds,"1") ) then
@@ -232,6 +233,12 @@ function action_get_descr()
     local data
 
     data = model_name.."=".. product_type
+    luci.http.prepare_content("application/json")
+	luci.http.write_json(data)
+end
+
+function action_satcount()
+    local data = luci.util.exec("uci get system.gps.satelites")
     luci.http.prepare_content("application/json")
 	luci.http.write_json(data)
 end
