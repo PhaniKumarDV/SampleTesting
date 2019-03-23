@@ -490,6 +490,7 @@ _disable_qcawifi() {
         wifi1)
             iwpriv ath1 kwnsoftreset 0
             iwpriv ath1 kwndiscall 1
+            kill -9  `ps | grep scan_timeout.sh | awk '{print $1}'` 
             kill -9  `ps | grep wifi_timeout.sh | awk '{print $1}'` 
             kill -9  `ps | grep link_timeout.sh | awk '{print $1}'` 
             kill -9  `ps | grep suservicetrap.sh | awk '{print $1}'` 
@@ -2161,6 +2162,7 @@ enable_qcawifi() {
 		config_get radiomode "$vif" mode
 		config_get wifi_timer "$device" wifitimer
 		config_get link_timer "$device" linktimer
+		config_get scan_timer "$device" scantimer
 		config_get suservice "$device" suservice
 
            case "$phy" in
@@ -2170,6 +2172,12 @@ enable_qcawifi() {
                    sh /usr/sbin/ethmtu.sh		
                    if [ "$radiomode" == "sta" ]
                    then
+                       if [ "$scan_timer" -ge 1 ]
+                       then
+                           sh /usr/sbin/scan_timeout.sh
+                       else
+                           echo "Scan inactivity timer functionality is disabled"
+                       fi
                        if [ "$wifi_timer" -ge 1 ]
                        then
                            sh /usr/sbin/wifi_timeout.sh

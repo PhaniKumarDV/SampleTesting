@@ -65,6 +65,7 @@ start_service() {
     set_bcn_rate0=$(uci get wireless.@wifi-iface[0].set_bcn_rate)
     wifi_timer1=$(uci get wireless.wifi1.wifitimer)
     link_timer1=$(uci get wireless.wifi1.linktimer)
+    scan_timer1=$(uci get wireless.wifi1.scantimer)
     rate0=$(uci get wireless.wifi0.rate)
     mfgmaxsta=$(fw_printenv -n maxsu)
     maxsta0=$(uci get wireless.@wifi-iface[0].maxsta)
@@ -316,6 +317,10 @@ start_service() {
     if [ "$link_timer1" == "" ]
     then
         uci set wireless.wifi1.linktimer='0'
+    fi
+    if [ "$scan_timer1" == "" ]
+    then
+        uci set wireless.wifi1.scantimer='30'
     fi
     if [ "$maxsta0" == "" ]
     then
