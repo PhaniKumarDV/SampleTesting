@@ -33,10 +33,13 @@ kwn_routing() {
             then
                 iptables -F
                 iptables -t nat -A POSTROUTING -o br-lan -j MASQUERADE
-                iptables -A FORWARD -i br-lan -o br-kweth -m state --state RELATED,ESTABLISHED -j ACCEPT
+                #iptables -A FORWARD -i br-lan -o br-kweth -m state --state RELATED,ESTABLISHED -j ACCEPT
+                iptables -A FORWARD -i br-lan -o br-kweth -j ACCEPT
                 iptables -A FORWARD -i br-kweth -o br-lan -j ACCEPT
             else
                 iptables -F
+                iptables -A FORWARD -i br-lan -o br-kweth -j ACCEPT
+                iptables -A FORWARD -i br-kweth -o br-lan -j ACCEPT
             fi
         else
             ifconfig br-kweth down
