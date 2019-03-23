@@ -173,12 +173,12 @@ var linktype = "<%=uciget('uci get wireless.wifi1.linktype')%>";
 				}
 			}
 
-			var ls6 = document.getElementById('lease6_status_table');
+			/*var ls6 = document.getElementById('lease6_status_table');
 			if (ls6 && info.leases6)
 			{
 				ls6.parentNode.style.display = 'block';
 
-				/* clear all rows */
+				// clear all rows 
 				while( ls6.rows.length > 1 )
 					ls6.rows[0].parentNode.deleteRow(1);
 
@@ -209,7 +209,7 @@ var linktype = "<%=uciget('uci get wireless.wifi1.linktype')%>";
 						td.colSpan = 4;
 						td.innerHTML = '<em><br /><%:There are no active leases.%></em>';
 				}
-			}
+			}*/
 			<% end %>
 
 		}
@@ -244,7 +244,7 @@ var linktype = "<%=uciget('uci get wireless.wifi1.linktype')%>";
 	</table>
 </fieldset>
 
-<fieldset class="cbi-section" style="display:none">
+<!--<fieldset class="cbi-section" style="display:none">
 	<legend><%:DHCPv6 Leases%></legend>
 
 	<table class="cbi-section-table" id="lease6_status_table">
@@ -258,7 +258,7 @@ var linktype = "<%=uciget('uci get wireless.wifi1.linktype')%>";
 			<td colspan="4"><em><br /><%:Collecting data...%></em></td>
 		</tr>
 	</table>
-</fieldset>
+</fieldset>-->
 </div>
 <% end %>
 <%+footer%>
