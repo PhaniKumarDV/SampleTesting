@@ -191,14 +191,14 @@ var ullmt = "<%=uciget('uci get wireless.@wifi-iface[1].ullmt')%>";
 var dllmt = "<%=uciget('uci get wireless.@wifi-iface[1].dllmt')%>";
 var gps_n = "<%=uciget('uci get system.gps.latitude')%>";
 var gps_e = "<%=uciget('uci get system.gps.longitude')%>";
-var modname = "<%=uciget('uci get variant.variant.model')%>"
+var modname = "<%=uciget('fw_printenv -n model')%>"
 var links1, links2;
 if( modname == "1" ) 
    modelname = "API-18-5G-AC2x2-W2";
 else if( modname == "3" )
    modelname = "SUI-18-5G-AC2x2-W2";
 else
-   model_name = "SUI-23-5G-AC2x2-W2";
+   modelname = "SUI-23-5G-AC2x2-W2";
 var gps = "-";
 if( gps_n != 0 ) {
     gps = gps_n + " " + gps_e;
