@@ -98,7 +98,7 @@ function get_values( data )
         tr.insertCell(-1).innerHTML = objects[j].noise;
         tr.insertCell(-1).innerHTML = ( objects[j].enc == 1 ? "Yes" : "No" );
         if( objects[j].ssid != "" )
-           tr.insertCell(-1).innerHTML = '<input type="button" class="cbi-join" value="Join" onClick="join_network(\''+ ssid + '\',' + enc +')" />';
+           tr.insertCell(-1).innerHTML = '<input type="button" class="cbi-join" value="Join" onClick="join_network(\''+ objects[j].ssid + '\',' + objects[j].enc +')" />';
         else
            tr.insertCell(-1).innerHTML = '&nbsp';
     }
