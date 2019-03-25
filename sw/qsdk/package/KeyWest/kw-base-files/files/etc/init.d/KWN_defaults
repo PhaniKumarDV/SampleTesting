@@ -378,7 +378,7 @@ start_service() {
     uci set wireless.@wifi-iface[1].vhtsubfer='0'
     uci set wireless.@wifi-iface[1].vhtsubfee='0'
     uci set wireless.@wifi-iface[1].tx_stbc='0'
-    uci set wireless.@wifi-iface[1].ldpc='0'
+    uci set wireless.@wifi-iface[1].ldpc='3'
 #2.4 Radio Default values
     uci set wireless.wifi0.txchainmask='1'
     uci set wireless.wifi0.rxchainmask='1'
