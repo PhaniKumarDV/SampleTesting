@@ -10,10 +10,10 @@
 #define LAST_RC_CMD "athstats -i wifi1|grep last|tr -d '\t'|cut -d':' -f 2"
 
 
-#define LED2_PATH "/sys/devices/soc.0/gpio_led.6/leds/lan1/brightness"
-#define LED3_PATH "/sys/devices/soc.0/gpio_led.6/leds/wlan5/brightness"
-#define LED4_PATH "/sys/devices/soc.0/gpio_led.6/leds/ap_status/brightness"
-#define LED1_PATH "/sys/devices/soc.0/gpio_led.6/leds/wlan24/brightness"
+#define LED1_PATH "/sys/devices/soc.0/gpio_led.6/leds/lan1/brightness"
+#define LED2_PATH "/sys/devices/soc.0/gpio_led.6/leds/wlan5/brightness"
+#define LED3_PATH "/sys/devices/soc.0/gpio_led.6/leds/ap_status/brightness"
+#define LED4_PATH "/sys/devices/soc.0/gpio_led.6/leds/wlan24/brightness"
 
 static unsigned int _MCS;
 static int isRunning;
