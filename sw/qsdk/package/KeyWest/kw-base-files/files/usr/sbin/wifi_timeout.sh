@@ -24,7 +24,10 @@ wifi_inactivity(){
        if [ $last_link -le 1 ];then
            if [ $current_link -le 1 ];then
 	          echo "$date: Wireless inactivity triggered" >> $LOG_FILE
-              /etc/init.d/network reload 
+              ifconfig ath1 down
+              sleep 1
+              ifconfig ath1 up
+              #/etc/init.d/network reload 
               sleep 30
               return 1    
            fi

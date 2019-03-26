@@ -1438,14 +1438,14 @@ enable_qcawifi() {
 		config_get chbwmode "$vif" chbwmode
 		[ -n "$chbwmode" ] && iwpriv "$ifname" chbwmode "$chbwmode"
 
-		config_get ldpc "$vif" ldpc
-		[ -n "$ldpc" ] && iwpriv "$ifname" ldpc "$ldpc"
+		#config_get ldpc "$vif" ldpc
+		#[ -n "$ldpc" ] && iwpriv "$ifname" ldpc "$ldpc"
 
 		config_get rx_stbc "$vif" rx_stbc
 		[ -n "$rx_stbc" ] && iwpriv "$ifname" rx_stbc "$rx_stbc"
 
-		config_get tx_stbc "$vif" tx_stbc
-		[ -n "$tx_stbc" ] && iwpriv "$ifname" tx_stbc "$tx_stbc"
+		#config_get tx_stbc "$vif" tx_stbc
+		#[ -n "$tx_stbc" ] && iwpriv "$ifname" tx_stbc "$tx_stbc"
 
 		config_get cca_thresh "$vif" cca_thresh
 		[ -n "$cca_thresh" ] && iwpriv "$ifname" cca_thresh "$cca_thresh"
@@ -1700,17 +1700,17 @@ enable_qcawifi() {
 		config_get_bool implicitbf "$vif" implicitbf
 		[ -n "$implicitbf" ] && iwpriv "$ifname" implicitbf "${implicitbf}"
 
-		config_get_bool vhtsubfee "$vif" vhtsubfee
-		[ -n "$vhtsubfee" ] && iwpriv "$ifname" vhtsubfee "${vhtsubfee}"
+		#config_get_bool vhtsubfee "$vif" vhtsubfee
+		#[ -n "$vhtsubfee" ] && iwpriv "$ifname" vhtsubfee "${vhtsubfee}"
 
-		config_get_bool vhtmubfee "$vif" vhtmubfee
-		[ -n "$vhtmubfee" ] && iwpriv "$ifname" vhtmubfee "${vhtmubfee}"
+		#config_get_bool vhtmubfee "$vif" vhtmubfee
+		#[ -n "$vhtmubfee" ] && iwpriv "$ifname" vhtmubfee "${vhtmubfee}"
 
-		config_get_bool vhtsubfer "$vif" vhtsubfer
-		[ -n "$vhtsubfer" ] && iwpriv "$ifname" vhtsubfer "${vhtsubfer}"
+		#config_get_bool vhtsubfer "$vif" vhtsubfer
+		#[ -n "$vhtsubfer" ] && iwpriv "$ifname" vhtsubfer "${vhtsubfer}"
 
-		config_get_bool vhtmubfer "$vif" vhtmubfer
-		[ -n "$vhtmubfer" ] && iwpriv "$ifname" vhtmubfer "${vhtmubfer}"
+		#config_get_bool vhtmubfer "$vif" vhtmubfer
+		#[ -n "$vhtmubfer" ] && iwpriv "$ifname" vhtmubfer "${vhtmubfer}"
 
 		config_get vhtstscap "$vif" vhtstscap
 		[ -n "$vhtstscap" ] && iwpriv "$ifname" vhtstscap "${vhtstscap}"

@@ -40,7 +40,10 @@ link_inactivity(){
        echo "############ Last:$last_tx_packet Current:$current_tx_packet ##############"
        if [ "$last_tx_packet" -eq "$current_tx_packet" ]; then        
 	        echo "$date: Link inactivity triggered" >> $LOG_FILE
-            /etc/init.d/network reload 
+            ifconfig ath1 down
+            sleep 1
+            ifconfig ath1 up
+            #/etc/init.d/network reload 
             sleep 30
             return 1    
        fi

@@ -312,11 +312,11 @@ start_service() {
     fi
     if [ "$wifi_timer1" == "" ]
     then
-        uci set wireless.wifi1.wifitimer='0'
+        uci set wireless.wifi1.wifitimer='15'
     fi
     if [ "$link_timer1" == "" ]
     then
-        uci set wireless.wifi1.linktimer='0'
+        uci set wireless.wifi1.linktimer='5'
     fi
     if [ "$scan_timer1" == "" ]
     then
@@ -373,12 +373,6 @@ start_service() {
     uci set wireless.wifi1.enable_ol_stats='1'
     uci set wireless.@wifi-iface[1].qboost_enable='0'
     uci set wireless.@wifi-iface[1].data_txstats='1'
-    uci set wireless.@wifi-iface[1].vhtmubfer='0'
-    uci set wireless.@wifi-iface[1].vhtmubfee='0'
-    uci set wireless.@wifi-iface[1].vhtsubfer='0'
-    uci set wireless.@wifi-iface[1].vhtsubfee='0'
-    uci set wireless.@wifi-iface[1].tx_stbc='0'
-    uci set wireless.@wifi-iface[1].ldpc='3'
 #2.4 Radio Default values
     uci set wireless.wifi0.txchainmask='1'
     uci set wireless.wifi0.rxchainmask='1'
