@@ -138,7 +138,7 @@ start_service() {
     fi
     if [ "$distance_radio1" == "" ]
     then
-        uci set wireless.wifi1.distance='25'
+        uci set wireless.wifi1.distance='5'
     fi
     if [ "$hidden_radio1" == "" ]
     then

@@ -475,7 +475,7 @@ static void handle_ifla_wireless ( char *data, int len)
 				}
 				//syslog(LOG_INFO,"Wireless SU Expired:%s",mac);		       
 				sify_file_write(mac,0,iwe->u.addr.sa_data[6],iwe->u.addr.sa_data[7]);
-                kwn_set_distance( KWN_DISTANCE_MAX );
+                //kwn_set_distance( KWN_DISTANCE_MAX );
                 break;
 			case IWEVREGISTERED:
 				PRINTF("[%s:%d] IWEVREGISTERED\r\n",__func__,__LINE__);
@@ -490,7 +490,7 @@ static void handle_ifla_wireless ( char *data, int len)
 				}
 				//syslog(LOG_INFO,"New Wireless SU Registered:%s",mac);
                 sify_file_write(mac,1,0,0);
-                get_assoclist( KWN_RADIOMODE_AP );
+                //get_assoclist( KWN_RADIOMODE_AP );
 				break;
 			case IWEVASSOCREQIE:
 				break;
@@ -529,7 +529,7 @@ static void handle_ifla_wireless ( char *data, int len)
 						sify_file_write(prev_mac,0,0,0);
 						registered = 0;
 	                    system("iwpriv wifi1 qboost_enable 0");
-                        kwn_set_distance( KWN_DISTANCE_MAX );
+                        //kwn_set_distance( KWN_DISTANCE_MAX );
 					}
 				}
 				else
@@ -541,7 +541,7 @@ static void handle_ifla_wireless ( char *data, int len)
 						sify_file_write(mac,1,0,0);
 						registered = 1;
                         system("/usr/sbin/link.sh > /dev/null 2>&1");
-                        get_assoclist( KWN_RADIOMODE_SU );
+                        //get_assoclist( KWN_RADIOMODE_SU );
 					}
 				}
 				break;
@@ -559,9 +559,11 @@ void kwn_set_distance( int dist )
 
     dist = ( dist < KWN_DISTANCE_MIN ) ? KWN_DISTANCE_MIN : dist;
     dist = ( dist > KWN_DISTANCE_MAX ) ? KWN_DISTANCE_MAX : dist;
+#if 0
     sprintf(cmd,"iwpriv wifi1 distance %d",dist);
     system( cmd );
     system("iwpriv wifi1 pdev_reset 3");
+#endif
 }
 
 void get_assoclist( int radiomode )
