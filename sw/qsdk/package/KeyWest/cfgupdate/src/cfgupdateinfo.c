@@ -321,6 +321,24 @@ void kwn_reset_nwkmode_params()
     }
 }
 
+void kwn_linktype_change()
+{
+    char cmd[KWN_CMD_IMP_LEN];
+    uint8_t cmd_buf[KWN_CMD_OUT_LEN];
+    uint8_t linktype;
+
+    /* Get Linktype */
+    memset(cmd, '\0', sizeof(cmd));
+    memset(cmd_buf, '\0', sizeof(cmd));
+    sprintf(cmd,"uci get wireless.wifi1.linktype");
+    kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] );
+    linktype = atoi(cmd_buf);
+
+    if( linktype == 3 ) {
+        system("uci set wireless.wifi1.atpcstatus='2'");
+    }
+}
+
 void kwn_radiomode_change()
 {
     char cmd[KWN_CMD_IMP_LEN];
@@ -860,6 +878,8 @@ void cfg_set( char *type, char *value )
             break;
         case UCI_ID_WIRELESS_LINKTYPE:
             sprintf(cmd,"uci set wireless.wifi1.linktype='%s'",value);
+            system(cmd);
+            kwn_linktype_change();
             break;
         case UCI_ID_WIRELESS_ICB:
             sprintf(cmd,"uci set wireless.wifi1.icb='%s'",value);
