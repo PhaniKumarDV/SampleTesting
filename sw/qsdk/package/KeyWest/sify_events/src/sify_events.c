@@ -249,6 +249,24 @@ void kwn_sys_cmd_imp( const char* cmd, uint8_t* cmd_buf )
     memcpy(cmd_buf,token,len);
     return;
 }
+
+void kwn_sta_kickout()
+{
+    char cmd[KWN_CMD_IMP_LEN];
+    uint8_t cmd_buf[KWN_CMD_OUT_LEN];
+    uint8_t linktype;
+
+    /* Get Link Type */
+    memset(cmd, '\0', sizeof(cmd));
+    memset(cmd_buf, '\0', sizeof(cmd_buf));
+    sprintf(cmd,"uci get wireless.wifi1.linktype");
+    kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] ); 
+    linktype = atoi( cmd_buf );
+    if( linktype == 3 ) {
+        system("iwpriv wifi1 sta_kickout 0");
+    }
+}
+
 /*track wireless events*/
 int init_wireless_tracking(int sock_fd)
 {
@@ -490,6 +508,7 @@ static void handle_ifla_wireless ( char *data, int len)
 				}
 				//syslog(LOG_INFO,"New Wireless SU Registered:%s",mac);
                 sify_file_write(mac,1,0,0);
+                kwn_sta_kickout();
                 //get_assoclist( KWN_RADIOMODE_AP );
 				break;
 			case IWEVASSOCREQIE:
