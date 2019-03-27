@@ -2,11 +2,13 @@
 #define KWN_MAC_ADDR_LEN    6 
 #define KWN_GPS_LEN         32 
 #define KWN_MAX_LINKS       1
-#define KWN_PKT_DATA_SIZE   291
+#define KWN_PKT_DATA_SIZE   391
 #define KWN_SUCCESS         1
+#define KWN_FAILURE         0
 #define KWN_ERROR           (-1)
 #define KWN_TRUE            1
 #define KWN_FALSE           0
+#define KWN_SOCK_BUF_LEN    650
 
 enum kwn_id
 {
@@ -33,7 +35,14 @@ enum kwn_pkt_subtype
     KWN_SUBTYPE_CONFIG_DATA = 1,
     KWN_SUBTYPE_WIRELESS_STAT,
     KWN_SUBTYPE_ETHERNET_STAT,
-    KWN_SUBTYPE_LINK_TEST
+    KWN_SUBTYPE_LINK_TEST,
+    KWN_SUBTYPE_AUTH_LINK
+};
+
+enum kwn_auth_data_params
+{
+    KWN_AUTH_USERNAME = 1,
+    KWN_AUTH_PASSWORD
 };
 
 enum kwn_cfg_data_params
@@ -61,7 +70,15 @@ enum kwn_cfg_data_params
     KWN_CFG_DYN_IP,
     KWN_CFG_DYN_GIP,
     KWN_CFG_DYN_NETMASK,
-    KWN_CFG_DISTANCE
+    KWN_CFG_DISTANCE,
+    KWN_CFG_VLAN_STATUS,
+    KWN_CFG_VLAN_MODE,
+    KWN_CFG_VLAN_MGMTID,
+    KWN_CFG_VLAN_ACCID,
+    KWN_CFG_VLAN_TRNKOPT,
+    KWN_CFG_VLAN_TRNKID,
+    KWN_CFG_VLAN_SVLANID,
+    KWN_CFG_VLAN_SVLANETHTYPE
 };
 
 enum kwn_wireless_stat
@@ -120,8 +137,7 @@ enum kwn_lt_start_stop_value
 
 enum kwn_response_status
 {
-    KWN_STATUS_SUCCESS = 1,
-    KWN_STATUS_FAILURE
+    KWN_RESPONSE_STATUS = 1
 };
 
 enum kwn_ip_address_type
@@ -173,34 +189,51 @@ typedef struct
     uint8_t  more;           /*                          more - 1 byte  */   
 }__attribute__((packed)) kwn_pkt_hdr;
 
-/* configuration update structure */
-/* Size of kwn_cfg_update = 4+1+33+1+1+1+1+6+2+4+4+33+16+1+1+1+1+1+1+1+4+4+4+1 = 127 bytes */
+/* Authentication pkt structure */
+/* Size of kwn_auth_pkt = 33 + 33 = 66 bytes */
 typedef struct
 {
-    uint8_t  ip[4];          /*                ipaddress -  4 bytes */
-    uint8_t  ip_type;        /*                   iptype -  1 bytes */
-    uint8_t  ssid[33];       /*                     ssid - 33 bytes */
-    uint8_t  opmode;         /*                   opmode -  1 bytes */
-    uint8_t  bandwidth;      /*                bandwidth -  1 bytes */
-    uint8_t  channel;        /*                  channel -  1 byte  */
-    uint8_t  mode;           /*              device mode -  1 byte  */
-    uint8_t  local_mac[6];   /*                local mac -  6 bytes */
-    uint16_t country;        /*                  country -  2 bytes */
-    uint8_t  gip[4];         /*                  gateway -  4 bytes */
-    uint8_t  netmask[4];     /*                  netmask -  4 bytes */
-    uint8_t  cust_name[33];  /*                cust_name - 33 bytes */
-    uint8_t  linkid[16];     /*                   linkid - 16 bytes */
-    uint8_t  ddrs_status;    /*               ddrsstatus -  1 byte  */
-    uint8_t  stream;         /*           spatial stream -  1 byte  */
-    uint8_t  modindex;       /*         Modulation index -  1 byte  */
-    uint8_t  min_modindex;   /* Minimum Modultaion index -  1 byte  */
-    uint8_t  max_modindex;   /* Maximum Modulation index -  1 byte  */
-    uint8_t  atpc_status;    /*              ATPC Status -  1 byte  */
-    uint8_t  txpower;        /*                 TX Power -  1 byte  */
-    uint8_t  dyn_ip[4];      /*          DHCP IP Address -  4 bytes */
-    uint8_t  dyn_gip[4];     /*  DHCP Gateway IP Address -  4 bytes */
-    uint8_t  dyn_netmask[4]; /*  DHCP netmask IP Address -  4 bytes */
-    uint8_t  distance;       /*                 Distance -  1 byte  */
+    uint8_t usr_name[33];
+    uint8_t passwd[33];
+}__attribute__((packed)) kwn_auth_pkt;
+
+/* configuration update structure */
+/* Size of kwn_cfg_update = 4+1+33+1+1+1+1+6+2+4+4+33+16+1+1+1+1+1+1+1+4+4+4+1+1+1+2+2+1
+ *                          +200+2+7= 343 bytes */
+typedef struct
+{
+    uint8_t  ip[4];           /*                ipaddress -   4 bytes */
+    uint8_t  ip_type;         /*                   iptype -   1 bytes */
+    uint8_t  ssid[33];        /*                     ssid -  33 bytes */
+    uint8_t  opmode;          /*                   opmode -   1 bytes */
+    uint8_t  bandwidth;       /*                bandwidth -   1 bytes */
+    uint8_t  channel;         /*                  channel -   1 byte  */
+    uint8_t  mode;            /*              device mode -   1 byte  */
+    uint8_t  local_mac[6];    /*                local mac -   6 bytes */
+    uint16_t country;         /*                  country -   2 bytes */
+    uint8_t  gip[4];          /*                  gateway -   4 bytes */
+    uint8_t  netmask[4];      /*                  netmask -   4 bytes */
+    uint8_t  cust_name[33];   /*                cust_name -  33 bytes */
+    uint8_t  linkid[16];      /*                   linkid -  16 bytes */
+    uint8_t  ddrs_status;     /*               ddrsstatus -   1 byte  */
+    uint8_t  stream;          /*           spatial stream -   1 byte  */
+    uint8_t  modindex;        /*         Modulation index -   1 byte  */
+    uint8_t  min_modindex;    /* Minimum Modultaion index -   1 byte  */
+    uint8_t  max_modindex;    /* Maximum Modulation index -   1 byte  */
+    uint8_t  atpc_status;     /*              ATPC Status -   1 byte  */
+    uint8_t  txpower;         /*                 TX Power -   1 byte  */
+    uint8_t  dyn_ip[4];       /*          DHCP IP Address -   4 bytes */
+    uint8_t  dyn_gip[4];      /*  DHCP Gateway IP Address -   4 bytes */
+    uint8_t  dyn_netmask[4];  /*  DHCP netmask IP Address -   4 bytes */
+    uint8_t  distance;        /*                 Distance -   1 byte  */
+    uint8_t  vlanstatus;      /*              Vlan Status -   1 byte  */
+    uint8_t  vlanmode;        /*                Vlan Mode -   1 byte  */
+    uint16_t vlanmgmtid;      /*        Vlan Managment id -   2 byte  */
+    uint16_t vlanaccid;       /*           Vlan Access id -   2 bytes */
+    uint8_t  vlantrnkopt;     /*        Vlan Trunk Option -   1 byte  */
+    uint16_t vlantrnkid[100]; /*            Vlan Trunk ID - 200 bytes */
+    uint16_t svlanid;         /*                 SVlan ID -   2 bytes */
+    uint8_t  svlanethtype[7]; /*          Svlan Ethertype -   7 bytes */
 }__attribute__((packed)) kwn_cfg_data;
 
 /* Link Statistics Structure */
@@ -259,11 +292,11 @@ typedef struct
     uint64_t rx_errors;     /*  tx errors - 8 bytes */
 }__attribute__((packed)) kwn_eth_stats;
 
-/* Size of kwn_pkt = 8+291+1 = 300 bytes */
+/* Size of kwn_pkt = 8+391+1 = 400 bytes */
 typedef struct
 {
     kwn_pkt_hdr hdr;                 /*    hdr -   8 bytes */
-    uint8_t data[KWN_PKT_DATA_SIZE]; /*   data - 291 bytes */
+    uint8_t data[KWN_PKT_DATA_SIZE]; /*   data - 391 bytes */
     uint8_t footer;                  /* footer -   1 byte  */
 }__attribute__((packed)) kwn_pkt;
 

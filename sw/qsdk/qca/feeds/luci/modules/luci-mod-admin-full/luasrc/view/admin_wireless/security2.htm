@@ -84,8 +84,8 @@ function hidekey(value)
             document.write("<li style='margin-right:4px' class='cbi-tab-disabled'><a href='macacl2'><%:MAC ACL%></a></li>");
         </script>
     </ul>
-    <fieldset class="cbi-section">
-       <form name="formTable">
+    <form name="formTable">
+       <fieldset class="cbi-section">
           <div class="cbi-value">
             <label class="cbi-value-title">Encryption</label>
             <div class="cbi-value-field">
@@ -110,8 +110,23 @@ function hidekey(value)
               <input type="password" name="31" class="cbi-input-select" value="********" > &nbsp; (8-63) characters
             </div>
           </div>
+       </fieldset>
+       <legend style="width:96%; padding:10px 0px 10px 0px; border-bottom:1px solid #e5e5e5;">Mobile APP</legend>
+       <fieldset class="cbi-section">
+          <div class="cbi-value">
+            <label class="cbi-value-title">User Name</label>
+            <div class="cbi-value-field">
+              <input type="text" name="163" class="cbi-input-select" value="<%=uciget('uci get system.@system[0].appuser')%>" > &nbsp;  (1-32) characters
+            </div>
+          </div>
+          <div class="cbi-value">
+            <label class="cbi-value-title">Password</label>
+            <div class="cbi-value-field">
+              <input type="password" name="164" class="cbi-input-select" value="********" > &nbsp; (8-32) characters
+            </div>
+          </div>
+       </fieldset>
     </form>
-    </fieldset>
     <div class="cbi-map-descr">
        Note:<br>1. Special characters allowed for configuration ! @ ^ * - _ + : , . { } [ ]
     </div>

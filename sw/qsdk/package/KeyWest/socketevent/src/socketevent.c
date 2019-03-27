@@ -17,6 +17,7 @@
 #include <sys/time.h>
 #include <arpa/inet.h>
 #include <netinet/tcp.h>
+#include <netinet/ether.h>
 #include <fcntl.h>
 #include <endian.h>
 #include <linux/wireless.h>
@@ -226,7 +227,7 @@ void kwn_str_to_mac(uint8_t* cmd_buf, uint8_t *local_mac )
 void kwn_sys_cmd_imp( const char* cmd, uint8_t* cmd_buf )
 {
     FILE *fp = NULL;
-    uint8_t  a[33]={0};
+    uint8_t  a[KWN_SOCK_BUF_LEN]={0};
     uint8_t  *token;
     uint16_t len;
 
@@ -248,6 +249,23 @@ void kwn_sys_cmd_imp( const char* cmd, uint8_t* cmd_buf )
         token = strtok(a,"\n");
         len = strlen(token);
         memcpy(cmd_buf,token,len);
+    }
+    return;
+}
+
+void kwn_cmdbuf_to_trunkarray(uint8_t* cmd_buf, uint16_t* trunk_vlan)
+{
+    uint8_t *tok;
+    int i=0,j=0;
+
+    tok=strtok(cmd_buf," ");
+
+    while( tok != NULL)
+    {
+        printf( " %s\n", tok );
+        trunk_vlan[i] = atoi(tok);
+        i++;
+        tok = strtok(NULL, " ");
     }
     return;
 }
@@ -367,7 +385,7 @@ uint8_t kwn_bwidth_to_enum( uint8_t* dev_bwidth, uint16_t bwidth_len )
 void kwn_get_config_from_device( kwn_cfg_data *dev_cfg )
 {
     uint8_t  cmd[100];
-    uint8_t  cmd_buf[50];
+    uint8_t  cmd_buf[KWN_SOCK_BUF_LEN];
     uint16_t len = 0;
     uint8_t  ip_byte[4] = {0};
     uint8_t  gip_byte[4] = {0};
@@ -376,6 +394,8 @@ void kwn_get_config_from_device( kwn_cfg_data *dev_cfg )
     uint8_t  d_ip_byte[4] = {0};
     uint8_t  d_gip_byte[4] = {0};
     uint8_t  d_netmask_byte[4] = {0};
+    uint16_t trunk_vlan[100]={0};
+    uint16_t j = 0;
 
     memset(cmd, '\0', sizeof(cmd));
     memset(cmd_buf, '\0', sizeof(cmd_buf));
@@ -567,6 +587,69 @@ void kwn_get_config_from_device( kwn_cfg_data *dev_cfg )
     dev_cfg->distance = atoi(cmd_buf);
     printf("dev_cfg->Distance : %d\n",dev_cfg->distance);
 
+    memset(cmd, '\0', sizeof(cmd));
+    memset(cmd_buf, '\0', sizeof(cmd_buf));
+    sprintf( cmd,"uci get vlan.vlan.status");
+    kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] ); 
+    dev_cfg->vlanstatus = atoi(cmd_buf);
+    printf("dev_cfg->VLAN Status : %d\n",dev_cfg->vlanstatus);
+
+    memset(cmd, '\0', sizeof(cmd));
+    memset(cmd_buf, '\0', sizeof(cmd_buf));
+    sprintf( cmd,"uci get vlan.vlan.mode");
+    kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] ); 
+    dev_cfg->vlanmode= atoi(cmd_buf);
+    printf("dev_cfg->VLAN Mode : %d\n",dev_cfg->vlanmode);
+
+    memset(cmd, '\0', sizeof(cmd));
+    memset(cmd_buf, '\0', sizeof(cmd_buf));
+    sprintf( cmd,"uci get vlan.vlan.mgmtvlan");
+    kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] ); 
+    dev_cfg->vlanmgmtid = atoi(cmd_buf);
+    printf("dev_cfg->VLAN Mgmt ID : %d\n",dev_cfg->vlanmgmtid);
+
+    memset(cmd, '\0', sizeof(cmd));
+    memset(cmd_buf, '\0', sizeof(cmd_buf));
+    sprintf( cmd,"uci get vlan.vlan.accessvlan");
+    kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] ); 
+    dev_cfg->vlanaccid = atoi(cmd_buf);
+    printf("dev_cfg->VLAN Access ID : %d\n",dev_cfg->vlanaccid);
+
+    memset(cmd, '\0', sizeof(cmd));
+    memset(cmd_buf, '\0', sizeof(cmd_buf));
+    sprintf( cmd,"uci get vlan.vlan.trunkoption");
+    kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] ); 
+    dev_cfg->vlantrnkopt = atoi(cmd_buf);
+    printf("dev_cfg->VLAN Trunk Option : %d\n",dev_cfg->vlantrnkopt);
+
+    memset(cmd, '\0', sizeof(cmd));
+    memset(cmd_buf, '\0', sizeof(cmd_buf));
+    sprintf( cmd,"uci get vlan.vlan.trunkvlan");
+    kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] );
+    kwn_cmdbuf_to_trunkarray(&cmd_buf[0],trunk_vlan);
+    printf("dev_cfg->VLAN Trunk ID : ");
+    for(j=0;trunk_vlan[j]!=0;j++){
+        /*printf("vlanid : %d ",trunk_vlan[j]);*/
+        dev_cfg->vlantrnkid[j] = trunk_vlan[j];
+        printf("%d ",dev_cfg->vlantrnkid[j]);
+    }
+    printf("\n"); 
+    printf("valid trunkvlan length: %d\n",j);
+
+    memset(cmd, '\0', sizeof(cmd));
+    memset(cmd_buf, '\0', sizeof(cmd_buf));
+    sprintf( cmd,"uci get vlan.vlan.svlan");
+    kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] ); 
+    dev_cfg->svlanid = atoi(cmd_buf);
+    printf("dev_cfg->SVLAN ID : %d\n",dev_cfg->svlanid);
+
+    memset(cmd, '\0', sizeof(cmd));
+    memset(cmd_buf, '\0', sizeof(cmd_buf));
+    sprintf(cmd,"uci get vlan.vlan.svlanethertype");
+    kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] );
+    len=strlen(cmd_buf);
+    memcpy(dev_cfg->svlanethtype, cmd_buf, len);
+    printf("dev_cfg->svlan ethertype: %s len : %d\n",dev_cfg->svlanethtype, len);
     /*printf("Executed uci commands to get the config\n");*/   
     return;
 }
@@ -576,6 +659,7 @@ void kwn_get_config_data( kwn_pkt* buf)
     uint16_t len = 0;
     uint8_t  type = 0;
     uint16_t llen = 0;
+    uint16_t j = 0;
 
     kwn_cfg_data data;
     memset(&data,'\0', sizeof(kwn_cfg_data)); 
@@ -856,6 +940,99 @@ void kwn_get_config_data( kwn_pkt* buf)
     memcpy(buf->data+len, &data.distance,llen); /* value */
     len += llen;   
 
+    /* VLAN STATUS */
+    printf("VLAN Status: %d\n",data.vlanstatus);
+    llen = sizeof(data.vlanstatus); /* length */
+    memcpy(buf->data+len, &llen,sizeof(uint16_t));
+    len += sizeof(uint16_t);
+    type = KWN_CFG_VLAN_STATUS; /* type */
+    memcpy(buf->data+len, &type,sizeof(uint8_t));
+    len += sizeof(uint8_t);
+    memcpy(buf->data+len, &data.vlanstatus,llen); /* value */
+    len += llen;
+
+    /* VLAN MODE */
+    printf("VLAN Mode: %d\n",data.vlanmode);
+    llen = sizeof(data.vlanmode); /* length */
+    memcpy(buf->data+len, &llen,sizeof(uint16_t));
+    len += sizeof(uint16_t);
+    type = KWN_CFG_VLAN_MODE; /* type */
+    memcpy(buf->data+len, &type,sizeof(uint8_t));
+    len += sizeof(uint8_t);
+    memcpy(buf->data+len, &data.vlanmode,llen); /* value */
+    len += llen;
+
+    /* VLAN MANAGEMENT ID */
+    printf("VLAN Mgmtid: %d\n",data.vlanmgmtid);
+    llen = sizeof(data.vlanmgmtid); /* length */
+    memcpy(buf->data+len, &llen,sizeof(uint16_t));
+    len += sizeof(uint16_t);
+    type = KWN_CFG_VLAN_MGMTID; /* type */
+    memcpy(buf->data+len, &type,sizeof(uint8_t));
+    len += sizeof(uint8_t);
+    memcpy(buf->data+len, &data.vlanmgmtid,llen); /* value */
+    len += llen;
+
+    /* VLAN ACCESS IS */
+    printf("VLAN Access ID: %d\n",data.vlanaccid);
+    llen = sizeof(data.vlanaccid); /* length */
+    memcpy(buf->data+len, &llen,sizeof(uint16_t));
+    len += sizeof(uint16_t);
+    type = KWN_CFG_VLAN_ACCID; /* type */
+    memcpy(buf->data+len, &type,sizeof(uint8_t));
+    len += sizeof(uint8_t);
+    memcpy(buf->data+len, &data.vlanaccid,llen); /* value */
+    len += llen;
+
+    /* VLAN TRUNK OPTION */
+    printf("VLAN Trunk Option: %d\n",data.vlantrnkopt);
+    llen = sizeof(data.vlantrnkopt); /* length */
+    memcpy(buf->data+len, &llen,sizeof(uint16_t));
+    len += sizeof(uint16_t);
+    type = KWN_CFG_VLAN_TRNKOPT; /* type */
+    memcpy(buf->data+len, &type,sizeof(uint8_t));
+    len += sizeof(uint8_t);
+    memcpy(buf->data+len, &data.vlantrnkopt,llen); /* value */
+    len += llen;
+
+    /* VLAN TRUNK ID */
+    printf("VLAN TrunkID: ");
+    for(j=0;data.vlantrnkid[j]!=0;j++){
+        /*printf("vlanid : %d ",trunk_vlan[j]);*/
+        printf("%d ",data.vlantrnkid[j]);
+    }
+    printf("\n");
+    llen = (j*sizeof(uint16_t)); /* length */
+    memcpy(buf->data+len, &llen,sizeof(uint16_t));
+    len += sizeof(uint16_t);
+    type = KWN_CFG_VLAN_TRNKID; /* type */
+    memcpy(buf->data+len, &type,sizeof(uint8_t));
+    len += sizeof(uint8_t);
+    memcpy(buf->data+len, &data.vlantrnkid,llen); /* value */
+    len += llen;
+
+    /* SVLAN ID */
+    printf("SVLAN ID: %d\n",data.svlanid);
+    llen = sizeof(data.svlanid); /* length */
+    memcpy(buf->data+len, &llen,sizeof(uint16_t));
+    len += sizeof(uint16_t);
+    type = KWN_CFG_VLAN_SVLANID; /* type */
+    memcpy(buf->data+len, &type,sizeof(uint8_t));
+    len += sizeof(uint8_t);
+    memcpy(buf->data+len, &data.svlanid,llen); /* value */
+    len += llen;
+
+    /* SVLAN ETHERTYPE */
+    printf("Svlan Ethertype: %s\n",data.svlanethtype);
+    llen = strlen(data.svlanethtype); /* length */
+    memcpy(buf->data+len, &llen,sizeof(uint16_t));
+    len += sizeof(uint16_t);
+    type = KWN_CFG_VLAN_SVLANETHTYPE; /* type */
+    memcpy(buf->data+len, &type,sizeof(uint8_t));
+    len += sizeof(uint8_t);
+    memcpy(buf->data+len, &data.svlanethtype,llen); /* value */
+    len += llen;
+
     buf->hdr.length = len;
     printf("\n Get config Data length: %d\n",buf->hdr.length);
 
@@ -1083,6 +1260,92 @@ void kwn_set_config_data( kwn_pkt* buf )
                 system(cmd);
                 break;
             }
+            case KWN_CFG_VLAN_STATUS:
+            {
+                uint8_t vlan_status;
+                memcpy(&vlan_status,buf->data+len,llen);
+                printf("VLAN Status : %d\n",vlan_status);
+                sprintf(cmd, "uci set vlan.vlan.status='%d'", vlan_status);
+                system(cmd);
+                break;
+            }
+            case KWN_CFG_VLAN_MODE:
+            {
+                uint8_t vlan_mode;
+                memcpy(&vlan_mode,buf->data+len,llen);
+                printf("VLAN Mode : %d\n",vlan_mode);
+                sprintf(cmd, "uci set vlan.vlan.mode='%d'", vlan_mode);
+                system(cmd);
+                break;
+            }
+            case KWN_CFG_VLAN_MGMTID:
+            {
+                uint16_t vlan_mgmtid;
+                memcpy(&vlan_mgmtid,buf->data+len,llen);
+                printf("VLAN Mgmtid : %d\n",vlan_mgmtid);
+                sprintf(cmd, "uci set vlan.vlan.mgmtvlan='%d'", vlan_mgmtid);
+                system(cmd);
+                break;
+            }
+            case KWN_CFG_VLAN_ACCID:
+            {
+                uint16_t vlan_accid;
+                memcpy(&vlan_accid,buf->data+len,llen);
+                printf("VLAN Accessid : %d\n",vlan_accid);
+                sprintf(cmd, "uci set vlan.vlan.accessvlan='%d'", vlan_accid);
+                system(cmd);
+                break;
+            }
+            case KWN_CFG_VLAN_TRNKOPT:
+            {
+                uint8_t vlan_trunkopt;
+                memcpy(&vlan_trunkopt,buf->data+len,llen);
+                printf("VLAN Trunkopt : %d\n",vlan_trunkopt);
+                sprintf(cmd, "uci set vlan.vlan.trunkoption='%d'", vlan_trunkopt);
+                system(cmd);
+                break;
+            }
+            case KWN_CFG_VLAN_TRNKID:
+            {
+                uint16_t vlan_trunkid[100]={0};
+                uint8_t  cmd[KWN_SOCK_BUF_LEN]={'\0'}, a[5]={'\0'};
+                uint8_t  str[KWN_SOCK_BUF_LEN]={'\0'};
+                uint16_t j;
+
+                printf("VLAN TrunkID : ");
+                memcpy(&vlan_trunkid,buf->data+len,llen);
+                for( j=0; vlan_trunkid[j]!=0; j++ )
+                {   
+                    printf( "%d ", vlan_trunkid[j] );
+                    sprintf(a,"%d ",vlan_trunkid[j]);
+                    strcat(str,a);
+                    memset(a,'\0',sizeof(a));
+                }
+                printf("\n");
+                str[strlen(str)-1] = '\0';
+                printf("final str:%s\n",str);
+                sprintf(cmd, "uci set vlan.vlan.trunkvlan='%s'", str);
+                system(cmd);
+                break;
+            }
+            case KWN_CFG_VLAN_SVLANID:
+            {
+                uint16_t svlanid;
+                memcpy(&svlanid,buf->data+len,llen);
+                printf("SVLAN ID : %d\n",svlanid);
+                sprintf(cmd, "uci set vlan.vlan.svlan='%d'", svlanid);
+                system(cmd);
+                break;
+            }
+            case KWN_CFG_VLAN_SVLANETHTYPE:
+            {
+                uint8_t svlanethtype[7]={'\0'};
+                memcpy(&svlanethtype, buf->data+len,llen);
+                printf("SVLAN ethertype: %s \n",svlanethtype);
+                sprintf(cmd, "uci set vlan.vlan.svlanethertype='%s'",svlanethtype);
+                system(cmd);
+                break;
+            }
             default:
             break;
         }
@@ -1091,9 +1354,7 @@ void kwn_set_config_data( kwn_pkt* buf )
     len = 0;
     type = 0;
     llen = 0;
-    memset(buf,0,sizeof(kwn_pkt));
-    buf->hdr.id = SIFY_ID;
-    buf->hdr.interface_type = KWN_MOBILE_APP;
+    memset(buf->data,'\0',KWN_PKT_DATA_SIZE);
     buf->hdr.type = KWN_TYPE_SET_RESPONSE;
     buf->hdr.sub_type = KWN_SUBTYPE_CONFIG_DATA;
     buf->hdr.ptmp = 0;
@@ -1103,7 +1364,7 @@ void kwn_set_config_data( kwn_pkt* buf )
     llen = sizeof(res); /* length */
     memcpy(buf->data+len, &llen,sizeof(uint16_t));
     len += sizeof(uint16_t);
-    type = KWN_STATUS_SUCCESS; /* type */
+    type = KWN_RESPONSE_STATUS; /* type */
     memcpy(buf->data+len, &type,sizeof(uint8_t));
     len += sizeof(uint8_t);
     memcpy(buf->data+len, &res,llen); /* value */
@@ -1187,9 +1448,7 @@ void kwn_set_link_test( kwn_pkt *buf )
     len = 0;
     type = 0;
     llen = 0;
-    memset(buf,0,sizeof(kwn_pkt));
-    buf->hdr.id = SIFY_ID;
-    buf->hdr.interface_type = KWN_MOBILE_APP;
+    memset(buf->data,'\0',KWN_PKT_DATA_SIZE);
     buf->hdr.type = KWN_TYPE_SET_RESPONSE;
     buf->hdr.sub_type = KWN_SUBTYPE_LINK_TEST;
     buf->hdr.ptmp = 0;
@@ -1199,7 +1458,7 @@ void kwn_set_link_test( kwn_pkt *buf )
     llen = sizeof(res); /* length */
     memcpy(buf->data+len, &llen,sizeof(uint16_t));
     len += sizeof(uint16_t);
-    type = KWN_STATUS_SUCCESS; /* type */
+    type = KWN_RESPONSE_STATUS; /* type */
     memcpy(buf->data+len, &type,sizeof(uint8_t));
     len += sizeof(uint8_t);
     memcpy(buf->data+len, &res,llen); /* value */
@@ -1661,6 +1920,104 @@ void kwn_get_ethernet_stats( kwn_pkt* buf)
     printf("Data length: %d\n",buf->hdr.length);
 }
 
+void kwn_auth_user( kwn_pkt* buf )
+{
+    uint16_t total_len = buf->hdr.length;
+    uint16_t len = 0;
+    uint8_t  type = 0;
+    uint16_t llen = 0;
+    uint8_t  res = 0;
+    int cmd_len;
+    uint8_t  cmd[100] = {'\0'};
+    uint8_t  cmd_buf[33] = {'\0'};
+    uint8_t  user[33]={'\0'};
+    uint8_t  paswrd[33]={'\0'};
+
+    
+    kwn_auth_pkt data;
+    memset(&data,'\0', sizeof(kwn_auth_pkt)); 
+    
+    printf("Total Length : %d \n",total_len);
+
+    memset(cmd, '\0', sizeof(cmd));
+    memset(cmd_buf, '\0', sizeof(cmd_buf));
+    sprintf(cmd,"uci get system.@system[0].appuser");
+    kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] );
+    cmd_len = strlen(cmd_buf);
+    memcpy(data.usr_name, cmd_buf, cmd_len);
+    printf("Struct Username : %s, len: %d\n",data.usr_name, cmd_len);
+
+    memset(cmd, '\0', sizeof(cmd));
+    memset(cmd_buf, '\0', sizeof(cmd_buf));
+    sprintf(cmd,"uci get system.@system[0].apppass");
+    kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] );
+    cmd_len = strlen(cmd_buf);
+    memcpy(data.passwd, cmd_buf, cmd_len);
+    printf("Struct password : %s, len: %d\n",data.passwd, cmd_len);
+   
+    while( len < total_len )
+    {
+        memset(&cmd, '\0', sizeof(cmd));
+        memcpy(&llen, buf->data+len, sizeof(uint16_t));
+        printf("Length %d ",llen);
+        len += sizeof(uint16_t);
+        memcpy(&type, buf->data+len, sizeof(uint8_t));
+        printf("Type %d ",type);
+        len += sizeof(uint8_t);
+        printf(" LLEN: %d\n",llen);
+        switch( type )
+        {
+            case KWN_AUTH_USERNAME:
+                {
+                    memcpy(&user,buf->data+len,llen);
+                    printf("Username: %s\n",user);
+                    break;
+                }
+            case KWN_AUTH_PASSWORD:
+                {
+                    memcpy(&paswrd,buf->data+len,llen);
+                    printf("Password: %s\n",paswrd);
+                    break;
+                }
+            default:
+                break;
+        }
+        len += llen;
+    }
+
+    len = 0;
+    type = 0;
+    llen = 0;
+    memset(buf->data,'\0',KWN_PKT_DATA_SIZE);
+    buf->hdr.type = KWN_TYPE_SET_RESPONSE;
+    buf->hdr.sub_type = KWN_SUBTYPE_AUTH_LINK;
+    buf->hdr.ptmp = 0;
+
+    /* Response */
+    if( (strncmp( data.usr_name, user, strlen(user)) == 0) &&
+            (strncmp( data.passwd, paswrd, strlen(paswrd)) == 0) ) {
+        printf("comparision success");
+        res = KWN_SUCCESS;
+    }
+    else {
+        printf("comparision Failure");
+        res = KWN_FAILURE;
+    } 
+    llen = sizeof(res); /* length */
+    memcpy(buf->data+len, &llen,sizeof(uint16_t));
+    len += sizeof(uint16_t);
+    type = KWN_RESPONSE_STATUS; /* type */
+    memcpy(buf->data+len, &type,sizeof(uint8_t));
+    len += sizeof(uint8_t);
+    memcpy(buf->data+len, &res,llen); /* value */
+    len += llen;
+
+    buf->hdr.length = len;
+    printf("Data length: %d\n",buf->hdr.length);
+
+    return;
+}
+
 void kwn_req_type( int peer_sock, kwn_pkt *buf )
 {
     int rv;
@@ -1685,6 +2042,11 @@ void kwn_req_type( int peer_sock, kwn_pkt *buf )
                     case KWN_SUBTYPE_ETHERNET_STAT:
                         {
                             kwn_get_ethernet_stats( buf );
+                            break;
+                        }
+                    case KWN_SUBTYPE_AUTH_LINK:
+                        {
+                            kwn_auth_user( buf );
                             break;
                         }
                     default:

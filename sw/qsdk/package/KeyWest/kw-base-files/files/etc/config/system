@@ -13,6 +13,8 @@ config system
     option bstid 'mh-mum-air-T1-st'
     option tcpcnt '5'
     option tcpintvl '1'
+    option appuser 'admin'
+    option apppass 'admin'
 
 config timeserver ntp
 	#list server	0.openwrt.pool.ntp.org

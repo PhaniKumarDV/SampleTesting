@@ -204,7 +204,10 @@ enum uci_cfg_id {
     UCI_ID_IP_24 = 160,
     UCI_ID_MASK_24 = 161,
     /* UHTTPD installer Password*/
-    UCI_ID_HTTP_INST_PWD = 162
+    UCI_ID_HTTP_INST_PWD = 162,
+    /* APP username and password*/
+    UCI_ID_APP_USER_NAME = 163,
+    UCI_ID_APP_PASSWORD = 164
 };
 
 typedef struct

@@ -17,7 +17,7 @@ struct kwn_cfg_uci_cmds {
     int type;
 };
 
-#define KWN_CMD_LEN 155
+#define KWN_CMD_LEN 157
 struct kwn_cfg_uci_cmds uci_cmd_list[] = {
 /* Wireless 5GHz*/
     /* Properties */
@@ -208,6 +208,9 @@ struct kwn_cfg_uci_cmds uci_cmd_list[] = {
     /* 153. */ { "network.kwlan.netmask", KWN_CMD_TYPE_SCALAR },
     /* installer mode password */
     /* 154. */ { "uhttpd.main.instpwd", KWN_CMD_TYPE_SCALAR },
+    /* APP username and password */
+    /* 155. */ {"system.@system[0].appuser", KWN_CMD_TYPE_SCALAR },
+    /* 156. */ {"system.@system[0].apppass", KWN_CMD_TYPE_SCALAR },
     /* Update maximum number + 1 in KWN_CMD_LEN */
 };
 

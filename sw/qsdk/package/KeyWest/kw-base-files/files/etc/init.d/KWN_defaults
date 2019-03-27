@@ -101,6 +101,8 @@ start_service() {
     bstid=$(uci get system.@system[0].bstid)
     tcpcnt=$(uci get system.@system[0].tcpcnt)
     tcpintvl=$(uci get system.@system[0].tcpintvl)
+    appusr=$(uci get system.@system[0].appuser)
+    apppwd=$(uci get system.@system[0].apppass)
 #UHTTPD
     inst=$(uci get uhttpd.main.instpwd)
     if [ "$inst" == "" ]
@@ -451,6 +453,14 @@ start_service() {
     if [ "$tcpintvl" == "" ]
     then
         uci set system.@system[0].tcpintvl='1'
+    fi
+    if [ "$appusr" == "" ]
+    then
+        uci set system.@system[0].appuser='admin'
+    fi
+    if [ "$apppwd" == "" ]
+    then
+        uci set system.@system[0].apppass='admin'
     fi
 #ROUTING
     param=$(uci get network.param)

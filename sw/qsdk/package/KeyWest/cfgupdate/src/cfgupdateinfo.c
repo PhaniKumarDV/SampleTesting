@@ -918,6 +918,12 @@ void cfg_set( char *type, char *value )
             system("uci set uhttpd.main.pwdmodified='1'");
             sprintf(cmd,"uci set uhttpd.main.instpwd='%s'",value);
             break;
+        case UCI_ID_APP_USER_NAME:
+            sprintf(cmd,"uci set system.@system[0].appuser=%s",value);
+            break;
+        case UCI_ID_APP_PASSWORD:
+            sprintf(cmd,"uci set system.@system[0].apppass=%s",value);
+            break;
         default:
             break;
     }
