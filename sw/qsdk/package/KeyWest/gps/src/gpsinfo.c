@@ -11,6 +11,7 @@
 #include <signal.h>
 #include <linux/ioctl.h>
 #include <uci.h>
+#include <syslog.h>
 
 #define DEVFILE "/dev/gpsdrv"
 
@@ -267,7 +268,7 @@ int ReadGPSInfo(char *da, int fLen)
                             val = atof(tok)/60 + v1;
                             tok = strtok(NULL, ",");
                             if(tok == NULL || (tok[0] != 'N' && tok[0] != 'S')) {
-                                printf("Invalid Latitude.....\n");
+		                            syslog(LOG_INFO, "Invalid Latitude.....\n");
                                 gps.lat[0] = '\0';
                                 isValid = 0;
                             } else {
@@ -285,7 +286,7 @@ int ReadGPSInfo(char *da, int fLen)
                             val = atof(tok)/60 + v1;
                             tok = strtok(NULL, ",");
                             if(tok == NULL || (tok[0] != 'E' && tok[0] != 'W') ) {
-                                printf("Invalid Longitude.....\n");
+		                            syslog(LOG_INFO, "Invalid Longitude.....\n");
                                 gps.lat[0] = '\0';
                                 isValid = 0;
                             } else {
@@ -421,6 +422,7 @@ int main(int argc, char **argv)
                 /* If Success, then read the NMEA String */
                 ret = Read_NMEA_String(nI2cFile,cNMEAbuf,nNMEAlen);
                 if ( ret == 0 ) {
+		                syslog(LOG_INFO, " #### NMEA LEN : %d ( str: %s ) #####\n",nNMEAlen, cNMEAbuf); 
                     /* If Success, then parse the NMEA String to get the GPS Information */
                     ret = ReadGPSInfo(cNMEAbuf, nNMEAlen);
                 }
