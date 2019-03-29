@@ -201,6 +201,12 @@ function updategps()
               <input type="text" name="63" class="cbi-input-select" value="<%=uciget('uci get system.gps.interval')%>" > &nbsp; (1-600) secs
             </div>
           </div>
+          <div class="cbi-value">
+            <label class="cbi-value-title">GPS Counter</label>
+            <div class="cbi-value-field">
+              <input type="text" name="165" class="cbi-input-select" value="<%=uciget('uci get system.gps.counter')%>" >
+            </div>
+          </div>
           <h2><a id="content" name="content"><%:Dying Gasp%></a></h2>
           <div class="cbi-value">
             <label class="cbi-value-title">Dying Gasp</label>

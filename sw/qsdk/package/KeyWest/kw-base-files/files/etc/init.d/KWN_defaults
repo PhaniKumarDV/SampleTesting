@@ -87,6 +87,8 @@ start_service() {
 #Ethernet
     eth_timer=$(uci get ethernet.ethernet.ethtimer)
     eth_mtu=$(uci get network.lan.mtu)
+#GPS
+    gps_cnt=$(uci get system.gps.counter)
 #VLAN
     tagmgmt=$(uci get vlan.vlan.tagmgmt)
 #TFTP
@@ -365,6 +367,11 @@ start_service() {
     if [ "$eth_mtu" == "" ]
     then
         uci set network.lan.mtu='1500'
+    fi
+#GPS
+    if [ "$gps_cnt" == "" ]
+    then
+        uci set system.gps.counter='12'
     fi
 #VLAN
     if [ "$tagmgmt" == "" ]

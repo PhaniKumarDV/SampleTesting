@@ -451,6 +451,20 @@ function get_links()
 		}
 	}
     );
+
+    XHR.get('<%=luci.dispatcher.build_url("admin", "gps")%>/' + id, null,
+	function(x, data) {
+		if (data) { 
+            var s = data.split("=");
+            if( s[0] != 0 ) {
+               document.getElementById("gps").innerHTML = s[0] + " N " + s[1] + " E";
+            }
+            else {
+               document.getElementById("gps").innerHTML = "-";
+            }
+		}
+	}
+    );
 }
 
 function link_stats( links )
@@ -785,7 +799,7 @@ function get_log()
 		<tr><td width="47%"><%:Local Time%></td><td id="localtime">-</td></tr>
 		<tr><td width="47%"><%:Uptime%></td><td id="uptime">-</td></tr>
 		<tr><td width="47%">Temperature</td><td><%=currTemperature%> &#8451;</td></tr>
-		<tr><td width="47%"><%:GPS%></td><td><script type="text/javascript">document.write(gps)</script></td></tr>
+		<tr><td width="47%"><%:GPS%></td><td id="gps"><script type="text/javascript">document.write(gps)</script></td></tr>
 		<tr><td width="47%"><%:Customer Name%></td><td><%=uciget('uci get wireless.wifi1.customername')%></td></tr>
 		<tr><td width="47%"><%:Country%></td><td><script type="text/javascript">document.write(country)</script></td></tr>
 	</table>

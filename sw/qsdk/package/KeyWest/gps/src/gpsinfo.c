@@ -37,6 +37,10 @@
 #define SET_LOW_POWER_TIMER_VAL 	_IOR(SIFY_MAGIC,2,int)
 
 static volatile unsigned int nRunning = 1;
+int gps_avg_counter = 0;
+int counter = 0;
+double gps_lat = 0;
+double gps_lon = 0;
 
 int i2c_strobe(int nFile);
 int Read_NMEA_Packet_Len(int file);
@@ -252,7 +256,7 @@ int ReadGPSInfo(char *da, int fLen)
 
             while(tok != NULL || type == GGA_TYPE_END) {
                 isValid = 1;
-                printf("%s\n", tok);
+                //printf("%s\n", tok);
                 if(tok[0] == '*') break;
 
                 switch(type) {
@@ -268,11 +272,14 @@ int ReadGPSInfo(char *da, int fLen)
                             val = atof(tok)/60 + v1;
                             tok = strtok(NULL, ",");
                             if(tok == NULL || (tok[0] != 'N' && tok[0] != 'S')) {
+                                printf("Invalid Latitude.....\n");
 		                            syslog(LOG_INFO, "Invalid Latitude.....\n");
                                 gps.lat[0] = '\0';
                                 isValid = 0;
                             } else {
                                 snprintf(gps.lat, 32, "%f %c", val, tok[0]);
+                                gps_lat += val;
+                                printf("Latitude %f\n",gps_lat);
                             }
                             //                        printf("gps.lat: %s\n", gps.lat);
                         }
@@ -286,11 +293,14 @@ int ReadGPSInfo(char *da, int fLen)
                             val = atof(tok)/60 + v1;
                             tok = strtok(NULL, ",");
                             if(tok == NULL || (tok[0] != 'E' && tok[0] != 'W') ) {
+                                printf("Invalid Longitude.....\n");
 		                            syslog(LOG_INFO, "Invalid Longitude.....\n");
                                 gps.lat[0] = '\0';
                                 isValid = 0;
                             } else {
                                 snprintf(gps.lng, 32, "%f %c", val, tok[0]);
+                                gps_lon += val;
+                                printf("Longitude %f\n",gps_lon);
                             }
                             //                      printf("gps.lng: %s\n", gps.lng);
                         }
@@ -336,14 +346,32 @@ int ReadGPSInfo(char *da, int fLen)
             }
             if(isValid) {
                 char cmd[128] = {0};
-                printf("Latitude: %s\n", gps.lat);
-                snprintf(cmd, 128, "system.gps.latitude=%s", gps.lat);
-                UpdateUCI(cmd);
 
-                printf("Longitude: %s\n", gps.lng);
-                snprintf(cmd, 128, "system.gps.longitude=%s", gps.lng);
-                UpdateUCI(cmd);
+                gps_avg_counter++;
+                if( gps_avg_counter == counter ) {
+                    gps_avg_counter = 0;
 
+                    gps_lat = gps_lat / counter;
+                    gps_lon = gps_lon / counter;
+                    printf("Avg Latitude: %f\n", gps_lat);
+                    snprintf(cmd, 128, "system.gps.latitude=%f", gps_lat);
+                    UpdateUCI(cmd);
+
+                    printf("Avg Longitude: %f\n", gps_lon);
+                    snprintf(cmd, 128, "system.gps.longitude=%f", gps_lon);
+                    UpdateUCI(cmd);
+
+                    /* Update latitude and longitude to driver*/
+                    system("iwpriv wifi1 str_type 2");		
+                    snprintf(cmd, 128, "iwconfig ath1 nickname %f", gps_lon);
+                    system(cmd);
+
+                    system("iwpriv wifi1 str_type 3");		
+                    snprintf(cmd, 128, "iwconfig ath1 nickname %f", gps_lat);
+                    system(cmd);
+                    gps_lat = 0;
+                    gps_lon = 0;
+                }
                 printf("Altitude: %f\n", gps.alt);
                 snprintf(cmd, 128, "system.gps.altitude=%f", gps.alt);
                 UpdateUCI(cmd);
@@ -356,15 +384,6 @@ int ReadGPSInfo(char *da, int fLen)
                 snprintf(cmd, 128, "system.gps.time=%s", gps.time);
                 UpdateUCI(cmd);
                 system("sh /usr/sbin/rtc.sh");
-
-                /* Update latitude and longitude to driver*/
-                system("iwpriv wifi1 str_type 2");		
-                snprintf(cmd, 128, "iwconfig ath1 nickname %s", gps.lng);
-                system(cmd);
-
-                system("iwpriv wifi1 str_type 3");		
-                snprintf(cmd, 128, "iwconfig ath1 nickname %s", gps.lat);
-                system(cmd);
             } 
             break;
         } else {
@@ -386,11 +405,12 @@ int main(int argc, char **argv)
 	int interval = 0;
     int ret = 0;
 
-    if(argc != 2) {
+    if(argc != 3) {
         printf("Invalid arguments..");
         exit(1);
     }
     interval = atoi(argv[1]);
+    counter = atoi(argv[2]);
     signal(SIGINT, SigKill_Handler);
     signal(SIGKILL, SigKill_Handler);
 	if ((nI2cFile = open(I2C_DEV_NAME, O_RDWR)) < 0) {

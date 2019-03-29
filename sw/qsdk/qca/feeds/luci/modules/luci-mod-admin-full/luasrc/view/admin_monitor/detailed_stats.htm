@@ -199,8 +199,8 @@ function getBaseLog(x, y) {
                             rec_pow = rec_pow.toFixed(2);
                             document.getElementById("recpow").innerHTML = rec_pow;
 							document.getElementById("rem_mac").innerHTML = assoclist[j].bssid;
-							document.getElementById("loc_gps").innerHTML = assoclist[j].local_lat != "" ? ( assoclist[j].local_lat + "&deg" + assoclist[j].local_long + "'") : 0;
-							document.getElementById("rem_gps").innerHTML = assoclist[j].local_lat != "" ? ( assoclist[j].remote_lat + "&deg" + assoclist[j].remote_long + "'") : 0;
+							document.getElementById("loc_gps").innerHTML = assoclist[j].local_lat != "" ? ( assoclist[j].local_lat + " N " + assoclist[j].local_long + " E") : 0;
+							document.getElementById("rem_gps").innerHTML = assoclist[j].local_lat != "" ? ( assoclist[j].remote_lat + " N " + assoclist[j].remote_long + " E") : 0;
 							document.getElementById("loc_a1").innerHTML = assoclist[j].local_snr_a1 > 128 ? 0 : assoclist[j].local_snr_a1;
 							document.getElementById("rem_a1").innerHTML = assoclist[j].remote_snr_a1 > 128 ? 0 : assoclist[j].remote_snr_a1;
 							document.getElementById("loc_a2").innerHTML = assoclist[j].local_snr_a2 > 128 ? 0 : assoclist[j].local_snr_a2;

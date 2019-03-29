@@ -32,6 +32,7 @@ function index()
     entry({"admin", "no_of_links"}, call("action_links"), nil).leaf = true
     entry({"admin", "sumode"}, call("action_sumode"), nil).leaf = true
     entry({"admin", "stats"}, call("action_stats"), nil).leaf = true
+    entry({"admin", "gps"}, call("action_gps"), nil).leaf = true
 	entry({"admin", "apply"}, call("action_apply"), _("Apply"), 88)
 	entry({"admin", "apply", "reload"}, call("action_reload"), nil).leaf = true
 	entry({"admin", "reboot"}, call("action_reboot"), _("Reboot"), 89)
@@ -79,6 +80,15 @@ function action_sumode()
     local res = luci.sys.exec("iwpriv ath1 get_mode | sed 's/ath1      get_mode://'")
     mode1 = string.gsub(res, "\n", "")
     data = mode1
+	luci.http.prepare_content("application/json")
+	luci.http.write_json(data)
+end
+
+function action_gps()
+	local data = {}
+    local lat = luci.util.exec("uci get system.gps.latitude")
+    local lon = luci.util.exec("uci get system.gps.longitude")
+    data = lat.."="..lon
 	luci.http.prepare_content("application/json")
 	luci.http.write_json(data)
 end

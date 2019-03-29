@@ -924,6 +924,9 @@ void cfg_set( char *type, char *value )
         case UCI_ID_APP_PASSWORD:
             sprintf(cmd,"uci set system.@system[0].apppass=%s",value);
             break;
+        case UCI_ID_GPS_COUNTER:
+            sprintf(cmd,"uci set system.gps.counter='%s'",value);
+            break;
         default:
             break;
     }
