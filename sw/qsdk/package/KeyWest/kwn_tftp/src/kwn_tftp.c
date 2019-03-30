@@ -382,7 +382,7 @@ void kwn_config_upgrade( )
         }
         system("uci set uhttpd.main.pwdmodified='1'");
         fclose( fin );
-        system("uci commit");
+        system("uci commit tftp");
         system("reload_config");
 
         /*TO DO: sleep*/
@@ -395,7 +395,7 @@ void kwn_config_upgrade( )
         memset( cmd, '\0', sizeof( cmd ) );
         sprintf( cmd,"rm %s", KWN_NEW_CONFIG_FILE );
         system( cmd );
-        system("uci commit");
+        system("uci commit tftp");
         return;
     }
     memset( cmd, '\0', sizeof( cmd ) );
@@ -597,7 +597,7 @@ void kwn_http_config_upgrade()
         }
         system("uci set uhttpd.main.pwdmodified='1'");
         fclose( fin );
-        system("uci commit");
+        system("uci commit tftp");
         system("reload_config");
 
         //TO DO: sleep
@@ -825,6 +825,6 @@ int main()
     sprintf( cmd," uci set tftp.http.optype='0'");
     system( cmd );
 
-    system("uci commit");
+    system("uci commit tftp");
     return 0;
 }
