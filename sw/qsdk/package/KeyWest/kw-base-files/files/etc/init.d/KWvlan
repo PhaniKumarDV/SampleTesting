@@ -31,13 +31,6 @@ start_service() {
         mgmtvlan=0
         accvlan=0
         tagmgmt=0
-    else
-# VLAN Enable: Mgmt vlan > 1 then enable tagged management
-        if [ $mgmtvlan -ge "2" ]; then
-            tagmgmt=1
-        else
-            tagmgmt=0
-        fi
     fi
     if [ $mode -eq "4" ]; then
         svlanethertype="0xa888"
