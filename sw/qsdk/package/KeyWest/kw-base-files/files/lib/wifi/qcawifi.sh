@@ -490,6 +490,7 @@ _disable_qcawifi() {
         wifi1)
             iwpriv ath1 kwnsoftreset 0
             iwpriv ath1 kwndiscall 1
+            kill -9  `ps | grep kwn_ipaddr.sh | awk '{print $1}'` 
             kill -9  `ps | grep scan_timeout.sh | awk '{print $1}'` 
             kill -9  `ps | grep wifi_timeout.sh | awk '{print $1}'` 
             kill -9  `ps | grep link_timeout.sh | awk '{print $1}'` 
@@ -2174,6 +2175,7 @@ enable_qcawifi() {
                wifi0)
                    ;;
                wifi1)
+                   sh /usr/sbin/kwn_ipaddr.sh
                    sh /usr/sbin/ethmtu.sh		
                    if [ "$radiomode" == "sta" ]
                    then

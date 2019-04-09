@@ -194,6 +194,6 @@ CONFIG_PACKAGE_kw-socketevent=y
 CONFIG_PACKAGE_wrt-radauth=y
 CONFIG_PACKAGE_kw-tftp=y
 CONFIG_PACKAGE_kw-ping=y
-CONFIG_PACKAGE_kw-ipaddr=y
+# CONFIG_PACKAGE_kw-ipaddr is not set
 CONFIG_PACKAGE_kw-netlinkevents=y
 CONFIG_LOCALMIRROR="http://172.18.18.68/pkgs"
