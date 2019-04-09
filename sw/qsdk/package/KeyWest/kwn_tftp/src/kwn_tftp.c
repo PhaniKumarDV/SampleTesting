@@ -353,6 +353,7 @@ void kwn_config_upgrade( )
     char buff_up[KWN_TFTP_BUF_LEN];
     char cmdimp[KWN_TFTP_BUF_LEN];
     char cmd[KWN_TFTP_CMD_LEN];
+    char trap_cmd[100];
 
     memset(buff_up, '\0', sizeof(buff_up));
     memset(cmdimp, '\0', sizeof(cmdimp));
@@ -391,6 +392,8 @@ void kwn_config_upgrade( )
         sprintf( cmd," uci set tftp.tftp.opstatus='%d'", KWN_UPLOAD_SUCCESS );
         system( cmd );
 
+        sprintf( trap_cmd, "/usr/sbin/snmptrap.sh 8 %s 2 > /dev/null 2>&1",data.filename);
+        system( trap_cmd );
         printf("\nUpload from remote to embedded device");
         memset( cmd, '\0', sizeof( cmd ) );
         sprintf( cmd,"rm %s", KWN_NEW_CONFIG_FILE );
@@ -445,7 +448,9 @@ void kwn_image_upgrade( )
     }
 
     if( image_success ){
+        system("/usr/sbin/snmptrap.sh 9 2 > /dev/null 2>&1");
         system("/usr/sbin/sify_reboot_log.sh 11");
+        sleep(2);
         memset( cmd, '\0', sizeof( cmd ) );
         if( data.keep_set == 1 ){
             sprintf( cmd, "sysupgrade -c %s", KWN_NEW_IMAGE_FILE );
@@ -574,11 +579,11 @@ void kwn_config_retrieve( )
 
 void kwn_http_config_upgrade()
 {
-    printf("\n %s : %d\n",__func__,__LINE__);
     FILE *fin = NULL;
     char buff_up[KWN_TFTP_BUF_LEN];
     char cmdimp[KWN_TFTP_BUF_LEN];
     char cmd[KWN_TFTP_CMD_LEN];
+    char trap_cmd[100];
 
     if( access( KWN_HTTP_NEW_CONFIG_FILE, 0 ) == 0 ) {
     
@@ -606,6 +611,8 @@ void kwn_http_config_upgrade()
         sprintf( cmd," uci set tftp.tftp.opstatus='%d'", KWN_UPLOAD_SUCCESS );
         system( cmd );
 
+        sprintf( trap_cmd, "/usr/sbin/snmptrap.sh 8 %s 1 > /dev/null 2>&1",data.filename);
+        system( trap_cmd );
         printf("\nUpload from remote to embedded device");
         memset( cmd, '\0', sizeof( cmd ) );
         sprintf( cmd,"rm %s", KWN_HTTP_NEW_CONFIG_FILE );

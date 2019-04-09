@@ -5744,8 +5744,8 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +}
 diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.h
 --- net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h	1970-01-01 05:30:00.000000000 +0530
-+++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.h	2019-03-29 14:36:25.293988427 +0530
-@@ -0,0 +1,554 @@
++++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.h	2019-04-09 17:55:22.212782470 +0530
+@@ -0,0 +1,556 @@
 +/****************************************************************************
 +*                                                                           *
 +*  File Name:           kwnmib.h                                      *
@@ -6235,7 +6235,9 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h net-snmp-5.4.4-mod/agent/mi
 +    KWN_DYINGGASP_BSU_TRAP = 4,
 +    KWN_SU_SERVICE = 5,
 +    KWN_DEVICE_COMMIT = 6,
-+    KWN_DEVICE_INIT = 7
++    KWN_DEVICE_INIT = 7,
++    KWN_CONFIG_FILE_APPLIED = 8,
++    KWN_FIRMWARE_FILE_DOWNLOAD = 9
 +};
 +
 +/* Structure Definitions */
@@ -6326,8 +6328,8 @@ diff -urN net-snmp-5.4.4-org/include/net-snmp/net-snmp-config.h.in net-snmp-5.4.
  
 diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWEST-MIB.mib
 --- net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib	1970-01-01 05:30:00.000000000 +0530
-+++ net-snmp-5.4.4-mod/mibs/KEYWEST-MIB.mib	2019-03-29 14:33:11.773680427 +0530
-@@ -0,0 +1,3224 @@
++++ net-snmp-5.4.4-mod/mibs/KEYWEST-MIB.mib	2019-04-09 17:54:29.221415109 +0530
+@@ -0,0 +1,3236 @@
 +------------------------------------------------------------------------
 +------------------------------------------------------------------------
 +--
@@ -9550,5 +9552,17 @@ diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWES
 +        STATUS       current
 +        DESCRIPTION  "This trap is generated when device is initialized successfully."
 +::= { traps 7 }
++
++ConfigurationFileAppliedTrap  NOTIFICATION-TYPE
++        OBJECTS { genericTrap }
++        STATUS       current
++        DESCRIPTION  "This trap is generated when configuration file applied successfully."
++::= { traps 8 }
++
++FirmwareFileDownloadedTrap  NOTIFICATION-TYPE
++        OBJECTS { genericTrap }
++        STATUS       current
++        DESCRIPTION  "This trap is generated when firmware file downloaded successfully."
++::= { traps 9 }
 +
 +END

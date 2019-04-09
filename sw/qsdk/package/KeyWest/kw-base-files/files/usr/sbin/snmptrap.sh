@@ -62,3 +62,25 @@ if [ "$1" -eq 7 ]; then
 	trap_send
     exit
 fi
+
+if [ "$1" -eq 8 ]; then
+    if [ "$3" -eq 1 ]; then
+       trapmsg="$date: Configuration File applied successfully through HTTP"
+    else
+       trapmsg="$date: Configuration File $2 applied successfully through TFTP"
+    fi
+    trapoid="1.3.6.1.4.1.52619.1.3.4.8"
+	trap_send
+    exit
+fi
+
+if [ "$1" -eq 9 ]; then
+    if [ "$2" -eq 1 ]; then
+       trapmsg="$date: Firmware File downloaded successfully through HTTP. Started upgrading Firmware."
+    else
+       trapmsg="$date: Firmware File downloaded successfully through TFTP. Started upgrading Firmware."
+    fi
+    trapoid="1.3.6.1.4.1.52619.1.3.4.9"
+	trap_send
+    exit
+fi

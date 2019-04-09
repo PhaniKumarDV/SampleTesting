@@ -318,6 +318,7 @@ function action_flashops()
 		local step = tonumber(luci.http.formvalue("step") or 1)
 		if step == 1 then
 			if image_supported() then
+                luci.util.exec("/usr/sbin/snmptrap.sh 9 1 > /dev/null 2>&1")
 				luci.template.render("admin_system/upgrade", {
 					checksum = image_checksum(),
 					storage  = storage_size(),
