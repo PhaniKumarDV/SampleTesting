@@ -107,6 +107,8 @@ void *LedWorkerThread(void *ptr)
 
     int onuSleep = 1000, offuSleep = 1000 ;
     char *LedPath = NULL;
+    char *Led1Path = NULL;
+    char *Led2Path = NULL;
     int mcs;
 
     while(isRunning) {
@@ -117,46 +119,64 @@ void *LedWorkerThread(void *ptr)
             switch(mcs) {
                 case 0: // LED 2, Slow blink
                     LedPath = LED2_PATH;
+                    Led1Path = LED3_PATH;
+                    Led2Path = LED4_PATH;
                     onuSleep = SLOW_BLINK_ON_USLEEP;
                     offuSleep = SLOW_BLINK_OFF_USLEEP;
                     break;
                 case 1: // LED 2, Fast blink
                     LedPath = LED2_PATH;
+                    Led1Path = LED3_PATH;
+                    Led2Path = LED4_PATH;
                     onuSleep = FAST_BLINK_ON_USLEEP; 
                     offuSleep = FAST_BLINK_OFF_USLEEP; 
                     break;
                 case 2: // LED 2, Solid
                     LedPath = LED2_PATH;
+                    Led1Path = LED3_PATH;
+                    Led2Path = LED4_PATH;
                     onuSleep = SOLID_ON_USLEEP;
                     offuSleep = SOLID_OFF_USLEEP;
                     break;
                 case 3: // LED 3, Slow blink
                     LedPath = LED3_PATH;
+                    Led1Path = LED2_PATH;
+                    Led2Path = LED4_PATH;
                     onuSleep = SLOW_BLINK_ON_USLEEP;
                     offuSleep = SLOW_BLINK_OFF_USLEEP;
                     break;
                 case 4: // LED 3, Fast blink
                     LedPath = LED3_PATH;
+                    Led1Path = LED2_PATH;
+                    Led2Path = LED4_PATH;
                     onuSleep = FAST_BLINK_ON_USLEEP; 
                     offuSleep = FAST_BLINK_OFF_USLEEP; 
                     break;
                 case 5: // LED 3, Solid
                     LedPath = LED3_PATH;
+                    Led1Path = LED2_PATH;
+                    Led2Path = LED4_PATH;
                     onuSleep = SOLID_ON_USLEEP;
                     offuSleep = SOLID_OFF_USLEEP;
                     break;
                 case 6: // LED 4, Slow blink
                     LedPath = LED4_PATH;
+                    Led1Path = LED2_PATH;
+                    Led2Path = LED3_PATH;
                     onuSleep = SLOW_BLINK_ON_USLEEP;
                     offuSleep = SLOW_BLINK_OFF_USLEEP;
                     break;
                 case 7: // LED 4, Fast blink
                     LedPath = LED4_PATH;
+                    Led1Path = LED2_PATH;
+                    Led2Path = LED3_PATH;
                     onuSleep = FAST_BLINK_ON_USLEEP; 
                     offuSleep = FAST_BLINK_OFF_USLEEP; 
                     break;
                 case 8: // LED 4, Solid
                     LedPath = LED4_PATH;
+                    Led1Path = LED2_PATH;
+                    Led2Path = LED3_PATH;
                     onuSleep = SOLID_ON_USLEEP;
                     offuSleep = SOLID_OFF_USLEEP;
                     break;
@@ -164,6 +184,8 @@ void *LedWorkerThread(void *ptr)
                     break;
             }
             if(mcs != 9) {
+                SetLED(Led1Path, 0);
+                SetLED(Led2Path, 0);
                 SetLED(LedPath, 1);
                 usleep(onuSleep);
                 // Turn Off LED if not solid, onuSleep != 0
