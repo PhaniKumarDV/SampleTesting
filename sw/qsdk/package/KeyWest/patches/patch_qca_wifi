@@ -3810,7 +3810,7 @@ diff -urN qca-wifi-org/os/linux/tools/athstats.c qca-wifi-mod/os/linux/tools/ath
      fprintf(fd,"ast_tx_xretries     :\t%u\n",tx->tx_xretry);
 diff -urN qca-wifi-org/qca_ol/osif_ol.c qca-wifi-mod/qca_ol/osif_ol.c
 --- qca-wifi-org/qca_ol/osif_ol.c	2018-06-08 11:00:50.000000000 +0530
-+++ qca-wifi-mod/qca_ol/osif_ol.c	2019-03-23 17:33:44.012144268 +0530
++++ qca-wifi-mod/qca_ol/osif_ol.c	2019-04-10 18:13:12.042563964 +0530
 @@ -73,6 +73,9 @@
  #include <osif_nss_wifiol_vdev_if.h>
  #endif
@@ -4126,7 +4126,7 @@ diff -urN qca-wifi-org/qca_ol/osif_ol.c qca-wifi-mod/qca_ol/osif_ol.c
  #if HOST_SW_LRO_ENABLE
      if ((dev->features & NETIF_F_LRO) || osdev->os_if->lro_to_flush) {
          ath_lro_flush_all(dev);         /* flush all LRO pkts */
-@@ -830,14 +1092,117 @@
+@@ -830,14 +1092,118 @@
      struct ol_ath_softc_net80211 *pscn = NULL;
  #endif
      struct ieee80211_stats *iv_stats;
@@ -4206,7 +4206,7 @@ diff -urN qca-wifi-org/qca_ol/osif_ol.c qca-wifi-mod/qca_ol/osif_ol.c
 +        if ( ni ) {
 +            bw_limit = 0;
 +            /* Update the bw_limit per-node basis */
-+            if( vap->kwn_traffic_shaping ) {
++            if( ni->kwn_traffic_shaping ) {
 +                bw_limit = ni->kwn_dl_limit;
 +            }
 +
@@ -4220,10 +4220,11 @@ diff -urN qca-wifi-org/qca_ol/osif_ol.c qca-wifi-mod/qca_ol/osif_ol.c
 +                if ( (jiffies - ni->kwn_tx_tput_last_jiffies) >= 1000 )
 +                {
 +                    ni->tx_tput_mbps = ni->tx_offer_pkt_cnt > 0 ? 
-+                        ( (ni->tx_offer_pkt_bytes_cnt * 8)) : 0;
++                        ( ( ( ni->tx_offer_pkt_bytes_cnt - ni->tx_byte_drop_cnt ) * 8)) : 0;
 +                    ni->kwn_tx_tput_last_jiffies = jiffies;
 +                    ni->tx_offer_pkt_cnt = 0;
 +                    ni->tx_offer_pkt_bytes_cnt = 0;
++			        ni->tx_byte_drop_cnt = 0;
 +                    //printk(": TX Tput: %llu\n",ni->tx_tput_mbps);
 +                }
 +                else {
@@ -4244,7 +4245,7 @@ diff -urN qca-wifi-org/qca_ol/osif_ol.c qca-wifi-mod/qca_ol/osif_ol.c
      qdf_nbuf_count_inc(skb);
      if (qdf_unlikely((dev->flags & (IFF_RUNNING|IFF_UP)) != (IFF_RUNNING|IFF_UP))) {
  	    goto bad1;
-@@ -968,9 +1333,175 @@
+@@ -968,9 +1334,175 @@
      }
  #endif
  
@@ -7681,7 +7682,7 @@ diff -urN qca-wifi-org/umac/include/ieee80211_mlme.h qca-wifi-mod/umac/include/i
                             u_int32_t                            beacon_frame_length,
 diff -urN qca-wifi-org/umac/include/ieee80211_node.h qca-wifi-mod/umac/include/ieee80211_node.h
 --- qca-wifi-org/umac/include/ieee80211_node.h	2018-06-08 11:00:49.000000000 +0530
-+++ qca-wifi-mod/umac/include/ieee80211_node.h	2019-03-23 17:36:44.867308119 +0530
++++ qca-wifi-mod/umac/include/ieee80211_node.h	2019-04-10 18:13:02.326679137 +0530
 @@ -142,6 +142,67 @@
      u_int64_t  ni_last_ack_jiffies;
  } ni_ctrl_stats_t;
@@ -7750,7 +7751,7 @@ diff -urN qca-wifi-org/umac/include/ieee80211_node.h qca-wifi-mod/umac/include/i
  /*
   * Node information. A node could represents a BSS in infrastructure network,
   * or an ad-hoc station in IBSS mode, or an associated station in HOSTAP mode.
-@@ -585,6 +646,62 @@
+@@ -585,6 +646,63 @@
      bool        is_ft_reassoc;
      ni_mgmt_stats_t ni_mgmt_stats;
      ni_ctrl_stats_t ni_ctrl_stats;
@@ -7810,6 +7811,7 @@ diff -urN qca-wifi-org/umac/include/ieee80211_node.h qca-wifi-mod/umac/include/i
 +    u_int32_t   kwn_remote_rx_data;
 +    u_int8_t    kwn_remote_shaping;
 +    u_int8_t    kwn_txbasetup;
++    u_int8_t    kwn_traffic_shaping;
  } IEEE80211_NODE, *PIEEE80211_NODE;
  
  
@@ -8237,7 +8239,7 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt_bss.c qca-wifi-mod/umac/mlme/iee
          goto exit;
 diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee80211_mgmt.c
 --- qca-wifi-org/umac/mlme/ieee80211_mgmt.c	2018-06-08 11:00:48.000000000 +0530
-+++ qca-wifi-mod/umac/mlme/ieee80211_mgmt.c	2019-03-26 20:13:37.917230192 +0530
++++ qca-wifi-mod/umac/mlme/ieee80211_mgmt.c	2019-04-10 18:12:57.362737980 +0530
 @@ -22,10 +22,21 @@
  #include "ieee80211_wifipos_pvt.h"
  #endif
@@ -8874,7 +8876,7 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee802
                                               wh,
                                               wbuf_get_pktlen(wbuf),
                                               subtype,
-@@ -3825,13 +4338,277 @@
+@@ -3825,13 +4338,280 @@
  
                      ieee80211_parse_opmode(ni, (u_int8_t *)&ia_opmode->at_op_mode, subtype);
                  }
@@ -8931,17 +8933,19 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee802
 +			if ( vap->iv_opmode == IEEE80211_M_HOSTAP ) {
 +                ni->kwn_remote_shaping = frame_lmt->at_uldl_limit.kwn_shaping;
 +                if( vap->kwn_traffic_shaping == 1 && ni->kwn_remote_shaping == 1 ) {
++                    ni->kwn_traffic_shaping = 1;
 +                    ni->kwn_ul_limit = frame_lmt->at_uldl_limit.ul_limit > vap->kwn_ul_limit ? 
 +                        vap->kwn_ul_limit : frame_lmt->at_uldl_limit.ul_limit;
 +                    ni->kwn_dl_limit = frame_lmt->at_uldl_limit.dl_limit > vap->kwn_dl_limit ? 
 +                        vap->kwn_dl_limit : frame_lmt->at_uldl_limit.dl_limit;
 +                }
 +                else if( vap->kwn_traffic_shaping == 1 ) {
++                    ni->kwn_traffic_shaping = 1;
 +                    ni->kwn_ul_limit = vap->kwn_ul_limit;
 +                    ni->kwn_dl_limit = vap->kwn_dl_limit;
 +                }
 +                else if( ni->kwn_remote_shaping == 1 ) {
-+                    vap->kwn_traffic_shaping = 1;
++                    ni->kwn_traffic_shaping = 1;
 +                    ni->kwn_ul_limit = frame_lmt->at_uldl_limit.ul_limit;
 +                    ni->kwn_dl_limit = frame_lmt->at_uldl_limit.dl_limit;
 +                }
@@ -8956,6 +8960,7 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee802
 +                }
 +			}
 +			else {
++                ni->kwn_traffic_shaping = vap->kwn_traffic_shaping;
 +                ni->kwn_remote_shaping = frame_lmt->at_uldl_limit.kwn_shaping;
 +				ni->kwn_ul_limit = frame_lmt->at_uldl_limit.ul_limit;
 +				ni->kwn_dl_limit = frame_lmt->at_uldl_limit.dl_limit;
@@ -8978,7 +8983,7 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee802
 +			ni->kwn_antenna_gain = frame_lmt->at_uldl_limit.antenna_gain;
 +            ni->kwn_macinmac = frame_lmt->at_uldl_limit.kwn_macinmac;
 +			printk("After negotiation[%s], Traffic Shaping: %d Uplink Limit: %d Downlink Limit: %d \n",
-+                ip, vap->kwn_traffic_shaping, vap->kwn_final_ul_limit, vap->kwn_final_dl_limit );
++                ip, ni->kwn_traffic_shaping, vap->kwn_final_ul_limit, vap->kwn_final_dl_limit );
 +		}
 +		break;
 +	    case IEEE80211_ACTION_NODE_STATS: 
@@ -9157,7 +9162,7 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee802
          break;
      }
  
-@@ -4002,6 +4779,10 @@
+@@ -4002,6 +4782,10 @@
      switch (subtype) {
      case IEEE80211_FC0_SUBTYPE_PROBE_RESP:
      case IEEE80211_FC0_SUBTYPE_BEACON:
@@ -9168,7 +9173,7 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee802
          ieee80211_recv_beacon(ni, wbuf, subtype, rs);
          /*store all received beacon info*/
          if(vap->iv_beacon_info_count>=100)
-@@ -4092,6 +4873,9 @@
+@@ -4092,6 +4876,9 @@
          break;
  
      case IEEE80211_FC0_SUBTYPE_AUTH:
@@ -9178,7 +9183,7 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee802
  #if ATH_NON_BEACON_AP
          if(IEEE80211_VAP_IS_NON_BEACON_ENABLED(vap)){
              /*Don't response to auth for non-beaconing AP VAP*/
-@@ -4107,10 +4891,34 @@
+@@ -4107,10 +4894,34 @@
      case IEEE80211_FC0_SUBTYPE_ASSOC_RESP:
      case IEEE80211_FC0_SUBTYPE_REASSOC_RESP:
          ieee80211_recv_asresp(ni, wbuf, subtype);
@@ -9214,7 +9219,7 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee802
  #if ATH_NON_BEACON_AP
          if(IEEE80211_VAP_IS_NON_BEACON_ENABLED(vap)){
              /*Don't response to auth for non-beaconing AP VAP*/
-@@ -4158,13 +4966,40 @@
+@@ -4158,13 +4969,40 @@
  #endif
          if (ieee80211_recv_asreq(ni, wbuf, subtype) == -EBUSY)
              forward_to_filter = 0;
