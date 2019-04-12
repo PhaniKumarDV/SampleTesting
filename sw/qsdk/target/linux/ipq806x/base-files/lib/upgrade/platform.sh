@@ -218,7 +218,6 @@ flash_section() {
 	case "${sec}" in
 		hlos*) switch_layout linux; do_flash_failsafe_partition ${sec} "0:HLOS";;
 		rootfs*) switch_layout linux; do_flash_failsafe_partition ${sec} "rootfs";;
-		*) echo "Section ${sec} ignored"; return 1;;
 		fs*) switch_layout linux; do_flash_failsafe_partition ${sec} "rootfs";;
 		ubi*) switch_layout linux; do_flash_ubi ${sec} "rootfs";;
 		sbl1*) switch_layout boot; do_flash_partition ${sec} "0:SBL1";;
@@ -232,6 +231,7 @@ flash_section() {
 		ssd*) switch_layout boot; do_flash_partition ${sec} "0:SSD";;
 		tz*) switch_layout boot; do_flash_tz ${sec};;
 		rpm*) switch_layout boot; do_flash_failsafe_partition ${sec} "0:RPM";;
+		*) echo "Section ${sec} ignored"; return 1;;
 	esac
 
 	echo "Flashed ${sec}"
