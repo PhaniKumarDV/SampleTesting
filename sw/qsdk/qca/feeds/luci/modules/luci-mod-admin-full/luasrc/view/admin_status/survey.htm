@@ -82,8 +82,10 @@ function get_values( data )
     }
     objects.sort(function(a, b){return b.signal - a.signal});
     var length = values.length - 1;
-    if( length > 3 ) {
-        length = 3;
+    if( loginuser == "installer" ) {
+        if( length > 3 ) {
+            length = 3;
+        }
     }
     for( j=0; j<length; j++ )
     {

@@ -3,6 +3,10 @@
  Copyright 2008 Jo-Philipp Wich <jow@openwrt.org>
  Licensed to the public under the Apache License 2.0.
 -%>
+<%-
+
+    local loginuser = luci.dispatcher.context.authuser
+-%>
 <%+header%>
 <style>
 .cbi-join {
@@ -23,6 +27,7 @@
 }
 </style>
 <script type="text/javascript">
+var loginuser = <%=luci.http.write_json(loginuser)%>;
 	function join_network(ssid,enc)
 	{
 		location.href='<%=luci.dispatcher.build_url("admin/monitor/tools")%>/joinnetwork' + '/' + ssid + '/' + enc;
@@ -77,8 +82,10 @@ function get_values( data )
     }
     objects.sort(function(a, b){return b.signal - a.signal});
     var length = values.length - 1;
-    if( length > 3 ) {
-        length = 3;
+    if( loginuser == "installer" ) {
+        if( length > 3 ) {
+            length = 3;
+        }
     }
     for( j=0; j<length; j++ )
     {
