@@ -2157,6 +2157,24 @@ diff -urN qca-wifi-org/offload/wlan/txrx/ol_rx.c qca-wifi-mod/offload/wlan/txrx/
      vdev->osif_rx(vdev->osif_vdev, deliver_list_head);
  #if OL_ATH_SUPPORT_LED
      {
+diff -urN qca-wifi-org/offload/wlan/txrx/ol_tx.c qca-wifi-mod/offload/wlan/txrx/ol_tx.c
+--- qca-wifi-org/offload/wlan/txrx/ol_tx.c	2018-06-08 11:00:45.000000000 +0530
++++ qca-wifi-mod/offload/wlan/txrx/ol_tx.c	2019-04-12 18:53:15.693391577 +0530
+@@ -1768,6 +1768,14 @@
+         htt_ffcache_update_extvalid(hdr_cache, 0);
+     }
+ #endif
++    tid = wbuf_get_priority(netbuf);
++    if( tid > 8 ) {
++      /* BE: 0, BK: 1, VI: 4, VO: 6 */
++      tid = 6;
++    }
++    else {
++      tid = 0;
++    }
+     htt_ffcache_update_tid(hdr_cache, tid);
+ 
+     data = skb_push(netbuf, vdev->htc_htt_hdr_size);//qdf_nbuf_push_head(netbuf, vdev->htc_htt_hdr_size);
 diff -urN qca-wifi-org/offload/wlan/txrx/ol_tx_send.c qca-wifi-mod/offload/wlan/txrx/ol_tx_send.c
 --- qca-wifi-org/offload/wlan/txrx/ol_tx_send.c	2018-06-08 11:00:45.000000000 +0530
 +++ qca-wifi-mod/offload/wlan/txrx/ol_tx_send.c	2019-02-04 10:43:22.560630518 +0530
@@ -3810,7 +3828,7 @@ diff -urN qca-wifi-org/os/linux/tools/athstats.c qca-wifi-mod/os/linux/tools/ath
      fprintf(fd,"ast_tx_xretries     :\t%u\n",tx->tx_xretry);
 diff -urN qca-wifi-org/qca_ol/osif_ol.c qca-wifi-mod/qca_ol/osif_ol.c
 --- qca-wifi-org/qca_ol/osif_ol.c	2018-06-08 11:00:50.000000000 +0530
-+++ qca-wifi-mod/qca_ol/osif_ol.c	2019-04-10 18:13:12.042563964 +0530
++++ qca-wifi-mod/qca_ol/osif_ol.c	2019-04-12 18:53:28.993197891 +0530
 @@ -73,6 +73,9 @@
  #include <osif_nss_wifiol_vdev_if.h>
  #endif
@@ -3889,8 +3907,8 @@ diff -urN qca-wifi-org/qca_ol/osif_ol.c qca-wifi-mod/qca_ol/osif_ol.c
 +        //printk(": KWN: Softreset is in progress...drop rx data packet.\n");
 +        dev_kfree_skb_any ( skb );
 +        continue;
-     }
- 
++    }
++
 +    /* inc Tx packets/bytes offered by kernel to us */
 +    iv_stats->rx_offer_pkt_cnt++;
 +    iv_stats->rx_offer_pkt_bytes_cnt += skb->len;
@@ -4110,8 +4128,8 @@ diff -urN qca-wifi-org/qca_ol/osif_ol.c qca-wifi-mod/qca_ol/osif_ol.c
 +        }
 +        dev_kfree_skb_any ( skb );
 +        continue;
-+    }
-+
+     }
+ 
 +    /* Initial test packets sent to make sure that data transmission is properly set or not */
 +    if ( skb->len > 20 && 
 +            (memcmp(&skb->data[sizeof(struct ether_header)], kwn_tput_test_dsap_ul, sizeof(kwn_tput_test_dsap_ul)) == 0)) {
@@ -4245,7 +4263,7 @@ diff -urN qca-wifi-org/qca_ol/osif_ol.c qca-wifi-mod/qca_ol/osif_ol.c
      qdf_nbuf_count_inc(skb);
      if (qdf_unlikely((dev->flags & (IFF_RUNNING|IFF_UP)) != (IFF_RUNNING|IFF_UP))) {
  	    goto bad1;
-@@ -968,9 +1334,175 @@
+@@ -968,9 +1334,194 @@
      }
  #endif
  
@@ -4259,7 +4277,25 @@ diff -urN qca-wifi-org/qca_ol/osif_ol.c qca-wifi-mod/qca_ol/osif_ol.c
 +		    }
 +	    }
 +    }
-+
+ 
+-    osdev->iv_vap_send(osdev->iv_txrx_handle, skb);
++    /* BGP Prioritization */
++    {
++      uint8_t *p;
++      eh = (struct ether_header *)(skb->data);
++      p = (uint8_t*)(eh+1);
++      if( eh->ether_type == __constant_htons(ETHERTYPE_IP) ) {
++        struct iphdr *p_ip = (struct iphdr *)(p);
++        if (p_ip->protocol == IPPROTO_TCP) {
++          skb->priority = 9;
++        }
++      } else if( eh->ether_type == __constant_htons(ETHERTYPE_IPV6) ) {
++        struct ipv6hdr *p_ip6 = (struct ipv6hdr *)(p);
++        if (p_ip6->nexthdr == IPPROTO_TCP) {
++          skb->priority = 9;
++        }
++      } 
++    }
 +    /* KWN: AMSDU at Host */
 +    if ( vap->kwn_assem_frag == 1 ) {
 +        if ( skb->len < vap->kwn_max_pkt_size ) {
@@ -4333,6 +4369,7 @@ diff -urN qca-wifi-org/qca_ol/osif_ol.c qca-wifi-mod/qca_ol/osif_ol.c
 +                memcpy(&nskb->data[ offset ], &skb->data[ ooffset ], frag_len);
 +                skb_reset_mac_header( nskb );
 +                /* TX Pkt */
++                nskb->priority = skb->priority;
 +                osdev->iv_vap_send(osdev->iv_txrx_handle, nskb);
 +
 +                //printk(": Before: ooffset: %d FragLen: %d Nksb: %d\n",ooffset, frag_len, nskb->len);
@@ -4374,14 +4411,13 @@ diff -urN qca-wifi-org/qca_ol/osif_ol.c qca-wifi-mod/qca_ol/osif_ol.c
 +            pad = 0;
 +        }
  
--    osdev->iv_vap_send(osdev->iv_txrx_handle, skb);
 +        /* Create a packet */
 +        pkt_size = elen + flen + skb->len + pad;
 +        nskb = dev_alloc_skb ( pkt_size + eth_reserve );
 +        if ( nskb == NULL ) {
 +            goto bad;
 +        }
- 
++
 +        /* Fill the skb content */
 +        offset = 0;
 +        skb_reserve( nskb, eth_reserve );
@@ -4412,6 +4448,7 @@ diff -urN qca-wifi-org/qca_ol/osif_ol.c qca-wifi-mod/qca_ol/osif_ol.c
 +
 +        skb_reset_mac_header( nskb );
 +        /* TX Pkt */
++        nskb->priority = skb->priority;
 +        osdev->iv_vap_send(osdev->iv_txrx_handle, nskb);
 +        /* Drop the original packet */
 +        if (skb != NULL)
