@@ -33,6 +33,7 @@ function index()
     entry({"admin", "sumode"}, call("action_sumode"), nil).leaf = true
     entry({"admin", "stats"}, call("action_stats"), nil).leaf = true
     entry({"admin", "gps"}, call("action_gps"), nil).leaf = true
+    entry({"admin", "autorefresh"}, call("action_auto_refresh"), nil).leaf = true
 	entry({"admin", "apply"}, call("action_apply"), _("Apply"), 88)
 	entry({"admin", "apply", "reload"}, call("action_reload"), nil).leaf = true
 	entry({"admin", "reboot"}, call("action_reboot"), _("Reboot"), 89)
@@ -89,6 +90,15 @@ function action_gps()
     local lat = luci.util.exec("uci get system.gps.latitude")
     local lon = luci.util.exec("uci get system.gps.longitude")
     data = lat.."="..lon
+	luci.http.prepare_content("application/json")
+	luci.http.write_json(data)
+end
+
+function action_auto_refresh()
+	local data = {}
+    local cpu_use = luci.util.exec("/usr/sbin/cpu_usage.sh")
+    local mem_use = luci.util.exec("/usr/sbin/mem_usage.sh")
+    data = cpu_use.."="..mem_use
 	luci.http.prepare_content("application/json")
 	luci.http.write_json(data)
 end

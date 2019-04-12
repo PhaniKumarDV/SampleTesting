@@ -680,7 +680,7 @@ header .switch-btn .logout i {margin-left:10px; vertical-align: top; float:right
 .sidebar ul.nav li .dropdown-menu li a:after { font-size: 14px!important; top: 14px!important;}
 body { padding-top: 110px; background:#f0f1f3; font-family: 'SegoeUI';  padding-left: 0;  padding-right: 0; padding-bottom: 0; }
 .container {width:100%; max-width:1300px; }
-.sidebar { width: 250px; float: left; background: #fff;  box-shadow: 0px 5px 24px 0px rgba(0, 0, 0, 0.21);    position: fixed;    min-height: 823px;
+.sidebar { width: 250px; float: left; background: #fff;  box-shadow: 0px 5px 24px 0px rgba(0, 0, 0, 0.21);    position: fixed;    min-height: 842px;
     top: 110px;  right: inherit;   -webkit-box-shadow: 0px 5px 24px 0px rgba(0, 0, 0, 0.21);  -moz-box-shadow: 0px 5px 24px 0px rgba(0, 0, 0, 0.21); margin-right: 25px;}
 .main-page { width: 100%; float: left; margin: 0; padding: 0;}
 .page-content { width: calc(100% - 260px);  margin-left: 275px;
@@ -688,7 +688,7 @@ body { padding-top: 110px; background:#f0f1f3; font-family: 'SegoeUI';  padding-
     width: -moz-calc(100% - 260px); width: -ms-calc(100% - 260px);
     box-shadow: 0px 5px 24px 0px rgba(0, 0, 0, 0.21);  -webkit-box-shadow: 0px 5px 24px 0px rgba(0, 0, 0, 0.21);
     -moz-box-shadow: 0px 5px 24px 0px rgba(0, 0, 0, 0.21); padding: 15px;
-    box-sizing: border-box; border: 0;  margin-top: 0px; position: relative; background:#fff; min-height:823px}
+    box-sizing: border-box; border: 0;  margin-top: 0px; position: relative; background:#fff; min-height:842px}
 .sidebar .list-group a { padding: 20px 25px;  font-size: 17px;  font-weight: 400; background-color: transparent; border: 0; border-bottom: 1px solid rgba(153, 153, 153, 0.29); color: #111; }
 .sidebar .list-group a:hover {background-color:transparent;  color: #3c763d;}
 .sidebar .list-group a i {margin-right:10px;}

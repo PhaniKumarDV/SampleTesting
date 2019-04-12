@@ -47,7 +47,6 @@
 
     local currTemperature = uci:get_first("system", "system", "temperature")
     local cablen = luci.sys.exec("ssdk_sh port cdt run 5 0 | grep cable")
-   
 
 	local meminfo = sysinfo.memory or {
 		total = 0,
@@ -193,6 +192,7 @@ var gps_n = "<%=uciget('uci get system.gps.latitude')%>";
 var gps_e = "<%=uciget('uci get system.gps.longitude')%>";
 var modname = "<%=uciget('fw_printenv -n model')%>"
 var links1, links2;
+
 if( modname == "1" ) 
    modelname = "API-18-5G-AC2x2-W2";
 else if( modname == "3" )
@@ -462,6 +462,15 @@ function get_links()
             else {
                document.getElementById("gps").innerHTML = "-";
             }
+		}
+	}
+    );
+    
+    XHR.get('<%=luci.dispatcher.build_url("admin", "autorefresh")%>/' + id, null,
+	function(x, data) {
+		if (data) { 
+            var s = data.split("=");
+            document.getElementById("cpu_mem").innerHTML = "( " + s[0] + " / " + s[1] + " ) %";
 		}
 	}
     );
@@ -802,11 +811,12 @@ function get_log()
 		<tr><td width="47%"><%:GPS%></td><td id="gps"><script type="text/javascript">document.write(gps)</script></td></tr>
 		<tr><td width="47%"><%:Customer Name%></td><td><%=uciget('uci get wireless.wifi1.customername')%></td></tr>
 		<tr><td width="47%"><%:Country%></td><td><script type="text/javascript">document.write(country)</script></td></tr>
+		<tr><td width="47%"><%:CPU / Memory Usage%></td><td><span id="cpu_mem">-</span></td></tr>
 	</table>
 </fieldset>
 </td>
 <td rowspan="2" style="border-top:0px;">
-<fieldset class="cbi-section" style="width:470px;height:728px;padding:20px 20px;">
+<fieldset class="cbi-section" style="width:470px;height:752px;padding:20px 20px;">
 	<legend><%:Wireless%></legend>
 	<table width="100%" cellspacing="10">
        <tr><td></td><td style="color:#a5bc23"><b>5 GHz<b></td><td style="color:#a5bc23"><b>2.4 GHz<b></td></tr>
