@@ -6344,7 +6344,7 @@ diff -urN net-snmp-5.4.4-org/include/net-snmp/net-snmp-config.h.in net-snmp-5.4.
  
 diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWEST-MIB.mib
 --- net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib	1970-01-01 05:30:00.000000000 +0530
-+++ net-snmp-5.4.4-mod/mibs/KEYWEST-MIB.mib	2019-04-12 19:00:53.750832597 +0530
++++ net-snmp-5.4.4-mod/mibs/KEYWEST-MIB.mib	2019-04-15 13:14:52.225415955 +0530
 @@ -0,0 +1,3252 @@
 +------------------------------------------------------------------------
 +------------------------------------------------------------------------
@@ -9585,13 +9585,13 @@ diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWES
 +        DESCRIPTION  "This trap is generated when device is initialized successfully."
 +::= { traps 7 }
 +
-+ConfigurationFileAppliedTrap  NOTIFICATION-TYPE
++configurationFileAppliedTrap  NOTIFICATION-TYPE
 +        OBJECTS { genericTrap }
 +        STATUS       current
 +        DESCRIPTION  "This trap is generated when configuration file applied successfully."
 +::= { traps 8 }
 +
-+FirmwareFileDownloadedTrap  NOTIFICATION-TYPE
++firmwareFileDownloadedTrap  NOTIFICATION-TYPE
 +        OBJECTS { genericTrap }
 +        STATUS       current
 +        DESCRIPTION  "This trap is generated when firmware file downloaded successfully."
