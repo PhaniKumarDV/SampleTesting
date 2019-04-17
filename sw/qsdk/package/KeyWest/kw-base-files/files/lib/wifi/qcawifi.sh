@@ -1933,10 +1933,7 @@ enable_qcawifi() {
         config_get linktype "$device" linktype
         #pow=`expr $atpcpower + 3`
 
-        if [ $linktype == "3" ]
-        then
-            atpcstatus=2
-        fi
+        atpcstatus=2
 
         [ -n "$spatialstream" ] && iwpriv "$ifname" kwnstream "$spatialstream"
         if [ "$ddrsstatus" == "1" ]

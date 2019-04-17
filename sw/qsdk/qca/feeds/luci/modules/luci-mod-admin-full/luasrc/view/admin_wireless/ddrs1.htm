@@ -74,11 +74,8 @@ function updateparam()
     var linktype = "<%=uciget('uci get wireless.wifi1.linktype')%>";
     var anttype = "<%=uciget('uci get wireless.wifi1.antennatype')%>";
     var atpc = "<%=uciget('uci get wireless.wifi1.atpcstatus')%>";
-    if( linktype == 3 )
-    {
-        document.getElementById("atpcstatus").style.display = "none";
-        atpc = 2;
-    }
+    document.getElementById("atpcstatus").style.display = "none";
+    atpc = 2;
     if( atpc == 1 ) {
        document.getElementById("power").style.display = "none";
        document.getElementById("eirp").style.display = "block";
@@ -283,7 +280,7 @@ function getoptions( list, value )
               <input type="text" name="127" class="cbi-input-select" value="<%=uciget('uci get wireless.wifi1.ddrsrtxdec')%>" >&nbsp; (0-100) %
            </div>
          </div>
-          <div class="cbi-value" id="atpcstatus">
+          <div class="cbi-value" id="atpcstatus" style="display:none">
             <label class="cbi-value-title">ATPC Status</label>
             <div class="cbi-value-field">
               <select class="cbi-input-select" name="112">
