@@ -267,6 +267,25 @@ void kwn_conv_str_to_ip( char* conv_ip, unsigned char* byte )
     return;
 }
 
+int kwn_check_tftp_status()
+{
+    unsigned char  cmd[KWN_TFTP_CMD_LEN];
+    unsigned char  cmd_buf[50];
+    unsigned int opstatus;
+
+    memset(cmd, '\0', sizeof(cmd));
+    memset(cmd_buf, '\0', sizeof(cmd_buf));
+    sprintf(cmd,"uci get tftp.tftp.opstatus");
+    kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] );
+    opstatus = atoi(cmd_buf);
+
+    if( opstatus == KWN_UPLOAD_IN_PROGRESS || opstatus == KWN_DOWNLOAD_IN_PROGRESS ) {
+        printf("TFTP is already in progress\n");
+        return 1;
+    }
+    return 0;
+}
+
 void kwn_get_tftp_config( kwn_tftp_config *dev_cfg )
 {
     unsigned char  cmd[KWN_TFTP_CMD_LEN];
@@ -355,6 +374,10 @@ void kwn_config_upgrade( )
     char cmd[KWN_TFTP_CMD_LEN];
     char trap_cmd[100];
 
+    if( kwn_check_tftp_status() == 1 ) {
+        return;
+    }
+
     memset(buff_up, '\0', sizeof(buff_up));
     memset(cmdimp, '\0', sizeof(cmdimp));
 
@@ -383,7 +406,7 @@ void kwn_config_upgrade( )
         }
         system("uci set uhttpd.main.pwdmodified='1'");
         fclose( fin );
-        system("uci commit tftp");
+        system("uci commit");
         system("reload_config");
 
         /*TO DO: sleep*/
@@ -398,7 +421,6 @@ void kwn_config_upgrade( )
         memset( cmd, '\0', sizeof( cmd ) );
         sprintf( cmd,"rm %s", KWN_NEW_CONFIG_FILE );
         system( cmd );
-        system("uci commit tftp");
         return;
     }
     memset( cmd, '\0', sizeof( cmd ) );
@@ -411,13 +433,16 @@ void kwn_config_upgrade( )
 
 void kwn_image_upgrade( )
 {
-    printf("\n %s : %d\n",__func__,__LINE__);
     char cmd[KWN_TFTP_CMD_LEN];
     char cmd_buf[KWN_TFTP_CMD_LEN];
     char cmp[6]={'\0'};
     char *tok;
     int image_success = 1;
     
+    if( kwn_check_tftp_status() == 1 ) {
+        return;
+    }
+
     memset(cmd, '\0', sizeof(cmd));
     sprintf(cmd,"uci set tftp.tftp.opstatus='%d'",KWN_UPLOAD_IN_PROGRESS);
     system(cmd);
@@ -487,6 +512,9 @@ void kwn_config_retrieve( )
     char cmd_buf[KWN_TFTP_BUF_LEN];
     int i = 0;
 
+    if( kwn_check_tftp_status() == 1 ) {
+        return;
+    }
     memset(cmd, '\0', sizeof(cmd));
     sprintf(cmd,"uci set tftp.tftp.opstatus='%d'",KWN_DOWNLOAD_IN_PROGRESS);
     system(cmd);
@@ -570,7 +598,6 @@ void kwn_config_retrieve( )
     sprintf(cmd,"uci set tftp.tftp.opstatus='%d'",KWN_DOWNLOAD_SUCCESS);
     system(cmd);
 
-    system("uci commit");
     printf("\nRetrieve from embedded device\n");
 
     return;
@@ -584,6 +611,13 @@ void kwn_http_config_upgrade()
     char cmdimp[KWN_TFTP_BUF_LEN];
     char cmd[KWN_TFTP_CMD_LEN];
     char trap_cmd[100];
+
+    if( kwn_check_tftp_status() == 1 ) {
+        return;
+    }
+    memset( cmd, '\0', sizeof( cmd ) );
+    sprintf( cmd," uci set tftp.tftp.opstatus='%d'", KWN_UPLOAD_IN_PROGRESS );
+    system( cmd );
 
     if( access( KWN_HTTP_NEW_CONFIG_FILE, 0 ) == 0 ) {
     
@@ -602,7 +636,7 @@ void kwn_http_config_upgrade()
         }
         system("uci set uhttpd.main.pwdmodified='1'");
         fclose( fin );
-        system("uci commit tftp");
+        system("uci commit");
         system("reload_config");
 
         //TO DO: sleep
@@ -635,6 +669,9 @@ void kwn_http_config_retrieve()
     char cmd_buf[KWN_TFTP_BUF_LEN];
     int i = 0;
 
+    if( kwn_check_tftp_status() == 1 ) {
+        return;
+    }
     memset(cmd, '\0', sizeof(cmd));
     sprintf(cmd,"uci set tftp.tftp.opstatus='%d'",KWN_DOWNLOAD_IN_PROGRESS);
     system(cmd);

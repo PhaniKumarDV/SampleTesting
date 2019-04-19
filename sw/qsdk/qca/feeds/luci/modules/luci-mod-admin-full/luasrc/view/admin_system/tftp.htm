@@ -41,12 +41,15 @@ function upgrade_retrieve(optype)
     document.getElementById('optype').value=optype;
     if( optype == 1 ) {
         document.getElementById('apply').style.display="none";
-        if ( type_value == 1 )
+        if ( type_value == 1 ) {
             myVar = setInterval(inc,2000);
-        else
+            document.getElementById('msg').innerHTML="Please wait while applying the configuration ...";
+        }
+        else {
             myVar = setInterval(inc,24000);
+            document.getElementById('msg').innerHTML="Please wait while upgrading the firmware ...";
+        }
         document.getElementById('dotbar').style.display="block";
-        document.getElementById('msg').innerHTML="Please wait while applying the configuration ...";
     }
     else {
         document.getElementById('retrieve').style.display="none";

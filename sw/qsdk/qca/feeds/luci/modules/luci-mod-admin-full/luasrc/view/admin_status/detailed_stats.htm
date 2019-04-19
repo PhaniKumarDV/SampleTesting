@@ -118,12 +118,7 @@ function save_value( dur )
 			}
     		);
 	}
-	function starttool() {
-        var dur = document.getElementById("duration").value;
-        dur = dur * 1000;
-        save_value( dur );
-		document.getElementById("s1").innerHTML="<input type='button' class='cbi-button' value='<%:Stop Test%>' onclick='stoptool()' />";
-    		timer = setTimeout("enable()",dur);
+    function starttest() {
     		XHR.get('<%=luci.dispatcher.build_url("admin", "config")%>/starttool' + '/' + mac, null,
 			function(x, data) {
 				if (data) { 
@@ -131,6 +126,14 @@ function save_value( dur )
 				}
 			}
     		);
+    }
+	function starttool() {
+        var dur = document.getElementById("duration").value;
+        dur = dur * 1000;
+        save_value( dur );
+		document.getElementById("s1").innerHTML="<input type='button' class='cbi-button' value='<%:Stop Test%>' onclick='stoptool()' />";
+    		timer = setTimeout("enable()",dur);
+        setTimeout("starttest()",2000);
 	}
 	function disconnect() {
 		location.href='<%=luci.dispatcher.build_url("admin/config")%>/disconnect' + '/' + mac;
@@ -195,9 +198,9 @@ function getBaseLog(x, y) {
                             var rec_pow = tx + rx - path_loss;
                             rec_pow = rec_pow.toFixed(2);
                             document.getElementById("recpow").innerHTML = rec_pow;
-							document.getElementById("rem_mac").innerHTML = assoclist[j].bssid;
-							document.getElementById("loc_gps").innerHTML = assoclist[j].local_lat != "" ? ( assoclist[j].local_lat + "&deg" + assoclist[j].local_long + "'") : 0;
-							document.getElementById("rem_gps").innerHTML = assoclist[j].local_lat != "" ? ( assoclist[j].remote_lat + "&deg" + assoclist[j].remote_long + "'") : 0;
+							document.getElementById("rem_mac").innerHTML = assoclist[j].bssid.toLowerCase();;
+							document.getElementById("loc_gps").innerHTML = assoclist[j].local_lat != "" ? ( assoclist[j].local_lat + " N " + assoclist[j].local_long + " E") : "-";
+							document.getElementById("rem_gps").innerHTML = assoclist[j].local_lat != "" ? ( assoclist[j].remote_lat + " N " + assoclist[j].remote_long + " E") : "-";
 							document.getElementById("loc_a1").innerHTML = assoclist[j].local_snr_a1 > 128 ? 0 : assoclist[j].local_snr_a1;
 							document.getElementById("rem_a1").innerHTML = assoclist[j].remote_snr_a1 > 128 ? 0 : assoclist[j].remote_snr_a1;
 							document.getElementById("loc_a2").innerHTML = assoclist[j].local_snr_a2 > 128 ? 0 : assoclist[j].local_snr_a2;
