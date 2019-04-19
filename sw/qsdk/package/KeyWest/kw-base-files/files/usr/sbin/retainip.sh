@@ -21,3 +21,6 @@ else
     echo "$rlog" >> /etc/reboot_logs
     reboot
 fi
+sleep 5
+iwpriv ath1 kwnreboottime 0
+iwpriv ath1 kwnreboot 1

@@ -18,7 +18,7 @@ while [ 1 ] ; do
 	elif [ "$CMD" == "reboot" ]; then
 		echo "Device is rebooting...."
         /usr/sbin/sify_reboot_log.sh 2
-		reboot
+		sh /usr/sbin/kwnreboot.sh
 	elif [ "$CMD" == "reset" ]; then
 		echo "Device is resetting to factory defaults...."
         /usr/sbin/sify_reboot_log.sh 6

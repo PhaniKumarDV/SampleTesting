@@ -217,6 +217,8 @@ if [ $TEST -eq 1 ]; then
 	exit 0
 fi
 
+iwpriv ath1 kwnreboottime 450 
+iwpriv ath1 kwnreboot 1
 run_hooks "" $sysupgrade_pre_upgrade
 
 # Some platforms/devices may want different sysupgrade process, e.g. without
