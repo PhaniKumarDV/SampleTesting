@@ -154,7 +154,7 @@ start_instance()
         ( echo "$superpwd"; sleep 1; echo "$superpwd" ) | passwd 'superuser' >/dev/null 2>&1
         ( echo "$instpwd"; sleep 1; echo "$instpwd" ) | passwd 'installer' >/dev/null 2>&1
         uci set uhttpd.main.pwdmodified='0'
-        uci commit
+        uci commit uhttpd
     fi
 	procd_close_instance
 }
