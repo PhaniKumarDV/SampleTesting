@@ -382,6 +382,23 @@ uint8_t kwn_bwidth_to_enum( uint8_t* dev_bwidth, uint16_t bwidth_len )
     return bwidth;
 }
 
+uint8_t kwn_enctype_to_enum( uint8_t* dev_enctype, uint16_t enc_type_len)
+{
+    uint8_t  enc_type=0;
+    uint16_t i;
+    uint16_t lent = (sizeof(kwn_enc_type)/sizeof(kwn_enc_type[0]));
+
+    for( i=0; i<lent; i++ )
+    {
+        if( strncmp( dev_enctype, *(kwn_enc_type+i), enc_type_len ) == 0 )
+        {
+            enc_type = i;
+            break;
+        }
+    }
+    return enc_type;
+}
+
 void kwn_get_config_from_device( kwn_cfg_data *dev_cfg )
 {
     uint8_t  cmd[100];
@@ -650,6 +667,23 @@ void kwn_get_config_from_device( kwn_cfg_data *dev_cfg )
     len=strlen(cmd_buf);
     memcpy(dev_cfg->svlanethtype, cmd_buf, len);
     printf("dev_cfg->svlan ethertype: %s len : %d\n",dev_cfg->svlanethtype, len);
+ 
+    memset(cmd, '\0', sizeof(cmd));
+    memset(cmd_buf, '\0', sizeof(cmd_buf));
+    sprintf( cmd,"uci get wireless.@wifi-iface[1].encryption");
+    kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] ); 
+    len=strlen(cmd_buf);
+    dev_cfg->encrypttype = kwn_enctype_to_enum(&cmd_buf[0], len);
+    printf("dev_cfg->encrypttype Encryption Type : %d\n",dev_cfg->encrypttype);
+   
+    memset(cmd, '\0', sizeof(cmd));
+    memset(cmd_buf, '\0', sizeof(cmd_buf));
+    sprintf(cmd,"uci get wireless.@wifi-iface[1].key");
+    kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] );
+    len=strlen(cmd_buf);
+    memcpy(dev_cfg->enckey, cmd_buf, len);
+    printf("dev_cfg->enckey: %s enckey len : %d\n",dev_cfg->enckey, len);
+
     /*printf("Executed uci commands to get the config\n");*/   
     return;
 }
@@ -1033,6 +1067,28 @@ void kwn_get_config_data( kwn_pkt* buf)
     memcpy(buf->data+len, &data.svlanethtype,llen); /* value */
     len += llen;
 
+    /* ENCRYPTION TYPE */
+    printf("ENCRYPTION TYPE: %d\n",data.encrypttype);
+    llen = sizeof(data.encrypttype); /* length */
+    memcpy(buf->data+len, &llen,sizeof(uint16_t));
+    len += sizeof(uint16_t);
+    type = KWN_CFG_ENCRYPTION; /* type */
+    memcpy(buf->data+len, &type,sizeof(uint8_t));
+    len += sizeof(uint8_t);
+    memcpy(buf->data+len, &data.encrypttype,llen); /* value */
+    len += llen;
+    
+    /* ENCRYPTION KEY */
+    printf("ENCRYPTION KEY : %s\n",data.enckey);
+    llen = strlen(data.enckey); /* length */
+    memcpy(buf->data+len, &llen,sizeof(uint16_t));
+    len += sizeof(uint16_t);
+    type = KWN_CFG_ENCKEY; /* type */
+    memcpy(buf->data+len, &type,sizeof(uint8_t));
+    len += sizeof(uint8_t);
+    memcpy(buf->data+len, &data.enckey,llen); /* value */
+    len += llen;
+
     buf->hdr.length = len;
     printf("\n Get config Data length: %d\n",buf->hdr.length);
 
@@ -1343,6 +1399,24 @@ void kwn_set_config_data( kwn_pkt* buf )
                 memcpy(&svlanethtype, buf->data+len,llen);
                 printf("SVLAN ethertype: %s \n",svlanethtype);
                 sprintf(cmd, "uci set vlan.vlan.svlanethertype='%s'",svlanethtype);
+                system(cmd);
+                break;
+            }
+            case KWN_CFG_ENCRYPTION:
+            {
+                uint8_t enctype;
+                memcpy(&enctype,buf->data+len,llen);
+                printf("Encryption Type : %d\n", *(kwn_enc_type+enctype));
+                sprintf(cmd, "uci set wireless.@wifi-iface[1].encryption='%s'", *(kwn_enc_type+enctype));
+                system(cmd);
+                break;
+            }
+            case KWN_CFG_ENCKEY:
+            {
+                uint8_t enckey[64]={'\0'};
+                memcpy(&enckey,buf->data+len,llen);
+                printf("Encryption Key: %s\n",enckey);
+                sprintf(cmd, "uci set wireless.@wifi-iface[1].key='%s'",enckey);
                 system(cmd);
                 break;
             }

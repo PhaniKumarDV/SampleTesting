@@ -78,7 +78,9 @@ enum kwn_cfg_data_params
     KWN_CFG_VLAN_TRNKOPT,
     KWN_CFG_VLAN_TRNKID,
     KWN_CFG_VLAN_SVLANID,
-    KWN_CFG_VLAN_SVLANETHTYPE
+    KWN_CFG_VLAN_SVLANETHTYPE,
+    KWN_CFG_ENCRYPTION,
+    KWN_CFG_ENCKEY
 };
 
 enum kwn_wireless_stat
@@ -199,7 +201,7 @@ typedef struct
 
 /* configuration update structure */
 /* Size of kwn_cfg_update = 4+1+33+1+1+1+1+6+2+4+4+33+16+1+1+1+1+1+1+1+4+4+4+1+1+1+2+2+1
- *                          +200+2+7= 343 bytes */
+ *                          +200+2+7+1+64= 408 bytes */
 typedef struct
 {
     uint8_t  ip[4];           /*                ipaddress -   4 bytes */
@@ -234,6 +236,8 @@ typedef struct
     uint16_t vlantrnkid[100]; /*            Vlan Trunk ID - 200 bytes */
     uint16_t svlanid;         /*                 SVlan ID -   2 bytes */
     uint8_t  svlanethtype[7]; /*          Svlan Ethertype -   7 bytes */
+    uint8_t  encrypttype;     /*          Encryption Type -   1 byte  */
+    uint8_t  enckey[64];      /*           Encryption Key -  64 bytes */
 }__attribute__((packed)) kwn_cfg_data;
 
 /* Link Statistics Structure */
@@ -292,11 +296,11 @@ typedef struct
     uint64_t rx_errors;     /*  tx errors - 8 bytes */
 }__attribute__((packed)) kwn_eth_stats;
 
-/* Size of kwn_pkt = 8+391+1 = 400 bytes */
+/* Size of kwn_pkt = 8+441+1 = 450 bytes */
 typedef struct
 {
     kwn_pkt_hdr hdr;                 /*    hdr -   8 bytes */
-    uint8_t data[KWN_PKT_DATA_SIZE]; /*   data - 391 bytes */
+    uint8_t data[KWN_PKT_DATA_SIZE]; /*   data - 441 bytes */
     uint8_t footer;                  /* footer -   1 byte  */
 }__attribute__((packed)) kwn_pkt;
 
@@ -305,3 +309,4 @@ char *kwn_dev_mode[] = {"\0","ap","sta"};
 char *kwn_opmode[] = {"\0","11a","11na","11ac"};
 char *kwn_bandwidth[] = {"\0","HT5","HT10","HT20","HT40+","HT40-","HT80"};
 char *kwn_ip_type[] = {"\0","static","dhcp"};
+char *kwn_enc_type[] = {"\0","none","psk2+ccmp"};
