@@ -547,7 +547,6 @@ static void handle_ifla_wireless ( char *data, int len)
 						//syslog(LOG_ALERT,"Wireless Device Unegistered Successfully:%s",prev_mac);
 						sify_file_write(prev_mac,0,0,0);
 						registered = 0;
-	                    system("iwpriv wifi1 qboost_enable 0");
                         //kwn_set_distance( KWN_DISTANCE_MAX );
 					}
 				}
