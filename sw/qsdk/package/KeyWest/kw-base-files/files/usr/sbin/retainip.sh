@@ -15,10 +15,14 @@ then
     echo "uci set network.lan.gateway=$gateway" >> /etc/retainip
     echo "uci set network.lan.proto=$addrtype" >> /etc/retainip
     echo "$rlog" >> /etc/reboot_logs
+    /usr/sbin/snmptrap.sh 10  > /dev/null 2>&1
+    sleep 2
     reboot
 else
     ( echo y ) | firstboot >/dev/null 2>&1
     echo "$rlog" >> /etc/reboot_logs
+    /usr/sbin/snmptrap.sh 10  > /dev/null 2>&1
+    sleep 2
     reboot
 fi
 sleep 5

@@ -83,4 +83,12 @@ if [ "$1" -eq 9 ]; then
     trapoid="1.3.6.1.4.1.52619.1.3.4.9"
 	trap_send
     exit
+
 fi
+if [ "$1" -eq 10 ]; then
+    trapmsg="$date: Device is rebooting"
+    trapoid="1.3.6.1.4.1.52619.1.3.4.10"
+	trap_send
+    exit
+fi
+
