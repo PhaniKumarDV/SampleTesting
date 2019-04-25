@@ -489,6 +489,7 @@ _disable_qcawifi() {
             ;;
         wifi1)
             iwpriv ath1 kwnsoftreset 0
+            sh /usr/sbin/wireless_event.sh 1
             iwpriv ath1 kwndiscall 1
             iwpriv wifi1 qboost_enable 0
             kill -9  `ps | grep kwn_ipaddr.sh | awk '{print $1}'` 
