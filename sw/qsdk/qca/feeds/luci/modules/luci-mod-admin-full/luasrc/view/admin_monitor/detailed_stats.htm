@@ -106,6 +106,15 @@ function save_value( dur )
 		document.getElementById("s1").innerHTML="<input type='button' class='cbi-button' value='<%:Start Test%>' onclick='starttool()' />";
 		document.getElementById("msg").innerHTML="";
 	}
+    function clearstats() {
+    		XHR.get('<%=luci.dispatcher.build_url("admin", "monitor","stats")%>/clearnodestats' + '/' + mac, null,
+			function(x, data) {
+				if (data) { 
+		            location.href='<%=luci.dispatcher.build_url("admin/monitor/stats")%>/details' + '/' + ind;
+				}
+			}
+    		);
+    }
 	function stoptool() {
 		document.getElementById("s1").innerHTML="<input type='button' class='cbi-button' value='<%:Start Test%>' onclick='starttool()' />";
 		clearTimeout( timer );
@@ -215,10 +224,10 @@ function getBaseLog(x, y) {
 							document.getElementById("rem_rate").innerHTML = assoclist[j].rx_rate / 1000;
 							document.getElementById("loc_tput").innerHTML = assoclist[j].tx_tput > (1000 * 1000) ? (assoclist[j].tx_tput / ( 1000 * 1000 )).toFixed(2) : 0;
 							document.getElementById("rem_tput").innerHTML = assoclist[j].rx_tput > (1000 * 1000) ? (assoclist[j].rx_tput / ( 1000 * 1000 )).toFixed(2) : 0;
-							document.getElementById("loc_phy").innerHTML = assoclist[j].local_phy_err;
-							document.getElementById("rem_phy").innerHTML = assoclist[j].remote_phy_err;
-							document.getElementById("loc_mpdu").innerHTML = assoclist[j].local_mpdu_err;
-							document.getElementById("rem_mpdu").innerHTML = assoclist[j].remote_mpdu_err;
+							//document.getElementById("loc_phy").innerHTML = assoclist[j].local_phy_err;
+							//document.getElementById("rem_phy").innerHTML = assoclist[j].remote_phy_err;
+							//document.getElementById("loc_mpdu").innerHTML = assoclist[j].local_mpdu_err;
+							//document.getElementById("rem_mpdu").innerHTML = assoclist[j].remote_mpdu_err;
 							document.getElementById("loc_retry").innerHTML = assoclist[j].local_retries;
 							document.getElementById("rem_retry").innerHTML = assoclist[j].remote_retries;
 							document.getElementById("loc_gain").innerHTML = assoclist[j].l_ant_gain;
@@ -247,6 +256,7 @@ function getBaseLog(x, y) {
 <h2><a id="content" name="content"><%:Detailed Statistics%></a></h2>
 <div class="cbi-page-actions right">
 <input type="button" class="cbi-button cbi-button-apply" value="<%:Back%>" onclick="back()" />
+<input type="button" class="cbi-button" value="<%:Clear%>" onclick="clearstats()" />
 <input type="button" class="cbi-button" value="<%:Disconnect%>" onclick="disconnect()" />
 </div>
 <h2><a id="content" name="content"><%:Link Test%></a></h2>
@@ -316,6 +326,16 @@ function getBaseLog(x, y) {
 				<td id="rem_mac"></td>
 			</tr>
 			<tr>
+				<td>Customer Name</td>
+				<td id="loc_cusname"></td>
+				<td id="rem_cusname"></td>
+			</tr>
+			<tr>
+				<td>Link Id</td>
+				<td id="loc_id"></td>
+				<td id="rem_id"></td>
+			</tr>
+			<tr>
 				<td>GPS</td>
 				<td id="loc_gps"></td>
 				<td id="rem_gps"></td>
@@ -346,6 +366,16 @@ function getBaseLog(x, y) {
 				<td id="rem_noise"></td>
 			</tr>
 			<tr>
+				<td>Antenna Gain (dBi)</td>
+				<td id="loc_gain"></td>
+				<td id="rem_gain"></td>
+			</tr>
+			<tr>
+				<td>Tx Power (dBm)</td>
+				<td id="loc_pwr"></td>
+				<td id="rem_pwr"></td>
+			</tr>
+			<tr>
 				<td>Rate (Mbps)</td>
 				<td id="loc_rate"></td>
 				<td id="rem_rate"></td>
@@ -371,21 +401,6 @@ function getBaseLog(x, y) {
 				<td id="rem_rx_pkt"></td>
 			</tr>
 			<tr>
-				<td>Tx Power (dBm)</td>
-				<td id="loc_pwr"></td>
-				<td id="rem_pwr"></td>
-			</tr>
-			<tr>
-				<td>Frame Errors</td>
-				<td id="loc_phy"></td>
-				<td id="rem_phy"></td>
-			</tr>
-			<tr>
-				<td>CRC Errors</td>
-				<td id="loc_mpdu"></td>
-				<td id="rem_mpdu"></td>
-			</tr>
-			<tr>
 				<td>Retries</td>
 				<td id="loc_retry"></td>
 				<td id="rem_retry"></td>
@@ -394,21 +409,6 @@ function getBaseLog(x, y) {
 				<td>RTX Percentage</td>
 				<td id="loc_rtx"></td>
 				<td id="rem_rtx"></td>
-			</tr>
-			<tr>
-				<td>Antenna Gain (dBi)</td>
-				<td id="loc_gain"></td>
-				<td id="rem_gain"></td>
-			</tr>
-			<tr>
-				<td>Customer Name</td>
-				<td id="loc_cusname"></td>
-				<td id="rem_cusname"></td>
-			</tr>
-			<tr>
-				<td>Link Id</td>
-				<td id="loc_id"></td>
-				<td id="rem_id"></td>
 			</tr>
 		</table>
 	</fieldset>

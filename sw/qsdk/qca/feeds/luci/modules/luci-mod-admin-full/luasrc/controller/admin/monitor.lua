@@ -10,6 +10,7 @@ function index()
     entry({"admin", "monitor", "stats", "radio2stats"}, template("admin_monitor/radio2_stats"))
     entry({"admin", "monitor", "stats", "details"}, call("details"), nil).leaf = true
     entry({"admin", "monitor", "stats", "disconnect"}, call("disconnect"), nil).leaf = true
+    entry({"admin", "monitor", "stats", "clearnodestats"}, call("clearnodestats"), nil).leaf = true
     entry({"admin", "monitor", "stats", "starttool"}, call("starttool"), nil).leaf = true
     entry({"admin", "monitor", "stats", "stoptool"}, call("stoptool"), nil).leaf = true
     entry({"admin", "monitor", "stats", "wireless_log"}, call("action_wifilog"))
@@ -131,9 +132,9 @@ function action_wireless()
     local dutxpkt = string.gsub(res, "\n", "") 
     res = luci.util.exec("80211stats -i ath1 | grep 'Unicast packets received:' | sed 's/ Unicast packets received:           //'")
     local durxpkt = string.gsub(res, "\n", "") 
-    res = luci.util.exec("athstats -i wifi1 | grep ast_tx_packets: | sed 's/ast_tx_packets://'")
+    res = luci.util.exec("iwpriv ath1 g_kwntxmgmt | sed 's/ath1      g_kwntxmgmt://'")
     local mtxpkt = string.gsub(res, "\n", "") 
-    res = luci.util.exec("athstats -i wifi1 | grep ast_rx_packets: | sed 's/ast_rx_packets://'")
+    res = luci.util.exec("iwpriv ath1 g_kwnrxmgmt | sed 's/ath1      g_kwnrxmgmt://'")
     local mrxpkt = string.gsub(res, "\n", "") 
     res = luci.util.exec("athstats -i wifi1 | grep ast_be_xmit: | sed 's/ast_be_xmit://'")
     local mbeatx = string.gsub(res, "\n", "") 
@@ -167,9 +168,9 @@ function action_wireless()
     local mdisassocreqsent = string.gsub(res, "\n", "") 
     res = luci.util.exec("80211stats -i ath1 | grep  'Association result last:' | sed 's/ Association result last:            //'")
     local mdisassocreslast = string.gsub(res, "\n", "") 
-    res = luci.util.exec("athstats -i wifi1 | grep mpdu_errs | sed 's/mpdu_errs://'")
+    res = luci.util.exec("iwpriv ath1 g_kwnmpduerr | sed 's/ath1      g_kwnmpduerr://'")
     local mpduerr = string.gsub(res, "\n", "") 
-    res = luci.util.exec("athstats -i wifi1 | grep phy_errors | sed 's/phy_errors://'")
+    res = luci.util.exec("iwpriv ath1 g_kwnphyerr | sed 's/ath1      g_kwnphyerr://'")
     local phyerr = string.gsub(res, "\n", "")
     -- total data packets
     local dttxpkt = tonumber(dbtxpkt)+tonumber(dmtxpkt)+tonumber(dutxpkt)
@@ -249,6 +250,14 @@ end
 function disconnect( mac )
 	luci.sys.exec("iwpriv ath1 kickmac "..mac)
 	luci.http.redirect(luci.dispatcher.build_url("admin/monitor/stats"))
+end
+
+function clearnodestats( mac )
+	local data = {}
+	luci.sys.exec("iwpriv ath1 kwn_flag 7")
+	luci.sys.exec("iwpriv ath1 addmac "..mac)
+	luci.http.prepare_content("application/json")
+	luci.http.write_json(data)
 end
 
 function starttool( mac )
