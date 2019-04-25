@@ -1102,13 +1102,13 @@ void kwn_set_config_data( kwn_pkt* buf )
     uint8_t  type = 0;
     uint16_t llen = 0;
     uint8_t  res = 0;
-    uint8_t  cmd[100] = {0};
+    uint8_t  cmd[KWN_SOCK_BUF_LEN];
 
     printf("Total Length : %d \n",total_len);
 
     while( len < total_len )
     {
-        memset(&cmd, '\0', sizeof(cmd));
+        memset(cmd, '\0', sizeof(cmd));
         memcpy(&llen, buf->data+len, sizeof(uint16_t));
         printf("\nLength %d - ",llen);
         len += sizeof(uint16_t);
@@ -1364,7 +1364,7 @@ void kwn_set_config_data( kwn_pkt* buf )
             case KWN_CFG_VLAN_TRNKID:
             {
                 uint16_t vlan_trunkid[100]={0};
-                uint8_t  cmd[KWN_SOCK_BUF_LEN]={'\0'}, a[5]={'\0'};
+                uint8_t  a[5]={'\0'};
                 uint8_t  str[KWN_SOCK_BUF_LEN]={'\0'};
                 uint16_t j;
 
@@ -1406,7 +1406,7 @@ void kwn_set_config_data( kwn_pkt* buf )
             {
                 uint8_t enctype;
                 memcpy(&enctype,buf->data+len,llen);
-                printf("Encryption Type : %d\n", *(kwn_enc_type+enctype));
+                printf("Encryption Type : %d : %s\n", enctype, *(kwn_enc_type+enctype));
                 sprintf(cmd, "uci set wireless.@wifi-iface[1].encryption='%s'", *(kwn_enc_type+enctype));
                 system(cmd);
                 break;
@@ -1469,7 +1469,7 @@ void kwn_set_link_test( kwn_pkt *buf )
 
     while( len < total_len )
     {
-        memset(&cmd, '\0', sizeof(cmd));
+        memset(cmd, '\0', sizeof(cmd));
         memcpy(&llen, buf->data+len, sizeof(uint16_t));
         printf("Length %d ",llen);
         len += sizeof(uint16_t);
@@ -2001,12 +2001,11 @@ void kwn_auth_user( kwn_pkt* buf )
     uint8_t  type = 0;
     uint16_t llen = 0;
     uint8_t  res = 0;
-    int cmd_len;
-    uint8_t  cmd[100] = {'\0'};
-    uint8_t  cmd_buf[33] = {'\0'};
-    uint8_t  user[33]={'\0'};
-    uint8_t  paswrd[33]={'\0'};
-
+    uint8_t  cmd[100];
+    uint8_t  cmd_buf[50];
+    uint8_t  appuser[33]={'\0'};
+    uint8_t  apppass[33]={'\0'};
+    int admin_passlen, inst_passlen, usr_passlen, app_usrlen, app_paslen ;
     
     kwn_auth_pkt data;
     memset(&data,'\0', sizeof(kwn_auth_pkt)); 
@@ -2015,42 +2014,52 @@ void kwn_auth_user( kwn_pkt* buf )
 
     memset(cmd, '\0', sizeof(cmd));
     memset(cmd_buf, '\0', sizeof(cmd_buf));
-    sprintf(cmd,"uci get system.@system[0].appuser");
+    sprintf(cmd,"uci get uhttpd.main.adminpwd");
     kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] );
-    cmd_len = strlen(cmd_buf);
-    memcpy(data.usr_name, cmd_buf, cmd_len);
-    printf("Struct Username : %s, len: %d\n",data.usr_name, cmd_len);
-
+    admin_passlen = strlen(cmd_buf);
+    memcpy(data.admin_passwd, cmd_buf, admin_passlen);
+    printf("Admin password : %s, admin_passlen: %d\n",data.admin_passwd, admin_passlen);
+   
     memset(cmd, '\0', sizeof(cmd));
     memset(cmd_buf, '\0', sizeof(cmd_buf));
-    sprintf(cmd,"uci get system.@system[0].apppass");
+    sprintf(cmd,"uci get uhttpd.main.userpwd");
     kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] );
-    cmd_len = strlen(cmd_buf);
-    memcpy(data.passwd, cmd_buf, cmd_len);
-    printf("Struct password : %s, len: %d\n",data.passwd, cmd_len);
-   
+    usr_passlen = strlen(cmd_buf);
+    memcpy(data.user_passwd, cmd_buf, usr_passlen);
+    printf("User password : %s, user_passlen: %d\n",data.user_passwd, usr_passlen);
+    
+    memset(cmd, '\0', sizeof(cmd));
+    memset(cmd_buf, '\0', sizeof(cmd_buf));
+    sprintf(cmd,"uci get uhttpd.main.instpwd");
+    kwn_sys_cmd_imp( &cmd[0], &cmd_buf[0] );
+    inst_passlen = strlen(cmd_buf);
+    memcpy(data.inst_passwd, cmd_buf, inst_passlen);
+    printf("Installer password : %s, inst_passlen: %d\n",data.inst_passwd, inst_passlen);
+    
     while( len < total_len )
     {
-        memset(&cmd, '\0', sizeof(cmd));
+        memset(cmd, '\0', sizeof(cmd));
         memcpy(&llen, buf->data+len, sizeof(uint16_t));
         printf("Length %d ",llen);
         len += sizeof(uint16_t);
         memcpy(&type, buf->data+len, sizeof(uint8_t));
         printf("Type %d ",type);
         len += sizeof(uint8_t);
-        printf(" LLEN: %d\n",llen);
+        printf(" LLEN: %d - ",llen);
         switch( type )
         {
             case KWN_AUTH_USERNAME:
                 {
-                    memcpy(&user,buf->data+len,llen);
-                    printf("Username: %s\n",user);
+                    app_usrlen = llen;
+                    memcpy(&appuser,buf->data+len,llen);
+                    printf("App Username: %s\n",appuser);
                     break;
                 }
             case KWN_AUTH_PASSWORD:
                 {
-                    memcpy(&paswrd,buf->data+len,llen);
-                    printf("Password: %s\n",paswrd);
+                    app_paslen = llen;
+                    memcpy(&apppass,buf->data+len,llen);
+                    printf("App Password: %s\n",apppass);
                     break;
                 }
             default:
@@ -2068,15 +2077,20 @@ void kwn_auth_user( kwn_pkt* buf )
     buf->hdr.ptmp = 0;
 
     /* Response */
-    if( (strncmp( data.usr_name, user, strlen(user)) == 0) &&
-            (strncmp( data.passwd, paswrd, strlen(paswrd)) == 0) ) {
+    if( ( ( KWN_ADMIN_LEN == app_usrlen ) && ( strncmp( appuser, "admin", app_usrlen ) == 0 ) &&
+            ( admin_passlen == app_paslen ) && ( strncmp( apppass, data.admin_passwd, strlen(apppass) ) == 0 ) ) ||
+        ( ( KWN_USER_LEN == app_usrlen ) && ( strncmp( appuser, "user", app_usrlen ) == 0 ) &&
+            ( usr_passlen == app_paslen ) && ( strncmp( apppass, data.user_passwd, strlen(apppass) ) == 0 ) ) ||
+        ( ( KWN_INST_LEN == app_usrlen ) && ( strncmp( appuser, "installer", app_usrlen ) == 0 ) &&
+            ( inst_passlen == app_paslen ) && ( strncmp( apppass, data.inst_passwd, strlen(apppass) ) == 0 ) ) ) {
         printf("comparision success");
         res = KWN_SUCCESS;
     }
     else {
         printf("comparision Failure");
         res = KWN_FAILURE;
-    } 
+    }
+
     llen = sizeof(res); /* length */
     memcpy(buf->data+len, &llen,sizeof(uint16_t));
     len += sizeof(uint16_t);

@@ -9,6 +9,9 @@
 #define KWN_TRUE            1
 #define KWN_FALSE           0
 #define KWN_SOCK_BUF_LEN    650
+#define KWN_ADMIN_LEN       5
+#define KWN_USER_LEN        4
+#define KWN_INST_LEN        9
 
 enum kwn_id
 {
@@ -195,8 +198,9 @@ typedef struct
 /* Size of kwn_auth_pkt = 33 + 33 = 66 bytes */
 typedef struct
 {
-    uint8_t usr_name[33];
-    uint8_t passwd[33];
+    uint8_t admin_passwd[33];
+    uint8_t inst_passwd[33];
+    uint8_t user_passwd[33];
 }__attribute__((packed)) kwn_auth_pkt;
 
 /* configuration update structure */
