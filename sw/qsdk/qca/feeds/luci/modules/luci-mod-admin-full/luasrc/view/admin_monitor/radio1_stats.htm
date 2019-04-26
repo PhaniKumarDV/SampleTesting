@@ -131,6 +131,7 @@
     var dst = "<%=uciget('uci get wireless.wifi1.distance')%>"
 
 	var is_reconnecting = false;
+    var links = 1;
 
 	function view_details(i)
 	{
@@ -198,9 +199,28 @@
 		);
 	}
 
-	XHR.poll(5, '<%=luci.dispatcher.build_url("admin", "wireless", "wireless_status", table.concat(netlist, ","))%>', null,
-		function(x, st)
+
+    function get_links()
+    {
+        var id = 6;
+        XHR.get('<%=luci.dispatcher.build_url("admin", "no_of_links")%>/' + id, null,
+            function(x, data) {
+              if (data) { 
+                 var l = data.split("=");
+                 links = ( ( l[0] > 1 ) ? ( l[0] - 1 ) : 0 );
+               }
+            }
+        );
+    }
+
+
+	XHR.poll(5, '<%=REQUEST_URI%>', { status: 1 },
+		function(x, info)
 		{
+            get_links();
+	        XHR.get('<%=luci.dispatcher.build_url("admin", "wireless", "wireless_status", table.concat(netlist, ","))%>', null,
+		    function(x, st)
+            {
 			if (st)
 			{
 				var assoctable = document.getElementById('iw-assoclist');
@@ -316,6 +336,8 @@
                                 continue;
                             if( assoclist[j].bssid == "00:00:00:00:00:00" )
                                 continue;
+                            if( links == 0 )
+                                continue;
 							var tr = assoctable.insertRow(-1);
 							    tr.className = 'cbi-section-table-row cbi-rowstyle-' + rowstyle;
 
@@ -383,6 +405,8 @@
 						img.src = '<%=resource%>/icons/wifi_big' + (devup[dev] ? '' : '_disabled') + '.png';
 				}
 			}
+            }
+            );
 		}
 	);
 //]]></script>
