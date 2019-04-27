@@ -54,6 +54,7 @@ function index()
 	entry({"admin", "config", "radio1stats"}, template("admin_status/radio1_stats"))
 	entry({"admin", "config", "details"}, call("details"), nil).leaf = true
 	entry({"admin", "config", "disconnect"}, call("disconnect"), nil).leaf = true
+    entry({"admin", "config", "clearnodestats"}, call("clearnodestats"), nil).leaf = true
 	entry({"admin", "config", "starttool"}, call("starttool"), nil).leaf = true
 	entry({"admin", "config", "stoptool"}, call("stoptool"), nil).leaf = true
     page = entry({"admin", "cfg_set"}, call("action_cfg_set"), nil)
@@ -322,6 +323,14 @@ end
 function disconnect( mac )
 	luci.sys.exec("iwpriv ath1 kickmac "..mac)
 	luci.http.redirect(luci.dispatcher.build_url("admin/config/radio1stats"))
+end
+
+function clearnodestats( mac )
+	local data = {}
+	luci.sys.exec("iwpriv ath1 kwn_flag 7")
+	luci.sys.exec("iwpriv ath1 addmac "..mac)
+	luci.http.prepare_content("application/json")
+	luci.http.write_json(data)
 end
 
 function starttool( mac )
