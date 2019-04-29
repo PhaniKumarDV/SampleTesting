@@ -116,6 +116,7 @@ if [ "$1" -eq 3 ];then
         cat /proc/net/dev | grep face >>  $LOG_FILE                                
         cat /proc/net/dev | grep eth0 >> $LOG_FILE                               
         cat /proc/net/dev | grep ath0 >> $LOG_FILE 
+        cat /proc/net/dev | grep ath1 >> $LOG_FILE 
         cat $LOG_FILE
 	exit
 fi	
