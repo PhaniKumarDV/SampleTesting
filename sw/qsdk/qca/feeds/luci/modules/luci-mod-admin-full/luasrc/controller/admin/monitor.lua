@@ -13,10 +13,10 @@ function index()
     entry({"admin", "monitor", "stats", "clearnodestats"}, call("clearnodestats"), nil).leaf = true
     entry({"admin", "monitor", "stats", "starttool"}, call("starttool"), nil).leaf = true
     entry({"admin", "monitor", "stats", "stoptool"}, call("stoptool"), nil).leaf = true
-    entry({"admin", "monitor", "stats", "wireless_log"}, call("action_wifilog"))
+    entry({"admin", "monitor", "stats", "wireless_stats"}, call("action_wifilog"))
     entry({"admin", "monitor", "stats", "wireless_logtype"}, call("action_wifi_logtype"), nil).leaf = true
     entry({"admin", "monitor", "stats", "wireless_clrlog"}, call("action_wifi_clrlog"), nil).leaf = true
-    entry({"admin", "monitor", "stats", "eth_log"}, call("action_ethlog"))
+    entry({"admin", "monitor", "stats", "eth_stats"}, call("action_ethlog"))
     entry({"admin", "monitor", "stats", "eth_logtype"}, call("action_eth_logtype"), nil).leaf = true
     entry({"admin", "monitor", "stats", "eth_clrlog"}, call("action_eth_clrlog"), nil).leaf = true
 
@@ -74,49 +74,6 @@ function index()
 	entry({"admin", "monitor", "tools", "ethtestmac"}, call("action_ethtestmac"), nil).leaf = true
 	entry({"admin", "monitor", "tools", "ethteststart"}, call("action_ethteststart"), nil).leaf = true
 	entry({"admin", "monitor", "tools", "ethteststop"}, call("action_ethteststop"), nil).leaf = true
-
-    --entry({"admin", "monitor", "nwkstats"}, template("admin_monitor/wireless1_stats"), _("Network Statistics"), 1)
-    --entry({"admin", "monitor", "nwkstats", "wifi1refresh"}, call("action_wireless1"), nil).leaf = true
-    --entry({"admin", "monitor", "nwkstats", "radio2nwkstats"}, template("admin_monitor/wireless2_stats"))
-    --entry({"admin", "monitor", "nwkstats", "wifi2refresh"}, call("action_wireless2"), nil).leaf = true
-    --entry({"admin", "monitor", "nwkstats", "ethnwkstats"}, template("admin_monitor/ethernet_stats"))
-    --entry({"admin", "monitor", "nwkstats", "ethrefresh"}, call("action_ethernet"), nil).leaf = true
-    --entry({"admin", "monitor", "nwkstats", "arptbl"}, call("action_arptbl"))
-    --entry({"admin", "monitor", "nwkstats", "clr_arptbl"}, call("action_clr_arptbl"))
-    --entry({"admin", "monitor", "nwkstats", "learntbl"}, call("action_learntbl"))
-    --entry({"admin", "monitor", "nwkstats", "clr_learntbl"}, call("action_clr_learntbl"))
-    --entry({"admin", "monitor", "nwkstats", "dhcplease"}, template("admin_monitor/dhcplease"))
-	--entry({"admin", "monitor", "nwkstats", "clrethstats"}, call("clrethstats"), nil).leaf = true
-	--entry({"admin", "monitor", "nwkstats", "clrwifi1stats"}, call("clrwifi1stats"), nil).leaf = true
-	--entry({"admin", "monitor", "nwkstats", "clrwifi0stats"}, call("clrwifi0stats"), nil).leaf = true
-
-	--entry({"admin", "monitor", "stats"}, template("admin_monitor/radio1_stats"), _("Link Statistics"), 2)
-	--entry({"admin", "monitor", "stats", "radio2stats"}, template("admin_monitor/radio2_stats"))
-	--entry({"admin", "monitor", "stats", "details"}, call("details"), nil).leaf = true
-	--entry({"admin", "monitor", "stats", "disconnect"}, call("disconnect"), nil).leaf = true
-	--entry({"admin", "monitor", "stats", "starttool"}, call("starttool"), nil).leaf = true
-	--entry({"admin", "monitor", "stats", "stoptool"}, call("stoptool"), nil).leaf = true
-
-	--entry({"admin", "monitor", "logs"}, call("action_wifilog"), _("Logs"), 3) 
-    --entry({"admin", "monitor", "logs", "wireless_logtype"}, call("action_wifi_logtype"), nil).leaf = true
-	--entry({"admin", "monitor", "logs", "wireless_clrlog"}, call("action_wifi_clrlog"), nil).leaf = true
-    --entry({"admin", "monitor", "logs", "eth_log"}, call("action_ethlog"))
-    --entry({"admin", "monitor", "logs", "eth_logtype"}, call("action_eth_logtype"), nil).leaf = true
-	--entry({"admin", "monitor", "logs", "eth_clrlog"}, call("action_eth_clrlog"), nil).leaf = true
-	--entry({"admin", "monitor", "logs", "syslog"}, call("action_syslog"))
-    --entry({"admin", "monitor", "logs", "log_type"}, call("action_logtype"), nil).leaf = true
-	--entry({"admin", "monitor", "logs", "clr_log"}, call("action_clr_log"), nil).leaf = true
-
-    --entry({"admin", "monitor", "wifi0stats"}, call("action_wifi0stats"), _("Wifi0 Statistics"), 3).leaf = true
-    --entry({"admin", "monitor", "wifi1stats"}, call("action_wifi1stats"), _("Wifi1 Statistics"), 4).leaf = true
-    --page = entry({"admin", "monitor", "wifi_log_type"}, call("action_wifi_logtype"), nil)
-    --page.leaf = true
-    --entry({"admin", "monitor", "ethstats"}, call("action_ethstats"), _("Ethernet Statistics"), 5).leaf = true
-    --page = entry({"admin", "monitor", "eth_log_type"}, call("action_eth_logtype"), nil)
-    --page.leaf = true
-    --entry({"admin", "monitor", "dmesg"}, call("action_dmesg"), _("Kernel Log"), 8)
-    --entry({"admin", "monitor", "conflog"}, call("action_conflog"), _("Configuration Log"), 9)
-    --entry({"admin", "monitor", "templog"}, call("action_templog"), _("Temperature Log"), 10)
 end
 
 function action_wireless()
@@ -216,9 +173,9 @@ function action_ethernet()
     res = luci.util.exec("iwpriv ath1 g_kwrxl3bdrpcnt | sed 's/ath1      g_kwrxl3bdrpcnt://'")
     local rxl3bpkt = string.gsub(res, "\n", "")
     res = luci.util.exec("cat /proc/net/dev | grep eth0 | awk '{print $5}'")
-    local txdrop = string.gsub(res, "\n", "")
-    res = luci.util.exec("cat /proc/net/dev | grep eth0 | awk '{print $13}'")
     local rxdrop = string.gsub(res, "\n", "")
+    res = luci.util.exec("cat /proc/net/dev | grep eth0 | awk '{print $13}'")
+    local txdrop = string.gsub(res, "\n", "")
     res = luci.util.exec("iwpriv ath1 g_kwnethtxmcpkt | sed 's/ath1      g_kwnethtxmcpkt://'")
     local txmcpkt = string.gsub(res, "\n", "")
     res = luci.util.exec("iwpriv ath1 g_kwnethrxmcpkt | sed 's/ath1      g_kwnethrxmcpkt://'")
@@ -238,7 +195,7 @@ function action_ethernet()
     --                  8               9             10             11             12             13
     data = data..","..txl3mpkt..","..rxl3mpkt..","..txl2bpkt..","..rxl2bpkt..","..txl3bpkt..","..rxl3bpkt
     --                 14            15           16            17            18            19            20              21              22
-    data = data..","..txdrop..","..rxdrop..","..txmcpkt..","..rxmcpkt..","..txucpkt..","..rxucpkt..","..rxcrcerr..","..rxovrsize..","..rxovrrun
+    data = data..","..rxdrop..","..txdrop..","..txmcpkt..","..rxmcpkt..","..txucpkt..","..rxucpkt..","..rxcrcerr..","..rxovrsize..","..rxovrrun
     return data
 end
 
@@ -283,8 +240,8 @@ end
 function action_wifilog()
     local data = {}
     data = action_wireless()
-    local wireless_log = data
-    luci.template.render("admin_monitor/wireless_log", {wireless_log=wireless_log})
+    local wireless_stat = data
+    luci.template.render("admin_monitor/wireless_stats", {wireless_stat=wireless_stat})
 end
 
 function action_wifi_logtype( logtype )
@@ -307,8 +264,6 @@ function action_wifi_logtype( logtype )
 end
 
 function action_wifi_clrlog( logtype )
-    local data = {}
-    data = "Wireless Log file is empty."
     if( string.match(logtype,"1") ) then
         luci.sys.exec("athstatsclr -i wifi1")
         luci.sys.exec("80211stats -i ath1 -e 1")
@@ -321,8 +276,8 @@ end
 function action_ethlog()
     local data = {}
     data = action_ethernet()
-    local eth_log = data
-    luci.template.render("admin_monitor/eth_log", {eth_log=eth_log})
+    local eth_stat = data
+    luci.template.render("admin_monitor/eth_stats", {eth_stat=eth_stat})
 end
 
 function action_eth_logtype( logtype )
@@ -343,10 +298,16 @@ end
 
 function action_eth_clrlog( logtype )
     local data = {}
-    data = "Ethernet Log file is empty."
+    data = "Invalid Logtype"
     luci.sys.exec("iwpriv ath1 kwnclrethstats 1")
     if( string.match(logtype,"1") ) then
         data = action_ethernet()
+    end
+    if( string.match(logtype,"2") ) then
+        data = luci.util.exec("/usr/sbin/sify_linkstatistics 3")
+    end
+    if( string.match(logtype,"3") ) then
+        data = luci.util.exec("/usr/sbin/sify_linkstatistics 6")
     end
     luci.http.prepare_content("application/json")
     luci.http.write_json(data)
@@ -742,62 +703,4 @@ end
 
 function action_ethteststop( speed )
    luci.sys.exec("iwpriv ath1 kwnethtest 0")
-end
-
---unused functions
-function action_wireless1()
-    luci.util.exec("echo '' > /tmp/stats5_output")
-    luci.util.exec("/usr/sbin/stats 1")
-    local res = luci.util.exec("cat /tmp/stats5_output")
-    data = string.gsub(res, "\n", "")
-	luci.http.prepare_content("application/json")
-	luci.http.write_json(data)
-end
-
-function action_wireless2()
-    luci.util.exec("echo '' > /tmp/stats24_output")
-    luci.util.exec("/usr/sbin/stats 2")
-    local res = luci.util.exec("cat /tmp/stats24_output")
-    data = string.gsub(res, "\n", "")
-	luci.http.prepare_content("application/json")
-	luci.http.write_json(data)
-end
-
-function action_wifi0stats()
-    local wifi0stats = luci.util.exec("athstats -i wifi0")
-	luci.template.render("admin_monitor/wifi0_stats", {wifi0stats=wifi0stats})
-end
-
-function action_wifi1stats()
-	local wifi1stats = luci.util.exec("/usr/sbin/sify_linkstatistics 1")
-	luci.template.render("admin_monitor/wifi1_stats", {wifi1stats=wifi1stats})
-end
-
-function action_ethstats()
-    local ethstats = luci.util.exec("ethtool eth0 | grep Speed ; ethtool eth0 | grep Duplex ; ifconfig eth0 | sed 's/eth0/    /'")
-	luci.template.render("admin_monitor/eth_stats", {ethstats=ethstats})
-end
-
-function action_dmesg()
-	local dmesg = luci.sys.dmesg()
-	luci.template.render("admin_monitor/dmesg", {dmesg=dmesg})
-end
-
-function action_templog()
-	local templog = luci.sys.exec("cat /tmp/temp-log")
-	luci.template.render("admin_monitor/templog", {templog=templog})
-end
-
-function clrethstats()
-    luci.sys.exec("iwpriv ath1 kwnclrethstats 1")
-end
-
-function clrwifi1stats()
-	luci.sys.exec("athstatsclr -i wifi1")
-	luci.sys.exec("80211stats -i ath1 -e 1")
-end
-
-function clrwifi0stats()
-	luci.sys.exec("athstatsclr -i wifi0")
-	luci.sys.exec("80211stats -i ath0 -e 1")
 end
