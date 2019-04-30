@@ -63,11 +63,15 @@ function get_values( data )
         var chan = x[2];
         var freq = x[3];
         var enc = x[4];
-        var qual = x[5];
+        var linktype = x[5];
+        var qual = x[6];
         var y = qual.split("Signal=");
         var z = y[1].split("Noise=");
         var signal = z[0];
         var noise = z[1];
+        if( loginuser == "installer" && linktype == 0 ) {
+            continue;
+        }
         {
             objects[j] = new Object();
             objects[j].ssid = ssid;
