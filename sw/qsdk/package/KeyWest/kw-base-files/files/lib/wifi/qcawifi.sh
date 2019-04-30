@@ -492,6 +492,10 @@ _disable_qcawifi() {
             sh /usr/sbin/wireless_event.sh 1
             iwpriv ath1 kwndiscall 1
             iwpriv wifi1 qboost_enable 0
+            kill -9  `ps | grep kwn_leds.sh | awk '{print $1}'` 
+            echo 0 > "/sys/devices/soc.0/gpio_led.6/leds/wlan5/brightness"
+            echo 0 > "/sys/devices/soc.0/gpio_led.6/leds/ap_status/brightness"
+            echo 0 > "/sys/devices/soc.0/gpio_led.6/leds/wlan24/brightness"
             kill -9  `ps | grep kwn_ipaddr.sh | awk '{print $1}'` 
             kill -9  `ps | grep scan_timeout.sh | awk '{print $1}'` 
             kill -9  `ps | grep wifi_timeout.sh | awk '{print $1}'` 
@@ -2174,6 +2178,7 @@ enable_qcawifi() {
                wifi0)
                    ;;
                wifi1)
+                   sh /usr/sbin/kwn_leds.sh
                    sh /usr/sbin/kwn_ipaddr.sh
                    sh /usr/sbin/ethmtu.sh		
                    if [ "$radiomode" == "sta" ]
