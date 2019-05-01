@@ -19,6 +19,8 @@
 var radiomode = "<%=uciget('uci get wireless.@wifi-iface[1].mode')%>";
 var hwvalue = "<%=uciget('uci get wireless.wifi1.hwmode')%>";
 var bw = "<%=uciget('uci get wireless.wifi1.htmode')%>";
+var txchainmask = "<%=uciget('uci get wireless.wifi1.txchainmask')%>";
+var rxchainmask = "<%=uciget('uci get wireless.wifi1.rxchainmask')%>";
 var def = new Array(8);
 function save_def_value()
 {
@@ -216,7 +218,7 @@ function getoptions( list, value )
                       document.write(" selected");
                   }
                   document.write(">Single</option>");
-                  if( hwvalue != "11a" )
+                  if( hwvalue != "11a" && txchainmask == 3 && rxchainmask == 3 )
                   {
                       document.write("<option value='2' ");
                       if( stream == 2 ) {

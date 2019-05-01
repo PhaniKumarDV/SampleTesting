@@ -613,10 +613,30 @@ void cfg_set( char *type, char *value )
             sprintf(cmd,"uci set wireless.@wifi-iface[1].shortgi='%s'",value);
             break;
         case UCI_ID_RADIO1_TXCHAINMASK:
-            sprintf(cmd,"uci set wireless.wifi1.txchainmask='%s'",value);
+            {
+                int val = atoi(value);
+                int stream = 1; /* Single */
+                
+                sprintf(cmd,"uci set wireless.wifi1.txchainmask='%s'",value);
+                system(cmd);
+                /* Reset Spatial stream to Single if single chain is enabled */
+                if( val != 3 ) {
+                    kwn_reset_datarate( stream );
+                }
+            }
             break;
         case UCI_ID_RADIO1_RXCHAINMASK:
-            sprintf(cmd,"uci set wireless.wifi1.rxchainmask='%s'",value);
+            {
+                int val = atoi(value);
+                int stream = 1; /* Single */
+                
+                sprintf(cmd,"uci set wireless.wifi1.rxchainmask='%s'",value);
+                system( cmd );
+                /* Reset Spatial stream to Single if single chain is enabled */
+                if( val != 3 ) {
+                    kwn_reset_datarate( stream );
+                }
+            }
             break;
         case UCI_ID_ETHERNET_INACTIVITY:
             sprintf(cmd,"uci set ethernet.ethernet.ethtimer='%s'",value);
