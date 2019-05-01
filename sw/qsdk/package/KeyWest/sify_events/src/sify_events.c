@@ -34,7 +34,7 @@ int ifd,isock_fd;
 int se_daemon = -1;
 #define IEEE80211_EV_DISASSOC_IND_AP 20
 #define IEEE80211_EV_DISASSOC_COMPLETE_AP 33
-#define IEEE80211_EV_DYING_GASP       45
+#define IEEE80211_EV_DYING_GASP_AP    45
 #define IEEE80211_EV_BASE_DYING_GASP  46
 #define IEEE80211_EV_SU_DYING_GASP    47
 #define IEEE80211_EV_DCS_TRIGGERED    48
@@ -44,6 +44,7 @@ int se_daemon = -1;
 #define IEEE80211_EV_ACS_START        52
 #define IEEE80211_EV_ACS_BEST_CHANNEL 53 
 #define IEEE80211_EV_SCAN_IN_PROGRESS 54
+#define IEEE80211_EV_DYING_GASP_SU    55
 
 #define pi 3.14159265358979323846
 #define KWN_DISTANCE_MIN              1
@@ -109,67 +110,89 @@ double rad2deg(double rad) {
 
 void sify_file_write(char *sify_buf,int status, int reason, uint8_t value)
 {
-	time_t rawtime;
-	struct tm *timeinfo;
-	FILE *sify_fp;
+    time_t rawtime;
+    struct tm *timeinfo;
+    FILE *sify_fp;
     int len;
     char t[50];
     char cmd[100];
     char trap_cmd[100];
 
-	/* Get current time */
-	time( &rawtime );
+    /* Get current time */
+    time( &rawtime );
     timeinfo = localtime( &rawtime );
     len = strlen( asctime( timeinfo ) ) - 1;
     memcpy( t, asctime( timeinfo ), len );
     t[len] = '\0';
 
-	if (sify_buf == NULL)
-	{
-		PRINTF("[%s:%d] !mac is null\r\n",__func__,__LINE__);
-		return;
-	}
+    if (sify_buf == NULL)
+    {
+        PRINTF("[%s:%d] !mac is null\r\n",__func__,__LINE__);
+        return;
+    }
 
-	/*Open file for writting */
-	sify_fp = fopen("/tmp/wifi_packet_logs", "a+");
+    /* Open file for writing */
+    sify_fp = fopen("/tmp/wifi_packet_logs", "a+");
+    if (sify_fp == NULL) {
+        PRINTF("File opening error\n");
+        return;
+    }
 
-	if (sify_fp == NULL) {
-		PRINTF("File opening error\n");
-		return;
-	}
-	PRINTF("[%s:%d] status = %d, mac = %s\r\n",__func__,__LINE__,status,sify_buf);
-
-	if(status)
-	{
-		fprintf(sify_fp, "%s: Associated ( MAC: %s )\n",t,sify_buf);
-		syslog(LOG_INFO, " Associated ( MAC: %s )\n",sify_buf);		       
+    PRINTF("[%s:%d] status = %d, mac = %s\r\n",__func__,__LINE__,status,sify_buf);
+    if( status ) {
+        fprintf(sify_fp, "%s: Associated ( MAC: %s )\n",t,sify_buf);
+        syslog(LOG_INFO, " Associated ( MAC: %s )\n",sify_buf);		       
         sprintf( trap_cmd, "/usr/sbin/snmptrap.sh 1 %s  > /dev/null 2>&1", sify_buf);
         system( trap_cmd );
-        //system("/usr/sbin/link.sh > /dev/null 2>&1");
-                //int rc=system("/usr/sbin/sify_senddata.sh '1'"); 
-	}
-	else
-    {
-        switch( reason )
-        {
+    } else {
+        switch( reason ) {
             case IEEE80211_EV_BASE_DYING_GASP:
+                /* Step1: Reboot Log */
                 sprintf(cmd,"echo %s: Reboot initiated due to Dying Gasp >> /etc/reboot_logs",t);
                 system(cmd);
-                fprintf(sify_fp, "%s: Outdoor Base( MAC : %s) Power Off \n",t,sify_buf);
-                syslog(LOG_INFO, " Outdoor Base ( MAC : %s )Power Off \n",sify_buf);		       
+
+                /* Step2: Syslog */
+                syslog(LOG_INFO, " Outdoor Base ( MAC : %s )Power Off \n",sify_buf);
+
+                /* Step3: SNMP Trap */
                 sprintf( trap_cmd, "/usr/sbin/snmptrap.sh 4 %s  > /dev/null 2>&1", sify_buf);
                 system( trap_cmd );
+
+                /* Step4: Event Log */
+                fprintf(sify_fp, "%s: Outdoor Base( MAC : %s) Power Off \n",t,sify_buf);
+
                 break;
+
             case IEEE80211_EV_SU_DYING_GASP:
+                /* Step1: Reboot Log */
                 sprintf(cmd,"echo %s: Reboot initiated due to Dying Gasp >> /etc/reboot_logs",t);
                 system(cmd);
                 break;
-            case IEEE80211_EV_DYING_GASP:
-                fprintf(sify_fp, "%s: Disassociated ( MAC : %s, Reason: Power Off )\n",t,sify_buf);
-                syslog(LOG_INFO, " Disassociated ( MAC : %s, Reason: Power Off )\n",sify_buf);		       
+
+            case IEEE80211_EV_DYING_GASP_AP:
+                /* Step1: SNMP Trap */
                 sprintf( trap_cmd, "/usr/sbin/snmptrap.sh 3 %s  > /dev/null 2>&1", sify_buf);
                 system( trap_cmd );
+
+                /* Step2: Event Log */
+                fprintf(sify_fp, "%s: Outdoor Subscriber ( MAC : %s ) Power Off )\n",t,sify_buf);
+
+                /* Step3: Syslog */
+                syslog(LOG_INFO, " Outdoor Subscriber ( MAC : %s ) Power Off )\n",sify_buf);		       
                 break;
+
+            case IEEE80211_EV_DYING_GASP_SU:
+                /* Step1: SNMP Trap */
+                sprintf( trap_cmd, "/usr/sbin/snmptrap.sh 4 %s  > /dev/null 2>&1", sify_buf);
+                system( trap_cmd );
+
+                /* Step2: Event Log */
+                fprintf(sify_fp, "%s: Outdoor Base ( MAC : %s ) Power Off )\n",t,sify_buf);
+
+                /* Step3: Syslog */
+                syslog(LOG_INFO, " Outdoor Base ( MAC : %s )  Power Off )\n",sify_buf);		       
+                break;
+
             case IEEE80211_EV_DISASSOC_IND_AP:
                 fprintf(sify_fp, "%s: Disassociated ( MAC: %s, Reason: Remote Terminated )\n",t,sify_buf);
                 syslog(LOG_INFO, " Disassociated ( MAC: %s, Reason: Remote Terminated )\n",sify_buf);		       
@@ -224,9 +247,9 @@ void sify_file_write(char *sify_buf,int status, int reason, uint8_t value)
                 break;
         }
     }
-	fclose(sify_fp); /* close file */
+    fclose(sify_fp); /* close file */
+    return;
 }
-/*end of sify */
 
 void kwn_sys_cmd_imp( const char* cmd, uint8_t* cmd_buf )
 {

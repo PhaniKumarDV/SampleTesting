@@ -29,7 +29,7 @@ if [ "$1" -eq 2 ]; then
 fi
 
 if [ "$1" -eq 3 ]; then
-    trapmsg="$date: Remote Device (MAC:$2) is power off"
+    trapmsg="$date: Outdoor Subscriber (MAC:$2) is power off"
     trapoid="1.3.6.1.4.1.52619.1.3.4.3"
 	trap_send
     exit
@@ -83,8 +83,8 @@ if [ "$1" -eq 9 ]; then
     trapoid="1.3.6.1.4.1.52619.1.3.4.9"
 	trap_send
     exit
-
 fi
+
 if [ "$1" -eq 10 ]; then
     trapmsg="$date: Device is rebooting"
     trapoid="1.3.6.1.4.1.52619.1.3.4.10"

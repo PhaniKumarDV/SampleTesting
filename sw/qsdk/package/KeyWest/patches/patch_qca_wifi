@@ -1504,7 +1504,7 @@ diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_stats.c qca-wifi-mod/o
              scn->scn_stats.rx_aggr = txrx_pdev->stats.priv.rx.normal.rx_aggr;
 diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_vap.c qca-wifi-mod/offload/wlan/lmac_offload_if/ol_if_vap.c
 --- qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_vap.c	2018-06-08 11:00:45.000000000 +0530
-+++ qca-wifi-mod/offload/wlan/lmac_offload_if/ol_if_vap.c	2019-03-16 15:21:11.076632457 +0530
++++ qca-wifi-mod/offload/wlan/lmac_offload_if/ol_if_vap.c	2019-05-01 20:34:47.514286489 +0530
 @@ -32,6 +32,7 @@
  #if ATH_SUPPORT_GREEN_AP
  #include "ath_green_ap.h"
@@ -1636,66 +1636,58 @@ diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_vap.c qca-wifi-mod/off
      /* delete key before vdev delete */
      delete_default_vap_keys(vap);
  
-@@ -3717,6 +3791,101 @@
+@@ -3717,6 +3791,92 @@
      return 0;
  }
  
-+void dying_gasp_fn ( void * arg ) {
-+    struct net_device *dev = dev_get_by_name(&init_net,"ath1");
++#define WIFI1_INTERFACE "ath1"
++#define BRIDGE_INTERFACE "br-lan"
++
++void dying_gasp_fn ( void * arg ) 
++{
++    struct net_device *dev = dev_get_by_name ( &init_net, WIFI1_INTERFACE );
 +
 +    if ( dev != NULL ) {
 +        osif_dev  *osdev = ath_netdev_priv(dev);
 +        wlan_if_t vap = osdev->os_if;
++        struct ieee80211_node   *ni = NULL; 
++        union iwreq_data wreq = {{0}};
 +
-+        if ( 1 /*ieee80211vap_get_opmode(vap) == IEEE80211_M_HOSTAP*/ ) {
-+            struct ieee80211com *ic = vap->iv_ic;
-+            struct net_device *dev_br;
-+            struct ieee80211_node   *ni = NULL; 
-+            union iwreq_data wreq = {{0}};
-+            u_int32_t ip;
-+
-+            ni = vap->iv_bss;
-+            /* find netdev by name, increment refcnt */
-+            dev_br = dev_get_by_name(&init_net,"br-lan");
-+            if (!dev_br) { 
-+                printk("Unable to fetch IP Address\n");
-+                return;
-+            }
-+            /* get ip addr from rtable (global scope) */
-+            ip = inet_select_addr(dev_br, 0, RT_SCOPE_UNIVERSE);
-+            /* decrement netdev refcnt */
-+            dev_put(dev_br);
-+            /* Send an event to apl as dying gasp packet */
-+            if( ni->dg_count == 0 ) 
-+            {
-+                memset(&wreq, 0, sizeof(wreq));
-+                wreq.addr.sa_family = ARPHRD_ETHER;
-+                memcpy(wreq.addr.sa_data, ni->ni_macaddr, 6);
-+                if ( ieee80211vap_get_opmode(vap) == IEEE80211_M_HOSTAP ) {
-+                    wreq.addr.sa_data[6] = IEEE80211_EV_BASE_DYING_GASP;
-+                }
-+                else {
-+                    wreq.addr.sa_data[6] = IEEE80211_EV_SU_DYING_GASP;
-+                }
-+                wireless_send_event(dev, IWEVEXPIRED, &wreq, NULL);
-+            }
-+            if ( ieee80211vap_get_opmode(vap) == IEEE80211_M_HOSTAP ) {
-+                printk("Outdoor Base [Time stamp : %9lu][Cus name:%s][Link id:%s][%d.%d.%d.%d] --> pkt count %d \n",
-+                        jiffies, ic->ic_customer_name,ic->ic_link_id,
-+                        (ip & 0xFF),(ip >> 8) & 0xFF,(ip >> 16 ) & 0xFF,(ip >> 24) & 0xFF,
-+                        ni->dg_count++);
-+            }
-+            else {
-+                printk("Outdoor Subscriber [Time stamp : %9lu][Cus name:%s][Link id:%s][%d.%d.%d.%d] --> pkt count %d \n",
-+                        jiffies, ic->ic_customer_name,ic->ic_link_id,
-+                        (ip & 0xFF),(ip >> 8) & 0xFF,(ip >> 16 ) & 0xFF,(ip >> 24) & 0xFF,
-+                        ni->dg_count++);
-+            }
++        ni = vap->iv_bss;
++        if ( ni == NULL ) {
++            return;
 +        }
-+        ieee80211_send_dying_gasp( vap , 0, NULL );
-+        //printk("dg_ack_rcvd : %d \n",dg_ack_rcvd);	
-+        //printk("vap->iv_ic->ic_dg_timer_interval = %d,HZ = %d,jiffies = %9lu , Next jiffies = %9lu \n",vap->iv_ic->ic_dg_timer_interval,HZ,jiffies, 
-+        //	jiffies+(vap->iv_ic->ic_dg_timer_interval*HZ/1000));
++        /* Return from IRQ immediately by scheduling a timer */
++        if( ni->dg_count == 0 ) {
++            ni->dg_count++;
++            mod_timer(&dg_timer, jiffies + 1 );
++            dev_put(dev);
++            return;
++        }
++
++        /* Step1: Application Wireless Netlink Event for SNMP Trap */
++        if( ni->dg_count == 1 ) {
++            memset( &wreq, 0, sizeof( wreq ) );
++            wreq.addr.sa_family = ARPHRD_ETHER;
++            memcpy( wreq.addr.sa_data, ni->ni_macaddr, 6 );
++            if( ieee80211vap_get_opmode(vap) == IEEE80211_M_HOSTAP ) {
++                wreq.addr.sa_data[6] = IEEE80211_EV_BASE_DYING_GASP;
++            } else {
++                wreq.addr.sa_data[6] = IEEE80211_EV_SU_DYING_GASP;
++            }
++            wireless_send_event( dev, IWEVEXPIRED, &wreq, NULL );
++            /* Start Timer and return: This logic is added to make sure to get SNMP Trap get 
++               delivered over Ethernet interface */
++            ni->dg_count++;
++            mod_timer(&dg_timer, jiffies + ( (vap->iv_ic->ic_dg_timer_interval * HZ) /1000 ) );
++            dev_put(dev);
++            return;
++        }
++
++        /* Step2: DyingGasp Event(802.11 Action Frame) to remote partners */
++        ieee80211_send_dying_gasp( vap, 0, NULL );
++
++        /* Step3: DyingGasp Timer handling */
 +        if( !dg_ack_rcvd ) {
 +            if( vap->iv_ic->ic_dg_triggered ) {
 +                u_int64_t curr_jiffies = jiffies;
@@ -1703,21 +1695,20 @@ diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_vap.c qca-wifi-mod/off
 +                /* Issue: In the case when power is down and up within 20ms, DG Timer gets triggered and keeps on sending DG packets forever
 +                 * which creates no link issue. This issue happens only in BSU.
 +                 * Fix: In this case stop the DG Timer after 1sec and reset the dg triggered flag */
-+                if( diff > 5000 ) {
-+                    printk(": DG: current jiffies %llu  last jiffies %llu diff %lu \n",curr_jiffies, vap->iv_ic->ic_dg_jiffies,diff);
-+                    printk(": DG: Delete Timer\n");
++                if( diff >= 5000 ) {
++                    printk(": DG: DeleteTimer: current jiffies %llu  last jiffies %llu diff %lu \n",
++                            curr_jiffies, vap->iv_ic->ic_dg_jiffies,diff);
 +                    vap->iv_ic->ic_dg_triggered = 0;
 +                    del_timer(&dg_timer);
++                    dev_put(dev);
++                    return;
++                } else {
++                    mod_timer(&dg_timer, jiffies + ( (vap->iv_ic->ic_dg_timer_interval * HZ) /1000 ) );
 +                }
-+                else {
-+                    mod_timer(&dg_timer,jiffies+(vap->iv_ic->ic_dg_timer_interval*HZ/1000));
-+                }
++            } else {
++                mod_timer(&dg_timer, jiffies + ( (vap->iv_ic->ic_dg_timer_interval * HZ) /1000 ));
 +            }
-+            else {
-+                mod_timer(&dg_timer,jiffies+(vap->iv_ic->ic_dg_timer_interval*HZ/1000));
-+            }
-+        }
-+        else {
++        } else {
 +            del_timer(&dg_timer);
 +        }
 +        if( !vap->iv_ic->ic_dg_triggered ) {
@@ -1727,7 +1718,7 @@ diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_vap.c qca-wifi-mod/off
 +
 +        dev_put(dev);
 +    }
-+    return ;
++    return;
 +}
 +
 +void dying_gasp_timer ( unsigned long  arg )
@@ -1738,7 +1729,7 @@ diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_vap.c qca-wifi-mod/off
  /* Intialization functions */
  void
  ol_ath_vap_attach(struct ieee80211com *ic)
-@@ -3728,6 +3897,7 @@
+@@ -3728,6 +3888,7 @@
      ic->ic_vap_alloc_macaddr = ol_ath_vap_alloc_macaddr;
      ic->ic_vap_free_macaddr = ol_ath_vap_free_macaddr;
      ic->ic_vap_set_param = ol_ath_vap_set_param;
@@ -1746,7 +1737,7 @@ diff -urN qca-wifi-org/offload/wlan/lmac_offload_if/ol_if_vap.c qca-wifi-mod/off
      ic->ic_vap_sifs_trigger = ol_ath_vap_sifs_trigger;
      ic->ic_vap_set_ratemask = ol_ath_vap_set_ratemask;
      ic->ic_vap_dyn_bw_rts = ol_ath_vap_dyn_bw_rts;
-@@ -3754,6 +3924,7 @@
+@@ -3754,6 +3915,7 @@
          ath_green_ap_start(ic);
      }
  #endif  /* ATH_SUPPORT_GREEN_AP */
@@ -2602,7 +2593,7 @@ diff -urN qca-wifi-org/os/linux/BuildCaps.inc qca-wifi-mod/os/linux/BuildCaps.in
  else
 diff -urN qca-wifi-org/os/linux/include/ieee80211_ioctl.h qca-wifi-mod/os/linux/include/ieee80211_ioctl.h
 --- qca-wifi-org/os/linux/include/ieee80211_ioctl.h	2018-06-08 11:00:42.000000000 +0530
-+++ qca-wifi-mod/os/linux/include/ieee80211_ioctl.h	2019-04-25 13:47:50.343623045 +0530
++++ qca-wifi-mod/os/linux/include/ieee80211_ioctl.h	2019-05-01 20:34:53.726278109 +0530
 @@ -1530,6 +1530,108 @@
      IEEE80211_PARAM_TIMEOUTIE                  = 550,   /* set/get assoc comeback timeout value */
      IEEE80211_PARAM_PMF_ASSOC                  = 551,   /* enable/disable pmf support */
@@ -2712,11 +2703,11 @@ diff -urN qca-wifi-org/os/linux/include/ieee80211_ioctl.h qca-wifi-mod/os/linux/
  };
  #define WOW_CUSTOM_PKT_LEN 102
  #define WOW_SYNC_PATTERN 0xFF
-@@ -2178,6 +2280,17 @@
+@@ -2178,6 +2280,18 @@
  
  #endif /* __linux__ */
  
-+#define IEEE80211_EV_DYING_GASP       45
++#define IEEE80211_EV_DYING_GASP_AP    45
 +#define IEEE80211_EV_BASE_DYING_GASP  46
 +#define IEEE80211_EV_SU_DYING_GASP    47
 +#define IEEE80211_EV_DCS_TRIGGERED    48
@@ -2726,11 +2717,12 @@ diff -urN qca-wifi-org/os/linux/include/ieee80211_ioctl.h qca-wifi-mod/os/linux/
 +#define IEEE80211_EV_ACS_START        52
 +#define IEEE80211_EV_ACS_BEST_CHANNEL 53
 +#define IEEE80211_EV_SCAN_IN_PROGRESS 54
++#define IEEE80211_EV_DYING_GASP_SU    55
 +
  #define IEEE80211_VAP_PROFILE_NUM_ACL 64
  /*
   * As it is not advisable to use the macros defined in
-@@ -2328,4 +2441,29 @@
+@@ -2328,4 +2442,29 @@
  };
  #endif
  
@@ -8409,7 +8401,7 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt_bss.c qca-wifi-mod/umac/mlme/iee
          goto exit;
 diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee80211_mgmt.c
 --- qca-wifi-org/umac/mlme/ieee80211_mgmt.c	2018-06-08 11:00:48.000000000 +0530
-+++ qca-wifi-mod/umac/mlme/ieee80211_mgmt.c	2019-04-25 13:51:12.311501058 +0530
++++ qca-wifi-mod/umac/mlme/ieee80211_mgmt.c	2019-05-01 20:36:52.438059150 +0530
 @@ -22,10 +22,21 @@
  #include "ieee80211_wifipos_pvt.h"
  #endif
@@ -8479,7 +8471,7 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee802
      if (vap->iv_mesh_mgmt_txsend_config == 0)
      {
          wbuf_set_pktlen(wbuf, (frm - (u_int8_t *)wbuf_header(wbuf)));
-@@ -921,6 +945,297 @@
+@@ -921,6 +945,296 @@
              return 0;
      }
  }
@@ -8503,32 +8495,31 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee802
 +    struct ieee80211_action_mgt_args actionargs;
 +
 +    if( NULL != vap) {
-+            struct ieee80211_node   *ni = NULL; 
++        struct ieee80211_node   *ni = NULL; 
++        if (ieee80211vap_get_opmode(vap) == IEEE80211_M_HOSTAP && !send_ack) {
++            /* create temporary node for broadcast */
++            ni = ieee80211_tmp_node(vap, IEEE80211_GET_BCAST_ADDR(vap->iv_ic));
++        } else {
++            if ( send_ack ) {
++                ni = ack_ni;
++            }
++            else {
++                ni = vap->iv_bss;
++            }
++        }
++        if (ni != NULL) {
++            actionargs.category = IEEE80211_ACTION_CAT_VHT;
++            actionargs.action   = IEEE80211_ACTION_DYING_GASP;
++            actionargs.arg1     = send_ack;
++            actionargs.arg2     = 0;
++            actionargs.arg3     = 0;
++            ieee80211_send_action(ni, &actionargs, NULL);
 +            if (ieee80211vap_get_opmode(vap) == IEEE80211_M_HOSTAP && !send_ack) {
-+                /* create temporary node for broadcast */
-+                ni = ieee80211_tmp_node(vap, IEEE80211_GET_BCAST_ADDR(vap->iv_ic));
-+            } else {
-+		if ( send_ack ) {
-+			ni = ack_ni;
-+			//printk("use ack ni\n");
-+		}
-+		else {
-+                	ni = vap->iv_bss;
-+		}
++                /* temporary node - decrement reference count so that the node will be
++                 * automatically freed upon completion */
++                ieee80211_free_node(ni);
 +            }
-+            if (ni != NULL) {
-+                actionargs.category = IEEE80211_ACTION_CAT_VHT;
-+                actionargs.action   = IEEE80211_ACTION_DYING_GASP;
-+                actionargs.arg1     = send_ack;
-+                actionargs.arg2     = 0;
-+                actionargs.arg3     = 0;
-+                ieee80211_send_action(ni, &actionargs, NULL);
-+                if (ieee80211vap_get_opmode(vap) == IEEE80211_M_HOSTAP && !send_ack) {
-+                    /* temporary node - decrement reference count so that the node will be
-+                     * automatically freed upon completion */
-+                    ieee80211_free_node(ni);
-+                }
-+            }
++        }
 +    }
 +}
 +
@@ -8777,7 +8768,7 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee802
  
  int
  ieee80211_send_action(
-@@ -1183,21 +1498,220 @@
+@@ -1183,21 +1497,220 @@
      break;
  
      case IEEE80211_ACTION_CAT_VHT: {
@@ -9012,7 +9003,7 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee802
      }
      break;
  
-@@ -2241,6 +2755,7 @@
+@@ -2241,6 +2754,7 @@
  }
  int
  ieee80211_parse_beacon(struct ieee80211vap                  *vap,
@@ -9020,7 +9011,7 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee802
                         struct ieee80211_beacon_frame        *beacon_frame,
                         const struct ieee80211_frame         *wh,
                         u_int32_t                            beacon_frame_length,
-@@ -2404,6 +2919,9 @@
+@@ -2404,6 +2918,9 @@
              scan_entry_parameters->ie_list.htcap = (u_int8_t *) &(((struct ieee80211_ie_htcap *) info_element)->hc_ie);
              break;
          case IEEE80211_ELEMID_RESERVED_47:
@@ -9030,7 +9021,7 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee802
              break;
          case IEEE80211_ELEMID_RSN:
              scan_entry_parameters->ie_list.rsn = (u_int8_t *) info_element;
-@@ -2435,6 +2953,9 @@
+@@ -2435,6 +2952,9 @@
              scan_entry_parameters->ie_list.extcaps = (u_int8_t *) info_element;
              break;
          case IEEE80211_ELEMID_RESERVED_133:
@@ -9040,7 +9031,7 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee802
              break;
          case IEEE80211_ELEMID_TPC:
              break;
-@@ -2596,6 +3117,23 @@
+@@ -2596,6 +3116,23 @@
  
                  break;
              }
@@ -9064,7 +9055,7 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee802
          default:
              IEEE80211_DISCARD_IE(vap, IEEE80211_MSG_ELEMID,
                                   "unhandled",
-@@ -2864,6 +3402,7 @@
+@@ -2864,6 +3401,7 @@
      }
  
      scan_entry = ieee80211_scan_table_update(ni->ni_vap,
@@ -9072,302 +9063,309 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee802
                                               wh,
                                               wbuf_get_pktlen(wbuf),
                                               subtype,
-@@ -3825,13 +4364,289 @@
+@@ -3825,13 +4363,300 @@
  
                      ieee80211_parse_opmode(ni, (u_int8_t *)&ia_opmode->at_op_mode, subtype);
                  }
-+		action_taken = FALSE;// set to false so that it is forwarded to hostapd
-                 break;
--            default:
--                IEEE80211_NOTE(vap, IEEE80211_MSG_ACTION, ni,
--                        "%s: Unhandled OR invalid VHT action code - %d", __func__, ia->ia_action);
--                break;
++                action_taken = FALSE;// set to false so that it is forwarded to hostapd
++                break;
 +            case IEEE80211_ACTION_DYING_GASP: 
 +                {
 +                    struct ieee80211_action_vht_dying_gasp *frame = (struct ieee80211_action_vht_dying_gasp *)frm;
-+                    struct net_device *dev = dev_get_by_name(&init_net,"ath1");
-+                    union iwreq_data wreq = {{0}};
 +                    u_int8_t ip[20];
 +
-+                    strncpy( ip, frame->at_dying_gasp.ipv4, sizeof( frame->at_dying_gasp.ipv4 ) );
 +                    if(frame->at_dying_gasp.type == DG_PKT_TYPE_INFORM ) {
++                        /* Step1: Send ACK to SU from AP */
 +                        if (vap->iv_opmode == IEEE80211_M_HOSTAP && !vap->iv_ic->ic_dg_ack_disable) {
-+                            ieee80211_send_dying_gasp( vap , 1, ni);
-+                            //printk("\n:dying gasp ack sent---> \n");
++                            ieee80211_send_dying_gasp( vap , 1, ni );
 +                        }
 +
-+                        printk("(%9lu)[Remote Time stamp : %9lu][Cus name:%s][Link id:%s][%s] Seq No:%d --> Recv pkts %d \n",
-+                                jiffies,frame->at_dying_gasp.ts, frame->at_dying_gasp.customer_name,frame->at_dying_gasp.link_id,
-+                                ip,frame->at_dying_gasp.seq_no,ni->dg_count++);
++                        /* Step2: Syslog */
++                        strncpy( ip, frame->at_dying_gasp.ipv4, sizeof( frame->at_dying_gasp.ipv4 ) );
++                        if( vap->iv_opmode == IEEE80211_M_HOSTAP ) {
++                            printk("(%9lu) Outdoor Subscriber Power Off [ Time stamp : %9lu][Cus name:%s][Link id:%s][%s] Seq No:%d --> Recv pkts %d \n",
++                                    jiffies,frame->at_dying_gasp.ts, frame->at_dying_gasp.customer_name,frame->at_dying_gasp.link_id,
++                                    ip,frame->at_dying_gasp.seq_no,ni->dg_count++);
++                        }
++                        else {
++                            printk("(%9lu) Outdoor Base Power Off [ Time stamp : %9lu][Cus name:%s][Link id:%s][%s] Seq No:%d --> Recv pkts %d \n",
++                                    jiffies,frame->at_dying_gasp.ts, frame->at_dying_gasp.customer_name,frame->at_dying_gasp.link_id,
++                                    ip,frame->at_dying_gasp.seq_no,ni->dg_count++);
++                        }
 +
-+                        /* Send an event to apl as dying gasp packet received for logging */
-+                        memset(&wreq, 0, sizeof(wreq));
-+                        wreq.addr.sa_family = ARPHRD_ETHER;
-+                        memcpy(wreq.addr.sa_data, ni->ni_macaddr, 6);
-+                        wreq.addr.sa_data[6] = IEEE80211_EV_DYING_GASP;
-+                        wireless_send_event(dev, IWEVEXPIRED, &wreq, NULL);
++                        /* Step3: Application Event Log & SU Dis-assoc in AP */
 +                        if( ni->dg_count == 1 ) {
++                            struct net_device *dev = dev_get_by_name(&init_net,"ath1");
++                            union iwreq_data wreq = {{0}};
++                            memset(&wreq, 0, sizeof(wreq));
++                            wreq.addr.sa_family = ARPHRD_ETHER;
++                            memcpy(wreq.addr.sa_data, ni->ni_macaddr, 6);
 +                            if( vap->iv_opmode == IEEE80211_M_HOSTAP ) {
++                                wreq.addr.sa_data[6] = IEEE80211_EV_DYING_GASP_AP;
++                                wireless_send_event(dev, IWEVEXPIRED, &wreq, NULL);
 +                                wlan_mlme_disassoc_request( vap, ni->ni_macaddr, IEEE80211_REASON_UNSPECIFIED );
++                            } else {
++                                wreq.addr.sa_data[6] = IEEE80211_EV_DYING_GASP_SU;
++                                wireless_send_event(dev, IWEVEXPIRED, &wreq, NULL);
 +                            }
++                            dev_put(dev);
 +                        }
 +                    }
 +                    else if (frame->at_dying_gasp.type == DG_PKT_TYPE_ACK ) {
 +                        dg_ack_rcvd = 1;
 +                    }
-+                    dev_put(dev);
-+		}
-+		break;
-+	    case IEEE80211_ACTION_LINK_PARAM: 
-+		{
-+			struct ieee80211_action_vht_link_param *frame_lmt = (struct ieee80211_action_vht_link_param *)frm;
-+			u_int8_t ip[20];
++                }
++                break;
++            case IEEE80211_ACTION_LINK_PARAM: 
++                {
++                    struct ieee80211_action_vht_link_param *frame_lmt = (struct ieee80211_action_vht_link_param *)frm;
++                    u_int8_t ip[20];
 +
-+            strncpy( ip, frame_lmt->at_uldl_limit.ipv4, sizeof( frame_lmt->at_uldl_limit.ipv4 ) );
-+			/* printk("######### Received [Uplink Limit:%d][Downlink Limit:%d][%s] ##############\n",
-+					frame_lmt->at_uldl_limit.ul_limit,frame_lmt->at_uldl_limit.dl_limit,ip); */
-+			if ( vap->iv_opmode == IEEE80211_M_HOSTAP ) {
-+                ni->kwn_remote_shaping = frame_lmt->at_uldl_limit.kwn_shaping;
-+                if( vap->kwn_traffic_shaping == 1 && ni->kwn_remote_shaping == 1 ) {
-+                    ni->kwn_traffic_shaping = 1;
-+                    ni->kwn_ul_limit = frame_lmt->at_uldl_limit.ul_limit > vap->kwn_ul_limit ? 
-+                        vap->kwn_ul_limit : frame_lmt->at_uldl_limit.ul_limit;
-+                    ni->kwn_dl_limit = frame_lmt->at_uldl_limit.dl_limit > vap->kwn_dl_limit ? 
-+                        vap->kwn_dl_limit : frame_lmt->at_uldl_limit.dl_limit;
-+                }
-+                else if( vap->kwn_traffic_shaping == 1 ) {
-+                    ni->kwn_traffic_shaping = 1;
-+                    ni->kwn_ul_limit = vap->kwn_ul_limit;
-+                    ni->kwn_dl_limit = vap->kwn_dl_limit;
-+                }
-+                else if( ni->kwn_remote_shaping == 1 ) {
-+                    ni->kwn_traffic_shaping = 1;
-+                    ni->kwn_ul_limit = frame_lmt->at_uldl_limit.ul_limit;
-+                    ni->kwn_dl_limit = frame_lmt->at_uldl_limit.dl_limit;
-+                }
-+                vap->kwn_final_ul_limit = ni->kwn_ul_limit;
-+                vap->kwn_final_dl_limit = ni->kwn_dl_limit;
-+				ieee80211_send_link_params( vap, ni );
-+                if( ic->kwn_linktype == KWN_LINKTYPE_PTMP_TDMA ) {
-+                    ic->ic_kwn_set_qboost( vap, ic, ni, 1 );
-+                }
-+                else {
-+                    ic->ic_kwn_set_qboost( vap, ic, ni, 0 );
-+                }
-+			}
-+			else {
-+                ni->kwn_traffic_shaping = vap->kwn_traffic_shaping;
-+                ni->kwn_remote_shaping = frame_lmt->at_uldl_limit.kwn_shaping;
-+				ni->kwn_ul_limit = frame_lmt->at_uldl_limit.ul_limit;
-+				ni->kwn_dl_limit = frame_lmt->at_uldl_limit.dl_limit;
-+                vap->kwn_final_ul_limit = ni->kwn_ul_limit;
-+                vap->kwn_final_dl_limit = ni->kwn_dl_limit;
-+                vap->kwn_assem_frag = frame_lmt->at_uldl_limit.kwn_assem_frag;
-+                vap->kwn_max_pkt_size = frame_lmt->at_uldl_limit.kwn_max_pkt_size;
-+                vap->kwn_frag_pkt_size = frame_lmt->at_uldl_limit.kwn_frag_pkt_size;
-+                if( frame_lmt->at_uldl_limit.kwn_linktype == KWN_LINKTYPE_PTMP_TDMA ) {
-+                    ic->ic_kwn_set_qboost( vap, ic, ni, 1 );
-+                }
-+                else {
-+                    ic->ic_kwn_set_qboost( vap, ic, ni, 0 );
-+                }
-+                /* Free Link Param exchange timer as BSU link parameters received on SU */
-+                OS_FREE_TIMER( &ni->kwn_link_timer );
-+			}
-+			memcpy(ni->customer_name, frame_lmt->at_uldl_limit.customer_name, sizeof(frame_lmt->at_uldl_limit.customer_name));
-+			memcpy(ni->link_id, frame_lmt->at_uldl_limit.link_id, sizeof(frame_lmt->at_uldl_limit.link_id));
-+			ni->kwn_antenna_gain = frame_lmt->at_uldl_limit.antenna_gain;
-+            ni->kwn_macinmac = frame_lmt->at_uldl_limit.kwn_macinmac;
-+			printk("After negotiation[%s], Traffic Shaping: %d Uplink Limit: %d Downlink Limit: %d \n",
-+                ip, ni->kwn_traffic_shaping, vap->kwn_final_ul_limit, vap->kwn_final_dl_limit );
-+		}
-+		break;
-+	    case IEEE80211_ACTION_NODE_STATS: 
-+		{
-+			struct ieee80211_action_vht_node_stats *frame_stats = (struct ieee80211_action_vht_node_stats *)frm;
-+#if 0
-+			u_int8_t ip[20];
-+            strncpy( ip, frame_stats->at_node_stats.ipv4, sizeof( frame_stats->at_node_stats.ipv4 ) );
-+			printk("######### Received Local [SNR1:%d][SNR2:%d] Remote [SNR1:%d][SNR2:%d][%s] ##############\n",
-+					vap->local_snr_a1,vap->local_snr_a2,
-+					frame_stats->at_node_stats.snr_a1,frame_stats->at_node_stats.snr_a2,ip);
-+#endif
-+            ni->kwn_snr_avg.remote_snr_avg[0] = frame_stats->at_node_stats.snr_avg[0];
-+            ni->kwn_snr_avg.remote_snr_avg[1] = frame_stats->at_node_stats.snr_avg[1];
-+            ni->remote_noise_floor = frame_stats->at_node_stats.noise_floor;
-+            strncpy( ni->ip_addr, frame_stats->at_node_stats.ipv4, sizeof( frame_stats->at_node_stats.ipv4 ) );
-+            //ni->rx_tput_mbps = frame_stats->at_node_stats.rx_tput_mbps;
-+            //ni->tx_tput_mbps = frame_stats->at_node_stats.tx_tput_mbps;
-+            ni->remote_phy_err = frame_stats->at_node_stats.phy_err;
-+            ni->remote_mpdu_err = frame_stats->at_node_stats.mpdu_err;
-+            ni->kwn_local_retries = frame_stats->at_node_stats.retries;
-+            ni->kwn_remote_rtx = frame_stats->at_node_stats.rtx;
-+            ni->kwn_remote_tx_pwr = frame_stats->at_node_stats.tx_pwr;
-+            ni->kwn_remote_tx_chainmask = frame_stats->at_node_stats.tx_chainmask;
-+            ni->kwn_remote_tx_data = frame_stats->at_node_stats.tx_data;
-+            ni->kwn_remote_rx_data = frame_stats->at_node_stats.rx_data;
-+		}
-+		break;
-+	    case IEEE80211_ACTION_TPUT_TEST: 
-+		{
-+            struct ieee80211_action_vht_tput_test *frame_tput = (struct ieee80211_action_vht_tput_test *)frm;
-+#if 0
-+            u_int8_t ip[20];
-+            strncpy( ip, frame_tput->at_tput_test.ipv4, sizeof( frame_tput->at_tput_test.ipv4 ) );
-+            printk("######### Received [value:%d] [%d.%d.%d.%d] ##############\n",
-+                    frame_tput->at_tput_test.start_stop,ip);
-+            printk("########Mac addrss : %s########\n",ether_sprintf(ni->ni_macaddr));
-+#endif
-+            if ( frame_tput->at_tput_test.start_stop ) {
-+                printk("\n Start Test ...\n");
-+                IEEE80211_ADDR_COPY(vap->kwn_tput_test_mac, ni->ni_macaddr);
-+                vap->kwn_tput_test_duration = frame_tput->at_tput_test.duration;
-+                vap->kwn_tput_test_pkt_size = frame_tput->at_tput_test.pkt_size;
-+                vap->kwn_tput_test_pkt_per_ms = frame_tput->at_tput_test.cnt;
-+                printk(": TPUT: Pkt per ms %d \n",vap->kwn_tput_test_pkt_per_ms);
-+                vap->kwn_tput_test_start_time = jiffies;
-+                vap->kwn_tput_test_in_progress = 1;
-+                ni->kwn_tput_running = 1;
-+                vap->kwn_tput_test_from_app = 1;
-+                vap->kwn_tput_test_txseq = 0;
-+                vap->kwn_tput_test_rxseq = 0;
-+                tasklet_schedule(&vap->kwn_tput_tq);
-+            } else {
-+                printk("\n Stop Test...\n");
-+                vap->kwn_tput_test_start_time = 0;
-+                vap->kwn_tput_test_in_progress = 0;
-+                vap->kwn_tput_test_from_app = 0;
-+                ni->kwn_tput_running = 0;
-+            }
-+        }
-+		break;
-+	    case IEEE80211_ACTION_SCAN_ENTRIES: 
-+		{
-+            int i;
-+			struct ieee80211_action_vht_scan_entries *frame_scan = ( struct ieee80211_action_vht_scan_entries * )frm;
-+            for( i = 0; i < frame_scan->at_scan_entry.count; i++ )
-+            {
-+                printk(": Link: Received Scan entry Channel: %d %d RSSI:%d\n",
-+                        frame_scan->at_scan_entry.entry[i].channel, frame_scan->at_scan_entry.entry[i].frequency, frame_scan->at_scan_entry.entry[i].rssi);
-+            }
-+            /* TODO: Channel can get changed based on best channel selection algorithm */
-+            //ieee80211_apply_txparams( vap, ni, frame_scan->at_scan_entry.entry[i].channel, -1, -1 );
-+        }
-+		break;
-+	    case IEEE80211_ACTION_TX_PARAMS: 
-+		{
-+            struct ieee80211_action_vht_tx_params *frame_txparam = ( struct ieee80211_action_vht_tx_params * )frm;
-+			printk(": Link: Received Tx Params Chan:%d Power:%d Rate:%d\n",
-+					frame_txparam->at_tx_param.chan, frame_txparam->at_tx_param.txpower,
-+                    frame_txparam->at_tx_param.rate);
-+            ieee80211_apply_txparams( vap, ni, frame_txparam->at_tx_param.chan, frame_txparam->at_tx_param.rate, frame_txparam->at_tx_param.txpower );
-+        }
-+		break;
-+	    case IEEE80211_ACTION_TPUT_TEST_STATS: 
-+        {
-+            struct ieee80211_action_vht_tput_test_stats *frame_tput_stats = (struct ieee80211_action_vht_tput_test_stats *)frm;
-+            u_int64_t failed_cnt = 0;
-+            u_int8_t curr_iter = 0;
-+
-+            if( vap->kwn_tput_test_user_started ) {
-+                OS_CANCEL_TIMER(&vap->kwn_tput_timer_fr);
-+                printk(": TPUT: Tx Seq : %llu Received Rx Seq %llu and Failed cnt %llu \n",vap->kwn_tput_test_txseq, frame_tput_stats->at_tput_test_stats.rx_seq,
-+                        frame_tput_stats->at_tput_test_stats.rx_failed_cnt);
-+                failed_cnt = frame_tput_stats->at_tput_test_stats.rx_failed_cnt;
-+                curr_iter = vap->kwn_tput_test_curr_iter;
-+
-+                if( vap->kwn_tput_test_curr_iter == vap->kwn_tput_test_max_iter_cnt - 1 ) {
-+                    printk(": TPUT: Stop Test...\n");
-+                    printk(": TPUT: Cancel Timer\n");
-+                    OS_CANCEL_TIMER(&vap->kwn_tput_timer);
-+                    vap->kwn_tput_test_user_started = 0;
-+                    vap->kwn_tput_test_start_time = 0;
-+                    vap->kwn_tput_test_in_progress = 0;
-+                    vap->kwn_tput_test_from_app = 0;
-+                    vap->kwn_tput_test_txseq = 0;
-+                    vap->kwn_tput_test_rxseq = 0;
-+                    vap->kwn_tput_test_rx_failed_cnt = 0;
-+                    vap->kwn_tput_test_max_iter_cnt = 0;
-+                    vap->kwn_tput_test_curr_iter = 0;
-+                    ni->kwn_tput_running = 0;
-+                    break;
-+                }
-+                printk(": TPUT: Before Low %d Up %d pktperms %d \n",vap->kwn_tput_test_low_pktperms,vap->kwn_tput_test_up_pktperms,vap->kwn_tput_test_pkt_per_ms);
-+                if( failed_cnt == 0 ) {
-+                    vap->kwn_tput_test_low_pktperms = vap->kwn_tput_test_pkt_per_ms;
-+                    if( vap->kwn_tput_test_up_pktperms == 0 ) {
-+                        if ( ( vap->kwn_tput_test_low_pktperms * 2 ) <= vap->kwn_tput_test_max_pkt_per_ms )
-+                            vap->kwn_tput_test_pkt_per_ms = vap->kwn_tput_test_low_pktperms * 2;
-+                        else
-+                            vap->kwn_tput_test_pkt_per_ms = vap->kwn_tput_test_max_pkt_per_ms;
++                    strncpy( ip, frame_lmt->at_uldl_limit.ipv4, sizeof( frame_lmt->at_uldl_limit.ipv4 ) );
++                    /* printk("######### Received [Uplink Limit:%d][Downlink Limit:%d][%s] ##############\n",
++                       frame_lmt->at_uldl_limit.ul_limit,frame_lmt->at_uldl_limit.dl_limit,ip); */
++                    if ( vap->iv_opmode == IEEE80211_M_HOSTAP ) {
++                        ni->kwn_remote_shaping = frame_lmt->at_uldl_limit.kwn_shaping;
++                        if( vap->kwn_traffic_shaping == 1 && ni->kwn_remote_shaping == 1 ) {
++                            ni->kwn_traffic_shaping = 1;
++                            ni->kwn_ul_limit = frame_lmt->at_uldl_limit.ul_limit > vap->kwn_ul_limit ? 
++                                vap->kwn_ul_limit : frame_lmt->at_uldl_limit.ul_limit;
++                            ni->kwn_dl_limit = frame_lmt->at_uldl_limit.dl_limit > vap->kwn_dl_limit ? 
++                                vap->kwn_dl_limit : frame_lmt->at_uldl_limit.dl_limit;
++                        }
++                        else if( vap->kwn_traffic_shaping == 1 ) {
++                            ni->kwn_traffic_shaping = 1;
++                            ni->kwn_ul_limit = vap->kwn_ul_limit;
++                            ni->kwn_dl_limit = vap->kwn_dl_limit;
++                        }
++                        else if( ni->kwn_remote_shaping == 1 ) {
++                            ni->kwn_traffic_shaping = 1;
++                            ni->kwn_ul_limit = frame_lmt->at_uldl_limit.ul_limit;
++                            ni->kwn_dl_limit = frame_lmt->at_uldl_limit.dl_limit;
++                        }
++                        vap->kwn_final_ul_limit = ni->kwn_ul_limit;
++                        vap->kwn_final_dl_limit = ni->kwn_dl_limit;
++                        ieee80211_send_link_params( vap, ni );
++                        if( ic->kwn_linktype == KWN_LINKTYPE_PTMP_TDMA ) {
++                            ic->ic_kwn_set_qboost( vap, ic, ni, 1 );
++                        }
++                        else {
++                            ic->ic_kwn_set_qboost( vap, ic, ni, 0 );
++                        }
 +                    }
 +                    else {
-+                        vap->kwn_tput_test_pkt_per_ms = (uint32_t) ( ( vap->kwn_tput_test_low_pktperms + vap->kwn_tput_test_up_pktperms ) / 2 );
++                        ni->kwn_traffic_shaping = vap->kwn_traffic_shaping;
++                        ni->kwn_remote_shaping = frame_lmt->at_uldl_limit.kwn_shaping;
++                        ni->kwn_ul_limit = frame_lmt->at_uldl_limit.ul_limit;
++                        ni->kwn_dl_limit = frame_lmt->at_uldl_limit.dl_limit;
++                        vap->kwn_final_ul_limit = ni->kwn_ul_limit;
++                        vap->kwn_final_dl_limit = ni->kwn_dl_limit;
++                        vap->kwn_assem_frag = frame_lmt->at_uldl_limit.kwn_assem_frag;
++                        vap->kwn_max_pkt_size = frame_lmt->at_uldl_limit.kwn_max_pkt_size;
++                        vap->kwn_frag_pkt_size = frame_lmt->at_uldl_limit.kwn_frag_pkt_size;
++                        if( frame_lmt->at_uldl_limit.kwn_linktype == KWN_LINKTYPE_PTMP_TDMA ) {
++                            ic->ic_kwn_set_qboost( vap, ic, ni, 1 );
++                        }
++                        else {
++                            ic->ic_kwn_set_qboost( vap, ic, ni, 0 );
++                        }
++                        /* Free Link Param exchange timer as BSU link parameters received on SU */
++                        OS_FREE_TIMER( &ni->kwn_link_timer );
++                    }
++                    memcpy(ni->customer_name, frame_lmt->at_uldl_limit.customer_name, sizeof(frame_lmt->at_uldl_limit.customer_name));
++                    memcpy(ni->link_id, frame_lmt->at_uldl_limit.link_id, sizeof(frame_lmt->at_uldl_limit.link_id));
++                    ni->kwn_antenna_gain = frame_lmt->at_uldl_limit.antenna_gain;
++                    ni->kwn_macinmac = frame_lmt->at_uldl_limit.kwn_macinmac;
++                    printk("After negotiation[%s], Traffic Shaping: %d Uplink Limit: %d Downlink Limit: %d \n",
++                            ip, ni->kwn_traffic_shaping, vap->kwn_final_ul_limit, vap->kwn_final_dl_limit );
++                }
++                break;
++            case IEEE80211_ACTION_NODE_STATS: 
++                {
++                    struct ieee80211_action_vht_node_stats *frame_stats = (struct ieee80211_action_vht_node_stats *)frm;
++#if 0
++                    u_int8_t ip[20];
++                    strncpy( ip, frame_stats->at_node_stats.ipv4, sizeof( frame_stats->at_node_stats.ipv4 ) );
++                    printk("######### Received Local [SNR1:%d][SNR2:%d] Remote [SNR1:%d][SNR2:%d][%s] ##############\n",
++                            vap->local_snr_a1,vap->local_snr_a2,
++                            frame_stats->at_node_stats.snr_a1,frame_stats->at_node_stats.snr_a2,ip);
++#endif
++                    ni->kwn_snr_avg.remote_snr_avg[0] = frame_stats->at_node_stats.snr_avg[0];
++                    ni->kwn_snr_avg.remote_snr_avg[1] = frame_stats->at_node_stats.snr_avg[1];
++                    ni->remote_noise_floor = frame_stats->at_node_stats.noise_floor;
++                    strncpy( ni->ip_addr, frame_stats->at_node_stats.ipv4, sizeof( frame_stats->at_node_stats.ipv4 ) );
++                    //ni->rx_tput_mbps = frame_stats->at_node_stats.rx_tput_mbps;
++                    //ni->tx_tput_mbps = frame_stats->at_node_stats.tx_tput_mbps;
++                    ni->remote_phy_err = frame_stats->at_node_stats.phy_err;
++                    ni->remote_mpdu_err = frame_stats->at_node_stats.mpdu_err;
++                    ni->kwn_local_retries = frame_stats->at_node_stats.retries;
++                    ni->kwn_remote_rtx = frame_stats->at_node_stats.rtx;
++                    ni->kwn_remote_tx_pwr = frame_stats->at_node_stats.tx_pwr;
++                    ni->kwn_remote_tx_chainmask = frame_stats->at_node_stats.tx_chainmask;
++                    ni->kwn_remote_tx_data = frame_stats->at_node_stats.tx_data;
++                    ni->kwn_remote_rx_data = frame_stats->at_node_stats.rx_data;
++                }
++                break;
++            case IEEE80211_ACTION_TPUT_TEST: 
++                {
++                    struct ieee80211_action_vht_tput_test *frame_tput = (struct ieee80211_action_vht_tput_test *)frm;
++#if 0
++                    u_int8_t ip[20];
++                    strncpy( ip, frame_tput->at_tput_test.ipv4, sizeof( frame_tput->at_tput_test.ipv4 ) );
++                    printk("######### Received [value:%d] [%d.%d.%d.%d] ##############\n",
++                            frame_tput->at_tput_test.start_stop,ip);
++                    printk("########Mac addrss : %s########\n",ether_sprintf(ni->ni_macaddr));
++#endif
++                    if ( frame_tput->at_tput_test.start_stop ) {
++                        printk("\n Start Test ...\n");
++                        IEEE80211_ADDR_COPY(vap->kwn_tput_test_mac, ni->ni_macaddr);
++                        vap->kwn_tput_test_duration = frame_tput->at_tput_test.duration;
++                        vap->kwn_tput_test_pkt_size = frame_tput->at_tput_test.pkt_size;
++                        vap->kwn_tput_test_pkt_per_ms = frame_tput->at_tput_test.cnt;
++                        printk(": TPUT: Pkt per ms %d \n",vap->kwn_tput_test_pkt_per_ms);
++                        vap->kwn_tput_test_start_time = jiffies;
++                        vap->kwn_tput_test_in_progress = 1;
++                        ni->kwn_tput_running = 1;
++                        vap->kwn_tput_test_from_app = 1;
++                        vap->kwn_tput_test_txseq = 0;
++                        vap->kwn_tput_test_rxseq = 0;
++                        tasklet_schedule(&vap->kwn_tput_tq);
++                    } else {
++                        printk("\n Stop Test...\n");
++                        vap->kwn_tput_test_start_time = 0;
++                        vap->kwn_tput_test_in_progress = 0;
++                        vap->kwn_tput_test_from_app = 0;
++                        ni->kwn_tput_running = 0;
 +                    }
 +                }
-+                else {
-+                    vap->kwn_tput_test_up_pktperms = vap->kwn_tput_test_pkt_per_ms;
-+                    if( vap->kwn_tput_test_low_pktperms == 0 ) {
-+                        vap->kwn_tput_test_pkt_per_ms = (uint32_t) ( vap->kwn_tput_test_up_pktperms / 2 );
++                break;
++            case IEEE80211_ACTION_SCAN_ENTRIES: 
++                {
++                    int i;
++                    struct ieee80211_action_vht_scan_entries *frame_scan = ( struct ieee80211_action_vht_scan_entries * )frm;
++                    for( i = 0; i < frame_scan->at_scan_entry.count; i++ )
++                    {
++                        printk(": Link: Received Scan entry Channel: %d %d RSSI:%d\n",
++                                frame_scan->at_scan_entry.entry[i].channel, frame_scan->at_scan_entry.entry[i].frequency, frame_scan->at_scan_entry.entry[i].rssi);
++                    }
++                    /* TODO: Channel can get changed based on best channel selection algorithm */
++                    //ieee80211_apply_txparams( vap, ni, frame_scan->at_scan_entry.entry[i].channel, -1, -1 );
++                }
++                break;
++            case IEEE80211_ACTION_TX_PARAMS: 
++                {
++                    struct ieee80211_action_vht_tx_params *frame_txparam = ( struct ieee80211_action_vht_tx_params * )frm;
++                    printk(": Link: Received Tx Params Chan:%d Power:%d Rate:%d\n",
++                            frame_txparam->at_tx_param.chan, frame_txparam->at_tx_param.txpower,
++                            frame_txparam->at_tx_param.rate);
++                    ieee80211_apply_txparams( vap, ni, frame_txparam->at_tx_param.chan, frame_txparam->at_tx_param.rate, frame_txparam->at_tx_param.txpower );
++                }
++                break;
++            case IEEE80211_ACTION_TPUT_TEST_STATS: 
++                {
++                    struct ieee80211_action_vht_tput_test_stats *frame_tput_stats = (struct ieee80211_action_vht_tput_test_stats *)frm;
++                    u_int64_t failed_cnt = 0;
++                    u_int8_t curr_iter = 0;
++
++                    if( vap->kwn_tput_test_user_started ) {
++                        OS_CANCEL_TIMER(&vap->kwn_tput_timer_fr);
++                        printk(": TPUT: Tx Seq : %llu Received Rx Seq %llu and Failed cnt %llu \n",vap->kwn_tput_test_txseq, frame_tput_stats->at_tput_test_stats.rx_seq,
++                                frame_tput_stats->at_tput_test_stats.rx_failed_cnt);
++                        failed_cnt = frame_tput_stats->at_tput_test_stats.rx_failed_cnt;
++                        curr_iter = vap->kwn_tput_test_curr_iter;
++
++                        if( vap->kwn_tput_test_curr_iter == vap->kwn_tput_test_max_iter_cnt - 1 ) {
++                            printk(": TPUT: Stop Test...\n");
++                            printk(": TPUT: Cancel Timer\n");
++                            OS_CANCEL_TIMER(&vap->kwn_tput_timer);
++                            vap->kwn_tput_test_user_started = 0;
++                            vap->kwn_tput_test_start_time = 0;
++                            vap->kwn_tput_test_in_progress = 0;
++                            vap->kwn_tput_test_from_app = 0;
++                            vap->kwn_tput_test_txseq = 0;
++                            vap->kwn_tput_test_rxseq = 0;
++                            vap->kwn_tput_test_rx_failed_cnt = 0;
++                            vap->kwn_tput_test_max_iter_cnt = 0;
++                            vap->kwn_tput_test_curr_iter = 0;
++                            ni->kwn_tput_running = 0;
++                            break;
++                        }
++                        printk(": TPUT: Before Low %d Up %d pktperms %d \n",vap->kwn_tput_test_low_pktperms,vap->kwn_tput_test_up_pktperms,vap->kwn_tput_test_pkt_per_ms);
++                        if( failed_cnt == 0 ) {
++                            vap->kwn_tput_test_low_pktperms = vap->kwn_tput_test_pkt_per_ms;
++                            if( vap->kwn_tput_test_up_pktperms == 0 ) {
++                                if ( ( vap->kwn_tput_test_low_pktperms * 2 ) <= vap->kwn_tput_test_max_pkt_per_ms )
++                                    vap->kwn_tput_test_pkt_per_ms = vap->kwn_tput_test_low_pktperms * 2;
++                                else
++                                    vap->kwn_tput_test_pkt_per_ms = vap->kwn_tput_test_max_pkt_per_ms;
++                            }
++                            else {
++                                vap->kwn_tput_test_pkt_per_ms = (uint32_t) ( ( vap->kwn_tput_test_low_pktperms + vap->kwn_tput_test_up_pktperms ) / 2 );
++                            }
++                        }
++                        else {
++                            vap->kwn_tput_test_up_pktperms = vap->kwn_tput_test_pkt_per_ms;
++                            if( vap->kwn_tput_test_low_pktperms == 0 ) {
++                                vap->kwn_tput_test_pkt_per_ms = (uint32_t) ( vap->kwn_tput_test_up_pktperms / 2 );
++                            }
++                            else {
++                                vap->kwn_tput_test_pkt_per_ms = (uint32_t) ( ( vap->kwn_tput_test_low_pktperms + vap->kwn_tput_test_up_pktperms ) / 2 );
++                            }
++                        }
++
++                        printk(": TPUT: After Low %d Up %d pktperms %d \n",vap->kwn_tput_test_low_pktperms,vap->kwn_tput_test_up_pktperms,vap->kwn_tput_test_pkt_per_ms);
++                        vap->kwn_tput_test_pkt_per_ms = ( vap->kwn_tput_test_pkt_per_ms <= 0 ) ? 1 : vap->kwn_tput_test_pkt_per_ms;
++                        vap->kwn_tput_test_curr_iter++;
++                        vap->kwn_tput_test_start_time = jiffies;
++                        vap->kwn_tput_test_txseq = 0;
++                        vap->kwn_tput_test_rxseq = 0;
++                        vap->kwn_tput_test_rx_failed_cnt = 0;
++                        printk(": TPUT: pkt_per_ms: %d\n",vap->kwn_tput_test_pkt_per_ms);
++                        if( vap->kwn_tput_test_direction == 3 || vap->kwn_tput_test_direction == 2 )
++                            ieee80211_send_tput_test(vap,ni);
++                        if( vap->kwn_tput_test_direction == 3 || vap->kwn_tput_test_direction == 1 ) {
++                            OS_CANCEL_TIMER(&vap->kwn_tput_timer_fr);
++                            tasklet_schedule(&vap->kwn_tput_tq);
++                        }
++
 +                    }
 +                    else {
-+                        vap->kwn_tput_test_pkt_per_ms = (uint32_t) ( ( vap->kwn_tput_test_low_pktperms + vap->kwn_tput_test_up_pktperms ) / 2 );
++                        printk(": TPUT: Received Get request...Send TPUT Test Stats\n");
++                        ieee80211_tput_test_stats( vap, ni );
 +                    }
 +                }
-+
-+                printk(": TPUT: After Low %d Up %d pktperms %d \n",vap->kwn_tput_test_low_pktperms,vap->kwn_tput_test_up_pktperms,vap->kwn_tput_test_pkt_per_ms);
-+                vap->kwn_tput_test_pkt_per_ms = ( vap->kwn_tput_test_pkt_per_ms <= 0 ) ? 1 : vap->kwn_tput_test_pkt_per_ms;
-+                vap->kwn_tput_test_curr_iter++;
-+                vap->kwn_tput_test_start_time = jiffies;
-+                vap->kwn_tput_test_txseq = 0;
-+                vap->kwn_tput_test_rxseq = 0;
-+                vap->kwn_tput_test_rx_failed_cnt = 0;
-+                printk(": TPUT: pkt_per_ms: %d\n",vap->kwn_tput_test_pkt_per_ms);
-+                if( vap->kwn_tput_test_direction == 3 || vap->kwn_tput_test_direction == 2 )
-+                    ieee80211_send_tput_test(vap,ni);
-+                if( vap->kwn_tput_test_direction == 3 || vap->kwn_tput_test_direction == 1 ) {
-+                    OS_CANCEL_TIMER(&vap->kwn_tput_timer_fr);
-+                    tasklet_schedule(&vap->kwn_tput_tq);
++                break;
++            case IEEE80211_ACTION_TXBA_SETUP: 
++                {
++                    struct ieee80211_action_vht_txba_setup *frame_txba = ( struct ieee80211_action_vht_txba_setup * )frm;
++                    if( frame_txba->at_txba_setup.start_txba && !ni->kwn_txbasetup ) {
++                        vap->kwn_tput_test_pkt_per_ms = frame_txba->at_txba_setup.pkt_per_ms;
++                        vap->kwn_tput_test_pkt_size = frame_txba->at_txba_setup.pkt_size;
++                        ni->kwn_txbasetup = 1;
++                        printk("Start Tx BA Setup %s\n",ether_sprintf(ni->ni_macaddr));
++                        OS_SET_TIMER( &ni->kwn_txba_timer, 1000 );
++                    }
 +                }
-+
-+            }
-+            else {
-+                printk(": TPUT: Received Get request...Send TPUT Test Stats\n");
-+                ieee80211_tput_test_stats( vap, ni );
-+            }
-+        }
-+        break;
-+        case IEEE80211_ACTION_TXBA_SETUP: 
-+		{
-+            struct ieee80211_action_vht_txba_setup *frame_txba = ( struct ieee80211_action_vht_txba_setup * )frm;
-+            if( frame_txba->at_txba_setup.start_txba && !ni->kwn_txbasetup ) {
-+                vap->kwn_tput_test_pkt_per_ms = frame_txba->at_txba_setup.pkt_per_ms;
-+                vap->kwn_tput_test_pkt_size = frame_txba->at_txba_setup.pkt_size;
-+                ni->kwn_txbasetup = 1;
-+                printk("Start Tx BA Setup %s\n",ether_sprintf(ni->ni_macaddr));
-+                OS_SET_TIMER( &ni->kwn_txba_timer, 1000 );
-+            }
-+        }
-+		break;
-+        case IEEE80211_ACTION_CLEAR_NODE_STATS:
-+        {
-+            struct ieee80211_action_vht_clear_node_stats *frame_clear_node_stats = ( struct ieee80211_action_vht_clear_node_stats * )frm;
-+            if( frame_clear_node_stats->at_clear_node_stats.clear_node_stats == 1 )
-+            {
-+                ni->kwn_remote_retries = 0;
-+            }
-+        }
-+        break;
-+        default:
-+        IEEE80211_NOTE(vap, IEEE80211_MSG_ACTION, ni,
-+                "%s: Unhandled OR invalid VHT action code - %d", __func__, ia->ia_action);
-+        break;
++                break;
++            case IEEE80211_ACTION_CLEAR_NODE_STATS:
++                {
++                    struct ieee80211_action_vht_clear_node_stats *frame_clear_node_stats = ( struct ieee80211_action_vht_clear_node_stats * )frm;
++                    if( frame_clear_node_stats->at_clear_node_stats.clear_node_stats == 1 )
++                    {
++                        ni->kwn_remote_retries = 0;
++                    }
++                }
+                 break;
+             default:
+                 IEEE80211_NOTE(vap, IEEE80211_MSG_ACTION, ni,
+                         "%s: Unhandled OR invalid VHT action code - %d", __func__, ia->ia_action);
+                 break;
          }
 -        action_taken = FALSE; // set to false so that it is forwarded to hostapd
          break;
      }
  
-@@ -4002,6 +4817,10 @@
+@@ -4002,6 +4827,10 @@
      switch (subtype) {
      case IEEE80211_FC0_SUBTYPE_PROBE_RESP:
      case IEEE80211_FC0_SUBTYPE_BEACON:
@@ -9378,7 +9376,7 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee802
          ieee80211_recv_beacon(ni, wbuf, subtype, rs);
          /*store all received beacon info*/
          if(vap->iv_beacon_info_count>=100)
-@@ -4092,6 +4911,9 @@
+@@ -4092,6 +4921,9 @@
          break;
  
      case IEEE80211_FC0_SUBTYPE_AUTH:
@@ -9388,7 +9386,7 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee802
  #if ATH_NON_BEACON_AP
          if(IEEE80211_VAP_IS_NON_BEACON_ENABLED(vap)){
              /*Don't response to auth for non-beaconing AP VAP*/
-@@ -4107,10 +4929,34 @@
+@@ -4107,10 +4939,34 @@
      case IEEE80211_FC0_SUBTYPE_ASSOC_RESP:
      case IEEE80211_FC0_SUBTYPE_REASSOC_RESP:
          ieee80211_recv_asresp(ni, wbuf, subtype);
@@ -9424,7 +9422,7 @@ diff -urN qca-wifi-org/umac/mlme/ieee80211_mgmt.c qca-wifi-mod/umac/mlme/ieee802
  #if ATH_NON_BEACON_AP
          if(IEEE80211_VAP_IS_NON_BEACON_ENABLED(vap)){
              /*Don't response to auth for non-beaconing AP VAP*/
-@@ -4158,13 +5004,40 @@
+@@ -4158,13 +5014,40 @@
  #endif
          if (ieee80211_recv_asreq(ni, wbuf, subtype) == -EBUSY)
              forward_to_filter = 0;
