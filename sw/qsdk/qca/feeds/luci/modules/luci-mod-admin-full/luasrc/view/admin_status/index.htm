@@ -366,17 +366,6 @@ function get_mcs_rate( mcs_indx, radio )
 		);
 	}
 
-function clear_log()
-{
-    var id = 1;
-    XHR.get('<%=luci.dispatcher.build_url("admin")%>/clr_eventlog' + '/' + id, null,
-	function(x, data) {
-		if (data) { 
-			document.getElementById("result").innerHTML=data;
-		}
-	}
-    );
-}
 function get_mode()
 {
     var radio_mode = "<%=uciget('uci get wireless.@wifi-iface[1].mode')%>";
@@ -567,24 +556,12 @@ function get_desc()
 	}
     );
 }
-function get_log()
-{
-    var id = 6;
-    XHR.get('<%=luci.dispatcher.build_url("admin", "eventlog")%>/' + id, null,
-	function(x, data) {
-		if (data) { 
-			document.getElementById("result").innerHTML=data;
-		}
-	}
-    );
-}
 	var wifidevs = <%=luci.http.write_json(netdevs)%>;
 	var arptable = <%=luci.http.write_json(arpcache)%>;
 
 	XHR.poll(5, '<%=REQUEST_URI%>', { status: 1 },
 		function(x, info)
 		{
-            //get_log();
             get_links();
 			<% if has_wifi then %>
 			var assoclist = [ ];

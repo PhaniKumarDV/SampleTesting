@@ -208,13 +208,6 @@ start_service() {
     then
         uci set wireless.wifi1.ddrsrtxdec='15'
     fi
-# Auto Stream is not supported in current release...for upgrade support restting to single
-    if [ $stream1 -eq "3" ]; then
-        uci set wireless.wifi1.spatialstream='1'
-        uci set wireless.wifi1.ddrsminrate='0'
-        uci set wireless.wifi1.ddrsmaxrate='9'
-        uci set wireless.wifi1.ddrsrate='3'
-    fi
     if [ "$atpcstatus1" == "" ]
     then
         uci set wireless.wifi1.atpcstatus='2'
