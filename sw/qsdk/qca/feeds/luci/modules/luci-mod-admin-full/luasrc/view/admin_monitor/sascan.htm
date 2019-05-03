@@ -112,12 +112,10 @@ function get_values( data )
         tr.insertCell(-1).innerHTML = freq;
         tr.insertCell(-1).innerHTML = pow0;
         tr.insertCell(-1).innerHTML = pow1;
-        tr.insertCell(-1).innerHTML = util;
     }
     if( values.length > 1 ) {
         document.getElementById("h1").style.display = "block";
         document.getElementById("h2").style.display = "block";
-        document.getElementById("h3").style.display = "block";
     }
 
       new Chartist.Line('.ct-chart0', {
@@ -214,55 +212,6 @@ function get_values( data )
           right: 40
       }
     });
-
-      new Chartist.Line('.ct-chart2', {
-      labels: chan_plot,
-        series: [
-            util_plot
-              ]
-      }, 
-      {
-      fullWidth: true,
-      height: '250px',
-      axisX: {
-          labelInterpolationFnc: function(value) {
-              if( values.length < 20 ) {
-                  return value;
-              }
-              else {
-                  return value % 5 == 0 ? value : null;
-              }
-          }
-      },
-      plugins: [
-          Chartist.plugins.ctAxisTitle({
-               axisX: {
-                  axisTitle: 'Channel',
-                  axisClass: 'ct-axis-title',
-                  offset: {
-                      x: 0,
-                      y: 30
-                  },
-                  textAnchor: 'middle'
-               },
-               axisY: {
-                  axisTitle: 'Utilization (%)',
-                  axisClass: 'ct-axis-title',
-                  offset: {
-                      x: 0,
-                      y: 0
-                  },
-                  textAnchor: 'middle',
-                  flipTitle: false
-               }
-        })
-      ],
-      chartPadding: {
-          right: 40
-      }
-    });
-
-
 }
 	XHR.poll(5, '<%=REQUEST_URI%>', { status: 1 },
 		function(x, info)
@@ -336,16 +285,12 @@ function get_values( data )
     <div style="height:40px;"></div>
     <h2 id="h2" style="display:none;"><a id="content" name="content"><%: A2 (Horizontal)%></a></h2>
     <div class="ct-chart1" style="width:100%;"></div>
-    <div style="height:40px;"></div>
-    <h2 id="h3" style="display:none;"><a id="content" name="content"><%: Utilization %></a></h2>
-    <div class="ct-chart2" style="width:100%;"></div>
 		<table class="cbi-section-table" style="width:600px; margin:30px;" id="scan-list">
 			<tr class="cbi-section-table-titles">
 				<th class="cbi-section-table-cell"><%:Channel%></th>
 				<th class="cbi-section-table-cell"><%:Frequency (MHz)%></th>
 				<th class="cbi-section-table-cell"><%:Signal A1 (dBm)%></th>
 				<th class="cbi-section-table-cell"><%:Signal A2 (dBm)%></th>
-				<th class="cbi-section-table-cell"><%:Utilization%></th>
             </tr>
         </table>
     </fieldset>
