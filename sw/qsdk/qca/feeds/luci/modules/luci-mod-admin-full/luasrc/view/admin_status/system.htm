@@ -430,17 +430,17 @@ function hideparam()
             </div>
           </div>
           <div class="cbi-value" id="tagmgmt">
-            <label class="cbi-value-title">Allow Tag Mgmt</label>
+            <label class="cbi-value-title">Allow UnTagged</label>
             <div class="cbi-value-field">
               <select class="cbi-input-select" name="116">
                  <script type="text/javascript">
                  var opt = "<%=uciget('uci get vlan.vlan.tagmgmt')%>";
-                 document.write("<option value='1' ");
-                 if( opt == "1" )
-                     document.write(" selected");
-                 document.write(">Enable</option>");
                  document.write("<option value='0' ");
                  if( opt == "0" )
+                     document.write(" selected");
+                 document.write(">Enable</option>");
+                 document.write("<option value='1' ");
+                 if( opt == "1" )
                      document.write(" selected");
                  document.write(">Disable</option>");
                  </script>

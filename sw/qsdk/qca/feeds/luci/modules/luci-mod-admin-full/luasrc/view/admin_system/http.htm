@@ -87,7 +87,7 @@ function updatehttps()
 function updatehttpport()
 {
     if( document.getElementById("http2").checked == "1" ) 
-        document.getElementById("httpport").style.display="block";
+        document.getElementById("httpport").style.display="none";
     else
         document.getElementById("httpport").style.display="none";
 }
@@ -133,7 +133,7 @@ function updatehttpsport()
               <input type="password" name="162" class="cbi-input-select" value="********" >
             </div>
           </div>
-          <div class="cbi-value">
+          <div class="cbi-value" style="display:none">
             <label class="cbi-value-title">Enable HTTP</label>
             <div style="display:none"><input type="text" id="http1" name="91" value="<%=uciget('uci get uhttpd.main.listen_http')%>"></div>
             <div class="cbi-value-field">
