@@ -5814,7 +5814,7 @@ diff -urN qca-wifi-org/umac/base/ieee80211_node.c qca-wifi-mod/umac/base/ieee802
      OS_BEACON_WRITE_LOCK(&nt->nt_nodelock, &lock_state, flags);
 diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.c qca-wifi-mod/umac/base/ieee80211_ucfg.c
 --- qca-wifi-org/umac/base/ieee80211_ucfg.c	2018-06-08 11:00:49.000000000 +0530
-+++ qca-wifi-mod/umac/base/ieee80211_ucfg.c	2019-05-06 14:17:36.947539916 +0530
++++ qca-wifi-mod/umac/base/ieee80211_ucfg.c	2019-05-06 20:18:49.850834103 +0530
 @@ -50,6 +50,64 @@
  #define HIGHEST_BASIC_RATE 24000
  #define THREE_HUNDRED_FIFTY_MBPS 350000
@@ -6081,7 +6081,7 @@ diff -urN qca-wifi-org/umac/base/ieee80211_ucfg.c qca-wifi-mod/umac/base/ieee802
 +            vap->kwn_tput_test_from_app = 1;
 +            vap->kwn_tput_test_low_pktpers = 0;
 +            vap->kwn_tput_test_up_pktpers = 0;
-+            vap->kwn_tput_test_max_iter_cnt = (u_int8_t)( vap->kwn_tput_test_duration / ( 10 * 1000 ) );
++            vap->kwn_tput_test_max_iter_cnt = (int32_t)( vap->kwn_tput_test_duration / ( 10 * 1000 ) );
 +            vap->kwn_tput_test_curr_iter = -1;
 +            vap->kwn_tput_test_duration = 10 * 1000;
 +            /* Start the test from FrTimer */
