@@ -89,7 +89,7 @@ function hidekey(value)
           <div class="cbi-value">
             <label class="cbi-value-title">Encryption</label>
             <div class="cbi-value-field">
-              <select class="cbi-input-select" name="30">
+              <select class="cbi-input-select" name="30" onchange="hidekey(this.value)">
                  <script type="text/javascript">
                  var enc = "<%=uciget('uci get wireless.@wifi-iface[0].encryption')%>";
                  document.write("<option value='none' ");
