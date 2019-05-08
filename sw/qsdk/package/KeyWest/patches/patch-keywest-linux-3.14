@@ -219,7 +219,7 @@ diff -urN linux-3.14-org/net/bridge/br_fdb.c linux-3.14-mod/net/bridge/br_fdb.c
   */
 diff -urN linux-3.14-org/net/bridge/br_input.c linux-3.14-mod/net/bridge/br_input.c
 --- linux-3.14-org/net/bridge/br_input.c	2018-08-13 14:08:30.960588000 +0530
-+++ linux-3.14-mod/net/bridge/br_input.c	2019-01-09 16:09:11.077559719 +0530
++++ linux-3.14-mod/net/bridge/br_input.c	2019-05-08 11:55:55.697564487 +0530
 @@ -176,10 +176,12 @@
  		skb2 = skb;
  		unicast = false;
@@ -233,30 +233,6 @@ diff -urN linux-3.14-org/net/bridge/br_input.c linux-3.14-mod/net/bridge/br_inpu
  
  		mdst = br_mdb_get(br, skb, vid);
  		if ((mdst || BR_INPUT_SKB_CB_MROUTERS_ONLY(skb)) &&
-@@ -196,9 +198,11 @@
- 
- 		unicast = false;
- 		br->dev->stats.multicast++;
-+#if 0 /* TODO: KWN Multicast Packet handling */
- 	} else if ((pdst = __br_get(get_dst_hook, NULL, p, &skb))) {
- 		if (!skb)
- 			goto out;
-+#endif
- 	} else if ((p->flags & BR_ISOLATE_MODE) ||
- 		   ((dst = __br_fdb_get(br, dest, vid)) && dst->is_local)) {
- 		skb2 = skb;
-@@ -212,9 +216,11 @@
- 			pdst = dst->dst;
- 		}
- 
-+#if 0 /* TODO: KWN Multicast Packet handling */
- 		if (pdst)
- 			br_forward(pdst, skb, skb2);
- 		else
-+#endif
- 			br_flood_forward(br, skb, skb2, unicast);
- 	}
- 
 diff -urN linux-3.14-org/net/bridge/br_ioctl.c linux-3.14-mod/net/bridge/br_ioctl.c
 --- linux-3.14-org/net/bridge/br_ioctl.c	2018-08-13 14:08:30.960588000 +0530
 +++ linux-3.14-mod/net/bridge/br_ioctl.c	2018-08-13 15:34:28.044418211 +0530
