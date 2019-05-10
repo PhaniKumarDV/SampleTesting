@@ -1,18 +1,16 @@
-
-
 #include <stdio.h>
 #include <time.h>
+#include <stdlib.h>
+#include <unistd.h>
 #include <string.h>
 #include <sys/time.h>
-#include <math.h>
 #include <errno.h>
-#include <memory.h>
 #include <net/if.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <syslog.h>
 #include <linux/rtnetlink.h>
-
+#include <fcntl.h>
 
 int prev_ethintf_status = 0;
 int curr_ethintf_status = 0;
@@ -25,9 +23,9 @@ enum INTF_STATUS {
 
 void kwn_ethevent_file_write( char *ifName, char *ifUpp, char *ifRunn )
 {
-	time_t rawtime;
-	struct tm *timeinfo;
-	FILE *sify_fp;
+    time_t rawtime;
+    struct tm *timeinfo;
+    FILE *sify_fp;
     int len;
     char t[50];
 
@@ -43,20 +41,20 @@ void kwn_ethevent_file_write( char *ifName, char *ifUpp, char *ifRunn )
 
     if( prev_ethintf_status == curr_ethintf_status )
         return;
-	/* Get current time */
-	time( &rawtime );
+    /* Get current time */
+    time( &rawtime );
     timeinfo = localtime( &rawtime );
     len = strlen( asctime( timeinfo ) ) - 1;
     memcpy( t, asctime( timeinfo ), len );
     t[len] = '\0';
 
-	/*Open file for writting */
-	sify_fp = fopen("/tmp/eth_events.txt", "a+");
+    /* Open file for writting */
+    sify_fp = fopen("/tmp/eth_events.txt", "a+");
 
-	if (sify_fp == NULL) {
-		printf("File opening error\n");
-		return;
-	}
+    if (sify_fp == NULL) {
+        printf("File opening error\n");
+        return;
+    }
 
     switch( curr_ethintf_status )
     {
@@ -79,163 +77,187 @@ void kwn_ethevent_file_write( char *ifName, char *ifUpp, char *ifRunn )
     prev_ethintf_status = curr_ethintf_status;
 }
 
-// little helper to parsing message using netlink macroses
-void parseRtattr(struct rtattr *tb[], int max, struct rtattr *rta, int len)
+struct rtnl_handle
 {
-    memset(tb, 0, sizeof(struct rtattr *) * (max + 1));
+    int                 fd;
+    struct sockaddr_nl  local;
+    struct sockaddr_nl  peer;
+    uint32_t            seq;
+    uint32_t            seqdump;
+};
 
-    while (RTA_OK(rta, len)) {  // while not end of the message
-        if (rta->rta_type <= max) {
-            tb[rta->rta_type] = rta; // read attr
-        }
-        rta = RTA_NEXT(rta,len);    // get next attr
+static inline void rtnl_close(struct rtnl_handle *rth)
+{
+    close(rth->fd);
+}
+
+static inline int 
+rtnl_open(struct rtnl_handle *rth, unsigned subscriptions)
+{
+    int addr_len;
+
+    memset(rth, 0, sizeof(rth));
+
+    rth->fd = socket(PF_NETLINK, SOCK_RAW, NETLINK_ROUTE);
+    if (rth->fd < 0) {
+        perror("Cannot open netlink socket");
+        return -1;
     }
+    memset(&rth->local, 0, sizeof(rth->local));
+    rth->local.nl_family = AF_NETLINK;
+    rth->local.nl_groups = subscriptions;
+
+    if (bind(rth->fd, (struct sockaddr*)&rth->local, sizeof(rth->local)) < 0) {
+        perror("Cannot bind netlink socket");
+        return -1;
+    }
+    addr_len = sizeof(rth->local);
+    if (getsockname(rth->fd, (struct sockaddr*)&rth->local,
+                (socklen_t *) &addr_len) < 0) {
+        perror("Cannot getsockname");
+        return -1;
+    }
+    if (addr_len != sizeof(rth->local)) {
+        fprintf(stderr, "Wrong address length %d\n", addr_len);
+        return -1;
+    }
+    if (rth->local.nl_family != AF_NETLINK) {
+        fprintf(stderr, "Wrong address family %d\n", rth->local.nl_family);
+        return -1;
+    }
+    rth->seq = time(NULL);
+    return 0;
+}
+
+static int
+LinkCatcher(struct nlmsghdr *nlh) {
+    struct ifinfomsg* ifi;
+
+    /* If interface is getting destoyed */
+    if(nlh->nlmsg_type == RTM_DELLINK)
+        return 0;
+
+    /* Only keep add/change events */
+    if(nlh->nlmsg_type != RTM_NEWLINK)
+        return 0;
+#if 0
+    fprintf(stderr, "nlmsg_type = %d.\n", nlh->nlmsg_type);
+#endif
+    ifi = (struct ifinfomsg *)NLMSG_DATA(nlh);
+    /* Check for attributes */
+    if (nlh->nlmsg_len > NLMSG_ALIGN(sizeof(struct ifinfomsg))) {
+        int attrlen = nlh->nlmsg_len - NLMSG_ALIGN(sizeof(struct ifinfomsg));
+        struct rtattr *attr = (struct rtattr *) ((char *) ifi +
+                NLMSG_ALIGN(sizeof(struct ifinfomsg)));
+
+        while (RTA_OK(attr, attrlen)) {
+            if ( attr->rta_type == IFLA_IFNAME) {
+                if ( strcmp((char *)RTA_DATA(attr), "eth0") == 0 ) { 
+                    kwn_ethevent_file_write( (char *)RTA_DATA(attr), 
+                            (char *)(ifi->ifi_flags & IFF_UP ? "UP" : "DOWN"), 
+                            (char *)(ifi->ifi_flags & IFF_RUNNING ? "RUNNING" : "NOTRUNNING"));
+                }
+            }
+            attr = RTA_NEXT(attr, attrlen);
+        }
+    }
+    return 0;
+}
+
+static inline void
+handle_netlink_events(struct rtnl_handle *  rth) {
+    while(1) {
+        struct sockaddr_nl sanl;
+        socklen_t sanllen = sizeof(struct sockaddr_nl);
+        struct nlmsghdr *h;
+        int amt;
+        char buf[8192];
+
+        amt = recvfrom(rth->fd, buf, sizeof(buf), MSG_DONTWAIT, (struct sockaddr*)&sanl, &sanllen);
+        if(amt < 0) {
+            if(errno != EINTR && errno != EAGAIN) {
+                fprintf(stderr, "%s: error reading netlink: %s.\n",
+                        __PRETTY_FUNCTION__, strerror(errno));
+            }
+            return;
+        }
+        if(amt == 0) {
+            fprintf(stderr, "%s: EOF on netlink??\n", __PRETTY_FUNCTION__);
+            return;
+        }
+        h = (struct nlmsghdr*)buf;
+        while(amt >= (int)sizeof(*h)) {
+            int len = h->nlmsg_len;
+            int l = len - sizeof(*h);
+            if(l < 0 || len > amt) {
+                fprintf(stderr, "%s: malformed netlink message: len=%d\n", __PRETTY_FUNCTION__, len);
+                break;
+            }
+            switch(h->nlmsg_type) {
+                case RTM_NEWLINK:
+                case RTM_DELLINK:
+                    LinkCatcher(h);
+                    break;
+                default:
+                    fprintf(stderr, "%s: got nlmsg of type %#x.\n", __PRETTY_FUNCTION__, h->nlmsg_type);
+                    break;
+            }
+            len = NLMSG_ALIGN(len);
+            amt -= len;
+            h = (struct nlmsghdr*)((char*)h + len);
+        }
+        if(amt > 0)
+            fprintf(stderr, "%s: remnant of size %d on netlink\n", __PRETTY_FUNCTION__, amt);
+    }
+}
+
+static inline int
+wait_for_event(struct rtnl_handle * rth) {
+    /* Forever */
+    while(1) {
+        fd_set rfds;       /* File descriptors for select */
+        int last_fd; /* Last fd */
+        int ret;
+
+        /* Guess what ? We must re-generate rfds each time */
+        FD_ZERO(&rfds);
+        FD_SET(rth->fd, &rfds);
+        last_fd = rth->fd;
+
+        /* Wait until something happens */
+        ret = select(last_fd + 1, &rfds, NULL, NULL, NULL);
+        /* Check if there was an error */
+        if(ret < 0) {
+            if(errno == EAGAIN || errno == EINTR)
+                continue;
+            fprintf(stderr, "Unhandled signal - exiting...\n");
+            break;
+        }
+        /* Check if there was a timeout */
+        if(ret == 0)
+            continue;
+        
+        /* Check for interface discovery events. */
+        if(FD_ISSET(rth->fd, &rfds))
+            handle_netlink_events(rth);
+    }
+    return(0);
 }
 
 int main()
 {
-    int fd = socket(AF_NETLINK, SOCK_RAW, NETLINK_ROUTE);   // create netlink socket
+    struct rtnl_handle rth;
 
-    if (fd < 0) {
-        printf("Failed to create netlink socket: %s\n", (char*)strerror(errno));
-        return 1;
+    /* Open netlink channel */
+    if(rtnl_open(&rth, RTMGRP_LINK) < 0) {
+        perror("Can't initialize rtnetlink socket");
+        return(1);
     }
 
-    struct sockaddr_nl  local;  // local addr struct
-    char buf[8192];             // message buffer
-    struct iovec iov;           // message structure
-    iov.iov_base = buf;         // set message buffer as io
-    iov.iov_len = sizeof(buf);  // set size
+    /* Do what we have to do */
+    wait_for_event(&rth);
 
-    memset(&local, 0, sizeof(local));
-
-    local.nl_family = AF_NETLINK;       // set protocol family
-    local.nl_groups =   RTMGRP_LINK | RTMGRP_IPV4_IFADDR | RTMGRP_IPV4_ROUTE;   // set groups we interested in
-    local.nl_pid = getpid();    // set out id using current process id
-
-    // initialize protocol message header
-    struct msghdr msg;  
-    {
-        msg.msg_name = &local;                  // local address
-        msg.msg_namelen = sizeof(local);        // address size
-        msg.msg_iov = &iov;                     // io vector
-        msg.msg_iovlen = 1;                     // io size
-    }   
-
-    if (bind(fd, (struct sockaddr*)&local, sizeof(local)) < 0) {     // bind socket
-        printf("Failed to bind netlink socket: %s\n", (char*)strerror(errno));
-        close(fd);
-        return 1;
-    }   
-
-    // read and parse all messages from the
-    while (1) {
-        ssize_t status = recvmsg(fd, &msg, MSG_DONTWAIT);
-
-        //  check status
-        if (status < 0) {
-            if (errno == EINTR || errno == EAGAIN)
-            {
-                usleep(250000);
-                continue;
-            }
-
-            printf("Failed to read netlink: %s", (char*)strerror(errno));
-            continue;
-        }
-
-        if (msg.msg_namelen != sizeof(local)) { // check message length, just in case
-            printf("Invalid length of the sender address struct\n");
-            continue;
-        }
-
-        // message parser
-        struct nlmsghdr *h;
-
-        for (h = (struct nlmsghdr*)buf; status >= (ssize_t)sizeof(*h); ) {   // read all messagess headers
-            int len = h->nlmsg_len;
-            int l = len - sizeof(*h);
-            char *ifName;
-
-            if ((l < 0) || (len > status)) {
-                printf("Invalid message length: %i\n", len);
-                continue;
-            }
-
-            // now we can check message type
-            if ((h->nlmsg_type == RTM_NEWROUTE) || (h->nlmsg_type == RTM_DELROUTE)) { // some changes in routing table
-                printf("Routing table was changed\n");  
-            } else {    // in other case we need to go deeper
-                char *ifUpp;
-                char *ifRunn;
-                struct ifinfomsg *ifi;  // structure for network interface info
-                struct rtattr *tb[IFLA_MAX + 1];
-
-                ifi = (struct ifinfomsg*) NLMSG_DATA(h);    // get information about changed network interface
-
-                parseRtattr(tb, IFLA_MAX, IFLA_RTA(ifi), h->nlmsg_len);  // get attributes
-
-                if (tb[IFLA_IFNAME]) {  // validation
-                    ifName = (char*)RTA_DATA(tb[IFLA_IFNAME]); // get network interface name
-                }
-
-                if (ifi->ifi_flags & IFF_UP) { // get UP flag of the network interface
-                    ifUpp = (char*)"UP";
-                } else {
-                    ifUpp = (char*)"DOWN";
-                }
-
-                if (ifi->ifi_flags & IFF_RUNNING) { // get RUNNING flag of the network interface
-                    ifRunn = (char*)"RUNNING";
-                } else {
-                    ifRunn = (char*)"NOT RUNNING";
-                }
-
-                char ifAddress[256];    // network addr
-                struct ifaddrmsg *ifa; // structure for network interface data
-                struct rtattr *tba[IFA_MAX+1];
-
-                ifa = (struct ifaddrmsg*)NLMSG_DATA(h); // get data from the network interface
-
-                parseRtattr(tba, IFA_MAX, IFA_RTA(ifa), h->nlmsg_len);
-
-                if (tba[IFA_LOCAL]) {
-                    inet_ntop(AF_INET, RTA_DATA(tba[IFA_LOCAL]), ifAddress, sizeof(ifAddress)); // get IP addr
-                }
-
-                switch (h->nlmsg_type) { // what is actually happenned?
-                    case RTM_DELADDR:
-                        printf("Interface %s: address was removed\n", ifName);
-                        break;
-
-                    case RTM_DELLINK:
-                        printf("Network interface %s was removed\n", ifName);
-                        break;
-
-                    case RTM_NEWLINK:
-                        printf("New network interface %s, state: %s %s\n", ifName, ifUpp, ifRunn);
-                        if( !strncmp( ifName, "eth0", 4 ) || !strncmp( ifName, "eth1", 4 ) )
-                        {
-                            kwn_ethevent_file_write( ifName, ifUpp, ifRunn );
-                        }
-                        break;
-
-                    case RTM_NEWADDR:
-                        printf("Interface %s: new address was assigned: %s\n", ifName, ifAddress);
-                        break;
-                }
-            }
-
-            status -= NLMSG_ALIGN(len); // align offsets by the message length, this is important
-
-            h = (struct nlmsghdr*)((char*)h + NLMSG_ALIGN(len));    // get next message
-        }
-
-        usleep(250000); // sleep for a while
-    }
-
-    close(fd);  // close socket
-
+    /* Cleanup - only if you are pedantic */
+    rtnl_close(&rth);
     return 0;
 }
-
