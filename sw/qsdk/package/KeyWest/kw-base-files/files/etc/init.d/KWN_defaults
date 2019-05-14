@@ -5,7 +5,7 @@ USE_PROCD=1
 start_service() {
     procd_open_instance
 #VARIANT
-    uci set variant.variant.buildno='110519'
+    uci set variant.variant.buildno='150519'
     uci set variant.variant.model='1'
     uci set variant.variant.majnum='1'
     uci set variant.variant.minnum='0'
