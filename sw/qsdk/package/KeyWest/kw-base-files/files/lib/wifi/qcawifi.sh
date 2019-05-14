@@ -2207,6 +2207,8 @@ enable_qcawifi() {
                        else
                            echo "SU Service is enabled"
                        fi
+                   else
+                       /etc/init.d/wrt-radauth reload
                    fi
                    ;;
                *)
