@@ -1,7 +1,7 @@
 diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.c
 --- net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c	1970-01-01 05:30:00.000000000 +0530
-+++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.c	2019-05-01 18:41:42.161699956 +0530
-@@ -0,0 +1,5839 @@
++++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.c	2019-05-14 13:59:59.383927235 +0530
+@@ -0,0 +1,6152 @@
 +/****************************************************************************
 +*                                                                           *
 +*  File Name:           kwnmib.c                                           *
@@ -66,7 +66,9 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 + *                                Global Variables                          *
 + ****************************************************************************/
 +
++  static unsigned long kwnlastLoad = 0;          /* ET in secs at last table load */
 +  kwn_wireless_stats kwn_assoc_list;
++  kwn_sa_stats       kwn_sa_result_list;
 +  char               res_str[ KWN_UCI_CMD_OUTPUT_LEN_MAX ];
 +  long               res_val;
 +  uint32_t           res_ip;
@@ -91,6 +93,7 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +  WriteMethod        systemtelnetsshwriteMethod;
 +  WriteMethod        systemsnmpwriteMethod;
 +  WriteMethod        assocwriteMethod;
++  WriteMethod        saconfigwriteMethod;
 +
 +/****************************************************************************
 +*   kwnmib_variables_oid:                                                  *
@@ -402,6 +405,19 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +  { 269  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_LINKID } },
 +  { 270  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_LINKID } },
 +  { 271  , ASN_INTEGER    , RWRITE, var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LINKTEST_PKTSIZE } },
++  /* SA Config MIBs */
++  { 272  , ASN_INTEGER    , RONLY , var_SAConfigTable, 6, { KWN_SMAC, KWN_MONITOR, KWN_SPECTRUM_ANALYZER, KWN_SA_CONFIG, KWN_SA_CONFIG_ENTRY, KWN_SA_CONFIG_RADIO_INDEX } },
++  { 273  , ASN_INTEGER    , RWRITE, var_SAConfigTable, 6, { KWN_SMAC, KWN_MONITOR, KWN_SPECTRUM_ANALYZER, KWN_SA_CONFIG, KWN_SA_CONFIG_ENTRY, KWN_SA_CONFIG_START_STOP } },
++  { 274  , ASN_INTEGER    , RWRITE, var_SAConfigTable, 6, { KWN_SMAC, KWN_MONITOR, KWN_SPECTRUM_ANALYZER, KWN_SA_CONFIG, KWN_SA_CONFIG_ENTRY, KWN_SA_CONFIG_SCAN_TIME } },
++  { 275  , ASN_INTEGER    , RWRITE, var_SAConfigTable, 6, { KWN_SMAC, KWN_MONITOR, KWN_SPECTRUM_ANALYZER, KWN_SA_CONFIG, KWN_SA_CONFIG_ENTRY, KWN_SA_CONFIG_START_FREQ } },
++  { 276  , ASN_INTEGER    , RWRITE, var_SAConfigTable, 6, { KWN_SMAC, KWN_MONITOR, KWN_SPECTRUM_ANALYZER, KWN_SA_CONFIG, KWN_SA_CONFIG_ENTRY, KWN_SA_CONFIG_END_FREQ } },
++  /* SA Result MIBs */
++  { 277  , ASN_INTEGER    , RONLY , var_SAResultTable, 6, { KWN_SMAC, KWN_MONITOR, KWN_SPECTRUM_ANALYZER, KWN_SA_RESULT, KWN_SA_RESULT_ENTRY, KWN_SA_RESULT_RADIO_INDEX } },
++  { 278  , ASN_INTEGER    , RONLY , var_SAResultTable, 6, { KWN_SMAC, KWN_MONITOR, KWN_SPECTRUM_ANALYZER, KWN_SA_RESULT, KWN_SA_RESULT_ENTRY, KWN_SA_RESULT_SEC_INDEX } },
++  { 279  , ASN_INTEGER    , RONLY , var_SAResultTable, 6, { KWN_SMAC, KWN_MONITOR, KWN_SPECTRUM_ANALYZER, KWN_SA_RESULT, KWN_SA_RESULT_ENTRY, KWN_SA_RESULT_CHANNEL } },
++  { 280  , ASN_INTEGER    , RONLY , var_SAResultTable, 6, { KWN_SMAC, KWN_MONITOR, KWN_SPECTRUM_ANALYZER, KWN_SA_RESULT, KWN_SA_RESULT_ENTRY, KWN_SA_RESULT_FREQUENCY } },
++  { 281  , ASN_INTEGER    , RONLY , var_SAResultTable, 6, { KWN_SMAC, KWN_MONITOR, KWN_SPECTRUM_ANALYZER, KWN_SA_RESULT, KWN_SA_RESULT_ENTRY, KWN_SA_RESULT_SIGNAL_A1 } },
++  { 282  , ASN_INTEGER    , RONLY , var_SAResultTable, 6, { KWN_SMAC, KWN_MONITOR, KWN_SPECTRUM_ANALYZER, KWN_SA_RESULT, KWN_SA_RESULT_ENTRY, KWN_SA_RESULT_SIGNAL_A2 } },
 +};
 +
 +/****************************************************************************
@@ -1100,6 +1116,65 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +    }
 +    kwn_freq_list->num_chans = num_chans; 
 +    close( sk_fd );
++    return 0;
++}
++
++int get_sa_results( int radio_ind )
++{
++    int ret = -1;
++    int sk_fd;
++    struct iwreq iwr;
++    u_int8_t *buf;
++    int buflen = 0;
++    struct kwn_sa_scan_result sa_result;
++    int i;
++    char cmd[100], ifname[5];
++    struct timeval et;                              /* elapsed time */
++
++    gettimeofday ( &et, ( struct timezone * ) 0 );
++    if ( et.tv_sec < kwnlastLoad + KWNMINLOADFREQ ) /* only reload so often */
++        return;
++    kwnlastLoad = et.tv_sec;
++
++    memset( cmd, '\0', sizeof(cmd) );
++    sprintf( cmd, "iwpriv ath%d kwn_flag 6", radio_ind );
++    system(cmd);
++    buflen = sizeof( struct kwn_sa_scan_result );
++    buf = ( u_int8_t * )malloc( buflen );
++    memset( &iwr, 0, sizeof( iwr ) );
++
++    sprintf( ifname, "ath%d", radio_ind );
++    (void) strncpy( iwr.ifr_name, ifname, sizeof( iwr.ifr_name ) );
++
++    iwr.u.data.pointer = ( void * )buf;
++    iwr.u.data.length = buflen;
++    sk_fd = socket( AF_INET, SOCK_DGRAM, 0 );
++
++    if( sk_fd < 0 ) {
++        sk_fd = -1;
++        return -1;
++    }
++    if( ( ret = ioctl(sk_fd, IEEE80211_IOCTL_SCAN_RESULTS, &iwr) ) < 0 ) {
++        printf(" Error : ret %d \n",ret);
++        free( buf );
++        return ret;
++    }
++    memcpy( &sa_result, ( struct kwn_sa_scan_result *)buf, sizeof( struct kwn_sa_scan_result ) );
++    kwn_sa_result_list.cnt = sa_result.cnt;
++    for( i = 0; i< kwn_sa_result_list.cnt; i++ )
++    {
++        kwn_sa_result_list.sa_entry[i].channel = sa_result.sa_entry[i].channel;
++        kwn_sa_result_list.sa_entry[i].frequency = sa_result.sa_entry[i].frequency;
++        kwn_sa_result_list.sa_entry[i].pow_chain0 = sa_result.sa_entry[i].pow_chain0;
++        kwn_sa_result_list.sa_entry[i].pow_chain1 = sa_result.sa_entry[i].pow_chain1;
++#if 0
++        memset(cmd,'\0',sizeof(cmd));
++        sprintf(cmd,"echo %d=%d=%d=%d >> /tmp/sares.txt",kwn_sa_result_list.sa_entry[i].channel,kwn_sa_result_list.sa_entry[i].frequency,
++                kwn_sa_result_list.sa_entry[i].pow_chain0,kwn_sa_result_list.sa_entry[i].pow_chain1);
++        system(cmd);
++#endif
++    }
++    free( buf );
 +    return 0;
 +}
 +
@@ -4018,6 +4093,178 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +    return NULL;
 +}
 +
++/****************************************************************************
++ *                                                                          *
++ *   var_SAConfigTable() -                                                  *
++ *                                                                          *
++ ****************************************************************************/
++unsigned char *
++var_SAConfigTable ( struct variable *vp, 
++        oid     *name, 
++        size_t  *length, 
++        int     exact, 
++        size_t  *var_len, 
++        WriteMethod **write_method)
++{
++    char cmd[100];
++    oid rName [ MAX_OID_LEN ];                            // OID to be returned
++    int i, found = 0, ind;
++
++    memcpy (( char * ) rName, ( char * ) vp->name, ( int ) vp->namelen * sizeof ( oid ));
++    for( i = 1; i <= KWN_WIFI_INTF_MAX; i++ )
++    {
++        if( i == KWN_24GHZ_RADIO_IDX )
++            continue;
++        rName[vp->namelen + 0] = i;
++        ind = i - 1;
++        if ((  exact && ( snmp_oid_compare ( rName, vp->namelen + 1, name, *length ) == 0 )) ||
++                ( !exact && ( snmp_oid_compare ( rName, vp->namelen + 1, name, *length ) >  0 ))) {
++            found = 1;
++        }
++        if( found ) {
++            break;
++        }
++    }
++
++    if( !found ) {
++        return NULL;
++    }
++    memcpy (( char * ) name, ( char * ) rName, ( vp->namelen + 1 ) * sizeof ( oid ));
++
++    memset( res_str, '\0', sizeof( res_str ) );
++    res_val = 0;
++    res_ip = 0;
++    *length = vp->namelen + 1;
++    *write_method = saconfigwriteMethod;
++
++    switch ( (char) name[12] ) {
++        case KWN_SA_CONFIG_RADIO_INDEX:
++            {
++                *write_method = NULL;
++                res_val = ind + 1;
++                *var_len = sizeof ( long );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_SA_CONFIG_START_STOP:
++            {
++                sprintf( cmd, "iwpriv ath1 g_kwnstartscan | sed 's/ath1      g_kwnstartscan://'");
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_SA_CONFIG_SCAN_TIME:
++            {
++                sprintf( cmd, "iwpriv ath1 g_kwnsatime | sed 's/ath1      g_kwnsatime://'");
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_SA_CONFIG_START_FREQ:
++            {
++                sprintf( cmd, "iwpriv ath1 g_kwnstartfreq | sed 's/ath1      g_kwnstartfreq://'");
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_SA_CONFIG_END_FREQ:
++            {
++                sprintf( cmd, "iwpriv ath1 g_kwnendfreq | sed 's/ath1      g_kwnendfreq://'");
++                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
++                return ( u_char * ) &res_val;
++            }
++        default:
++            ERROR_MSG ( "" );
++    }
++    return NULL;
++}
++
++/****************************************************************************
++ *                                                                          *
++ *   var_SAResultTable() -                                                  *
++ *                                                                          *
++ ****************************************************************************/
++unsigned char *
++var_SAResultTable ( struct variable *vp, 
++        oid     *name, 
++        size_t  *length, 
++        int     exact, 
++        size_t  *var_len, 
++        WriteMethod **write_method)
++{
++    oid rName [ MAX_OID_LEN ];                            // OID to be returned
++    int i,j, found = 0, radio_ind, sec_ind;
++
++    memcpy (( char * ) rName, ( char * ) vp->name, ( int ) vp->namelen * sizeof ( oid ));
++
++    for( i = 1; i <= KWN_WIFI_INTF_MAX; i++ )
++    {
++        if( i == KWN_24GHZ_RADIO_IDX )
++            continue;
++        /* Get SA Result List */
++        if( get_sa_results( i - 1 ) < 0 ) {
++            return SNMP_ERR_NOERROR;
++        }
++        for( j = 1; j <= kwn_sa_result_list.cnt; j++ ) {
++            rName[vp->namelen + 0] = i;
++            rName[vp->namelen + 1] = j;
++            radio_ind = i - 1;
++            sec_ind = j - 1;
++            if ((  exact && ( snmp_oid_compare ( rName, vp->namelen + 2, name, *length ) == 0 )) ||
++                    ( !exact && ( snmp_oid_compare ( rName, vp->namelen + 2, name, *length ) >  0 ))) {
++                found = 1;
++            }
++            if( found ) {
++                break;
++            }
++        }
++    }
++
++    if( !found ) {
++        return NULL;
++    }
++    memcpy (( char * ) name, ( char * ) rName, ( vp->namelen + 2 ) * sizeof ( oid ));
++    memset( res_str, '\0', sizeof( res_str ) );
++    res_val = 0;
++    res_ip = 0;
++    *length = vp->namelen + 2;
++    *write_method = NULL;
++
++    switch ( (char) name[12] ) {
++        case KWN_SA_RESULT_RADIO_INDEX:
++            {
++                res_val = radio_ind + 1;
++                *var_len = sizeof ( long );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_SA_RESULT_SEC_INDEX:
++            {
++                res_val = sec_ind + 1;
++                *var_len = sizeof ( long );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_SA_RESULT_CHANNEL:
++            {
++                *var_len = sizeof ( long );
++                return ( u_char * ) &kwn_sa_result_list.sa_entry[sec_ind].channel;
++            }
++        case KWN_SA_RESULT_FREQUENCY:
++            {
++                *var_len = sizeof ( long );
++                return ( u_char * ) &kwn_sa_result_list.sa_entry[sec_ind].frequency;
++            }
++        case KWN_SA_RESULT_SIGNAL_A1:
++            {
++                *var_len = sizeof ( long );
++                return ( u_char * ) &kwn_sa_result_list.sa_entry[sec_ind].pow_chain0;
++            }
++        case KWN_SA_RESULT_SIGNAL_A2:
++            {
++                *var_len = sizeof ( long );
++                return ( u_char * ) &kwn_sa_result_list.sa_entry[sec_ind].pow_chain1;
++            }
++        default:
++            ERROR_MSG ( "" );
++    }
++    return NULL;
++}
++
 +int
 +wlanwriteMethod( int action,
 +        u_char * var_val,
@@ -5841,10 +6088,76 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +    }
 +    return SNMP_ERR_NOERROR;
 +}
++
++int
++saconfigwriteMethod( int action,
++        u_char * var_val,
++        u_char var_val_type,
++        size_t var_val_len,
++        u_char * statP, oid * name, size_t name_len )
++{
++    char cmd[100];
++    int ind;
++    long long_val;
++
++    memset( cmd, '\0', sizeof(cmd) );
++    memset( res_str, '\0', sizeof(res_str) );
++    if ( var_val_type == ASN_INTEGER ) {
++        long_val = *( (long *) var_val );
++    }
++    var_val[ var_val_len ] = '\0';
++    ind = (int) name[13];
++    if( ind < 1 || ind > 2 )
++        return NULL;
++    ind = ind - 1;
++    if( ind == 0 )
++        return NULL;
++    switch ( action ) {
++        case RESERVE1:             /* Check values for acceptability */
++            break;
++        case RESERVE2:             /* Allocate memory and similar resources */
++            break;
++        case ACTION:               /* Perform the SET action (if reversible) */
++            {
++                switch ( (char) name[12] ) {
++                    case KWN_SA_CONFIG_START_STOP:
++                        sprintf( cmd, "iwpriv ath1 kwnstartscan %d", long_val );
++                        system( cmd );
++                        break;
++                    case KWN_SA_CONFIG_SCAN_TIME:
++                        sprintf( cmd, "iwpriv ath1 kwnsatime %d", long_val );
++                        system( cmd );
++                        break;
++                    case KWN_SA_CONFIG_START_FREQ:
++                        sprintf( cmd, "iwpriv ath1 kwnstartfreq %d", long_val );
++                        system( cmd );
++                        break;
++                    case KWN_SA_CONFIG_END_FREQ:
++                        sprintf( cmd, "iwpriv ath1 kwnendfreq %d", long_val );
++                        system( cmd );
++                        break;
++                    default:
++                        return SNMP_ERR_GENERR;
++                }
++            }
++            break;
++        case UNDO:                 /* Reverse the SET action and free resources */
++            break;
++        case COMMIT:
++            snmp_save_persistent( netsnmp_ds_get_string( NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_APPTYPE ) );
++            (void) snmp_call_callbacks( SNMP_CALLBACK_LIBRARY, SNMP_CALLBACK_STORE_DATA, NULL );
++            snmp_clean_persistent( netsnmp_ds_get_string( NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_APPTYPE ) );
++            break;
++        case FREE:                 /* Free any resources allocated */
++            break;
++    }
++    return SNMP_ERR_NOERROR;
++}
++
 diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.h
 --- net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h	1970-01-01 05:30:00.000000000 +0530
-+++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.h	2019-04-25 17:38:31.383767410 +0530
-@@ -0,0 +1,564 @@
++++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.h	2019-05-14 14:00:56.059567549 +0530
+@@ -0,0 +1,611 @@
 +/****************************************************************************
 +*                                                                           *
 +*  File Name:           kwnmib.h                                      *
@@ -5877,11 +6190,13 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h net-snmp-5.4.4-mod/agent/mi
 +#define KWN_LINKID_LEN                   16
 +#define KWN_LINKS_MAX                    20
 +#define KWN_UCI_STR_ENUM_LEN             10
++#define KWN_CHAN_MAX                     250
 +
 +#define KWN_WIFI_INTF_MAX                2
 +#define KWN_ETH_INTF_MAX                 1
 +#define KWN_24GHZ_RADIO_IDX              1
 +#define KWN_5GHZ_RADIO_IDX               2
++#define KWNMINLOADFREQ                   5 /* min reload frequency in seconds */
 +
 +/* Function Prototypes */
 +
@@ -5910,6 +6225,8 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h net-snmp-5.4.4-mod/agent/mi
 +FindVarMethod var_WirelessStatsTable;
 +FindVarMethod var_EthernetStatsTable;
 +FindVarMethod var_AssocTable;
++FindVarMethod var_SAConfigTable;
++FindVarMethod var_SAResultTable;
 +
 +/* Enum Types */
 +enum KWN_TYPE {
@@ -6217,7 +6534,8 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h net-snmp-5.4.4-mod/agent/mi
 +    KWN_WIRELESSSTATS = 1,
 +    KWN_ETHERNETSTATS = 2,
 +    KWN_ASSOCLIST = 3,
-+    KWN_TRAPS = 4
++    KWN_TRAPS = 4,
++    KWN_SPECTRUM_ANALYZER = 5
 +};
 +
 +enum KWN_WIRELESSSTATS {
@@ -6347,6 +6665,36 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h net-snmp-5.4.4-mod/agent/mi
 +    KWN_DEVICE_REBOOT = 10
 +};
 +
++enum KWN_SPECTRUM_ANALYZER {
++    KWN_SA_CONFIG = 1,
++    KWN_SA_RESULT = 2
++};
++
++enum KWN_SA_CONFIG {
++    KWN_SA_CONFIG_ENTRY = 1
++};
++
++enum KWN_SA_CONFIG_ENTRY {
++    KWN_SA_CONFIG_RADIO_INDEX = 1,
++    KWN_SA_CONFIG_START_STOP = 2,
++    KWN_SA_CONFIG_SCAN_TIME = 3,
++    KWN_SA_CONFIG_START_FREQ = 4,
++    KWN_SA_CONFIG_END_FREQ = 5
++};
++
++enum KWN_SA_RESULT {
++    KWN_SA_RESULT_ENTRY = 1
++};
++
++enum KWN_SA_RESULT_ENTRY {
++    KWN_SA_RESULT_RADIO_INDEX = 1,
++    KWN_SA_RESULT_SEC_INDEX = 2,
++    KWN_SA_RESULT_CHANNEL = 3,
++    KWN_SA_RESULT_FREQUENCY = 4,
++    KWN_SA_RESULT_SIGNAL_A1 = 5,
++    KWN_SA_RESULT_SIGNAL_A2 = 6
++};
++
 +/* Structure Definitions */
 +typedef struct
 +{
@@ -6408,6 +6756,18 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h net-snmp-5.4.4-mod/agent/mi
 +    kwn_arraylist array[ 255 ];
 +}kwn_freqlist;
 +
++typedef struct {
++    long  channel;
++    long  frequency;
++    long  pow_chain0;
++    long  pow_chain1;
++}kwn_sa_result_entries;
++
++typedef struct {
++    kwn_sa_result_entries sa_entry[ KWN_CHAN_MAX ];
++    uint8_t cnt;
++}kwn_sa_stats;
++
 +#endif /* _MIBGROUP_KWNMIB_H */
 diff -urN net-snmp-5.4.4-org/agent/snmp_agent.c net-snmp-5.4.4-mod/agent/snmp_agent.c
 --- net-snmp-5.4.4-org/agent/snmp_agent.c	2011-02-20 14:54:29.000000000 +0530
@@ -6435,8 +6795,8 @@ diff -urN net-snmp-5.4.4-org/include/net-snmp/net-snmp-config.h.in net-snmp-5.4.
  
 diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWEST-MIB.mib
 --- net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib	1970-01-01 05:30:00.000000000 +0530
-+++ net-snmp-5.4.4-mod/mibs/KEYWEST-MIB.mib	2019-04-25 17:38:00.915818357 +0530
-@@ -0,0 +1,3258 @@
++++ net-snmp-5.4.4-mod/mibs/KEYWEST-MIB.mib	2019-05-14 13:55:14.433735648 +0530
+@@ -0,0 +1,3420 @@
 +------------------------------------------------------------------------
 +------------------------------------------------------------------------
 +--
@@ -9372,7 +9732,7 @@ diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWES
 +::= { assocEntry 1 }
 +
 +assocSecIndex OBJECT-TYPE
-+        SYNTAX      Integer32 (1..2)
++        SYNTAX      Integer32 (1..32)
 +        MAX-ACCESS  not-accessible
 +        STATUS      current
 +        DESCRIPTION "This parameter represents the Secondary index 
@@ -9693,5 +10053,167 @@ diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWES
 +        STATUS       current
 +        DESCRIPTION  "This trap is generated when device is rebooting."
 +::= { traps 10 }
++
++------------------------------------------------------------------------
++------------------------------------------------------------------------
++
++spectrumAnalyzer OBJECT-IDENTITY
++        STATUS      current
++        DESCRIPTION "Spectrum Analyzer configuration and Results"
++::= { monitor 5 }
++
++saConfigTable OBJECT-TYPE
++        SYNTAX SEQUENCE OF SaConfigEntry
++        MAX-ACCESS         not-accessible
++        STATUS             current
++        DESCRIPTION        "This table is used to specify 
++                            spectrum analyzer configuration table."
++::= { spectrumAnalyzer 1 }
++
++saConfigEntry OBJECT-TYPE
++        SYNTAX      SaConfigEntry
++        MAX-ACCESS  not-accessible
++        STATUS      current
++        DESCRIPTION "This parameter represents an entry in the 
++                     Wireless Statistics Table."
++        INDEX       { saConfigRadioIndex }
++::= { saConfigTable 1 }
++
++
++SaConfigEntry ::=
++        SEQUENCE {
++                saConfigRadioIndex
++                    Integer32,
++                saConfigStartStop
++                    Integer32,
++                saConfigScanTime
++                    Integer32,
++                saConfigStartFreq
++                    Integer32,
++                saConfigEndFreq
++                    Integer32
++        }
++
++saConfigRadioIndex OBJECT-TYPE
++        SYNTAX      Integer32 (1..2)
++        MAX-ACCESS  read-only
++        STATUS      current
++        DESCRIPTION "This parameter represents the index for the 
++                     sa config table."
++::= { saConfigEntry 1 }
++
++saConfigStartStop OBJECT-TYPE
++        SYNTAX      Integer32
++        MAX-ACCESS  read-write
++        STATUS      current
++        DESCRIPTION "This parameter is used to start or stop the 
++                     spectrum analyzer."
++::= { saConfigEntry 2 }
++
++saConfigScanTime OBJECT-TYPE
++        SYNTAX      Integer32
++        MAX-ACCESS  read-write
++        STATUS      current
++        DESCRIPTION "This parameter is used to configure the 
++                     scan time."
++::= { saConfigEntry 3 }
++
++saConfigStartFreq OBJECT-TYPE
++        SYNTAX      Integer32
++        MAX-ACCESS  read-write
++        STATUS      current
++        DESCRIPTION "This parameter is used to configure the
++                     start frequency."
++::= { saConfigEntry 4 }
++
++saConfigEndFreq OBJECT-TYPE
++        SYNTAX      Integer32
++        MAX-ACCESS  read-write
++        STATUS      current
++        DESCRIPTION "This parameter is used to configure the
++                     end frequency."
++::= { saConfigEntry 5 }
++
++------------------------------------------------------------------------
++------------------------------------------------------------------------
++
++saResultTable OBJECT-TYPE
++        SYNTAX SEQUENCE OF SaResultEntry
++        MAX-ACCESS         not-accessible
++        STATUS             current
++        DESCRIPTION        "This table is used to specify
++                            Spectrum Scan results"
++::= { spectrumAnalyzer 2 }
++
++
++saResultEntry OBJECT-TYPE
++        SYNTAX      SaResultEntry
++        MAX-ACCESS  not-accessible
++        STATUS      current
++        DESCRIPTION "This parameter represents an entry in the
++                     SA Result Table"
++        INDEX   { saResultRadioIndex, saResultSecIndex }
++::= { saResultTable 1 }
++
++
++SaResultEntry ::=
++        SEQUENCE {
++                saResultRadioIndex
++                    Integer32,
++                saResultSecIndex
++                    Integer32,
++                saResultChannel
++                    Integer32,
++                saResultFrequency
++                    Integer32,
++                saResultSignalA1
++                    Integer32,
++                saResultSignalA2
++                    Integer32
++        }
++
++saResultRadioIndex OBJECT-TYPE
++        SYNTAX      Integer32 (1..2)
++        MAX-ACCESS  not-accessible
++        STATUS      current
++        DESCRIPTION "This parameter represents the index for the 
++                     SA Result Table."
++::= { saResultEntry 1 }
++
++saResultSecIndex OBJECT-TYPE
++        SYNTAX      Integer32 (1..250)
++        MAX-ACCESS  not-accessible
++        STATUS      current
++        DESCRIPTION "This parameter represents the Secondary index 
++                     for the SA Result Table."
++::= { saResultEntry 2 }
++
++saResultChannel OBJECT-TYPE
++        SYNTAX      Integer32
++        MAX-ACCESS  read-only
++        STATUS      current
++        DESCRIPTION "This parameter represents the channel." 
++::= { saResultEntry 3 }
++
++saResultFrequency OBJECT-TYPE
++        SYNTAX      Integer32
++        MAX-ACCESS  read-only
++        STATUS      current
++        DESCRIPTION "This parameter represents the Frequency." 
++::= { saResultEntry 4 }
++
++saResultSignalA1 OBJECT-TYPE
++        SYNTAX      Integer32
++        MAX-ACCESS  read-only
++        STATUS      current
++        DESCRIPTION "This parameter represents the Signal at A1."
++::= { saResultEntry 5 }
++
++saResultSignalA2 OBJECT-TYPE
++        SYNTAX      Integer32
++        MAX-ACCESS  read-only
++        STATUS      current
++        DESCRIPTION "This parameter represents the Signal at A2."
++::= { saResultEntry 6 }
 +
 +END
