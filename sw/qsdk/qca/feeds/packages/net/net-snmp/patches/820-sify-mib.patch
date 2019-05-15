@@ -1,7 +1,7 @@
 diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.c
 --- net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c	1970-01-01 05:30:00.000000000 +0530
-+++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.c	2019-05-14 13:59:59.383927235 +0530
-@@ -0,0 +1,6152 @@
++++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.c	2019-05-15 17:01:34.548661276 +0530
+@@ -0,0 +1,6394 @@
 +/****************************************************************************
 +*                                                                           *
 +*  File Name:           kwnmib.c                                           *
@@ -27,12 +27,12 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +#include <sys/file.h>
 +#include <sys/socket.h>
 +#include <netinet/in.h>
++#include <netinet/ether.h>
 +#include <linux/netlink.h>
 +#include <linux/rtnetlink.h>
 +#include <linux/types.h>
 +#include <linux/if.h>
 +#include <linux/wireless.h>
-+#include <linux/if_arp.h>
 +#include <string.h>
 +
 +#include <linux/ioctl.h>
@@ -66,9 +66,11 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 + *                                Global Variables                          *
 + ****************************************************************************/
 +
-+  static unsigned long kwnlastLoad = 0;          /* ET in secs at last table load */
++  static unsigned long kwnsalastLoad = 0;              /* ET in secs at last table load */
++  static unsigned long kwnsurveylastLoad = 0;          /* ET in secs at last table load */
 +  kwn_wireless_stats kwn_assoc_list;
 +  kwn_sa_stats       kwn_sa_result_list;
++  kwn_survey_stats   kwn_survey_result_list;
 +  char               res_str[ KWN_UCI_CMD_OUTPUT_LEN_MAX ];
 +  long               res_val;
 +  uint32_t           res_ip;
@@ -405,19 +407,30 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +  { 269  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LOCAL_LINKID } },
 +  { 270  , ASN_OCTET_STR  , RONLY , var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_REMOTE_LINKID } },
 +  { 271  , ASN_INTEGER    , RWRITE, var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_LINKTEST_PKTSIZE } },
++  { 272  , ASN_INTEGER    , RWRITE, var_AssocTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_ASSOCLIST, KWN_ASSOCENTRY, KWN_ASSOC_DISCONNECT } },
 +  /* SA Config MIBs */
-+  { 272  , ASN_INTEGER    , RONLY , var_SAConfigTable, 6, { KWN_SMAC, KWN_MONITOR, KWN_SPECTRUM_ANALYZER, KWN_SA_CONFIG, KWN_SA_CONFIG_ENTRY, KWN_SA_CONFIG_RADIO_INDEX } },
-+  { 273  , ASN_INTEGER    , RWRITE, var_SAConfigTable, 6, { KWN_SMAC, KWN_MONITOR, KWN_SPECTRUM_ANALYZER, KWN_SA_CONFIG, KWN_SA_CONFIG_ENTRY, KWN_SA_CONFIG_START_STOP } },
-+  { 274  , ASN_INTEGER    , RWRITE, var_SAConfigTable, 6, { KWN_SMAC, KWN_MONITOR, KWN_SPECTRUM_ANALYZER, KWN_SA_CONFIG, KWN_SA_CONFIG_ENTRY, KWN_SA_CONFIG_SCAN_TIME } },
-+  { 275  , ASN_INTEGER    , RWRITE, var_SAConfigTable, 6, { KWN_SMAC, KWN_MONITOR, KWN_SPECTRUM_ANALYZER, KWN_SA_CONFIG, KWN_SA_CONFIG_ENTRY, KWN_SA_CONFIG_START_FREQ } },
-+  { 276  , ASN_INTEGER    , RWRITE, var_SAConfigTable, 6, { KWN_SMAC, KWN_MONITOR, KWN_SPECTRUM_ANALYZER, KWN_SA_CONFIG, KWN_SA_CONFIG_ENTRY, KWN_SA_CONFIG_END_FREQ } },
++  { 273  , ASN_INTEGER    , RONLY , var_SAConfigTable, 6, { KWN_SMAC, KWN_MONITOR, KWN_SPECTRUM_ANALYZER, KWN_SA_CONFIG, KWN_SA_CONFIG_ENTRY, KWN_SA_CONFIG_RADIO_INDEX } },
++  { 274  , ASN_INTEGER    , RWRITE, var_SAConfigTable, 6, { KWN_SMAC, KWN_MONITOR, KWN_SPECTRUM_ANALYZER, KWN_SA_CONFIG, KWN_SA_CONFIG_ENTRY, KWN_SA_CONFIG_START_STOP } },
++  { 275  , ASN_INTEGER    , RWRITE, var_SAConfigTable, 6, { KWN_SMAC, KWN_MONITOR, KWN_SPECTRUM_ANALYZER, KWN_SA_CONFIG, KWN_SA_CONFIG_ENTRY, KWN_SA_CONFIG_SCAN_TIME } },
++  { 276  , ASN_INTEGER    , RWRITE, var_SAConfigTable, 6, { KWN_SMAC, KWN_MONITOR, KWN_SPECTRUM_ANALYZER, KWN_SA_CONFIG, KWN_SA_CONFIG_ENTRY, KWN_SA_CONFIG_START_FREQ } },
++  { 277  , ASN_INTEGER    , RWRITE, var_SAConfigTable, 6, { KWN_SMAC, KWN_MONITOR, KWN_SPECTRUM_ANALYZER, KWN_SA_CONFIG, KWN_SA_CONFIG_ENTRY, KWN_SA_CONFIG_END_FREQ } },
 +  /* SA Result MIBs */
-+  { 277  , ASN_INTEGER    , RONLY , var_SAResultTable, 6, { KWN_SMAC, KWN_MONITOR, KWN_SPECTRUM_ANALYZER, KWN_SA_RESULT, KWN_SA_RESULT_ENTRY, KWN_SA_RESULT_RADIO_INDEX } },
-+  { 278  , ASN_INTEGER    , RONLY , var_SAResultTable, 6, { KWN_SMAC, KWN_MONITOR, KWN_SPECTRUM_ANALYZER, KWN_SA_RESULT, KWN_SA_RESULT_ENTRY, KWN_SA_RESULT_SEC_INDEX } },
-+  { 279  , ASN_INTEGER    , RONLY , var_SAResultTable, 6, { KWN_SMAC, KWN_MONITOR, KWN_SPECTRUM_ANALYZER, KWN_SA_RESULT, KWN_SA_RESULT_ENTRY, KWN_SA_RESULT_CHANNEL } },
-+  { 280  , ASN_INTEGER    , RONLY , var_SAResultTable, 6, { KWN_SMAC, KWN_MONITOR, KWN_SPECTRUM_ANALYZER, KWN_SA_RESULT, KWN_SA_RESULT_ENTRY, KWN_SA_RESULT_FREQUENCY } },
-+  { 281  , ASN_INTEGER    , RONLY , var_SAResultTable, 6, { KWN_SMAC, KWN_MONITOR, KWN_SPECTRUM_ANALYZER, KWN_SA_RESULT, KWN_SA_RESULT_ENTRY, KWN_SA_RESULT_SIGNAL_A1 } },
-+  { 282  , ASN_INTEGER    , RONLY , var_SAResultTable, 6, { KWN_SMAC, KWN_MONITOR, KWN_SPECTRUM_ANALYZER, KWN_SA_RESULT, KWN_SA_RESULT_ENTRY, KWN_SA_RESULT_SIGNAL_A2 } },
++  { 278  , ASN_INTEGER    , RONLY , var_SAResultTable, 6, { KWN_SMAC, KWN_MONITOR, KWN_SPECTRUM_ANALYZER, KWN_SA_RESULT, KWN_SA_RESULT_ENTRY, KWN_SA_RESULT_RADIO_INDEX } },
++  { 279  , ASN_INTEGER    , RONLY , var_SAResultTable, 6, { KWN_SMAC, KWN_MONITOR, KWN_SPECTRUM_ANALYZER, KWN_SA_RESULT, KWN_SA_RESULT_ENTRY, KWN_SA_RESULT_SEC_INDEX } },
++  { 280  , ASN_INTEGER    , RONLY , var_SAResultTable, 6, { KWN_SMAC, KWN_MONITOR, KWN_SPECTRUM_ANALYZER, KWN_SA_RESULT, KWN_SA_RESULT_ENTRY, KWN_SA_RESULT_CHANNEL } },
++  { 281  , ASN_INTEGER    , RONLY , var_SAResultTable, 6, { KWN_SMAC, KWN_MONITOR, KWN_SPECTRUM_ANALYZER, KWN_SA_RESULT, KWN_SA_RESULT_ENTRY, KWN_SA_RESULT_FREQUENCY } },
++  { 282  , ASN_INTEGER    , RONLY , var_SAResultTable, 6, { KWN_SMAC, KWN_MONITOR, KWN_SPECTRUM_ANALYZER, KWN_SA_RESULT, KWN_SA_RESULT_ENTRY, KWN_SA_RESULT_SIGNAL_A1 } },
++  { 283  , ASN_INTEGER    , RONLY , var_SAResultTable, 6, { KWN_SMAC, KWN_MONITOR, KWN_SPECTRUM_ANALYZER, KWN_SA_RESULT, KWN_SA_RESULT_ENTRY, KWN_SA_RESULT_SIGNAL_A2 } },
++  /* Site Survey Result MIBs */
++  { 284  , ASN_INTEGER    , RONLY , var_SiteSurveyTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_SITE_SURVEY, KWN_SITE_SURVEY_ENTRY, KWN_SITE_SURVEY_INDEX } },
++  { 285  , ASN_INTEGER    , RONLY , var_SiteSurveyTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_SITE_SURVEY, KWN_SITE_SURVEY_ENTRY, KWN_SITE_SURVEY_SEC_INDEX } },
++  { 286  , ASN_OCTET_STR  , RONLY , var_SiteSurveyTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_SITE_SURVEY, KWN_SITE_SURVEY_ENTRY, KWN_SITE_SURVEY_MAC } },
++  { 287  , ASN_OCTET_STR  , RONLY , var_SiteSurveyTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_SITE_SURVEY, KWN_SITE_SURVEY_ENTRY, KWN_SITE_SURVEY_SSID } },
++  { 288  , ASN_INTEGER    , RONLY , var_SiteSurveyTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_SITE_SURVEY, KWN_SITE_SURVEY_ENTRY, KWN_SITE_SURVEY_CHANNEL } },
++  { 289  , ASN_INTEGER    , RONLY , var_SiteSurveyTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_SITE_SURVEY, KWN_SITE_SURVEY_ENTRY, KWN_SITE_SURVEY_FREQ } },
++  { 290  , ASN_INTEGER    , RONLY , var_SiteSurveyTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_SITE_SURVEY, KWN_SITE_SURVEY_ENTRY, KWN_SITE_SURVEY_RSSI } },
++  { 291  , ASN_INTEGER    , RONLY , var_SiteSurveyTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_SITE_SURVEY, KWN_SITE_SURVEY_ENTRY, KWN_SITE_SURVEY_NOISE } },
++  { 292  , ASN_INTEGER    , RONLY , var_SiteSurveyTable, 5, { KWN_SMAC, KWN_MONITOR, KWN_SITE_SURVEY, KWN_SITE_SURVEY_ENTRY, KWN_SITE_SURVEY_SECURITY } },
 +};
 +
 +/****************************************************************************
@@ -1132,9 +1145,9 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +    struct timeval et;                              /* elapsed time */
 +
 +    gettimeofday ( &et, ( struct timezone * ) 0 );
-+    if ( et.tv_sec < kwnlastLoad + KWNMINLOADFREQ ) /* only reload so often */
++    if ( et.tv_sec < kwnsalastLoad + KWNMINLOADFREQ ) /* only reload so often */
 +        return;
-+    kwnlastLoad = et.tv_sec;
++    kwnsalastLoad = et.tv_sec;
 +
 +    memset( cmd, '\0', sizeof(cmd) );
 +    sprintf( cmd, "iwpriv ath%d kwn_flag 6", radio_ind );
@@ -1175,6 +1188,106 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +#endif
 +    }
 +    free( buf );
++    return 0;
++}
++
++void
++kwn_ether_ntop(struct ether_addr * eth, char* buf)
++{
++    sprintf(buf, "%02X:%02X:%02X:%02X:%02X:%02X",
++            eth->ether_addr_octet[0], eth->ether_addr_octet[1],
++            eth->ether_addr_octet[2], eth->ether_addr_octet[3],
++            eth->ether_addr_octet[4], eth->ether_addr_octet[5]);
++}
++
++/* Display an Ethernet Socket Address in readable format */
++char *
++kwn_saether_ntop(struct sockaddr *sap, char* bufp)
++{
++    kwn_ether_ntop((struct ether_addr *) sap->sa_data, bufp);
++    return bufp;
++}
++
++void kwn_str_to_mac(uint8_t* cmd_buf, uint8_t *local_mac )
++{
++    sscanf( cmd_buf, "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx",&local_mac[0], &local_mac[1], &local_mac[2],&local_mac[3], &local_mac[4], &local_mac[5]);
++    return;
++}
++
++int get_sitesurvey( int radio_ind )
++{
++    int ret = -1;
++    int sk_fd;
++    struct iwreq iwr;
++    int i, n;
++    char cmd[ 100 ], ifname[ 5 ];
++    char buffer[ ( sizeof( struct iw_quality ) +
++            sizeof( struct sockaddr ) + sizeof( struct iw_ssid ) ) * KWN_SURVEY_ENTRIES_MAX ];
++    struct sockaddr * hwa;
++    struct iw_quality * qual;
++    struct iw_ssid * ssid;
++    int    has_qual = 0;
++    struct timeval et;                              /* elapsed time */
++    char   mac[128] = {0};
++    char   mac1[128] = {0};
++
++    gettimeofday ( &et, ( struct timezone * ) 0 );
++    if ( et.tv_sec < kwnsurveylastLoad + KWNMINLOADFREQ ) /* only reload so often */
++        return;
++    kwnsurveylastLoad = et.tv_sec;
++
++    memset( &iwr, 0, sizeof( iwr ) );
++
++    sprintf( ifname, "ath%d", radio_ind );
++    (void) strncpy( iwr.ifr_name, ifname, sizeof( iwr.ifr_name ) );
++
++    iwr.u.data.pointer = ( caddr_t ) buffer;
++    iwr.u.data.length = KWN_SURVEY_ENTRIES_MAX;
++    iwr.u.data.flags = 0;
++
++    sk_fd = socket( AF_INET, SOCK_DGRAM, 0 );
++
++    if( sk_fd < 0 ) {
++        sk_fd = -1;
++        return -1;
++    }
++    if( ( ret = ioctl( sk_fd, SIOCGIWAPLIST, &iwr ) ) < 0 ) {
++        printf(" Error : ret %d \n",ret);
++        return ret;
++    }
++
++    /* Number of addresses */
++    n = iwr.u.data.length;
++    has_qual = iwr.u.data.flags;
++#if 0
++    memset( cmd, '\0', sizeof( cmd ) );
++    sprintf( cmd, "echo n=%d >> /tmp/survey.txt", n );
++    system( cmd );
++#endif
++    /* The two lists */
++    hwa = ( struct sockaddr * ) buffer;
++    qual = ( struct iw_quality * ) ( buffer + ( sizeof( struct sockaddr ) * n) );
++    ssid = ( struct iw_ssid * ) ( buffer + ( sizeof( struct sockaddr ) * n ) + ( sizeof( struct iw_quality ) * n ) );
++
++    kwn_survey_result_list.cnt = n;
++    for( i = 0; i < n; i++ )
++    {
++        if( has_qual ) {
++            memcpy( mac1, kwn_saether_ntop( &hwa[i], mac ), sizeof( mac1 ) );
++#if 0
++            memset( cmd, '\0', sizeof( cmd ) );
++            sprintf( cmd, "echo %s=%s=%d=%d=%d=%d=%d >> /tmp/survey.txt", mac1, ssid[i].essid,ssid[i].chan, ssid[i].freq, qual[i].level, qual[i].noise, ssid[i].enc );
++            system( cmd );
++#endif
++            kwn_str_to_mac( &mac1[0], &kwn_survey_result_list.survey_entry[i].mac[0] );
++            memcpy( kwn_survey_result_list.survey_entry[i].ssid, ssid[i].essid, KWN_SSID_LEN );
++            kwn_survey_result_list.survey_entry[i].channel = ssid[i].chan;
++            kwn_survey_result_list.survey_entry[i].frequency = ssid[i].freq;
++            kwn_survey_result_list.survey_entry[i].rssi = ( signed char ) qual[i].level;
++            kwn_survey_result_list.survey_entry[i].noise = ( signed char ) qual[i].noise;
++            kwn_survey_result_list.survey_entry[i].security = ssid[i].enc;
++        }
++    }
 +    return 0;
 +}
 +
@@ -4087,6 +4200,13 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +                kwn_get_value( KWN_TYPE_INTEGER32, &cmd[0], var_len, NULL );
 +                return ( u_char * ) &res_val;
 +            }
++        case KWN_ASSOC_DISCONNECT:
++            {
++                *write_method = assocwriteMethod;
++                *var_len = sizeof ( long );
++                res_val = 0;
++                return ( u_char * ) &res_val;
++            }
 +        default:
 +            ERROR_MSG ( "" );
 +    }
@@ -4258,6 +4378,120 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +            {
 +                *var_len = sizeof ( long );
 +                return ( u_char * ) &kwn_sa_result_list.sa_entry[sec_ind].pow_chain1;
++            }
++        default:
++            ERROR_MSG ( "" );
++    }
++    return NULL;
++}
++
++/****************************************************************************
++ *                                                                          *
++ *   var_SiteSurveyTable() -                                                  *
++ *                                                                          *
++ ****************************************************************************/
++    unsigned char *
++var_SiteSurveyTable ( struct variable *vp, 
++        oid     *name, 
++        size_t  *length, 
++        int     exact, 
++        size_t  *var_len, 
++        WriteMethod **write_method)
++{
++    oid rName [ MAX_OID_LEN ];                            // OID to be returned
++    int i,j, found = 0, radio_ind, sec_ind;
++
++    memcpy (( char * ) rName, ( char * ) vp->name, ( int ) vp->namelen * sizeof ( oid ));
++
++    for( i = 1; i <= KWN_WIFI_INTF_MAX; i++ )
++    {
++        if( i == KWN_24GHZ_RADIO_IDX )
++            continue;
++        /* Get Site Survey Result List */
++        if( get_sitesurvey( i - 1 ) < 0 ) {
++            return SNMP_ERR_NOERROR;
++        }
++        for( j = 1; j <= kwn_survey_result_list.cnt; j++ ) {
++            rName[vp->namelen + 0] = i;
++            rName[vp->namelen + 1] = j;
++            radio_ind = i - 1;
++            sec_ind = j - 1;
++            if ((  exact && ( snmp_oid_compare ( rName, vp->namelen + 2, name, *length ) == 0 )) ||
++                    ( !exact && ( snmp_oid_compare ( rName, vp->namelen + 2, name, *length ) >  0 ))) {
++                found = 1;
++            }
++            if( found ) {
++                break;
++            }
++        }
++    }
++
++    if( !found ) {
++        return NULL;
++    }
++    memcpy (( char * ) name, ( char * ) rName, ( vp->namelen + 2 ) * sizeof ( oid ));
++    memset( res_str, '\0', sizeof( res_str ) );
++    res_val = 0;
++    res_ip = 0;
++    *length = vp->namelen + 2;
++    *write_method = NULL;
++
++    switch ( (char) name[11] ) {
++        case KWN_SITE_SURVEY_INDEX:
++            {
++                *write_method = NULL;
++                res_val = radio_ind + 1;
++                *var_len = sizeof ( long );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_SITE_SURVEY_SEC_INDEX:
++            {
++                *write_method = NULL;
++                res_val = sec_ind + 1;
++                *var_len = sizeof ( long );
++                return ( u_char * ) &res_val;
++            }
++        case KWN_SITE_SURVEY_MAC:
++            {
++                sprintf( res_str, "%02x:%02x:%02x:%02x:%02x:%02x",
++                        kwn_survey_result_list.survey_entry[sec_ind].mac[0],
++                        kwn_survey_result_list.survey_entry[sec_ind].mac[1],
++                        kwn_survey_result_list.survey_entry[sec_ind].mac[2],
++                        kwn_survey_result_list.survey_entry[sec_ind].mac[3],
++                        kwn_survey_result_list.survey_entry[sec_ind].mac[4],
++                        kwn_survey_result_list.survey_entry[sec_ind].mac[5] );
++                *var_len = strlen( res_str );
++                return ( u_char * ) res_str;
++            }
++        case KWN_SITE_SURVEY_SSID:
++            {
++                *var_len = strlen( kwn_survey_result_list.survey_entry[sec_ind].ssid );
++                return ( u_char * ) kwn_survey_result_list.survey_entry[sec_ind].ssid;
++            }
++        case KWN_SITE_SURVEY_CHANNEL:
++            {
++                *var_len = sizeof ( long );
++                return ( u_char * ) &kwn_survey_result_list.survey_entry[sec_ind].channel;
++            }
++        case KWN_SITE_SURVEY_FREQ:
++            {
++                *var_len = sizeof ( long );
++                return ( u_char * ) &kwn_survey_result_list.survey_entry[sec_ind].frequency;
++            }
++        case KWN_SITE_SURVEY_RSSI:
++            {
++                *var_len = sizeof ( long );
++                return ( u_char * ) &kwn_survey_result_list.survey_entry[sec_ind].rssi;
++            }
++        case KWN_SITE_SURVEY_NOISE:
++            {
++                *var_len = sizeof ( long );
++                return ( u_char * ) &kwn_survey_result_list.survey_entry[sec_ind].noise;
++            }
++        case KWN_SITE_SURVEY_SECURITY:
++            {
++                *var_len = sizeof ( long );
++                return ( u_char * ) &kwn_survey_result_list.survey_entry[sec_ind].security;
 +            }
 +        default:
 +            ERROR_MSG ( "" );
@@ -6071,6 +6305,14 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +                        sprintf( cmd, "uci set tool.tool.size='%d'",long_val );
 +                        system( cmd );
 +                        break;
++                    case KWN_ASSOC_DISCONNECT:
++                        if( long_val == 1 ) {
++                            sprintf( cmd, "iwpriv ath%d kickmac %02x:%02x:%02x:%02x:%02x:%02x",radio_ind, kwn_assoc_list.sta[sec_ind].mac[0],
++                                    kwn_assoc_list.sta[sec_ind].mac[1], kwn_assoc_list.sta[sec_ind].mac[2], kwn_assoc_list.sta[sec_ind].mac[3],
++                                    kwn_assoc_list.sta[sec_ind].mac[4], kwn_assoc_list.sta[sec_ind].mac[5]);
++                            system( cmd );
++                        }
++                        break;
 +                    default:
 +                        return SNMP_ERR_GENERR;
 +                }
@@ -6156,8 +6398,8 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.c net-snmp-5.4.4-mod/agent/mi
 +
 diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.h
 --- net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h	1970-01-01 05:30:00.000000000 +0530
-+++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.h	2019-05-14 14:00:56.059567549 +0530
-@@ -0,0 +1,611 @@
++++ net-snmp-5.4.4-mod/agent/mibgroup/kwnmib.h	2019-05-15 16:58:04.058095633 +0530
+@@ -0,0 +1,647 @@
 +/****************************************************************************
 +*                                                                           *
 +*  File Name:           kwnmib.h                                      *
@@ -6187,10 +6429,12 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h net-snmp-5.4.4-mod/agent/mi
 +#define KWN_MAC_ADDR_LEN                 6
 +#define KWN_GPS_LEN                      16
 +#define KWN_CUSTNAME_LEN                 33
++#define KWN_SSID_LEN                     33
 +#define KWN_LINKID_LEN                   16
 +#define KWN_LINKS_MAX                    20
 +#define KWN_UCI_STR_ENUM_LEN             10
 +#define KWN_CHAN_MAX                     250
++#define KWN_SURVEY_ENTRIES_MAX           64
 +
 +#define KWN_WIFI_INTF_MAX                2
 +#define KWN_ETH_INTF_MAX                 1
@@ -6227,6 +6471,7 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h net-snmp-5.4.4-mod/agent/mi
 +FindVarMethod var_AssocTable;
 +FindVarMethod var_SAConfigTable;
 +FindVarMethod var_SAResultTable;
++FindVarMethod var_SiteSurveyTable;
 +
 +/* Enum Types */
 +enum KWN_TYPE {
@@ -6535,7 +6780,8 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h net-snmp-5.4.4-mod/agent/mi
 +    KWN_ETHERNETSTATS = 2,
 +    KWN_ASSOCLIST = 3,
 +    KWN_TRAPS = 4,
-+    KWN_SPECTRUM_ANALYZER = 5
++    KWN_SPECTRUM_ANALYZER = 5,
++    KWN_SITE_SURVEY = 6
 +};
 +
 +enum KWN_WIRELESSSTATS {
@@ -6649,7 +6895,8 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h net-snmp-5.4.4-mod/agent/mi
 +    KWN_ASSOC_REMOTE_CUSTOMERNAME = 29,
 +    KWN_ASSOC_LOCAL_LINKID = 30,
 +    KWN_ASSOC_REMOTE_LINKID = 31,
-+    KWN_ASSOC_LINKTEST_PKTSIZE = 32
++    KWN_ASSOC_LINKTEST_PKTSIZE = 32,
++    KWN_ASSOC_DISCONNECT = 33
 +};
 +
 +enum KWN_TRAPS {
@@ -6693,6 +6940,22 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h net-snmp-5.4.4-mod/agent/mi
 +    KWN_SA_RESULT_FREQUENCY = 4,
 +    KWN_SA_RESULT_SIGNAL_A1 = 5,
 +    KWN_SA_RESULT_SIGNAL_A2 = 6
++};
++
++enum KWN_SITE_SURVEY {
++    KWN_SITE_SURVEY_ENTRY = 1
++};
++
++enum KWN_SITE_SURVEY_ENTRY {
++    KWN_SITE_SURVEY_INDEX = 1,
++    KWN_SITE_SURVEY_SEC_INDEX = 2,
++    KWN_SITE_SURVEY_MAC = 3,
++    KWN_SITE_SURVEY_SSID = 4,
++    KWN_SITE_SURVEY_CHANNEL = 5,
++    KWN_SITE_SURVEY_FREQ = 6,
++    KWN_SITE_SURVEY_RSSI = 7,
++    KWN_SITE_SURVEY_NOISE = 8,
++    KWN_SITE_SURVEY_SECURITY = 9
 +};
 +
 +/* Structure Definitions */
@@ -6768,6 +7031,21 @@ diff -urN net-snmp-5.4.4-org/agent/mibgroup/kwnmib.h net-snmp-5.4.4-mod/agent/mi
 +    uint8_t cnt;
 +}kwn_sa_stats;
 +
++typedef struct {
++    uint8_t  mac[ KWN_MAC_ADDR_LEN ];
++    uint8_t  ssid[ KWN_SSID_LEN ];
++    long  channel;
++    long  frequency;
++    long  rssi;
++    long  noise;
++    long  security;
++}kwn_survey_result_entries;
++
++typedef struct {
++    kwn_survey_result_entries survey_entry[ KWN_SURVEY_ENTRIES_MAX ];
++    uint8_t cnt;
++}kwn_survey_stats;
++
 +#endif /* _MIBGROUP_KWNMIB_H */
 diff -urN net-snmp-5.4.4-org/agent/snmp_agent.c net-snmp-5.4.4-mod/agent/snmp_agent.c
 --- net-snmp-5.4.4-org/agent/snmp_agent.c	2011-02-20 14:54:29.000000000 +0530
@@ -6795,8 +7073,8 @@ diff -urN net-snmp-5.4.4-org/include/net-snmp/net-snmp-config.h.in net-snmp-5.4.
  
 diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWEST-MIB.mib
 --- net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib	1970-01-01 05:30:00.000000000 +0530
-+++ net-snmp-5.4.4-mod/mibs/KEYWEST-MIB.mib	2019-05-14 13:55:14.433735648 +0530
-@@ -0,0 +1,3420 @@
++++ net-snmp-5.4.4-mod/mibs/KEYWEST-MIB.mib	2019-05-15 16:56:50.898595012 +0530
+@@ -0,0 +1,3551 @@
 +------------------------------------------------------------------------
 +------------------------------------------------------------------------
 +--
@@ -9720,7 +9998,9 @@ diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWES
 +                assocRemoteLinkid
 +                    DisplayString,
 +                assocLinkTestPacketSize
-+                    Integer32
++                    Integer32,
++                assocDisconnect
++                    INTEGER
 +        }
 +
 +assocRadioIndex OBJECT-TYPE
@@ -9986,6 +10266,17 @@ diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWES
 +                     size."
 +::= { assocEntry 32 }
 +
++assocDisconnect OBJECT-TYPE
++        SYNTAX      INTEGER {
++            no    (0),
++            yes   (1)
++        }
++        MAX-ACCESS  read-write
++        STATUS      current
++        DESCRIPTION "This parameter is used to disconnect 
++                     remote partner."
++::= { assocEntry 33 }
++
 +------------------------------------------------------------------------
 +------------------------------------------------------------------------
 +
@@ -10215,5 +10506,123 @@ diff -urN net-snmp-5.4.4-org/mibs/KEYWEST-MIB.mib net-snmp-5.4.4-mod/mibs/KEYWES
 +        STATUS      current
 +        DESCRIPTION "This parameter represents the Signal at A2."
 +::= { saResultEntry 6 }
++
++------------------------------------------------------------------------
++------------------------------------------------------------------------
++
++siteSurveyTable OBJECT-TYPE
++        SYNTAX SEQUENCE OF SiteSurveyEntry
++        MAX-ACCESS         not-accessible
++        STATUS             current
++        DESCRIPTION        "This table is used to specify 
++                            site survey results table."
++::= { monitor 6 }
++
++siteSurveyEntry OBJECT-TYPE
++        SYNTAX      SiteSurveyEntry
++        MAX-ACCESS  not-accessible
++        STATUS      current
++        DESCRIPTION "This parameter represents an entry in the 
++                     Site Survey Table."
++        INDEX       { siteSurveyRadioIndex, siteSurveySecIndex }
++::= { siteSurveyTable 1 }
++
++
++SiteSurveyEntry ::=
++        SEQUENCE {
++                siteSurveyRadioIndex
++                    Integer32,
++                siteSurveySecIndex
++                    Integer32,
++                siteSurveyMAC
++                    DisplayString,
++                siteSurveySSID
++                    DisplayString,
++                siteSurveyChannel
++                    Integer32,
++                siteSurveyFrequency
++                    Integer32,
++                siteSurveyRSSI
++                    Integer32,
++                siteSurveyNoise
++                    Integer32,
++                siteSurveySecurity
++                    INTEGER
++        }
++
++siteSurveyRadioIndex OBJECT-TYPE
++        SYNTAX      Integer32 (1..2)
++        MAX-ACCESS  read-only
++        STATUS      current
++        DESCRIPTION "This parameter represents the radio index for the 
++                     site survey table."
++::= { siteSurveyEntry 1 }
++
++siteSurveySecIndex OBJECT-TYPE
++        SYNTAX      Integer32 (1..64)
++        MAX-ACCESS  read-only
++        STATUS      current
++        DESCRIPTION "This parameter represents the site survey entry index for the 
++                     site survey table."
++::= { siteSurveyEntry 2 }
++
++siteSurveyMAC OBJECT-TYPE
++        SYNTAX      DisplayString
++        MAX-ACCESS  read-write
++        STATUS      current
++        DESCRIPTION "This parameter is used to represent the  
++                     site survey MAC Address."
++::= { siteSurveyEntry 3 }
++
++siteSurveySSID OBJECT-TYPE
++        SYNTAX      DisplayString
++        MAX-ACCESS  read-write
++        STATUS      current
++        DESCRIPTION "This parameter is used to represent the 
++                     SSID."
++::= { siteSurveyEntry 4 }
++
++siteSurveyChannel OBJECT-TYPE
++        SYNTAX      Integer32
++        MAX-ACCESS  read-write
++        STATUS      current
++        DESCRIPTION "This parameter is used to represent the 
++                     channel."
++::= { siteSurveyEntry 5 }
++
++siteSurveyFrequency OBJECT-TYPE
++        SYNTAX      Integer32
++        MAX-ACCESS  read-write
++        STATUS      current
++        DESCRIPTION "This parameter is used to represent the 
++                     frequency."
++::= { siteSurveyEntry 6 }
++
++siteSurveyRSSI OBJECT-TYPE
++        SYNTAX      Integer32
++        MAX-ACCESS  read-write
++        STATUS      current
++        DESCRIPTION "This parameter is used to represent the 
++                     RSSI."
++::= { siteSurveyEntry 7 }
++
++siteSurveyNoise OBJECT-TYPE
++        SYNTAX      Integer32
++        MAX-ACCESS  read-write
++        STATUS      current
++        DESCRIPTION "This parameter is used to represent the 
++                     noise."
++::= { siteSurveyEntry 8 }
++
++siteSurveySecurity OBJECT-TYPE
++        SYNTAX      INTEGER {
++            no    (0),
++            yes   (1)
++        }
++        MAX-ACCESS  read-write
++        STATUS      current
++        DESCRIPTION "This parameter is used to represent the 
++                     encryption."
++::= { siteSurveyEntry 9 }
 +
 +END
