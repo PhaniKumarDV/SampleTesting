@@ -76,6 +76,7 @@ struct rtnl_handle {
     if(se_daemon < 0)printf("\r\n");\
 }while(0)
 int se_daemon = -1;
+char prev_mac[25] = { 0 };
 void sify_file_write(char *,int,int,uint8_t);
 double deg2rad(double);
 double rad2deg(double);
@@ -394,71 +395,70 @@ void get_assoclist( int radiomode )
     }
 }
 
-static void handle_ifla_wireless ( char *data, int len)
+static void handle_ifla_wireless ( char *data, int len )
 {
     struct iw_event iwe_buf, *iwe = &iwe_buf;
     char *pos, *end, *custom, *buf;
-    char str[15];
-    int ix=0;
-    char mac[25]={0};
-    char tm_mac[3]={0};
-    int mac_status=0;
+    char str[ 15 ];
+    int ix = 0;
+    char mac[ 25 ] = { 0 };
+    char tm_mac[ 3 ] = { 0 };
+    int mac_status = 0;
     static int registered = -1;
 
     pos = data;
     end = data + len;
-    while (pos + IW_EV_LCP_LEN <= end) {
+    while( pos + IW_EV_LCP_LEN <= end ) {
         /* Event data may be unaligned, so make a local, aligned copy
          *                  *          * before processing. */
-        memcpy(&iwe_buf, pos, IW_EV_LCP_LEN);
-        if (iwe->len <= IW_EV_LCP_LEN) {
+        memcpy( &iwe_buf, pos, IW_EV_LCP_LEN );
+        if( iwe->len <= IW_EV_LCP_LEN ) {
             PRINTF("[%s:%d] iwe->len <= IW_EV_LCP_LEN %d, %d\r\n",__func__,__LINE__,iwe->len,IW_EV_LCP_LEN);
             return;
         }
         custom = pos + IW_EV_POINT_LEN;
-        if (iwe->cmd == IWEVMICHAELMICFAILURE || iwe->cmd == IWEVASSOCREQIE || iwe->cmd == IWEVCUSTOM) {
+        if( iwe->cmd == IWEVMICHAELMICFAILURE || iwe->cmd == IWEVASSOCREQIE || iwe->cmd == IWEVCUSTOM ) {
             /* WE-19 removed the pointer from struct iw_point */
             char *dpos = (char *) &iwe_buf.u.data.length;
             int dlen = dpos - (char *) &iwe_buf;
-            memcpy(dpos, pos + IW_EV_LCP_LEN,
-                    sizeof(struct iw_event) - dlen);
+            memcpy( dpos, pos + IW_EV_LCP_LEN, sizeof( struct iw_event ) - dlen );
         } else {
-            memcpy(&iwe_buf, pos, sizeof(struct iw_event));
+            memcpy( &iwe_buf, pos, sizeof( struct iw_event ) );
             custom += IW_EV_POINT_OFF;
         }
         PRINTF("\r\n[%s:%d] iwe->cmd = %04X iwevexpired = %10x iwregistered = %10x iwevassocreq = %10x iwcustom = %10x siocgiwap = %10x\r\n",
                                     __func__,__LINE__, iwe->cmd, IWEVEXPIRED, IWEVREGISTERED,IWEVASSOCREQIE, IWEVCUSTOM, SIOCGIWAP);
 
-        switch (iwe->cmd) {
+        switch( iwe->cmd ) {
             case IWEVEXPIRED:
                 PRINTF("[%s:%d] IWEVEXPIRED\r\n",__func__,__LINE__);
-                for (ix = 0; ix < 6; ++ix)
+                for( ix = 0; ix < 6; ++ix )
                 {
                     if( ix < 5 )
                         sprintf(tm_mac,"%02x:",(unsigned char) iwe->u.addr.sa_data[ix]);
                     else
                         sprintf(tm_mac,"%02x",(unsigned char) iwe->u.addr.sa_data[ix]);
-                    strcat(mac,tm_mac);
+                    strcat( mac, tm_mac );
 
-                    memset(tm_mac,'\0',3);
+                    memset( tm_mac, '\0', 3 );
                 }
                 //syslog(LOG_INFO,"Wireless SU Expired:%s",mac);		       
-                sify_file_write(mac,0,iwe->u.addr.sa_data[6],iwe->u.addr.sa_data[7]);
+                sify_file_write( mac, 0, iwe->u.addr.sa_data[6], iwe->u.addr.sa_data[7] );
                 //kwn_set_distance( KWN_DISTANCE_MAX );
                 break;
             case IWEVREGISTERED:
                 PRINTF("[%s:%d] IWEVREGISTERED\r\n",__func__,__LINE__);
-                for (ix = 0; ix < 6; ++ix)
+                for( ix = 0; ix < 6; ++ix )
                 {
                     if( ix < 5 )
                         sprintf(tm_mac,"%02x:",(unsigned char) iwe->u.addr.sa_data[ix]);
                     else
                         sprintf(tm_mac,"%02x",(unsigned char) iwe->u.addr.sa_data[ix]);
-                    strcat(mac,tm_mac);
-                    memset(tm_mac,'\0',3);
+                    strcat( mac, tm_mac );
+                    memset( tm_mac, '\0', 3 );
                 }
                 //syslog(LOG_INFO,"New Wireless SU Registered:%s",mac);
-                sify_file_write(mac,1,0,0);
+                sify_file_write( mac, 1, 0, 0 );
                 kwn_sta_kickout();
                 //get_assoclist( KWN_RADIOMODE_AP );
                 break;
@@ -466,19 +466,19 @@ static void handle_ifla_wireless ( char *data, int len)
                 break;
             case IWEVCUSTOM:
                 PRINTF("[%s:%d] IWEVCUSTOM\r\n",__func__,__LINE__);
-                if (custom + iwe->u.data.length > end)
+                if( custom + iwe->u.data.length > end )
                     return;
-                buf = malloc(iwe->u.data.length + 1);
-                if (buf == NULL)
+                buf = malloc( iwe->u.data.length + 1 );
+                if( buf == NULL )
                     return;
-                memcpy(buf, custom, iwe->u.data.length);
-                buf[iwe->u.data.length] = '\0';
-                free(buf);
+                memcpy( buf, custom, iwe->u.data.length );
+                buf[ iwe->u.data.length ] = '\0';
+                free( buf );
                 break;
                 // for SU				
             case SIOCGIWAP:
                 PRINTF("[%s:%d] SIOCGIWAP\r\n",__func__,__LINE__);
-                for (ix = 0; ix < 6; ++ix)
+                for ( ix = 0; ix < 6; ++ix )
                 {
                     if(iwe->u.ap_addr.sa_data[ix]==0x00)
                         mac_status++;
@@ -487,14 +487,16 @@ static void handle_ifla_wireless ( char *data, int len)
                         sprintf(tm_mac,"%02x:",(unsigned char) iwe->u.ap_addr.sa_data[ix]);
                     else
                         sprintf(tm_mac,"%02x",(unsigned char) iwe->u.ap_addr.sa_data[ix]);
-                    strcat(mac,tm_mac);
-                    memset(tm_mac,'\0',3);
+                    strcat( mac, tm_mac );
+                    memset( tm_mac, '\0', 3 );
 
                 }
                 if(mac_status == 6) // no mac address received
                 {
                     //if((registered  == 1) || (registered == -1))
                     {
+                        //syslog(LOG_ALERT,"Wireless Device Unregistered Successfully:%s",prev_mac);
+                        sify_file_write( prev_mac, 0, 0, 0 );
                         registered = 0;
                         //kwn_set_distance( KWN_DISTANCE_MAX );
                     }
@@ -503,8 +505,9 @@ static void handle_ifla_wireless ( char *data, int len)
                 {
                     //if ((registered == 0) || (registered == -1))
                     {
+                        strcpy( prev_mac, mac );
                         //syslog(LOG_ALERT,"Wireless Device Registered Successfully:%s",mac);
-                        sify_file_write(mac,1,0,0);
+                        sify_file_write( mac, 1 ,0 ,0 );
                         registered = 1;
                         system("/usr/sbin/link.sh > /dev/null 2>&1");
                         //get_assoclist( KWN_RADIOMODE_SU );
