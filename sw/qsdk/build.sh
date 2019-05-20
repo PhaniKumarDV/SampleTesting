@@ -59,8 +59,19 @@ echo "========================"
 echo "Making Single Image...."
 cd ../../src
 ./single_image.sh $1
-echo "Making Single Image Done~"
-echo "========================"
+IMAGE="../../../../../../../../src/common/build/bin/nor-ipq40xx-single.img"
+ENC_IMAGE="../../../../../../../../src/common/build/bin/nor-ipq40xx-single-enc.img"
+if [ "$?" = "0" ] ; then
+    echo "Making Single Image Done~"
+    echo "========================"
+    echo "Generating Encrypted Image"
+    cd ../sw/qsdk/package/KeyWest/kw-base-files/files/usr/sbin/
+    ./kwn_enc.sh $IMAGE $ENC_IMAGE
+    echo "Done Encrypting"
+else
+    echo "Failed Single Image Generation"
+    echo "========================"
+fi
 END=$(date +%y-%m/%d-%H/%M/%S)
 echo "========================"
 echo "BUILD START at $START !!"
