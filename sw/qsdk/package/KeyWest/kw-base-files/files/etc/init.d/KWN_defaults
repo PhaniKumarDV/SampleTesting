@@ -96,6 +96,7 @@ start_service() {
     http=$(uci get tftp.http)
     httpfiletype=$(uci get tftp.http.filetype)
     httpoptype=$(uci get tftp.http.optype)
+    imgsec=$(uci get system.firmware.security)
 #SYSTEM
     location=$(uci get system.@system[0].location)
     contact=$(uci get system.@system[0].contact)
@@ -428,6 +429,11 @@ start_service() {
         uci set tftp.http.filetype='1'
         uci set tftp.http.optype='0'
     fi
+    if [ "$imgsec" == "" ]
+    then
+        uci set tftp.firmware=firmware
+    fi
+    uci set tftp.firmware.security='0'
 
 #SYSTEM
     if [ "$location" == "" ]

@@ -11,3 +11,6 @@ config http 'http'
 
 config retip 'retip'
     option retainip 0
+
+config firmware 'firmware'
+    option security 0

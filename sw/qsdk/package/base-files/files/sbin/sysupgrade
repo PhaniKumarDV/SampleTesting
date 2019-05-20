@@ -123,12 +123,14 @@ add_overlayfiles() {
 	return 0
 }
 
-#TODO: Image Security - Commenting Decrypting firmware logic
-#if [ $TEST -eq 1 ]; then
-#    /usr/sbin/kwn_dec.sh $1 /tmp/firmware_new.img 
-#    mv /tmp/firmware_new.img /tmp/firmware.img
-#    echo ".....Decrypted the image" > /dev/console
-#fi
+if [ $TEST -eq 1 ]; then
+    imgsec=$(uci get tftp.firmware.security)
+    if [ $imgsec -eq 1 ]; then
+       /usr/sbin/kwn_dec.sh $1 /tmp/firmware_new.img 
+       mv /tmp/firmware_new.img /tmp/firmware.img
+       echo ".....Decrypted the image" > /dev/console
+    fi
+fi
 
 # hooks
 sysupgrade_image_check="platform_check_image"
